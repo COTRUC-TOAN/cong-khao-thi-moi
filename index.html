@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v6] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v7] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1049,6 +1049,17 @@
             throw new Error('Không tải được đề sau nhiều lần thử');
         }
 
+        // Giáo viên (đã đăng nhập) lấy mật khẩu các đề từ máy chủ. Học sinh không có mật khẩu đề trong dữ liệu.
+        async function ensureExamPasses() {
+            try {
+                const r = await fetch(`${SCRIPT_URL}?action=get_exam_passes&password=${encodeURIComponent(teacherPassAuth)}`);
+                const d = await r.json();
+                if (d && d.status === 'success' && d.passes) {
+                    examBank.forEach(ex => { if (d.passes[String(ex.id)] !== undefined) { ex.examPass = d.passes[String(ex.id)]; ex.hasPass = !!ex.examPass; } });
+                }
+            } catch (e) { console.log(e); }
+        }
+
         async function fetchData() {
             const grid = document.getElementById('exam-grid');
             try {
@@ -1078,6 +1089,7 @@
                         deadline: ex.deadline || ex.Deadline || '',
                         maxAttempts: (parsedQ.length > 0 && parsedQ[0].maxAttempts !== undefined) ? parsedQ[0].maxAttempts : (ex.mode === 'KIEMTRA' ? 1 : 0),
                         examPass: ex.examPass || ex.ExamPass || '',
+                        hasPass: !!(ex.hasPass || ex.examPass || ex.ExamPass),
                         youtubeUrl: ex.youtubeUrl || ex.youtubeurl || '',
                         pdfData: ex.pdfData || ex.pdfdata || '',
                         questions: parsedQ
@@ -1091,6 +1103,7 @@
                 });
                 examBank = Object.values(uniqueExams).reverse();
 
+                if (teacherPassAuth) { await ensureExamPasses(); }
                 renderExams();
                 checkUrlParams();
             } catch (err) {
@@ -2231,6 +2244,7 @@ async function loadExamToEdit(examId) {
                 
                 if (data.status === "success") {
                     teacherPassAuth = pass;
+                    await ensureExamPasses();
                     document.getElementById('portal-view').style.display = 'none';
                     document.getElementById('teacher-view').style.display = 'block';
                     switchTeacherTab('scores');
@@ -2331,16 +2345,26 @@ async function loadExamToEdit(examId) {
                 return;
             }
 
-            if (activeExam.mode === 'KIEMTRA' && activeExam.examPass) {
+            if (activeExam.mode === 'KIEMTRA' && (activeExam.hasPass || activeExam.examPass)) {
                 document.getElementById('password-lock-screen').style.display = 'block';
             } else {
                 startTraditionalExamMode();
             }
         }
 
-        function verifyExamPassword() {
+        async function verifyExamPassword() {
             const enteredPass = document.getElementById('exam-secure-pass').value.trim();
-            if (enteredPass === (activeExam.examPass ? String(activeExam.examPass).trim() : "")) {
+            let ok = false;
+            try {
+                const r = await fetch(`${SCRIPT_URL}?action=verify_exam_pass&examId=${encodeURIComponent(activeExam.id)}&pass=${encodeURIComponent(enteredPass)}`);
+                const d = await r.json();
+                if (d && (d.status === 'success' || d.status === 'error')) ok = (d.status === 'success');
+                else ok = (enteredPass === (activeExam.examPass ? String(activeExam.examPass).trim() : "")); // Apps Script cũ chưa cập nhật
+            } catch (e) {
+                alert("Không kiểm tra được mật khẩu (có thể mất mạng). Em thử lại nhé.");
+                return;
+            }
+            if (ok) {
                 document.getElementById('password-lock-screen').style.display = 'none';
                 startTraditionalExamMode();
             } else { alert("❌ Mật khẩu bảo mật không chính xác!"); }
