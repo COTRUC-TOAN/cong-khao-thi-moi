@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v7] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v8] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1090,6 +1090,7 @@
                         maxAttempts: (parsedQ.length > 0 && parsedQ[0].maxAttempts !== undefined) ? parsedQ[0].maxAttempts : (ex.mode === 'KIEMTRA' ? 1 : 0),
                         examPass: ex.examPass || ex.ExamPass || '',
                         hasPass: !!(ex.hasPass || ex.examPass || ex.ExamPass),
+                        hasKeys: !!ex.hasKeys,
                         youtubeUrl: ex.youtubeUrl || ex.youtubeurl || '',
                         pdfData: ex.pdfData || ex.pdfdata || '',
                         questions: parsedQ
@@ -1765,6 +1766,10 @@ function removeQuestionFromSelected(qId) {
                 }
                 
                 db.ref(`exam_secure_keys/${examId}`).set(secretKeys);
+                // (MỚI) Lưu thêm đáp án vào Google Sheet của cô (tab DapAn) để máy chủ chấm bài
+                try {
+                    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_keys', password: teacherPassAuth, examId: examId, keys: secretKeys }) });
+                } catch (e) { console.log('save_keys lỗi', e); }
                 db.ref(`exam_review_permissions/${examId}`).set(false);
             }
 
@@ -2620,6 +2625,34 @@ async function loadExamToEdit(examId) {
             // CHỐNG LỖI KHI BÀI THI CÓ 0 CÂU GÂY LỖI PHÉP CHIA
             if (maxPossibleScore === 0) finalScore = "0.00";
 
+            // (MỚI) Đề kiểm tra đã có đáp án ở máy chủ: máy chủ chấm điểm và ghi vào Sheet
+            let serverRecorded = false;
+            if (activeExam.mode === 'KIEMTRA' && activeExam.hasKeys) {
+                const btnOrigHtml = btnSubmit.innerHTML;
+                btnSubmit.textContent = '⏳ Đang chấm bài, em chờ vài giây...';
+                const gradeToken = 'g' + Date.now() + Math.random().toString(36).slice(2, 10);
+                await new Promise(r => setTimeout(r, Math.random() * 2500)); // rải đều lượt nộp khi cả lớp nộp cùng lúc
+                let graded = null, noKeys = false;
+                for (let i = 0; i < 4 && !graded && !noKeys; i++) {
+                    try {
+                        const gr = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'grade_exam', examId: activeExam.id, name: name, class: sClass, responses: studentResponses, token: gradeToken }) });
+                        const gj = await gr.json();
+                        if (gj && gj.status === 'success') graded = gj;
+                        else if (gj && gj.message === 'no_keys') noKeys = true;
+                    } catch (e) { /* thử lại */ }
+                    if (!graded && !noKeys) await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+                }
+                if (graded) {
+                    finalScore = String(graded.score);
+                    serverRecorded = true;
+                } else if (!noKeys) {
+                    alert("⚠️ Chưa chấm được bài (có thể do mạng yếu). Em ĐỪNG thoát trang, đợi vài giây rồi bấm Nộp bài lại.");
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = btnOrigHtml;
+                    return;
+                }
+            }
+
             const cleanKeyForFirebase = serverKey;
             const fbSavePromise = db.ref(`exam_results_details/${activeExam.id}/${cleanKeyForFirebase}`).set({
                 name: name,
@@ -2796,7 +2829,7 @@ async function loadExamToEdit(examId) {
             // Firebase: nếu ghi bị từ chối thì báo lỗi, không chờ (khi mất mạng Firebase tự giữ lệnh ghi và gửi khi có mạng lại)
             fbSavePromise.then(ok => { if (!ok) showSaveWarning(); });
             const sendStartedAt = Date.now();
-            const sheetOk = await sendScoreToSheet();
+            const sheetOk = serverRecorded ? true : await sendScoreToSheet();
             const sendSeconds = ((Date.now() - sendStartedAt) / 1000).toFixed(1);
             if (!sheetOk) { showSaveWarning(); }
             else if (!warnShown) {
