@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v5] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v6] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1016,11 +1016,45 @@
             }
         }
 
+        // ===== TẢI ĐỀ CÓ GIỚI HẠN THỜI GIAN + TỰ THỬ LẠI (chống trang trắng khi máy chủ "ngủ") =====
+        function showExamLoadOverlay(msg, showReload) {
+            let ov = document.getElementById('exam-load-overlay');
+            if (!ov) {
+                ov = document.createElement('div');
+                ov.id = 'exam-load-overlay';
+                ov.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1e293b;text-align:center;padding:20px;';
+                document.body.appendChild(ov);
+            }
+            ov.innerHTML = '<div style="font-size:1.2rem;font-weight:bold;max-width:520px;line-height:1.6;">' + (showReload ? '⚠️ ' : '<i class="fa-solid fa-spinner fa-spin"></i> ') + msg + '</div>' +
+                (showReload ? '<button type="button" onclick="location.reload()" style="margin-top:16px;padding:12px 26px;border:none;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:bold;font-size:1rem;cursor:pointer;">🔄 Tải lại</button>' : '');
+        }
+        function hideExamLoadOverlay() {
+            const ov = document.getElementById('exam-load-overlay');
+            if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+        }
+        async function fetchExamDataWithRetry(url) {
+            const isStudentLink = !!new URLSearchParams(window.location.search).get('exam');
+            const maxTries = 4;
+            for (let i = 0; i < maxTries; i++) {
+                if (isStudentLink) showExamLoadOverlay(i === 0 ? 'Đang tải đề thi, em chờ một chút...' : 'Đang tải đề thi, thử lại lần ' + (i + 1) + '/' + maxTries + '... em đừng đóng trang.', false);
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 20000);
+                try {
+                    const r = await fetch(url, { signal: ctrl.signal });
+                    clearTimeout(timer);
+                    if (r.ok) return r;
+                } catch (e) { clearTimeout(timer); }
+                await new Promise(res => setTimeout(res, 1500));
+            }
+            throw new Error('Không tải được đề sau nhiều lần thử');
+        }
+
         async function fetchData() {
             const grid = document.getElementById('exam-grid');
             try {
-                const res = await fetch(SCRIPT_URL);
+                const res = await fetchExamDataWithRetry(SCRIPT_URL);
                 const data = await res.json();
+                hideExamLoadOverlay();
                 
                 if (data.topics) processTopicsData(data.topics);
                 renderSidebarTopics();
@@ -1060,6 +1094,7 @@
                 renderExams();
                 checkUrlParams();
             } catch (err) {
+                if (new URLSearchParams(window.location.search).get('exam')) showExamLoadOverlay('Chưa tải được đề thi. Em kiểm tra mạng rồi bấm Tải lại. Nếu vẫn không được, em báo cô giáo.', true);
                 console.error("Lỗi kết nối:", err);
                 if (grid) grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 40px;"><i class="fa-solid fa-triangle-exclamation"></i> Không thể kết nối máy chủ dữ liệu.</p>`;
             }
