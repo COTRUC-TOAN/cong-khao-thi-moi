@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v3] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v4] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2710,9 +2710,14 @@ async function loadExamToEdit(examId) {
                 return false;
             };
             let warnShown = false;
+            const statusEl = document.createElement('div');
+            statusEl.style.cssText = 'margin-top:12px;padding:10px;border-radius:8px;background:#e0f2fe;color:#075985;font-weight:bold;text-align:center;';
+            statusEl.textContent = '⏳ Đang lưu điểm lên hệ thống... em đừng thoát trang.';
+            resDiv.appendChild(statusEl);
             const showSaveWarning = () => {
                 if (warnShown) return;
                 warnShown = true;
+                if (statusEl.parentNode) statusEl.parentNode.removeChild(statusEl);
                 const warn = document.createElement('div');
                 warn.style.cssText = 'margin-top:15px;padding:14px;border:2px solid #dc2626;background:#fee2e2;color:#991b1b;border-radius:10px;font-weight:bold;text-align:center;';
                 warn.innerHTML = '⚠️ ĐIỂM CHƯA ĐƯỢC LƯU LÊN HỆ THỐNG (có thể do mạng yếu hoặc mất mạng).<br>Em ĐỪNG thoát trang. Hãy bấm nút bên dưới để gửi lại, và chụp màn hình điểm này gửi cho cô.<br>';
@@ -2732,7 +2737,12 @@ async function loadExamToEdit(examId) {
             // Firebase: nếu ghi bị từ chối thì báo lỗi, không chờ (khi mất mạng Firebase tự giữ lệnh ghi và gửi khi có mạng lại)
             fbSavePromise.then(ok => { if (!ok) showSaveWarning(); });
             const sheetOk = await sendScoreToSheet();
-            if (!sheetOk) showSaveWarning();
+            if (!sheetOk) { showSaveWarning(); }
+            else if (!warnShown) {
+                statusEl.style.background = '#dcfce7';
+                statusEl.style.color = '#166534';
+                statusEl.textContent = '✅ Điểm đã được lưu lên hệ thống.';
+            }
 
             localStorage.setItem(cleanKey, currentAttempts + 1);
         }
