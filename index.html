@@ -2709,12 +2709,13 @@ async function loadExamToEdit(examId) {
                 }
                 return false;
             };
-            let sheetOk = await sendScoreToSheet();
-            const fbOk = await fbSavePromise;
-            if (!sheetOk || !fbOk) {
+            let warnShown = false;
+            const showSaveWarning = () => {
+                if (warnShown) return;
+                warnShown = true;
                 const warn = document.createElement('div');
                 warn.style.cssText = 'margin-top:15px;padding:14px;border:2px solid #dc2626;background:#fee2e2;color:#991b1b;border-radius:10px;font-weight:bold;text-align:center;';
-                warn.innerHTML = '⚠️ ĐIỂM CHƯA ĐƯỢC LƯU LÊN HỆ THỐNG (có thể do mạng yếu).<br>Em ĐỪNG thoát trang. Hãy bấm nút bên dưới để gửi lại, và chụp màn hình điểm này gửi cho cô.<br>';
+                warn.innerHTML = '⚠️ ĐIỂM CHƯA ĐƯỢC LƯU LÊN HỆ THỐNG (có thể do mạng yếu hoặc mất mạng).<br>Em ĐỪNG thoát trang. Hãy bấm nút bên dưới để gửi lại, và chụp màn hình điểm này gửi cho cô.<br>';
                 const retryBtn = document.createElement('button');
                 retryBtn.type = 'button';
                 retryBtn.textContent = '🔄 Gửi lại điểm';
@@ -2727,7 +2728,11 @@ async function loadExamToEdit(examId) {
                 };
                 warn.appendChild(retryBtn);
                 resDiv.appendChild(warn);
-            }
+            };
+            // Firebase: nếu ghi bị từ chối thì báo lỗi, không chờ (khi mất mạng Firebase tự giữ lệnh ghi và gửi khi có mạng lại)
+            fbSavePromise.then(ok => { if (!ok) showSaveWarning(); });
+            const sheetOk = await sendScoreToSheet();
+            if (!sheetOk) showSaveWarning();
 
             localStorage.setItem(cleanKey, currentAttempts + 1);
         }
