@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v8] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v9] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1060,6 +1060,38 @@
             } catch (e) { console.log(e); }
         }
 
+        // ===== (MỚI) ĐÁP ÁN VÀ QUYỀN XEM LẠI Ở MÁY CHỦ =====
+        async function fetchServerKeys(examId, usePassword) {
+            const pw = (usePassword && teacherPassAuth) ? `&password=${encodeURIComponent(teacherPassAuth)}` : '';
+            const r = await fetch(`${SCRIPT_URL}?action=get_exam_keys&examId=${encodeURIComponent(examId)}${pw}`);
+            const j = await r.json();
+            return (j && j.status === 'success' && j.keys) ? j.keys : null;
+        }
+        // Quyền xem lại: Firebase (đề cũ) + máy chủ (đề đã có đáp án ở máy chủ). Kết quả: { mãĐề: true/false }
+        async function getAllReviewPerms() {
+            let perms = {};
+            try { const snap = await db.ref('exam_review_permissions').once('value'); perms = snap.val() || {}; } catch (e) {}
+            try {
+                const r = await fetch(`${SCRIPT_URL}?action=get_review_perms`);
+                const j = await r.json();
+                if (j && j.status === 'success' && j.perms) {
+                    examBank.forEach(ex => { if (ex.hasKeys) perms[ex.id] = (j.perms[String(ex.id)] === true); });
+                }
+            } catch (e) {}
+            return perms;
+        }
+        async function isReviewAllowed(exam) {
+            if (exam && exam.hasKeys) {
+                try {
+                    const r = await fetch(`${SCRIPT_URL}?action=get_review_perms`);
+                    const j = await r.json();
+                    return !!(j && j.status === 'success' && j.perms && j.perms[String(exam.id)] === true);
+                } catch (e) { return false; }
+            }
+            const snap = await db.ref(`exam_review_permissions/${exam.id}`).once('value');
+            return snap.val() === true;
+        }
+
         async function fetchData() {
             const grid = document.getElementById('exam-grid');
             try {
@@ -1765,12 +1797,19 @@ function removeQuestionFromSelected(qId) {
                     });
                 }
                 
-                db.ref(`exam_secure_keys/${examId}`).set(secretKeys);
-                // (MỚI) Lưu thêm đáp án vào Google Sheet của cô (tab DapAn) để máy chủ chấm bài
+                // Lưu đáp án vào Google Sheet của cô (tab DapAn). Thành công thì KHÔNG ghi đáp án lên Firebase nữa.
+                let keysOnServer = false;
                 try {
-                    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_keys', password: teacherPassAuth, examId: examId, keys: secretKeys }) });
+                    const kr = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_keys', password: teacherPassAuth, examId: examId, keys: secretKeys }) });
+                    const kj = await kr.json();
+                    keysOnServer = !!(kj && kj.status === 'success');
                 } catch (e) { console.log('save_keys lỗi', e); }
-                db.ref(`exam_review_permissions/${examId}`).set(false);
+                if (keysOnServer) {
+                    try { await db.ref(`exam_secure_keys/${examId}`).remove(); } catch (e) {} // xóa đáp án cũ còn sót ở Firebase
+                    try { await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'set_review', password: teacherPassAuth, examId: examId, open: false }) }); } catch (e) {}
+                } else {
+                    db.ref(`exam_secure_keys/${examId}`).set(secretKeys); // Apps Script cũ chưa cập nhật: giữ cách cũ
+                }
             }
 
             const newExamObj = {
@@ -2075,8 +2114,7 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
             if (!container) return;
             if (examBank.length === 0) { container.innerHTML = `<p style="color: #94a3b8;">Chưa có đề thi nào trên hệ thống.</p>`; return; }
             
-            db.ref('exam_review_permissions').once('value', snapshot => {
-                const perms = snapshot.val() || {};
+            getAllReviewPerms().then(perms => {
                 container.innerHTML = examBank.map(ex => {
                     const isAllowed = perms[ex.id] === true;
                     const isKiemTra = ex.mode === 'KIEMTRA';
@@ -2134,6 +2172,19 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                 : "BẠN MUỐN KHÓA XEM LẠI BÀI KIỂM TRA?\n(Học sinh sẽ không xem được đề và đáp án nữa)";
             if (!confirm(msg)) return;
             
+            const exObj = examBank.find(e => String(e.id) === String(examId));
+            if (exObj && exObj.hasKeys) {
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'set_review', password: teacherPassAuth, examId: examId, open: newStatus }) })
+                    .then(r => r.json())
+                    .then(j => {
+                        if (j && j.status === 'success') {
+                            alert(newStatus ? "✅ Đã MỞ quyền xem lại bài kiểm tra thành công!" : "🔒 Đã KHÓA quyền xem lại bài!");
+                            renderTeacherExamList();
+                        } else { alert("Lỗi: không đổi được quyền xem lại."); }
+                    })
+                    .catch(err => alert("Lỗi: " + err.message));
+                return;
+            }
             db.ref(`exam_review_permissions/${examId}`).set(newStatus)
                 .then(() => {
                     alert(newStatus ? "✅ Đã MỞ quyền xem lại bài kiểm tra thành công!" : "🔒 Đã KHÓA quyền xem lại bài!");
@@ -2149,8 +2200,9 @@ async function loadExamToEdit(examId) {
             if (ex.mode === 'KIEMTRA') {
                 document.body.style.cursor = 'wait';
                 try {
-                    const snap = await db.ref(`exam_secure_keys/${ex.id}`).once('value');
-                    const secrets = snap.val() || {};
+                    let secrets = null;
+                    if (ex.hasKeys) { try { secrets = await fetchServerKeys(ex.id, true); } catch (e) {} }
+                    if (!secrets) { const snap = await db.ref(`exam_secure_keys/${ex.id}`).once('value'); secrets = snap.val() || {}; }
                     
                     if (ex.questions && ex.questions.length === 1 && ex.questions[0].isDynamicConfig) {
                         ex.questions[0].configs.forEach(cfg => {
@@ -2549,7 +2601,7 @@ async function loadExamToEdit(examId) {
             let studentResponses = {};
 
             let secretData = {};
-            if (activeExam.mode === 'KIEMTRA') {
+            if (activeExam.mode === 'KIEMTRA' && !activeExam.hasKeys) {
                 const secretSnapshot = await db.ref(`exam_secure_keys/${activeExam.id}`).once('value');
                 secretData = secretSnapshot.val() || {};
             }
@@ -2645,7 +2697,7 @@ async function loadExamToEdit(examId) {
                 if (graded) {
                     finalScore = String(graded.score);
                     serverRecorded = true;
-                } else if (!noKeys) {
+                } else {
                     alert("⚠️ Chưa chấm được bài (có thể do mạng yếu). Em ĐỪNG thoát trang, đợi vài giây rồi bấm Nộp bài lại.");
                     btnSubmit.disabled = false;
                     btnSubmit.innerHTML = btnOrigHtml;
@@ -3140,8 +3192,7 @@ async function loadExamToEdit(examId) {
                 if (activeExam.mode === 'KIEMTRA') {
                     const mySub = JSON.parse(localStorage.getItem(`my_exam_sub_${activeExam.id}`) || 'null');
                     
-                    db.ref(`exam_review_permissions/${activeExam.id}`).once('value', snapshot => {
-                        const isAllowed = snapshot.val() === true;
+                    isReviewAllowed(activeExam).then(isAllowed => {
 
                         if (isAllowed) {
                             if (mySub) {
@@ -3383,8 +3434,10 @@ YÊU CẦU DÀNH CHO AI:
                 // CHỈ TẢI ĐÁP ÁN NẾU LÀ GIÁO VIÊN HOẶC ĐÃ ĐƯỢC MỞ KHÓA
                 let secretData = {};
                 if (examObj.mode === 'KIEMTRA') {
-                    const secretSnap = await db.ref(`exam_secure_keys/${examId}`).once('value');
-                    secretData = secretSnap.val() || {};
+                    let srvKeys = null;
+                    if (examObj.hasKeys) { try { srvKeys = await fetchServerKeys(examId, !!teacherPassAuth); } catch (e) {} }
+                    if (srvKeys) { secretData = srvKeys; }
+                    else if (!examObj.hasKeys) { const secretSnap = await db.ref(`exam_secure_keys/${examId}`).once('value'); secretData = secretSnap.val() || {}; }
                 }
 
                 const ansObj = stdRecord.answers || {};
