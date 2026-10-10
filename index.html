@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v11] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v12] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2574,12 +2574,22 @@ async function loadExamToEdit(examId) {
                 if (submitCheckBusy) return;
                 submitCheckBusy = true;
                 try {
-                    const snap = await Promise.race([
-                        db.ref(`exam_results_details/${activeExam.id}/${serverKey}`).once('value'),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-                    ]);
-                    const oldRec = snap.val();
-                    if (oldRec) prevServerAttempts = parseInt(oldRec.attempts, 10) || 1;
+                    if (activeExam.hasKeys) {
+                        // Đề đã có đáp án ở máy chủ: hỏi Apps Script (không dùng Firebase)
+                        const ctl = new AbortController();
+                        const tm = setTimeout(() => ctl.abort(), 8000);
+                        const ar = await fetch(`${SCRIPT_URL}?action=get_attempt&examId=${encodeURIComponent(activeExam.id)}&name=${encodeURIComponent(checkName)}&class=${encodeURIComponent(checkClass)}`, { signal: ctl.signal });
+                        clearTimeout(tm);
+                        const aj = await ar.json();
+                        if (aj && aj.status === 'success') prevServerAttempts = parseInt(aj.attempts, 10) || 0;
+                    } else {
+                        const snap = await Promise.race([
+                            db.ref(`exam_results_details/${activeExam.id}/${serverKey}`).once('value'),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+                        ]);
+                        const oldRec = snap.val();
+                        if (oldRec) prevServerAttempts = parseInt(oldRec.attempts, 10) || 1;
+                    }
                 } catch (e) { /* không đọc được thì cho qua */ }
                 submitCheckBusy = false;
                 if (prevServerAttempts >= maxAttempts) {
@@ -2689,7 +2699,7 @@ async function loadExamToEdit(examId) {
                 let graded = null, noKeys = false;
                 for (let i = 0; i < 4 && !graded && !noKeys; i++) {
                     try {
-                        const gr = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'grade_exam', examId: activeExam.id, name: name, class: sClass, responses: studentResponses, token: gradeToken }) });
+                        const gr = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'grade_exam', examId: activeExam.id, name: name, class: sClass, responses: studentResponses, token: gradeToken, leaveCount: cheatWarnings, drawnIds: (activeExam.currentDrawnQuestions || activeExam.questions || []).filter(q => q && q.id !== undefined).map(q => String(q.id)) }) });
                         const gj = await gr.json();
                         if (gj && gj.status === 'success') graded = gj;
                         else if (gj && gj.message === 'no_keys') noKeys = true;
@@ -2708,7 +2718,7 @@ async function loadExamToEdit(examId) {
             }
 
             const cleanKeyForFirebase = serverKey;
-            const fbSavePromise = db.ref(`exam_results_details/${activeExam.id}/${cleanKeyForFirebase}`).set({
+            const fbSavePromise = serverRecorded ? Promise.resolve(true) : db.ref(`exam_results_details/${activeExam.id}/${cleanKeyForFirebase}`).set({
                 name: name,
                 class: sClass,
                 time: new Date().toLocaleString("vi-VN"),
@@ -3418,18 +3428,46 @@ YÊU CẦU DÀNH CHO AI:
                 return; 
             }
 
-            db.ref(`exam_results_details/${examId}`).once('value', async snapshot => {
-                const val = snapshot.val();
-                if (!val) { 
-                    contentBox.innerHTML = '<p style="color:#ea580c; padding: 20px;">Học sinh nộp bài trước khi hệ thống cập nhật tính năng lưu chi tiết.</p>'; 
-                    return; 
+            const loadDetailRecord = async () => {
+                // Đề đã có đáp án ở máy chủ: chi tiết bài làm nằm trong Sheet (tab ChiTietBai), hỏi Apps Script
+                if (examObj.hasKeys) {
+                    try {
+                        const dr = await fetch(`${SCRIPT_URL}?action=get_detail&examId=${encodeURIComponent(examId)}&name=${encodeURIComponent(stdName)}&class=${encodeURIComponent(stdClass)}&password=${encodeURIComponent(teacherPassAuth || '')}`);
+                        const dj = await dr.json();
+                        if (dj && dj.status === 'success' && dj.found && dj.record) {
+                            const rec = dj.record;
+                            const byId = {};
+                            const collect = (node) => {
+                                if (Array.isArray(node)) { node.forEach(collect); return; }
+                                if (node && typeof node === 'object') {
+                                    if (node.id !== undefined && node.type) byId[String(node.id)] = node;
+                                    Object.keys(node).forEach(k => { if (node[k] && typeof node[k] === 'object') collect(node[k]); });
+                                }
+                            };
+                            collect(examObj.questions);
+                            rec.drawnQuestions = (rec.drawnIds || []).map(id => byId[String(id)]).filter(Boolean);
+                            if (rec.drawnQuestions.length === 0) rec.drawnQuestions = examObj.questions || [];
+                            return { rec: rec };
+                        }
+                        return { rec: null, fromServer: true };
+                    } catch (e) { return { rec: null, fromServer: true, err: true }; }
                 }
+                const snapshot = await db.ref(`exam_results_details/${examId}`).once('value');
+                const val = snapshot.val();
+                if (!val) return { rec: null, empty: true };
+                return { rec: Object.values(val).find(r => r.name === stdName && r.class === stdClass) || null };
+            };
 
-                const records = Object.values(val);
-                const stdRecord = records.find(r => r.name === stdName && r.class === stdClass);
-                if (!stdRecord) { 
-                    contentBox.innerHTML = '<p style="color:#ea580c; padding: 20px;">Không tìm thấy bài làm chi tiết của học sinh này.</p>'; 
-                    return; 
+            (async () => {
+                const loaded = await loadDetailRecord();
+                if (loaded.empty) {
+                    contentBox.innerHTML = '<p style="color:#ea580c; padding: 20px;">Học sinh nộp bài trước khi hệ thống cập nhật tính năng lưu chi tiết.</p>';
+                    return;
+                }
+                const stdRecord = loaded.rec;
+                if (!stdRecord) {
+                    contentBox.innerHTML = '<p style="color:#ea580c; padding: 20px;">' + (loaded.err ? 'Không kết nối được máy chủ để tải bài làm. Cô thử lại sau ít giây.' : 'Không tìm thấy bài làm chi tiết của học sinh này.') + '</p>';
+                    return;
                 }
 
                 // CHỈ TẢI ĐÁP ÁN NẾU LÀ GIÁO VIÊN HOẶC ĐÃ ĐƯỢC MỞ KHÓA
@@ -3559,7 +3597,7 @@ YÊU CẦU DÀNH CHO AI:
 
                 contentBox.innerHTML = html;
                 renderMath(contentBox);
-            });
+            })();
         }
 function openEditQuestionModal(qId) {
             // VÁ LỖI: Ưu tiên tìm trong hộp "Đã Chọn" trước (vì nó vừa được móc két sắt Firebase lấy đáp án về)
