@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v12] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v13] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2718,7 +2718,8 @@ async function loadExamToEdit(examId) {
             }
 
             const cleanKeyForFirebase = serverKey;
-            const fbSavePromise = serverRecorded ? Promise.resolve(true) : db.ref(`exam_results_details/${activeExam.id}/${cleanKeyForFirebase}`).set({
+            const useLegacyFirebase = (activeExam.mode === 'KIEMTRA' && !activeExam.hasKeys);
+            const fbSavePromise = (serverRecorded || !useLegacyFirebase) ? Promise.resolve(true) : db.ref(`exam_results_details/${activeExam.id}/${cleanKeyForFirebase}`).set({
                 name: name,
                 class: sClass,
                 time: new Date().toLocaleString("vi-VN"),
@@ -2848,7 +2849,10 @@ async function loadExamToEdit(examId) {
                 class: sClass,
                 grade: activeExam.grade || '12',
                 mode: activeExam.mode,
-                totalScore: finalScore
+                totalScore: finalScore,
+                answers: studentResponses,
+                leaveCount: cheatWarnings,
+                drawnIds: (activeExam.currentDrawnQuestions || activeExam.questions || []).filter(q => q && q.id !== undefined).map(q => String(q.id))
             });
             const sheetUrl = SCRIPT_URL;
             const sendScoreToSheet = async () => {
@@ -3430,7 +3434,7 @@ YÊU CẦU DÀNH CHO AI:
 
             const loadDetailRecord = async () => {
                 // Đề đã có đáp án ở máy chủ: chi tiết bài làm nằm trong Sheet (tab ChiTietBai), hỏi Apps Script
-                if (examObj.hasKeys) {
+                if (examObj.hasKeys || examObj.mode !== 'KIEMTRA') {
                     try {
                         const dr = await fetch(`${SCRIPT_URL}?action=get_detail&examId=${encodeURIComponent(examId)}&name=${encodeURIComponent(stdName)}&class=${encodeURIComponent(stdClass)}&password=${encodeURIComponent(teacherPassAuth || '')}`);
                         const dj = await dr.json();
