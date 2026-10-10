@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v14] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v15] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1800,11 +1800,14 @@ function removeQuestionFromSelected(qId) {
                     });
                 }
                 
+                const anyAnswer = Object.keys(secretKeys).some(id => { const k = secretKeys[id]; return String(k.ans || '').trim() !== '' || (k.ansOptions || []).some(x => String(x || '').trim() !== ''); });
+                if (!anyAnswer && !confirm('⚠️ Đề kiểm tra này CHƯA CÓ ĐÁP ÁN nào (tất cả đều trống). Nếu xuất bản, em làm bài sẽ bị 0 điểm.\nBấm Hủy để quay lại nhập đáp án. Bấm OK chỉ khi cô chắc chắn.')) return;
                 // Lưu đáp án vào Google Sheet của cô (tab DapAn). Thành công thì KHÔNG ghi đáp án lên Firebase nữa.
                 let keysOnServer = false;
                 try {
                     const kr = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_keys', password: teacherPassAuth, examId: examId, keys: secretKeys }) });
                     const kj = await kr.json();
+                    if (kj && kj.message === 'keys_blank') { alert('⚠️ Máy chủ từ chối lưu: đề này đã có đáp án mà bộ đáp án đang gửi lên bị trống, nên giữ nguyên đáp án cũ. Cô mở lại đề để sửa rồi thử lại.'); return; }
                     keysOnServer = !!(kj && kj.status === 'success');
                 } catch (e) { console.log('save_keys lỗi', e); }
                 if (keysOnServer) {
@@ -2204,7 +2207,10 @@ async function loadExamToEdit(examId) {
                 document.body.style.cursor = 'wait';
                 try {
                     let secrets = null;
-                    if (ex.hasKeys) { try { secrets = await fetchServerKeys(ex.id, true); } catch (e) {} }
+                    if (ex.hasKeys) {
+                        try { secrets = await fetchServerKeys(ex.id, true); } catch (e) {}
+                        if (!secrets) { document.body.style.cursor = 'default'; alert('⚠️ Không tải được đáp án của đề này từ máy chủ nên chưa mở để sửa (tránh ghi đè đáp án trống). Cô kiểm tra mạng, đăng nhập quản trị lại rồi thử lại.'); return; }
+                    }
                     if (!secrets) { const snap = await db.ref(`exam_secure_keys/${ex.id}`).once('value'); secrets = snap.val() || {}; }
                     
                     if (ex.questions && ex.questions.length === 1 && ex.questions[0].isDynamicConfig) {
