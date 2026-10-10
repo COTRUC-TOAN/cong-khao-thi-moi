@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v9] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v10] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2678,6 +2678,7 @@ async function loadExamToEdit(examId) {
             if (maxPossibleScore === 0) finalScore = "0.00";
 
             // (MỚI) Đề kiểm tra đã có đáp án ở máy chủ: máy chủ chấm điểm và ghi vào Sheet
+            const sendStartedAt = Date.now();
             let serverRecorded = false;
             if (activeExam.mode === 'KIEMTRA' && activeExam.hasKeys) {
                 const btnOrigHtml = btnSubmit.innerHTML;
@@ -2880,7 +2881,6 @@ async function loadExamToEdit(examId) {
             };
             // Firebase: nếu ghi bị từ chối thì báo lỗi, không chờ (khi mất mạng Firebase tự giữ lệnh ghi và gửi khi có mạng lại)
             fbSavePromise.then(ok => { if (!ok) showSaveWarning(); });
-            const sendStartedAt = Date.now();
             const sheetOk = serverRecorded ? true : await sendScoreToSheet();
             const sendSeconds = ((Date.now() - sendStartedAt) / 1000).toFixed(1);
             if (!sheetOk) { showSaveWarning(); }
