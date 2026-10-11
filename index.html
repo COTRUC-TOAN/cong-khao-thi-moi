@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v19] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v20] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -494,7 +494,7 @@
                                     <div id="rv-model-row" style="display:none; margin-top:6px;"><label style="font-weight:bold; font-size:.9rem;">Mô hình</label><select id="rv-model"></select></div>
                                     <div id="ai-draft" style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;">
                                         <strong style="color:#4338ca;">✍️ Soạn đề bằng AI theo ma trận</strong>
-                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô mô tả đề như một ma trận: mỗi dòng là một nội dung kiến thức, chọn dạng câu, mức độ và số câu. AI soạn theo từng dòng. Soạn xong, cô mô tả chỗ cần sửa để AI chỉnh lại. AI có thể sai nên cô đọc lại và rà soát. Đề chỉ có chữ và công thức, chưa có hình.</div>
+                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô mô tả đề như một ma trận: mỗi dòng bấm chọn chủ đề (lấy từ tab ChuDe của Sheet), chọn dạng câu, mức độ và số câu, không cần gõ. AI soạn theo từng dòng. Soạn xong, cô mô tả chỗ cần sửa để AI chỉnh lại. AI có thể sai nên cô đọc lại và rà soát. Đề chỉ có chữ và công thức, chưa có hình.</div>
                                         <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Phạm vi, bối cảnh chung (không bắt buộc)</label>
                                         <textarea id="ai-topic" rows="2" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Ví dụ: Lớp 12, Chương 1 Ứng dụng đạo hàm để khảo sát hàm số. Học sinh khá, đề kiểm tra 45 phút."></textarea>
                                         <div id="ai-rows" style="margin-top:6px;"></div>
@@ -4345,25 +4345,71 @@ window.addEventListener('popstate', function () {
             let aiCtl = null, aiCur = null, aiLastHtml = '', aiHist = [];
             const aiMsg = (t, c) => { const e = $('ai-msg'); if (e) { e.textContent = t; e.style.color = c || '#475569'; } };
             const AI_TYPES = { MCQ: 'Trắc nghiệm 4 phương án', TF: 'Đúng/Sai (4 ý a, b, c, d)', SA: 'Trả lời ngắn' };
+            // Danh sách chủ đề lấy từ tab ChuDe của Sheet (theo khối đang chọn ở form), cô chỉ cần bấm chọn
+            function aiTopicList() {
+                const g = ($('new-exam-grade') || {}).value || '12';
+                let list = [];
+                try {
+                    list = [].concat(topicsConfig.general || []);
+                    if (g === '12') list = list.concat(topicsConfig.g12 || []); else if (g === '11') list = list.concat(topicsConfig.g11 || []); else if (g === '10') list = list.concat(topicsConfig.g10 || []);
+                } catch (e) { list = []; }
+                return list;
+            }
+            function aiTopicOptions() {
+                const list = aiTopicList(); let html = '<option value="">— Chọn chủ đề —</option>', open = false, n = 0;
+                list.forEach(t => {
+                    if (!t) return;
+                    if (t.type === 'header') { if (open) html += '</optgroup>'; html += '<optgroup label="' + esc(t.title) + '">'; open = true; }
+                    else if (t.name) { html += '<option value="' + esc(t.name) + '">' + esc(t.name) + '</option>'; n++; }
+                });
+                if (open) html += '</optgroup>';
+                return { html: html + '<option value="__other">Khác (tự gõ)…</option>', n };
+            }
+            function aiTopicToggle(d) {
+                const sel = d.querySelector('.ai-r-topic-sel'), inp = d.querySelector('.ai-r-topic');
+                inp.style.display = sel.value === '__other' ? 'block' : 'none';
+            }
+            function aiRowTopic(d) {
+                const sel = d.querySelector('.ai-r-topic-sel'), inp = d.querySelector('.ai-r-topic');
+                return sel.value === '__other' ? inp.value.trim() : sel.value.trim();
+            }
+            function aiFillTopicSel(d, want, isCustom) {
+                const sel = d.querySelector('.ai-r-topic-sel'), inp = d.querySelector('.ai-r-topic');
+                const o = aiTopicOptions(); sel.innerHTML = o.html;
+                const has = want && Array.from(sel.options).some(x => x.value === want && x.value !== '__other');
+                if (has) sel.value = want;
+                else if (isCustom && want) { sel.value = '__other'; inp.value = want; }
+                else sel.value = o.n === 0 ? '__other' : '';
+                aiTopicToggle(d);
+            }
+            function aiRefreshTopics() {
+                document.querySelectorAll('#ai-rows .ai-row').forEach(d => {
+                    const sel = d.querySelector('.ai-r-topic-sel'), inp = d.querySelector('.ai-r-topic');
+                    if (sel.value === '__other') aiFillTopicSel(d, inp.value.trim(), true); else aiFillTopicSel(d, sel.value, false);
+                });
+                aiTotal();
+            }
             function aiAddRow(v) {
                 v = v || {};
                 const box = $('ai-rows'); if (!box) return;
                 const d = document.createElement('div'); d.className = 'ai-row';
                 d.style.cssText = 'border:1px solid #cbd5e1; background:#fff; border-radius:8px; padding:6px; margin-top:6px;';
                 const sel = (cls, opts, val) => '<select class="' + cls + '" style="padding:6px; border:1px solid #cbd5e1; border-radius:6px;">' + opts.map(o => '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select>';
-                d.innerHTML = '<input class="ai-r-topic" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;" placeholder="Nội dung kiến thức, ví dụ: Tính đơn điệu của hàm số" value="' + esc(v.topic || '') + '">'
+                d.innerHTML = '<select class="ai-r-topic-sel" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></select>'
+                    + '<input class="ai-r-topic" style="display:none; width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:5px;" placeholder="Gõ nội dung kiến thức, ví dụ: Tính đơn điệu của hàm số" value="' + esc(v.topic || '') + '">'
                     + '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:5px; align-items:center;">'
                     + sel('ai-r-type', [['MCQ', 'Trắc nghiệm'], ['TF', 'Đúng/Sai'], ['SA', 'Trả lời ngắn']], v.type || 'MCQ')
                     + sel('ai-r-level', [['nhận biết', 'Nhận biết'], ['thông hiểu', 'Thông hiểu'], ['vận dụng', 'Vận dụng'], ['vận dụng cao', 'Vận dụng cao']], v.level || 'thông hiểu')
                     + '<label style="font-size:.85rem;">Số câu <input type="number" class="ai-r-n" min="1" max="10" value="' + (v.n || 1) + '" style="width:60px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>'
                     + '<button type="button" class="rv-btn" title="Xóa dòng này" onclick="this.closest(\'.ai-row\').remove(); aiTotal();">✕</button></div>'
                     + '<input class="ai-r-note" style="width:100%; padding:6px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box; margin-top:5px; font-size:.9rem;" placeholder="Yêu cầu thêm cho dòng này (không bắt buộc), ví dụ: có tham số m, bài toán thực tế" value="' + esc(v.note || '') + '">';
-                d.addEventListener('input', aiTotal); d.addEventListener('change', aiTotal);
-                box.appendChild(d); aiTotal();
+                d.addEventListener('input', aiTotal);
+                d.addEventListener('change', () => { aiTopicToggle(d); aiTotal(); });
+                box.appendChild(d); aiFillTopicSel(d, v.topic || '', !!v.topic); aiTotal();
             }
             function aiRows() {
                 return Array.from(document.querySelectorAll('#ai-rows .ai-row')).map(r => ({
-                    topic: r.querySelector('.ai-r-topic').value.trim(),
+                    topic: aiRowTopic(r),
                     type: r.querySelector('.ai-r-type').value,
                     level: r.querySelector('.ai-r-level').value,
                     n: Math.max(1, Math.min(10, parseInt(r.querySelector('.ai-r-n').value, 10) || 1)),
@@ -4499,7 +4545,8 @@ window.addEventListener('popstate', function () {
             window.aiDraftStop = function () { if (aiCtl) aiCtl.abort(); };
             aiAddRow({ type: 'MCQ', level: 'thông hiểu', n: 4 }); aiAddRow({ type: 'TF', level: 'vận dụng', n: 2 }); aiAddRow({ type: 'SA', level: 'vận dụng', n: 2 });
 
-            window.rvToggle = function () { const b = $('rv-body'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; };
+            window.rvToggle = function () { const b = $('rv-body'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; if (b.style.display === 'block') aiRefreshTopics(); };
+            { const gs = $('new-exam-grade'); if (gs) gs.addEventListener('change', aiRefreshTopics); }
             window.rvConnect = connect; window.rvRun = run;
             window.rvStop = function () { if (S.ctl) S.ctl.abort(); };
             window.rvSeen = function (id) { const r = S.res.get(id); if (!r) return; r.seen = !r.seen; paintBox(r.v); paintSummary(); };
