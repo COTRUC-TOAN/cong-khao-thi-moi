@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v15] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v16] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,6 +54,7 @@
     });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML-full"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- Firebase SDK -->
@@ -252,6 +253,24 @@
         .q-title, .kahoot-question, .parsed-q-preview-card { line-height: 1.8 !important; word-break: break-word; }
         span.MathJax { white-space: nowrap !important; display: inline-block !important; }
         .mcq-option, .tf-row { line-height: 1.6 !important; align-items: center; }
+        /* ===== Rà soát bằng Gemini (v16) ===== */
+        .rv-panel { border:1px solid #c7d2fe; background:#eef2ff; border-radius:8px; padding:10px; margin-top:10px; }
+        .rv-panel input[type=password], .rv-panel select { width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px; }
+        .rv-box { margin-top:8px; border-top:1px dashed #cbd5e1; padding-top:6px; font-size:.9rem; }
+        .rv-row { display:flex; gap:6px; padding:3px 0; align-items:flex-start; }
+        .rv-row.ok .rv-ic { color:#16a34a; } .rv-row.bad .rv-ic { color:#dc2626; } .rv-row.warn .rv-ic { color:#d97706; } .rv-row.na .rv-ic { color:#94a3b8; }
+        .rv-ic { width:1.2em; flex:none; font-weight:bold; text-align:center; }
+        .rv-sev { font-size:.75rem; padding:1px 6px; border-radius:10px; color:#fff; background:#64748b; }
+        .rv-sev.cao { background:#dc2626; } .rv-sev.trung_binh { background:#d97706; } .rv-sev.thap { background:#64748b; }
+        .rv-badge { display:inline-block; font-weight:bold; padding:3px 8px; border-radius:6px; font-size:.85rem; }
+        .rv-badge.ok { background:#dcfce7; color:#166534; } .rv-badge.bad { background:#fee2e2; color:#991b1b; }
+        .rv-acts { margin-top:6px; display:flex; flex-wrap:wrap; gap:6px; }
+        .rv-btn { border:1px solid #94a3b8; background:#fff; border-radius:6px; padding:5px 10px; cursor:pointer; font-size:.85rem; }
+        .rv-btn.on { background:#dcfce7; border-color:#16a34a; } .rv-btn.go { background:#1d4ed8; color:#fff; border-color:#1d4ed8; }
+        .rv-step { display:flex; gap:6px; padding:2px 0; font-size:.9rem; }
+        .rv-step.ok .rv-ic { color:#16a34a; } .rv-step.bad .rv-ic { color:#dc2626; } .rv-step.run .rv-ic { color:#2563eb; } .rv-step.wait { color:#94a3b8; }
+        .rv-err { background:#fee2e2; color:#991b1b; padding:6px 8px; border-radius:6px; margin-top:6px; }
+        .parsed-q-preview-card.rv-flag { border:2px solid #dc2626 !important; background:#fff7f7 !important; }
     </style>
 </head>
 <body>
@@ -464,6 +483,25 @@
                             <div class="rich-textarea" id="direct-raw-text" contenteditable="true" style="height: 55vh; max-height: 55vh;" placeholder="Dán văn bản đề thi..."></div>
                             <button class="btn-start" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự Động Phân Tích</button>
                             <button class="btn-start" id="btn-lock-batch" style="width: 100%; background: #0f766e; margin-top: 8px;" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt Phần Này Để Dán Phần Tiếp</button>
+                            <div class="rv-panel">
+                                <button type="button" class="btn-start" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Rà soát đề bằng Gemini (giảm sai sót)</button>
+                                <div id="rv-body" style="display:none; margin-top:8px;">
+                                    <div style="font-size:.85rem; color:#475569;">Bấm "Tự Động Phân Tích" trước, rồi rà soát. Gemini giải độc lập 2 lượt, máy tính kiểm lại phép tính, rồi một lượt phản biện. Kết quả chỉ để cô xem lại, không tự sửa đề.</div>
+                                    <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Khóa Gemini (tạo tại aistudio.google.com/apikey)</label>
+                                    <input type="password" id="rv-key" autocomplete="off" placeholder="Dán khóa vào đây">
+                                    <label style="font-size:.85rem; display:block; margin-top:4px;"><input type="checkbox" id="rv-remember"> Nhớ khóa trên máy này <span style="color:#b45309;">(đừng bật nếu là máy dùng chung)</span></label>
+                                    <button type="button" class="btn-start" style="margin-top:6px; background:#0f766e;" onclick="rvConnect()">Kết nối</button>
+                                    <span id="rv-conn" style="margin-left:8px; font-size:.9rem;"></span>
+                                    <div id="rv-model-row" style="display:none; margin-top:6px;"><label style="font-weight:bold; font-size:.9rem;">Mô hình</label><select id="rv-model"></select></div>
+                                    <div style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                        <button type="button" class="btn-start" id="rv-run" style="background:#1d4ed8;" disabled onclick="rvRun()">Bắt đầu rà soát</button>
+                                        <button type="button" class="rv-btn" id="rv-stop" style="display:none;" onclick="rvStop()">Dừng</button>
+                                        <span id="rv-elapsed" style="font-size:.85rem; color:#64748b;"></span>
+                                    </div>
+                                    <div id="rv-steps" style="margin-top:6px;"></div>
+                                    <div id="rv-summary" style="margin-top:6px;"></div>
+                                </div>
+                            </div>
                             <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
                                 <strong style="color: #334155;">Xem Trước Gọn Gàng (<span id="direct-parsed-count">0</span> câu)</strong>
                                 <button class="btn-start" id="btn-save-parsed-bank" style="background: #059669; padding: 4px 10px; font-size: 0.9rem; display: none;" onclick="saveBankBulkToSheets()">Lưu Ngân Hàng</button>
@@ -860,6 +898,7 @@
 
         let examBank = []; let questionBank = [];
         let selectedQuestions = []; let directParsedQuestions = []; let directBatch = []; 
+        const ANS_GUESSED = new Set(); // câu mà phần mềm tự điền đáp án mặc định (cần cô kiểm tra)
         let activeExam = null; let teacherPassAuth = ""; let currentGrade = 'all'; let currentTopic = 'all';
         let kahootCurrentIndex = 0; let kahootScore = 0; let kahootStdName = ""; let kahootStdClass = "";
         let kahootTimer = null; let kahootTimeLeft = 20;
@@ -1245,6 +1284,7 @@
                 let detectedType = 'SA';
                 let options = ['', '', '', ''];
                 let ans = '';
+                let ansGuessed = false;
                 let ansOptions = [];
                 let explanation = '';
                 let qContent = '';
@@ -1281,7 +1321,7 @@
                     options[3] = m_d ? m_d[1].trim() : '';
                     options[3] = options[3].replace(/(?:Đáp\s*án|Chọn|Đ\/A|Ans)\s*[:\-]?\s*.*$/i, '').trim();
 
-                    if (!ans || ans.length !== 4) ans = 'DDDS';
+                    if (!ans || ans.length !== 4) { ans = 'DDDS'; ansGuessed = true; }
                     ansOptions = ans.split('');
                 } 
                 else if (block.search(/(?:^|\s)A[\.\)]/) !== -1 && block.search(/(?:^|\s)B[\.\)]/) !== -1) {
@@ -1312,7 +1352,7 @@
                         else if (rawHtml.includes('<u>B') || rawHtml.includes('underline">B')) ans = 'B';
                         else if (rawHtml.includes('<u>C') || rawHtml.includes('underline">C')) ans = 'C';
                         else if (rawHtml.includes('<u>D') || rawHtml.includes('underline">D')) ans = 'D';
-                        else ans = 'A';
+                        else { ans = 'A'; ansGuessed = true; }
                     }
                 } 
                 else {
@@ -1328,6 +1368,7 @@
 
                 const safeTopicId = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
                 const qId = `CH${grade}_${safeTopicId}_${Date.now().toString().slice(-4)}_${idx + 1}`;
+                if (ansGuessed || (detectedType === 'SA' && !ans)) ANS_GUESSED.add(qId);
 
                 parsedArr.push({
                     id: qId,
@@ -1384,7 +1425,7 @@
                     </div>
                 ` : '';
 
-                return `<div class="parsed-q-preview-card" style="border: 1px solid #cbd5e1; padding: 12px; margin-bottom: 10px; border-radius: 8px; background: #fff;">
+                return `<div class="parsed-q-preview-card" data-qid="${q.id}" style="border: 1px solid #cbd5e1; padding: 12px; margin-bottom: 10px; border-radius: 8px; background: #fff;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
                         <strong>C${i+1} [${q.type}]</strong>
                         <div style="display: flex; align-items: center;">
@@ -1400,12 +1441,13 @@
                     </div>
                     <div style="margin-bottom: 6px;">${q.q}</div>
                     <div style="color: #475569; margin: 4px 0;">${optsHtml}</div>
-                    <div style="color:#16a34a; font-weight:bold; margin-top: 4px;">Đ/A: ${q.ans}</div>
+                    <div class="parsed-ans" style="color:#16a34a; font-weight:bold; margin-top: 4px;">Đ/A: ${q.ans}</div>${(typeof ANS_GUESSED !== 'undefined' && ANS_GUESSED.has(q.id)) ? '<div style="color:#b45309; font-size:.85rem;">⚠️ Đề không ghi đáp án — phần mềm tạm điền, cô hãy kiểm tra!</div>' : ''}
                     ${expPreviewHtml}
                 </div>`;
             }).join('');
             
             document.getElementById('direct-preview-box').innerHTML = previewHtml;
+            if (window.rvReset) rvReset();
             document.getElementById('btn-save-parsed-bank').style.display = 'inline-block';
             renderMath(document.getElementById('direct-preview-box'));
 
@@ -1775,6 +1817,9 @@ function removeQuestionFromSelected(qId) {
             if (mode !== 'BAIGIANG' && (!selectedQuestions || selectedQuestions.length === 0)) {
                 alert("⚠️️ Bạn chưa có câu hỏi nào trong đề! Hãy bấm 'Tự Động Phân Tích' hoặc chọn từ Ngân hàng/Ma trận.");
                 return;
+            }
+            if (window.rvPendingCount && rvPendingCount() > 0) {
+                if (!confirm("⚠️ Còn " + rvPendingCount() + " câu bị Gemini đánh dấu 'cần xem kỹ' mà cô chưa bấm 'Đã xem'.\nVẫn lưu đề?")) return;
             }
 
             let questionsToSave = selectedQuestions;
@@ -3723,6 +3768,561 @@ window.addEventListener('popstate', function () {
     // Hiện thông báo nhắc nhở học sinh
     alert("⚠️ CẢNH BÁO: Em đang trong bài làm! Không được bấm nút quay lại để tránh bị mất bài thi.");
 });
+
+        // ================== RÀ SOÁT BẰNG GEMINI (thêm ở v16) ==================
+        // Chạy ngay trên trình duyệt của giáo viên. Khóa Gemini do giáo viên tự nhập, KHÔNG nằm trong mã nguồn trang.
+        // Chỉ rà soát các câu vừa "Tự Động Phân Tích" (directParsedQuestions). Không đổi dữ liệu cũ.
+        (function () {
+            'use strict';
+            const $ = id => document.getElementById(id);
+            const API = 'https://generativelanguage.googleapis.com/v1beta/';
+            const LET = ['A', 'B', 'C', 'D'], TFL = ['a', 'b', 'c', 'd'];
+            const S = { key: '', model: '', connected: false, running: false, ctl: null, res: new Map(), flagOnly: false, imgs: [], steps: {}, msg: '', t0: 0, timer: null };
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            const str = x => x == null ? '' : String(x);
+            const uniq = a => a.filter((x, i) => a.indexOf(x) === i);
+            const sleep = (ms, signal) => new Promise((res, rej) => {
+                const t = setTimeout(res, ms);
+                if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej({ code: 'cancelled' }); }, { once: true });
+            });
+            const TYPE = { dap_an_sai: 'đáp án trong đề sai', nhieu_dap_an: 'nhiều đáp án đúng', khong_dap_an: 'không có đáp án đúng', thieu_du_kien: 'thiếu dữ kiện hoặc điều kiện', mau_thuan: 'đề mâu thuẫn hoặc không rõ', loi_giai_sai: 'lời giải trong đề sai', kien_thuc: 'sai kiến thức hoặc ký hiệu', muc_do: 'mức độ không phù hợp', trinh_bay: 'lỗi trình bày' };
+            const SEV = { cao: 'Cao', trung_binh: 'Vừa', thap: 'Nhẹ' };
+            const STEPS = [['prep', 'Chuẩn bị câu hỏi và hình ảnh'], ['local', 'Kiểm tra bóc tách và đáp án'], ['solve', 'Gemini giải lại hai lượt độc lập'], ['machine', 'Máy tính lại đáp án'], ['review', 'Gemini rà soát tổng hợp']];
+            const ERR = {
+                key: 'Khóa API không đúng. Kiểm tra lại khóa ở aistudio.google.com/apikey.',
+                denied: 'Khóa chưa được phép dùng Gemini, hoặc khu vực chưa được hỗ trợ.',
+                model: 'Không tìm thấy mô hình này. Chọn mô hình khác trong danh sách.',
+                rate: 'Gemini báo vượt giới hạn lượt dùng. Chờ vài phút rồi thử lại, hoặc chọn mô hình khác.',
+                server: 'Máy chủ Gemini đang bận. Thử lại sau ít phút.',
+                net: 'Không kết nối được tới Gemini. Kiểm tra mạng rồi thử lại.',
+                empty: 'Gemini không trả lời, có thể do bộ lọc nội dung. Thử lại.',
+                json: 'Gemini trả lời sai định dạng. Bấm Rà soát để thử lại.',
+                trunc: 'Đề quá dài nên câu trả lời bị cắt. Rà soát từng phần nhỏ hơn (dùng nút Chốt Phần Này).'
+            };
+            const errText = e => { if (!e) return ERR.net; if (e.code === 'bad' || e.code === 'http') return 'Gemini báo lỗi: ' + (e.message || ('mã ' + e.status)) + '.'; return ERR[e.code] || ('Lỗi không rõ: ' + (e.message || e.code) + '.'); };
+
+            // ---------- Máy tính ----------
+            let evalFn = null, mathReady = false;
+            function initMath() {
+                if (mathReady) return; mathReady = true;
+                try {
+                    const m = window.math;
+                    if (m && m.evaluate) {
+                        evalFn = m.evaluate;
+                        const off = function () { throw new Error('disabled'); };
+                        m.import({ import: off, createUnit: off, reviver: off, evaluate: off, parse: off, simplify: off, derivative: off }, { override: true });
+                    }
+                } catch (e) { evalFn = null; }
+            }
+            function readGroup(t, i) { let d = 0; for (let j = i; j < t.length; j++) { if (t[j] === '{') d++; else if (t[j] === '}') { d--; if (d === 0) return [t.slice(i + 1, j), j + 1]; } } return null; }
+            function skipWs(t, p) { while (p < t.length && /\s/.test(t[p])) p++; return p; }
+            function latexToMath(src) {
+                let t = str(src).replace(/[\u2212\u2013]/g, '-').replace(/\$/g, ' ')
+                    .replace(/\\left|\\right|\\displaystyle|\\,|\\;|\\!|\\ /g, ' ')
+                    .replace(/\\dfrac|\\tfrac/g, '\\frac')
+                    .replace(/\\cdot|\\times/g, '*').replace(/\\div/g, '/')
+                    .replace(/\\pi/g, ' pi ')
+                    .replace(/\^\s*\{\s*\\circ\s*\}|\^\s*\\circ|\\circ|°/g, ' deg ');
+                for (let guard = 0; guard < 60; guard++) {
+                    const idx = t.search(/\\(frac|sqrt)/);
+                    if (idx < 0) break;
+                    const isFrac = t.startsWith('\\frac', idx);
+                    let p = skipWs(t, idx + 5);
+                    if (isFrac) {
+                        if (t[p] !== '{') return null;
+                        const g1 = readGroup(t, p); if (!g1) return null;
+                        p = skipWs(t, g1[1]);
+                        if (t[p] !== '{') return null;
+                        const g2 = readGroup(t, p); if (!g2) return null;
+                        t = t.slice(0, idx) + '((' + g1[0] + ')/(' + g2[0] + '))' + t.slice(g2[1]);
+                    } else {
+                        let root = null;
+                        if (t[p] === '[') { const e = t.indexOf(']', p); if (e < 0) return null; root = t.slice(p + 1, e); p = skipWs(t, e + 1); }
+                        if (t[p] !== '{') return null;
+                        const g = readGroup(t, p); if (!g) return null;
+                        t = t.slice(0, idx) + (root ? ('nthRoot(' + g[0] + ',' + root + ')') : ('sqrt(' + g[0] + ')')) + t.slice(g[1]);
+                    }
+                }
+                t = t.replace(/\{/g, '(').replace(/\}/g, ')')
+                    .replace(/\\(sin|cos|tan|cot)/g, '$1').replace(/\\ln/g, 'log').replace(/\\log/g, 'log10');
+                if (/\\/.test(t)) return null;
+                t = t.replace(/%/g, '/100').replace(/(\d),(\d)/g, '$1.$2');
+                const rest = t.replace(/sqrt|nthRoot|pi|deg|sin|cos|tan|cot|log10|log|\be\b/g, '');
+                if (/[^0-9+\-*\/^().\s]/.test(rest)) return null;
+                t = t.replace(/(^|[^A-Za-z0-9.])(\d+\.?\d*)\s*(?=sqrt|nthRoot|pi|sin|cos|tan|cot|log|\()/g, '$1$2*')
+                    .replace(/\)\s*(?=sqrt|nthRoot|pi|sin|cos|tan|cot|log|\(|\d)/g, ')*')
+                    .replace(/pi\s*(?=\d|\(|sqrt)/g, 'pi*');
+                return t.trim() || null;
+            }
+            function evalNum(expr) {
+                initMath();
+                if (!evalFn) return null;
+                try {
+                    const r = evalFn(str(expr).replace(/(\d),(\d)/g, '$1.$2'));
+                    if (typeof r === 'number') return isFinite(r) ? r : null;
+                    if (r && typeof r.toNumber === 'function') { try { return r.toNumber('deg'); } catch (e) { return null; } }
+                    if (r && typeof r.re === 'number' && r.im === 0) return r.re;
+                    return null;
+                } catch (e) { return null; }
+            }
+            const decimalsOf = o => { const m = str(o).match(/\d[.,](\d+)/); return m ? m[1].length : 0; };
+            function close(a, b, d) {
+                if (d > 0) return Math.abs(a - b) <= 0.51 * Math.pow(10, -d) + 1e-9;
+                return Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(a), Math.abs(b));
+            }
+            const fmt = v => String(Number(v.toPrecision(8)));
+            function numFrom(x) {
+                const t = str(x).replace(/[\u2212\u2013]/g, '-').replace(/\$/g, '').trim();
+                if (!t) return null;
+                const plain = t.replace(/\s+/g, '').replace(/,/g, '.');
+                if (/^[-+]?(\d+\.?\d*|\.\d+)$/.test(plain)) return parseFloat(plain);
+                const m = latexToMath(t);
+                return m == null ? null : evalNum(m);
+            }
+            function shuffle(a) { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = r[i]; r[i] = r[j]; r[j] = t; } return r; }
+
+            // ---------- Gemini ----------
+            function gerr(status, body) {
+                const m = (body && body.error && body.error.message) || '';
+                let code = 'http';
+                if (status === 400 && /API key/i.test(m)) code = 'key';
+                else if (status === 400) code = 'bad';
+                else if (status === 401 || status === 403) code = 'denied';
+                else if (status === 404) code = 'model';
+                else if (status === 429) code = 'rate';
+                else if (status >= 500) code = 'server';
+                return { code, status, message: m };
+            }
+            async function gfetch(path, opts, signal) {
+                const delays = [0, 2500, 7000];
+                let last = { code: 'net' };
+                for (let i = 0; i < delays.length; i++) {
+                    if (delays[i]) await sleep(delays[i], signal);
+                    const url = API + path + (path.indexOf('?') >= 0 ? '&' : '?') + 'key=' + encodeURIComponent(S.key);
+                    let r;
+                    try { r = await fetch(url, Object.assign({ signal }, opts)); }
+                    catch (e) { if (e && e.name === 'AbortError') throw { code: 'cancelled' }; last = { code: 'net' }; continue; }
+                    let body = null; try { body = await r.json(); } catch (e) { }
+                    if (r.ok) return body;
+                    last = gerr(r.status, body);
+                    if (last.code !== 'rate' && last.code !== 'server') throw last;
+                }
+                throw last;
+            }
+            async function gen(parts, temperature, signal) {
+                const body = { contents: [{ role: 'user', parts }], generationConfig: { temperature: temperature || 0, responseMimeType: 'application/json' } };
+                const res = await gfetch('models/' + S.model + ':generateContent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, signal);
+                const c = res && res.candidates && res.candidates[0];
+                if (!c || !c.content || !c.content.parts) throw { code: 'empty', message: (res && res.promptFeedback && res.promptFeedback.blockReason) || (c && c.finishReason) || '' };
+                const text = c.content.parts.filter(p => typeof p.text === 'string' && !p.thought).map(p => p.text).join('');
+                if (!text.trim()) throw { code: 'empty' };
+                return { text, finish: c.finishReason };
+            }
+            function parseJson(t) {
+                let x = str(t).trim().replace(/^```[a-z]*\s*/i, '').replace(/```\s*$/, '').trim();
+                try { return JSON.parse(x); } catch (e) { }
+                const a = x.search(/[\[{]/), b = Math.max(x.lastIndexOf(']'), x.lastIndexOf('}'));
+                if (a >= 0 && b > a) { try { return JSON.parse(x.slice(a, b + 1)); } catch (e) { } }
+                return null;
+            }
+            async function genJson(parts, temperature, signal) {
+                for (let t = 0; t < 2; t++) {
+                    const r = await gen(parts, temperature, signal);
+                    if (r.finish === 'MAX_TOKENS') throw { code: 'trunc' };
+                    const v = parseJson(r.text);
+                    if (v != null) return v;
+                }
+                throw { code: 'json' };
+            }
+            function modelScore(n) {
+                const x = n.replace(/^models\//, '').toLowerCase();
+                if (!/^gemini/.test(x)) return -1;
+                if (/image|tts|live|audio|embedding|vision|robotics|computer|learnlm|aqa|imagen|veo|native|thinking-exp|lite/.test(x)) return -1;
+                let sc = 0; if (/pro/.test(x)) sc += 100; else if (/flash/.test(x)) sc += 50;
+                if (/preview|exp/.test(x)) sc -= 5;
+                const v = x.match(/(\d+)(?:\.(\d+))?/); if (v) sc += parseInt(v[1], 10) * 10 + (v[2] ? parseInt(v[2], 10) : 0);
+                return sc;
+            }
+            function setConn(st, text) { const c = $('rv-conn'); if (c) { c.dataset.s = st; c.textContent = text; c.style.color = st === 'ok' ? '#16a34a' : st === 'off' ? '#dc2626' : '#64748b'; } }
+            async function connect() {
+                const key = $('rv-key').value.trim();
+                if (!key) { setConn('off', 'Cô dán khóa API vào ô trên rồi bấm Kết nối.'); return; }
+                S.key = key; S.connected = false; $('rv-run').disabled = true; setConn('wait', 'Đang kết nối…');
+                try {
+                    const res = await gfetch('models?pageSize=200', { method: 'GET' });
+                    const ms = ((res && res.models) || []).filter(m => (m.supportedGenerationMethods || []).indexOf('generateContent') >= 0 && modelScore(m.name) >= 0)
+                        .sort((a, b) => modelScore(b.name) - modelScore(a.name)).map(m => m.name.replace(/^models\//, ''));
+                    if (!ms.length) { setConn('off', 'Khóa dùng được nhưng không thấy mô hình Gemini nào để giải đề.'); return; }
+                    let saved = ''; try { saved = localStorage.getItem('rv_gemini_model') || ''; } catch (e) { }
+                    const sel = $('rv-model');
+                    sel.innerHTML = ms.map(n => '<option value="' + esc(n) + '">' + esc(n) + '</option>').join('');
+                    sel.value = ms.indexOf(saved) >= 0 ? saved : ms[0]; S.model = sel.value;
+                    $('rv-model-row').style.display = 'block';
+                    S.connected = true; setConn('ok', 'Đã kết nối Gemini.'); $('rv-run').disabled = S.running;
+                    try { if ($('rv-remember').checked) localStorage.setItem('rv_gemini_key', key); else localStorage.removeItem('rv_gemini_key'); } catch (e) { }
+                } catch (e) { setConn('off', errText(e)); }
+            }
+
+            // ---------- Chuyển câu hỏi sang văn bản ----------
+            function toText(html, imgs) {
+                const doc = new DOMParser().parseFromString('<body>' + (html || '') + '</body>', 'text/html');
+                doc.querySelectorAll('img').forEach(im => { imgs.push({ src: im.getAttribute('src') || '' }); im.replaceWith(doc.createTextNode(' [HÌNH ' + imgs.length + '] ')); });
+                doc.querySelectorAll('br').forEach(b => b.replaceWith(doc.createTextNode('\n')));
+                doc.querySelectorAll('p,div,li,tr,h1,h2,h3').forEach(e => e.append(doc.createTextNode('\n')));
+                return (doc.body.textContent || '').replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+            }
+            function blobToPart(blob) {
+                return new Promise(res => {
+                    const ok = /^image\/(png|jpeg|jpg|webp|heic|heif)$/.test(blob.type);
+                    if (!ok || blob.size > 4 * 1048576) return res(null);
+                    const fr = new FileReader();
+                    fr.onload = () => res({ inline_data: { mime_type: blob.type === 'image/jpg' ? 'image/jpeg' : blob.type, data: String(fr.result).split(',')[1] }, bytes: blob.size });
+                    fr.onerror = () => res(null);
+                    fr.readAsDataURL(blob);
+                });
+            }
+            async function imgPart(src) {
+                try {
+                    if (/^(data:|blob:)/.test(src) || (/^https?:/.test(src) && src.indexOf(location.origin) === 0)) {
+                        const r = await fetch(src); const b = await r.blob(); return await blobToPart(b);
+                    }
+                } catch (e) { }
+                return null;
+            }
+            const fixImg = (t, imgs) => str(t).replace(/\[HÌNH (\d+)\]/g, (m, k) => (imgs[k - 1] && imgs[k - 1].part) ? m : '[HÌNH ' + k + ': KHÔNG ĐỌC ĐƯỢC]');
+
+            function buildViews() {
+                const imgs = S.imgs = [];
+                return directParsedQuestions.map((q, i) => {
+                    const v = { i, q, id: q.id, type: q.type || 'MCQ', img: [], solve: null, machine: null, review: null, suggest: null };
+                    const before = imgs.length;
+                    v.stem = toText(q.q, imgs);
+                    v.opts = (q.options || []).map(o => toText(o, imgs));
+                    for (let k = before; k < imgs.length; k++) v.img.push(k + 1);
+                    v.exp = toText(q.explanation, []);
+                    v.ans = str(q.ans).trim();
+                    v.guessed = (typeof ANS_GUESSED !== 'undefined') && ANS_GUESSED.has(q.id);
+                    return v;
+                });
+            }
+            function localCheck(v) {
+                const issues = [], warns = [];
+                if (v.stem.length < 8) issues.push('Nội dung đề quá ngắn hoặc trống.');
+                if (v.type === 'MCQ' || v.type === 'TF') {
+                    const n = v.opts.filter(o => o).length, what = v.type === 'MCQ' ? 'phương án' : 'ý';
+                    if (n < 4) issues.push('Chỉ bóc tách được ' + n + ' trong 4 ' + what + '. Có thể đề dán bị cắt hoặc sai định dạng.');
+                    const norm = o => str(o).replace(/\$|\\,|\\;|\\!|\\left|\\right|\s+/g, '').toLowerCase();
+                    const seen = new Map();
+                    v.opts.forEach((o, i) => { const k = norm(o); if (!k) return; if (seen.has(k)) issues.push('Hai ' + what + ' ' + (v.type === 'MCQ' ? LET[seen.get(k)] + ' và ' + LET[i] : TFL[seen.get(k)] + ' và ' + TFL[i]) + ' giống nhau.'); else seen.set(k, i); });
+                }
+                if (v.type === 'MCQ' && !/^[A-D]$/.test(v.ans)) issues.push('Đáp án không phải A, B, C hay D.');
+                if (v.type === 'TF' && !/^[DS]{4}$/.test(v.ans)) issues.push('Đáp án Đúng/Sai phải đủ 4 ký tự Đ hoặc S.');
+                if (v.guessed) issues.push(v.type === 'SA' ? 'Đề chưa ghi đáp án cho câu này.' : 'Đề không ghi đáp án. Hệ thống đang tự điền tạm "' + v.ans + '". Cô cần xác nhận lại.');
+                const odd = x => ((str(x).replace(/\\\$/g, '').match(/\$/g) || []).length % 2) === 1;
+                if ([v.stem].concat(v.opts).some(odd)) issues.push('Dấu $ của công thức bị lẻ.');
+                if ([v.stem].concat(v.opts).some(x => /(Đáp\s*án|Lời\s*giải|Hướng\s*dẫn)\s*[:.]/i.test(x))) warns.push('Trong nội dung đề còn chữ "Đáp án" hoặc "Lời giải", có thể bóc tách chưa sạch.');
+                const miss = v.img.filter(k => !(S.imgs[k - 1] && S.imgs[k - 1].part));
+                if (miss.length) issues.push('Có hình (' + miss.map(k => 'hình ' + k).join(', ') + ') chưa gửi được cho Gemini nên chưa rà soát được phần hình. Cô tự xem câu này.');
+                v.local = { issues, warns };
+            }
+
+            // ---------- Lời nhắc ----------
+            const itemText = (it, imgs) => {
+                const v = it.v, st = fixImg(v.stem, imgs), op = v.opts.map(o => fixImg(o, imgs));
+                if (v.type === 'MCQ') return 'Câu ' + it.n + ' [TRẮC NGHIỆM]. ' + st + '\nA. ' + op[it.perm[0]] + '\nB. ' + op[it.perm[1]] + '\nC. ' + op[it.perm[2]] + '\nD. ' + op[it.perm[3]];
+                if (v.type === 'TF') return 'Câu ' + it.n + ' [ĐÚNG/SAI]. ' + st + '\na) ' + op[it.perm[0]] + '\nb) ' + op[it.perm[1]] + '\nc) ' + op[it.perm[2]] + '\nd) ' + op[it.perm[3]];
+                return 'Câu ' + it.n + ' [TRẢ LỜI NGẮN]. ' + st;
+            };
+            function solvePrompt(items, imgs) {
+                return 'NHIỆM VỤ: GIẢI ĐỀ\n'
+                    + 'Bạn là giáo viên Toán THPT giỏi. Hãy tự giải từng câu dưới đây, độc lập và cẩn thận. Bạn không biết đáp án trước, hãy tự tính từ đề. Không chọn chỉ vì trông có vẻ đúng.\n'
+                    + 'Có ba dạng câu. Với mỗi câu trả về một đối tượng JSON:\n'
+                    + '- [TRẮC NGHIỆM] 4 phương án A đến D: {"n":số câu,"letter":"A"|"B"|"C"|"D"|"X","result":"kết quả cuối ngắn gọn","expr":"...","reason":"..."}. "letter" là X nếu không có phương án nào đúng, có từ hai phương án đúng, hoặc đề thiếu dữ kiện.\n'
+                    + '- [ĐÚNG/SAI] có 4 ý a), b), c), d): {"n":số câu,"tf":"DDSD","reason":"..."}. "tf" có đúng 4 ký tự theo thứ tự a, b, c, d; D là Đúng, S là Sai, X là không xác định được ý đó.\n'
+                    + '- [TRẢ LỜI NGẮN] không có phương án: {"n":số câu,"result":"đáp số cuối, chỉ ghi số hoặc biểu thức ngắn","expr":"...","reason":"..."}.\n'
+                    + '- "expr": nếu kết quả cuối là một số, viết biểu thức tính ra số đó từ dữ kiện của đề theo cú pháp math.js (ví dụ sqrt(3^2+4^2), 4/3*pi*2^3, combinations(10,3), sin(30 deg), log10(1000)). Phải tính từ dữ kiện đề, không chép lại kết quả. Không phải số thì để chuỗi rỗng.\n'
+                    + '- "reason": một câu ngắn nêu ý chính.\n'
+                    + 'Chỗ nào có [HÌNH k] là hình ảnh đính kèm bên dưới. Nếu ghi "KHÔNG ĐỌC ĐƯỢC" và câu cần hình thì trả letter X (hoặc result rỗng) và reason là "thiếu hình".\n'
+                    + 'ĐẦU RA: chỉ một mảng JSON, mỗi câu một phần tử.\n\nCÁC CÂU:\n' + items.map(it => itemText(it, imgs)).join('\n\n');
+            }
+            function reviewPrompt(data) {
+                return 'NHIỆM VỤ: RÀ SOÁT ĐỀ\n'
+                    + 'Bạn là người rà soát đề Toán THPT, chỉ phát hiện lỗi, không sửa đề, không viết lại đề.\n'
+                    + 'Dữ liệu gồm các câu của đề (loại: TRAC_NGHIEM, DUNG_SAI, TRA_LOI_NGAN), đáp án ghi trong đề ("dap_an_trong_de", null nếu đề không ghi), kết quả hai lượt giải độc lập ("luot1", "luot2"), và phát hiện của máy kiểm tra ("may", "bien_ban").\n'
+                    + 'Với đáp án Đúng/Sai, ký tự D là Đúng, S là Sai, theo thứ tự ý a, b, c, d.\n'
+                    + 'Với mỗi câu, tìm các lỗi có bằng chứng cụ thể thuộc các loại:\n'
+                    + '- "dap_an_sai": đáp án ghi trong đề khác kết quả đúng.\n- "nhieu_dap_an": từ hai phương án trở lên cùng đúng.\n- "khong_dap_an": không có phương án nào đúng.\n'
+                    + '- "thieu_du_kien": đề thiếu dữ kiện hoặc điều kiện (ví dụ thiếu điều kiện của tham số, miền xác định).\n- "mau_thuan": đề mâu thuẫn hoặc không rõ nghĩa.\n'
+                    + '- "loi_giai_sai": lời giải có sẵn trong đề sai hoặc không dẫn tới đáp án ghi.\n- "kien_thuc": sai thuật ngữ, ký hiệu hoặc kiến thức.\n- "muc_do": mức độ ghi trong đề không phù hợp.\n- "trinh_bay": lỗi chính tả, công thức, đánh số, định dạng.\n'
+                    + 'QUY TẮC: chỉ báo khi có lý do cụ thể và nêu bằng chứng ngắn gọn (ví dụ phép tính). Không báo gì cho câu không có lỗi. Không viết "đúng" hay "tốt". Khi hai lượt giải lệch nhau, hãy tự giải lại câu đó thật kỹ và nói rõ lượt nào đúng. Câu có chữ "KHÔNG ĐỌC ĐƯỢC" ở chỗ hình thì đừng đoán phần hình.\n'
+                    + 'ĐẦU RA: chỉ một mảng JSON: [{"n":3,"issues":[{"type":"dap_an_sai","severity":"cao","detail":"..."}]}]. "severity" là "cao", "trung_binh" hoặc "thap". Câu không có lỗi thì không đưa vào mảng.\n\nDỮ LIỆU:\n' + JSON.stringify(data);
+            }
+
+            // ---------- Kết quả giải ----------
+            const laneNum = x => (x && !x.err) ? ((x.expr && evalNum(x.expr) != null) ? evalNum(x.expr) : numFrom(x.result)) : null;
+            function saSame(x, ans) {
+                const av = numFrom(ans), lv = laneNum(x);
+                if (av != null && lv != null) return close(av, lv, decimalsOf(ans));
+                return str(x.result).replace(/\s+/g, '').replace(/,/g, '.').toLowerCase() === str(ans).replace(/\s+/g, '').replace(/,/g, '.').toLowerCase();
+            }
+            const tfShow = s => str(s).split('').map((c, i) => TFL[i] + '-' + (c === 'D' ? 'Đ' : c === 'S' ? 'S' : '?')).join(' ');
+            function solveIssues(v) {
+                const out = [], lanes = [v.solve.a, v.solve.b], ok = lanes.filter(x => x && !x.err);
+                if (lanes.some(x => x && x.err)) out.push('Một lượt giải không chạy được.');
+                if (v.type === 'MCQ') {
+                    if (ok.some(x => x.val === 'X')) out.push('Gemini cho rằng không có đáp án đúng, hoặc có nhiều đáp án đúng, hoặc thiếu dữ kiện.');
+                    const ls = ok.map(x => x.val).filter(x => /^[A-D]$/.test(x));
+                    if (!v.guessed) { const bad = uniq(ls.filter(l => l !== v.ans)); if (bad.length) out.push('Gemini giải ra ' + bad.join(', ') + ' trong khi đề ghi ' + v.ans + '.'); }
+                    if (ls.length === 2 && ls[0] !== ls[1]) out.push('Hai lượt giải khác nhau (' + ls.join(' và ') + ').');
+                } else if (v.type === 'TF') {
+                    const ls = ok.map(x => x.val).filter(x => /^[DSX]{4}$/.test(x));
+                    if (ls.some(x => x.indexOf('X') >= 0)) out.push('Gemini không xác định được một số ý.');
+                    if (!v.guessed && /^[DS]{4}$/.test(v.ans)) {
+                        const diff = []; ls.forEach(x => { for (let j = 0; j < 4; j++) if (x[j] !== 'X' && x[j] !== v.ans[j]) diff.push(TFL[j]); });
+                        if (diff.length) out.push('Gemini cho rằng ý ' + uniq(diff).sort().join(', ') + ' khác với đáp án trong đề.');
+                    }
+                    if (ls.length === 2 && ls[0] !== ls[1]) { const d = []; for (let j = 0; j < 4; j++) if (ls[0][j] !== ls[1][j]) d.push(TFL[j]); out.push('Hai lượt giải khác nhau ở ý ' + d.join(', ') + '.'); }
+                } else {
+                    if (!v.guessed && v.ans) { if (ok.some(x => !saSame(x, v.ans))) out.push('Gemini giải ra đáp số khác với đáp án "' + v.ans + '" trong đề.'); }
+                    if (ok.length === 2) { const a = laneNum(ok[0]), b = laneNum(ok[1]); const same = (a != null && b != null) ? close(a, b, 0) : str(ok[0].result).replace(/\s+/g, '').toLowerCase() === str(ok[1].result).replace(/\s+/g, '').toLowerCase(); if (!same) out.push('Hai lượt giải khác nhau.'); }
+                }
+                return out;
+            }
+            function laneText(x, i, v) {
+                const n = 'Lượt ' + (i + 1);
+                if (!x) return n + ': chưa chạy.';
+                if (x.err) return n + ': không chạy được.';
+                if (v.type === 'MCQ') return x.val === 'X' ? n + ': cho rằng không có hoặc có nhiều đáp án' + (x.reason ? ' (' + x.reason + ')' : '') + '.' : n + ' chọn ' + x.val + (x.result ? ', kết quả ' + x.result : '') + '.';
+                if (v.type === 'TF') return n + ': ' + tfShow(x.val) + '.';
+                return n + ': đáp số ' + (x.result || '(trống)') + '.';
+            }
+            function checkMachine(v) {
+                initMath();
+                if (!evalFn) return { state: 'na', msg: 'Chưa tải được thư viện tính toán.' };
+                if (!v.solve) return { state: 'na', msg: 'Chưa có kết quả giải để máy tính lại.' };
+                if (v.type === 'TF') return { state: 'na', msg: 'Câu Đúng/Sai nhiều ý, máy chưa tính lại.' };
+                const ev = [];
+                ['a', 'b'].forEach((k, i) => { const r = v.solve[k]; if (r && !r.err && r.expr) { const val = evalNum(r.expr); if (val != null) ev.push({ lane: i + 1, v: val }); } });
+                if (!ev.length) return { state: 'na', msg: 'Không có biểu thức số để máy tính lại (đáp án không phải một số, hoặc máy không đọc được biểu thức).' };
+                const issues = [], ok = [];
+                if (v.type === 'SA') {
+                    const av = numFrom(v.ans);
+                    if (av == null) return { state: 'na', msg: 'Đáp án trong đề không phải một số nên máy chưa đối chiếu được.' };
+                    ev.forEach(e => { const tag = 'Lượt ' + e.lane + ' tính ra ' + fmt(e.v); if (close(e.v, av, decimalsOf(v.ans))) ok.push(tag + ', khớp đáp án ' + v.ans + ' của đề.'); else issues.push(tag + ' nhưng đáp án của đề là ' + v.ans + '.'); });
+                } else {
+                    const vals = v.opts.map(o => { const m = latexToMath(o); return m == null ? null : evalNum(m); }), dec = v.opts.map(decimalsOf);
+                    ev.forEach(e => {
+                        const hit = []; vals.forEach((x, i) => { if (x != null && close(e.v, x, dec[i])) hit.push(i); });
+                        const tag = 'Lượt ' + e.lane + ' tính ra ' + fmt(e.v);
+                        if (hit.length > 1) issues.push(tag + ' và có ' + hit.length + ' phương án cùng bằng giá trị này (' + hit.map(i => LET[i]).join(', ') + ').');
+                        else if (!v.guessed && /^[A-D]$/.test(v.ans)) {
+                            const ki = LET.indexOf(v.ans), kv = vals[ki];
+                            if (kv != null) { if (close(e.v, kv, dec[ki])) ok.push(tag + ', khớp đáp án ' + v.ans + ' của đề.'); else issues.push(tag + ' nhưng đáp án ' + v.ans + ' của đề có giá trị ' + fmt(kv) + '.'); }
+                            else ok.push(tag + ' (phương án không phải số nên chưa đối chiếu được).');
+                        } else {
+                            if (hit.length === 1) ok.push(tag + ', khớp phương án ' + LET[hit[0]] + '.');
+                            else if (vals.every(x => x != null)) issues.push(tag + ' nhưng không phương án nào bằng giá trị này.');
+                            else ok.push(tag + ' (phương án không phải số nên chưa đối chiếu được).');
+                        }
+                    });
+                }
+                if (ev.length === 2 && !close(ev[0].v, ev[1].v, 0)) issues.push('Hai lượt tính ra hai giá trị khác nhau (' + fmt(ev[0].v) + ' và ' + fmt(ev[1].v) + ').');
+                return issues.length ? { state: 'bad', msg: issues.join(' ') } : { state: 'ok', msg: ok.join(' ') };
+            }
+            function suggestOf(v) {
+                v.suggest = null;
+                if (!v.guessed || !v.solve) return;
+                const ok = [v.solve.a, v.solve.b].filter(x => x && !x.err);
+                if (ok.length !== 2) return;
+                if (v.type === 'MCQ' && /^[A-D]$/.test(ok[0].val) && ok[0].val === ok[1].val) v.suggest = { val: ok[0].val, text: 'đáp án ' + ok[0].val };
+                else if (v.type === 'TF' && /^[DS]{4}$/.test(ok[0].val) && ok[0].val === ok[1].val) v.suggest = { val: ok[0].val, text: tfShow(ok[0].val) };
+                else if (v.type === 'SA' && ok[0].result) { const a = laneNum(ok[0]), b = laneNum(ok[1]); if (a != null && b != null && close(a, b, 0)) v.suggest = { val: str(ok[0].result).trim(), text: 'đáp số ' + str(ok[0].result).trim() }; }
+            }
+            function reasons(v) {
+                const r = [];
+                if (v.local && v.local.issues.length) r.push('lỗi bóc tách hoặc đáp án');
+                if (v.machine && v.machine.state === 'bad') r.push('máy tính lệch');
+                if (v.solve) solveIssues(v).forEach(t => r.push(/không chạy/.test(t) ? 'một lượt giải không chạy được' : /Hai lượt/.test(t) ? 'hai lượt giải khác nhau' : 'Gemini giải khác đề'));
+                (v.review || []).forEach(i => { if (i.severity !== 'thap') r.push(TYPE[i.type] || 'Gemini rà soát báo lỗi'); });
+                return uniq(r);
+            }
+            function rowsOf(v) {
+                const rows = [];
+                v.local.issues.forEach(t => rows.push({ s: 'bad', l: 'Bóc tách.', t }));
+                v.local.warns.forEach(t => rows.push({ s: 'warn', l: 'Lưu ý.', t }));
+                if (!v.local.issues.length && !v.local.warns.length) rows.push({ s: 'ok', l: 'Bóc tách.', t: 'Đủ nội dung, đáp án hợp lệ.' });
+                if (v.solve) {
+                    const iss = solveIssues(v);
+                    rows.push({ s: iss.length ? 'bad' : 'ok', l: 'Gemini giải lại.', t: (iss.length ? iss.join(' ') : 'Hai lượt khớp nhau' + (v.guessed ? '.' : ' và khớp đáp án của đề.')) + ' ' + laneText(v.solve.a, 0, v) + ' ' + laneText(v.solve.b, 1, v) });
+                }
+                if (v.machine) rows.push({ s: v.machine.state, l: 'Máy tính.', t: v.machine.msg });
+                (v.review || []).forEach(i => rows.push({ s: i.severity === 'thap' ? 'warn' : 'bad', sev: i.severity, l: 'Gemini rà soát: ' + (TYPE[i.type] || i.type) + '.', t: i.detail }));
+                return rows;
+            }
+
+            // ---------- Hiển thị ----------
+            const ICON = { ok: '✓', bad: '✗', warn: '!', na: '–' };
+            function cardOf(id) { return document.querySelector('.parsed-q-preview-card[data-qid="' + id + '"]'); }
+            function paintBox(v) {
+                const card = cardOf(v.id); if (!card) return;
+                const rec = S.res.get(v.id) || { seen: false };
+                let box = card.querySelector('.rv-box');
+                if (!box) { box = document.createElement('div'); box.className = 'rv-box'; card.appendChild(box); }
+                const rs = reasons(v), flag = rs.length > 0;
+                card.dataset.rvFlag = flag ? '1' : '0';
+                card.classList.toggle('rv-flag', flag);
+                card.style.display = (S.flagOnly && !flag) ? 'none' : '';
+                const rows = rowsOf(v).map(r => '<div class="rv-row ' + r.s + '"><span class="rv-ic">' + ICON[r.s] + '</span><span>' + (r.sev ? '<span class="rv-sev ' + r.sev + '">' + (SEV[r.sev] || '') + '</span> ' : '') + '<strong>' + esc(r.l) + '</strong> ' + esc(r.t) + '</span></div>').join('');
+                const badge = flag ? '<span class="rv-badge bad">Cần xem kỹ: ' + esc(rs.join('; ')) + '</span>' : '<span class="rv-badge ok">Không phát hiện sai khác</span>';
+                const btns = (flag ? '<button type="button" class="rv-btn' + (rec.seen ? ' on' : '') + '" onclick="rvSeen(\'' + v.id + '\')">' + (rec.seen ? 'Đã xem (bấm để bỏ)' : 'Đánh dấu đã xem') + '</button>' : '')
+                    + '<button type="button" class="rv-btn" onclick="rvEdit(\'' + v.id + '\')">Sửa câu này</button>'
+                    + (v.suggest ? '<button type="button" class="rv-btn go" onclick="rvApply(\'' + v.id + '\')">Dùng ' + esc(v.suggest.text) + ' (hai lượt Gemini cùng chọn)</button>' : '');
+                box.innerHTML = '<div>' + badge + '</div>' + rows + '<div class="rv-acts">' + btns + '</div>';
+                if (typeof renderMath === 'function') renderMath(box);
+            }
+            function paintSteps() {
+                const el = $('rv-steps'); if (!el) return;
+                el.innerHTML = STEPS.map(([id, l]) => { const p = S.steps[id] || { s: 'wait', m: '' }; return '<div class="rv-step ' + p.s + '"><span class="rv-ic">' + (p.s === 'ok' ? '✓' : p.s === 'bad' ? '✗' : p.s === 'run' ? '…' : '·') + '</span><span><strong>' + esc(l) + '</strong>' + (p.m ? '<br><small>' + esc(p.m) + '</small>' : '') + '</span></div>'; }).join('')
+                    + (S.msg ? '<div class="rv-err">' + esc(S.msg) + '</div>' : '');
+            }
+            function setStep(id, st, m) { S.steps[id] = { s: st, m: m || '' }; S.cur = id; paintSteps(); }
+            function paintSummary() {
+                const el = $('rv-summary'); if (!el) return;
+                const all = Array.from(S.res.values()).map(r => r.v);
+                if (!all.length) { el.innerHTML = ''; return; }
+                const nf = all.filter(v => reasons(v).length).length, pend = pending();
+                el.innerHTML = '<strong>' + all.length + ' câu:</strong> <span style="color:#dc2626;font-weight:bold;">' + nf + ' cần xem kỹ</span>, ' + (all.length - nf) + ' không phát hiện sai khác'
+                    + (nf ? ' · chưa đánh dấu đã xem: ' + pend : '') + '.<br><small>Không phát hiện sai khác không có nghĩa là chắc chắn đúng. Gemini cũng có thể báo nhầm, cô là người quyết định.</small>'
+                    + (nf ? '<br><button type="button" class="rv-btn" onclick="rvFilter()">' + (S.flagOnly ? 'Hiện tất cả các câu' : 'Chỉ hiện câu cần xem kỹ') + '</button>' : '');
+            }
+            function pending() {
+                let n = 0;
+                (typeof selectedQuestions !== 'undefined' ? selectedQuestions : []).forEach(q => { const r = S.res.get(q.id); if (r && !r.seen && reasons(r.v).length) n++; });
+                return n;
+            }
+            function tick() { const el = $('rv-elapsed'); if (el) { const sec = Math.floor((Date.now() - S.t0) / 1000); el.textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); } }
+
+            // ---------- Chạy ----------
+            async function run() {
+                if (S.running || !S.connected) return;
+                if (typeof directParsedQuestions === 'undefined' || !directParsedQuestions.length) { alert('Cô dán đề vào ô và bấm "Tự Động Phân Tích" trước, rồi mới rà soát.'); return; }
+                S.model = $('rv-model').value; try { localStorage.setItem('rv_gemini_model', S.model); } catch (e) { }
+                S.running = true; S.ctl = new AbortController(); const signal = S.ctl.signal; S.msg = ''; S.flagOnly = false;
+                $('rv-run').disabled = true; $('rv-stop').style.display = 'inline-block';
+                STEPS.forEach(([id]) => { S.steps[id] = { s: 'wait', m: '' }; }); S.res.clear(); paintSteps(); paintSummary();
+                S.t0 = Date.now(); tick(); clearInterval(S.timer); S.timer = setInterval(tick, 1000);
+                try {
+                    setStep('prep', 'run', 'Đang đọc hình trong đề…');
+                    const views = buildViews(), imgs = S.imgs;
+                    let total = 0;
+                    await Promise.all(imgs.map(async im => { const p = await imgPart(im.src); if (p) { if (total + p.bytes > 12 * 1048576) return; total += p.bytes; im.part = p; } }));
+                    views.forEach(v => S.res.set(v.id, { v, seen: false }));
+                    setStep('prep', 'ok', views.length + ' câu' + (imgs.length ? ', ' + imgs.filter(i => i.part).length + '/' + imgs.length + ' hình gửi được cho Gemini' : ', không có hình'));
+                    setStep('local', 'run'); views.forEach(localCheck); views.forEach(paintBox);
+                    const nb = views.filter(v => v.local.issues.length).length;
+                    setStep('local', nb ? 'bad' : 'ok', nb ? nb + ' câu có vấn đề bóc tách hoặc đáp án' : 'Tất cả đạt'); paintSummary();
+
+                    const mc = views.filter(v => (v.type === 'MCQ' || v.type === 'TF') ? v.opts.filter(o => o).length === 4 : v.type === 'SA');
+                    if (mc.length) {
+                        setStep('solve', 'run', 'Hai lượt giải chạy cùng lúc…');
+                        const A = mc.map((v, i) => ({ v, n: i + 1, perm: [0, 1, 2, 3] }));
+                        const B = mc.slice().reverse().map((v, i) => ({ v, n: i + 1, perm: (v.type === 'SA') ? [0, 1, 2, 3] : shuffle([0, 1, 2, 3]) }));
+                        const lane = (items, temp) => {
+                            const used = uniq([].concat(...items.map(it => it.v.img))).filter(k => imgs[k - 1] && imgs[k - 1].part);
+                            const parts = [{ text: solvePrompt(items, imgs) }];
+                            used.forEach(k => { parts.push({ text: 'HÌNH ' + k + ':' }); parts.push({ inline_data: imgs[k - 1].part.inline_data }); });
+                            return genJson(parts, temp, signal);
+                        };
+                        const [ra, rb] = await Promise.allSettled([lane(A, 0), lane(B, 0.3)]);
+                        if ([ra, rb].some(r => r.status === 'rejected' && r.reason && r.reason.code === 'cancelled')) throw { code: 'cancelled' };
+                        mc.forEach(v => { v.solve = { a: null, b: null }; });
+                        const apply = (items, res, slot) => {
+                            const map = new Map();
+                            if (res.status === 'fulfilled') { const arr = Array.isArray(res.value) ? res.value : (res.value && (res.value.answers || res.value.results)) || []; arr.forEach(o => { if (o && o.n != null && !map.has(+o.n)) map.set(+o.n, o); }); }
+                            items.forEach(it => {
+                                const v = it.v;
+                                if (res.status !== 'fulfilled') { v.solve[slot] = { err: (res.reason && res.reason.code) || 'error' }; return; }
+                                const o = map.get(it.n); if (!o) { v.solve[slot] = { err: 'parse' }; return; }
+                                if (v.type === 'MCQ') {
+                                    const ch = str(o.letter).toUpperCase().match(/[A-DX]/); if (!ch) { v.solve[slot] = { err: 'parse' }; return; }
+                                    v.solve[slot] = { val: ch[0] === 'X' ? 'X' : LET[it.perm['ABCD'.indexOf(ch[0])]], result: str(o.result), expr: str(o.expr), reason: str(o.reason) };
+                                } else if (v.type === 'TF') {
+                                    const t = str(o.tf).toUpperCase().replace(/Đ/g, 'D').replace(/[^DSX]/g, ''); if (t.length !== 4) { v.solve[slot] = { err: 'parse' }; return; }
+                                    const out = ['X', 'X', 'X', 'X']; for (let j = 0; j < 4; j++) out[it.perm[j]] = t[j];
+                                    v.solve[slot] = { val: out.join(''), reason: str(o.reason) };
+                                } else {
+                                    if (!str(o.result).trim()) { v.solve[slot] = { err: 'parse' }; return; }
+                                    v.solve[slot] = { result: str(o.result).trim(), expr: str(o.expr), reason: str(o.reason) };
+                                }
+                            });
+                        };
+                        apply(A, ra, 'a'); apply(B, rb, 'b');
+                        mc.forEach(suggestOf);
+                        const nfail = [ra, rb].filter(r => r.status === 'rejected').length;
+                        if (nfail === 2) { setStep('solve', 'bad', 'Cả hai lượt giải không chạy được.'); S.msg = errText(ra.reason); }
+                        else if (nfail === 1) { setStep('solve', 'bad', 'Một lượt không chạy được. ' + errText((ra.status === 'rejected' ? ra : rb).reason)); }
+                        else { const dis = mc.filter(v => solveIssues(v).length).length; setStep('solve', 'ok', dis ? dis + ' câu có lượt giải khác đề hoặc khác nhau' : 'Hai lượt khớp nhau và khớp đáp án'); }
+                    } else setStep('solve', 'ok', 'Không có câu để giải.');
+
+                    setStep('machine', 'run');
+                    views.forEach(v => { v.machine = checkMachine(v); });
+                    const nOk = views.filter(v => v.machine.state === 'ok').length, nBad = views.filter(v => v.machine.state === 'bad').length;
+                    setStep('machine', nBad ? 'bad' : 'ok', nBad ? nBad + ' câu lệch' : nOk + ' câu khớp, ' + (views.length - nOk) + ' câu không áp dụng');
+                    views.forEach(paintBox); paintSummary();
+
+                    setStep('review', 'run', 'Gemini đang rà soát tổng hợp…');
+                    const tname = { MCQ: 'TRAC_NGHIEM', TF: 'DUNG_SAI', SA: 'TRA_LOI_NGAN' };
+                    const lanes = v => ({ luot1: v.solve && v.solve.a && !v.solve.a.err ? { chon: v.solve.a.val || null, ketqua: v.solve.a.result || null } : null, luot2: v.solve && v.solve.b && !v.solve.b.err ? { chon: v.solve.b.val || null, ketqua: v.solve.b.result || null } : null });
+                    const data = views.map(v => Object.assign({ n: v.i + 1, loai: tname[v.type] || v.type, de: fixImg(v.stem, imgs), lua_chon: v.opts.map(o => fixImg(o, imgs)), dap_an_trong_de: v.guessed || !v.ans ? null : v.ans, loi_giai_trong_de: v.exp || null, may: v.machine && v.machine.state !== 'na' ? v.machine.msg : null, bien_ban: v.local.issues.length ? v.local.issues : null }, lanes(v)));
+                    views.forEach(v => { v.review = []; });
+                    try {
+                        const usedAll = uniq([].concat(...views.map(v => v.img))).filter(k => imgs[k - 1] && imgs[k - 1].part);
+                        const parts = [{ text: reviewPrompt(data) }]; usedAll.forEach(k => { parts.push({ text: 'HÌNH ' + k + ':' }); parts.push({ inline_data: imgs[k - 1].part.inline_data }); });
+                        const rv = await genJson(parts, 0, signal);
+                        const arr = Array.isArray(rv) ? rv : (rv && rv.issues) || [];
+                        arr.forEach(o => { const v = views[(+o.n) - 1]; if (!v || !Array.isArray(o.issues)) return; o.issues.forEach(i => { if (i && i.detail) v.review.push({ type: str(i.type), severity: ['cao', 'trung_binh', 'thap'].indexOf(i.severity) >= 0 ? i.severity : 'trung_binh', detail: str(i.detail) }); }); });
+                        const hi = views.filter(v => v.review.some(i => i.severity !== 'thap')).length;
+                        setStep('review', 'ok', hi ? hi + ' câu bị báo lỗi' : 'Không có lỗi nào được báo');
+                    } catch (e) {
+                        if (e && e.code === 'cancelled') throw e;
+                        views.forEach(v => { v.review = null; });
+                        setStep('review', 'bad', 'Không chạy được. ' + errText(e));
+                    }
+                    views.forEach(paintBox); paintSummary();
+                } catch (e) {
+                    const c = e && e.code;
+                    if (S.cur) setStep(S.cur, 'bad', c === 'cancelled' ? 'Đã dừng' : 'Không hoàn thành');
+                    S.msg = c === 'cancelled' ? 'Đã dừng.' : errText(e); paintSteps();
+                    S.res.forEach(r => paintBox(r.v)); paintSummary();
+                } finally {
+                    S.running = false; clearInterval(S.timer); $('rv-stop').style.display = 'none'; $('rv-run').disabled = !S.connected;
+                }
+            }
+
+            // ---------- Nút bấm công khai ----------
+            window.rvToggle = function () { const b = $('rv-body'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; };
+            window.rvConnect = connect; window.rvRun = run;
+            window.rvStop = function () { if (S.ctl) S.ctl.abort(); };
+            window.rvSeen = function (id) { const r = S.res.get(id); if (!r) return; r.seen = !r.seen; paintBox(r.v); paintSummary(); };
+            window.rvEdit = function (id) { if (typeof openEditQuestionModal === 'function') openEditQuestionModal(id); };
+            window.rvFilter = function () { S.flagOnly = !S.flagOnly; S.res.forEach(r => paintBox(r.v)); paintSummary(); };
+            window.rvApply = function (id) {
+                const r = S.res.get(id); if (!r || !r.v.suggest) return; const v = r.v, q = v.q, val = v.suggest.val;
+                q.ans = val; if (v.type === 'TF') q.ansOptions = val.split('');
+                if (typeof ANS_GUESSED !== 'undefined') ANS_GUESSED.delete(q.id);
+                v.ans = str(q.ans); v.guessed = false; v.suggest = null;
+                localCheck(v); v.machine = checkMachine(v);
+                const card = cardOf(id); if (card) { const a = card.querySelector('.parsed-ans'); if (a) a.textContent = 'Đ/A: ' + q.ans; }
+                paintBox(v); paintSummary();
+            };
+            window.rvPendingCount = function () { return pending(); };
+            window.rvReset = function () { S.res.clear(); S.flagOnly = false; paintSummary(); };
+            // Khôi phục khóa đã nhớ (nếu cô chọn nhớ)
+            document.addEventListener('DOMContentLoaded', () => {
+                try { const k = localStorage.getItem('rv_gemini_key'); if (k && $('rv-key')) { $('rv-key').value = k; $('rv-remember').checked = true; connect(); } } catch (e) { }
+            });
+            window.addEventListener('beforeunload', () => { });
+        })();
     </script>
 </body>
 </html>
