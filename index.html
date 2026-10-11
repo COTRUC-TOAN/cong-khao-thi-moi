@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v18] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v19] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -493,22 +493,31 @@
                                     <span id="rv-conn" style="margin-left:8px; font-size:.9rem;"></span>
                                     <div id="rv-model-row" style="display:none; margin-top:6px;"><label style="font-weight:bold; font-size:.9rem;">Mô hình</label><select id="rv-model"></select></div>
                                     <div id="ai-draft" style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;">
-                                        <strong style="color:#4338ca;">✍️ Soạn đề bằng AI</strong>
-                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô điền yêu cầu, AI soạn đề kèm đáp án và lời giải, rồi tự đưa vào khung dán phía trên. AI có thể sai, nên cô đọc lại và bấm "Bắt đầu rà soát" bên dưới. Đề chỉ có chữ và công thức, chưa có hình.</div>
-                                        <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Chủ đề, nội dung cần soạn</label>
-                                        <textarea id="ai-topic" rows="2" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Ví dụ: Chương 1 lớp 12 - Ứng dụng đạo hàm để khảo sát hàm số"></textarea>
-                                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
-                                            <label style="font-size:.85rem;">Trắc nghiệm<br><input type="number" id="ai-n-mcq" value="6" min="0" max="20" style="width:80px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
-                                            <label style="font-size:.85rem;">Đúng/Sai<br><input type="number" id="ai-n-tf" value="2" min="0" max="10" style="width:80px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
-                                            <label style="font-size:.85rem;">Trả lời ngắn<br><input type="number" id="ai-n-sa" value="2" min="0" max="10" style="width:80px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
-                                            <label style="font-size:.85rem; flex:1; min-width:180px;">Mức độ<br><select id="ai-level" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px;"><option value="hỗn hợp từ nhận biết đến vận dụng">Hỗn hợp</option><option value="nhận biết">Nhận biết</option><option value="thông hiểu">Thông hiểu</option><option value="vận dụng">Vận dụng</option><option value="vận dụng cao">Vận dụng cao</option></select></label>
+                                        <strong style="color:#4338ca;">✍️ Soạn đề bằng AI theo ma trận</strong>
+                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô mô tả đề như một ma trận: mỗi dòng là một nội dung kiến thức, chọn dạng câu, mức độ và số câu. AI soạn theo từng dòng. Soạn xong, cô mô tả chỗ cần sửa để AI chỉnh lại. AI có thể sai nên cô đọc lại và rà soát. Đề chỉ có chữ và công thức, chưa có hình.</div>
+                                        <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Phạm vi, bối cảnh chung (không bắt buộc)</label>
+                                        <textarea id="ai-topic" rows="2" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Ví dụ: Lớp 12, Chương 1 Ứng dụng đạo hàm để khảo sát hàm số. Học sinh khá, đề kiểm tra 45 phút."></textarea>
+                                        <div id="ai-rows" style="margin-top:6px;"></div>
+                                        <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                            <button type="button" class="rv-btn" onclick="aiAddRow()">+ Thêm dòng</button>
+                                            <span id="ai-total" style="font-size:.85rem; color:#475569;"></span>
                                         </div>
-                                        <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Tài liệu để dựa vào (không bắt buộc)</label>
-                                        <textarea id="ai-source" rows="4" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Dán nội dung bài học hoặc đề thô. Nếu có, AI chỉ soạn dựa trên nội dung này."></textarea>
+                                        <details style="margin-top:6px;"><summary style="cursor:pointer; font-size:.9rem; font-weight:bold;">Dán ma trận hoặc tài liệu có sẵn (không bắt buộc)</summary>
+                                            <textarea id="ai-source" rows="4" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Dán ma trận của tổ, nội dung bài học hoặc đề mẫu. AI sẽ bám theo nội dung này."></textarea>
+                                        </details>
                                         <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                             <button type="button" class="btn-start" id="ai-go" style="background:#7c3aed;" onclick="aiDraftRun()">Soạn đề</button>
                                             <button type="button" class="rv-btn" id="ai-stop" style="display:none;" onclick="aiDraftStop()">Dừng</button>
                                             <span id="ai-msg" style="font-size:.9rem; color:#475569;"></span>
+                                        </div>
+                                        <div id="ai-revise-box" style="display:none; margin-top:8px; border-top:1px dotted #94a3b8; padding-top:6px;">
+                                            <label style="font-weight:bold; font-size:.9rem; display:block;">Chỉnh sửa đề theo mô tả của cô</label>
+                                            <textarea id="ai-revise" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Ví dụ: Câu 3 dễ quá, đổi thành dạng có tham số m. Thay câu 5 bằng bài toán thực tế. Thêm 1 câu trả lời ngắn về cực trị. Bỏ câu 8."></textarea>
+                                            <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                                <button type="button" class="btn-start" id="ai-rev-go" style="background:#0f766e;" onclick="aiReviseRun()">Chỉnh sửa đề</button>
+                                                <button type="button" class="rv-btn" id="ai-undo" style="display:none;" onclick="aiUndo()">Quay lại bản trước</button>
+                                            </div>
+                                            <div style="font-size:.8rem; color:#64748b; margin-top:4px;">Số câu theo như đang hiện trong khung dán. Chỉnh sửa bằng AI dựa trên bản AI soạn gần nhất; nếu cô tự sửa tay trong khung dán, web sẽ hỏi lại trước khi thay.</div>
                                         </div>
                                     </div>
                                     <div style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;"><strong style="color:#1d4ed8;">🔍 Rà soát đề</strong></div>
@@ -4332,26 +4341,66 @@ window.addEventListener('popstate', function () {
             }
 
             // ---------- Nút bấm công khai ----------
-            // ---------- Soạn đề bằng AI (v18) ----------
-            let aiCtl = null;
+            // ---------- Soạn đề bằng AI theo ma trận (v19) ----------
+            let aiCtl = null, aiCur = null, aiLastHtml = '', aiHist = [];
             const aiMsg = (t, c) => { const e = $('ai-msg'); if (e) { e.textContent = t; e.style.color = c || '#475569'; } };
-            const aiNum = (id, max) => Math.max(0, Math.min(max, parseInt(($(id) || {}).value, 10) || 0));
-            function aiPrompt(grade, topic, level, nM, nT, nS, source) {
-                return 'NHIỆM VỤ: SOẠN ĐỀ TOÁN THPT\n'
+            const AI_TYPES = { MCQ: 'Trắc nghiệm 4 phương án', TF: 'Đúng/Sai (4 ý a, b, c, d)', SA: 'Trả lời ngắn' };
+            function aiAddRow(v) {
+                v = v || {};
+                const box = $('ai-rows'); if (!box) return;
+                const d = document.createElement('div'); d.className = 'ai-row';
+                d.style.cssText = 'border:1px solid #cbd5e1; background:#fff; border-radius:8px; padding:6px; margin-top:6px;';
+                const sel = (cls, opts, val) => '<select class="' + cls + '" style="padding:6px; border:1px solid #cbd5e1; border-radius:6px;">' + opts.map(o => '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select>';
+                d.innerHTML = '<input class="ai-r-topic" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;" placeholder="Nội dung kiến thức, ví dụ: Tính đơn điệu của hàm số" value="' + esc(v.topic || '') + '">'
+                    + '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:5px; align-items:center;">'
+                    + sel('ai-r-type', [['MCQ', 'Trắc nghiệm'], ['TF', 'Đúng/Sai'], ['SA', 'Trả lời ngắn']], v.type || 'MCQ')
+                    + sel('ai-r-level', [['nhận biết', 'Nhận biết'], ['thông hiểu', 'Thông hiểu'], ['vận dụng', 'Vận dụng'], ['vận dụng cao', 'Vận dụng cao']], v.level || 'thông hiểu')
+                    + '<label style="font-size:.85rem;">Số câu <input type="number" class="ai-r-n" min="1" max="10" value="' + (v.n || 1) + '" style="width:60px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>'
+                    + '<button type="button" class="rv-btn" title="Xóa dòng này" onclick="this.closest(\'.ai-row\').remove(); aiTotal();">✕</button></div>'
+                    + '<input class="ai-r-note" style="width:100%; padding:6px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box; margin-top:5px; font-size:.9rem;" placeholder="Yêu cầu thêm cho dòng này (không bắt buộc), ví dụ: có tham số m, bài toán thực tế" value="' + esc(v.note || '') + '">';
+                d.addEventListener('input', aiTotal); d.addEventListener('change', aiTotal);
+                box.appendChild(d); aiTotal();
+            }
+            function aiRows() {
+                return Array.from(document.querySelectorAll('#ai-rows .ai-row')).map(r => ({
+                    topic: r.querySelector('.ai-r-topic').value.trim(),
+                    type: r.querySelector('.ai-r-type').value,
+                    level: r.querySelector('.ai-r-level').value,
+                    n: Math.max(1, Math.min(10, parseInt(r.querySelector('.ai-r-n').value, 10) || 1)),
+                    note: r.querySelector('.ai-r-note').value.trim()
+                })).filter(r => r.topic);
+            }
+            function aiTotal() {
+                const t = aiRows().reduce((s, r) => s + r.n, 0), e = $('ai-total');
+                if (e) e.textContent = 'Tổng: ' + t + ' câu' + (t > 24 ? ' (nhiều quá, mỗi lần chỉ nên tối đa 24 câu)' : '');
+            }
+            const AI_SCHEMA = 'ĐẦU RA: chỉ một mảng JSON, mỗi phần tử: {"row":số thứ tự dòng ma trận,"type":"MCQ"|"TF"|"SA","stem":"nội dung câu hỏi","options":["...","...","...","..."],"answer":"...","solution":"..."}.\n'
+                + '"options": 4 phần tử cho MCQ và TF, mảng rỗng cho SA. "answer": MCQ ghi A, B, C hoặc D; TF ghi chuỗi 4 ký tự D hoặc S theo thứ tự a, b, c, d (D là Đúng, S là Sai); SA ghi số.';
+            const AI_RULES = 'YÊU CẦU CHUNG:\n'
+                + '- Mỗi câu phải có đúng một đáp án chắc chắn đúng. Tự giải lại kỹ trước khi ghi đáp án. Không soạn câu nếu không chắc đáp án.\n'
+                + '- Không dùng hình vẽ, bảng biến thiên, đồ thị hay cụm "như hình bên". Đề chỉ có chữ và công thức, mô tả bằng lời.\n'
+                + '- Công thức viết bằng LaTeX trong dấu $...$, ví dụ $x^2-3x+2$, $\\frac{a}{b}$, $\\sqrt{x}$.\n'
+                + '- Câu đúng/sai: 4 ý, có cả ý đúng và ý sai, không để cả 4 ý giống nhau.\n'
+                + '- Trả lời ngắn: đáp số là một số ghi dạng thập phân dùng dấu chấm (không dùng phân số hay chữ). Nếu cần làm tròn thì nói rõ trong đề.\n'
+                + '- Trắc nghiệm: 4 phương án khác nhau, chỉ một đúng. Không ghi chữ A, B, C, D trong nội dung phương án.\n'
+                + '- Các câu trong đề không được trùng ý nhau. Lời giải ngắn gọn 2 đến 4 dòng.\n';
+            function aiPrompt(grade, general, rows, source) {
+                const lines = rows.map((r, i) => (i + 1) + ') Nội dung: ' + r.topic + '. Dạng: ' + AI_TYPES[r.type] + '. Mức độ: ' + r.level + '. Số câu: ' + r.n + '.' + (r.note ? ' Yêu cầu thêm: ' + r.note : '')).join('\n');
+                return 'NHIỆM VỤ: SOẠN ĐỀ TOÁN THPT THEO MA TRẬN\n'
                     + 'Bạn là giáo viên Toán THPT giàu kinh nghiệm, soạn đề theo chương trình GDPT 2018 của Việt Nam.\n'
-                    + 'Khối lớp: ' + grade + '. Nội dung cần soạn: ' + topic + '. Mức độ: ' + level + '.\n'
-                    + 'Số câu: ' + nM + ' trắc nghiệm 4 phương án, ' + nT + ' đúng/sai (mỗi câu 4 ý a, b, c, d), ' + nS + ' trả lời ngắn.\n'
-                    + (source ? 'CHỈ dựa trên tài liệu sau, không thêm kiến thức ngoài tài liệu:\n"""\n' + source + '\n"""\n' : '')
-                    + 'YÊU CẦU:\n'
-                    + '- Mỗi câu phải có đúng một đáp án chắc chắn đúng. Tự giải lại kỹ trước khi ghi đáp án. Không soạn câu nếu không chắc đáp án.\n'
-                    + '- Không dùng hình vẽ, bảng biến thiên, đồ thị hay cụm "như hình bên". Đề chỉ có chữ và công thức, mô tả bằng lời.\n'
-                    + '- Công thức viết bằng LaTeX trong dấu $...$, ví dụ $x^2-3x+2$, $\\frac{a}{b}$, $\\sqrt{x}$.\n'
-                    + '- Câu đúng/sai: 4 ý, có cả ý đúng và ý sai, không để cả 4 ý giống nhau.\n'
-                    + '- Trả lời ngắn: đáp số là một số ghi dạng thập phân dùng dấu chấm (không dùng phân số hay chữ). Nếu cần làm tròn thì nói rõ trong đề.\n'
-                    + '- Trắc nghiệm: 4 phương án khác nhau, chỉ một đúng. Không ghi chữ A, B, C, D trong nội dung phương án.\n'
-                    + '- Lời giải ngắn gọn 2 đến 4 dòng.\n'
-                    + 'ĐẦU RA: chỉ một mảng JSON, mỗi phần tử: {"type":"MCQ"|"TF"|"SA","stem":"nội dung câu hỏi","options":["...","...","...","..."],"answer":"...","solution":"..."}.\n'
-                    + '"options": 4 phần tử cho MCQ và TF, mảng rỗng cho SA. "answer": MCQ ghi A, B, C hoặc D; TF ghi chuỗi 4 ký tự D hoặc S theo thứ tự a, b, c, d (D là Đúng, S là Sai); SA ghi số.';
+                    + 'Khối lớp: ' + grade + '.' + (general ? ' Phạm vi, bối cảnh chung: ' + general + '.' : '') + '\n'
+                    + 'MA TRẬN ĐỀ (mỗi dòng soạn đủ số câu, đúng dạng, đúng mức độ, đúng nội dung của dòng đó):\n' + lines + '\n'
+                    + (source ? 'Tài liệu hoặc ma trận do giáo viên cung cấp, hãy bám theo:\n"""\n' + source + '\n"""\n' : '')
+                    + AI_RULES + AI_SCHEMA;
+            }
+            function aiRevisePrompt(grade, ordered, instruction) {
+                const cur = ordered.map((q, i) => ({ n: i + 1, row: q.row, type: q.type, stem: q.stem, options: q.ops, answer: q.ans, solution: q.sol }));
+                return 'NHIỆM VỤ: CHỈNH SỬA ĐỀ TOÁN THPT THEO YÊU CẦU CỦA GIÁO VIÊN\n'
+                    + 'Bạn là giáo viên Toán THPT giàu kinh nghiệm. Khối lớp: ' + grade + '.\n'
+                    + 'ĐỀ HIỆN TẠI (số câu "n" đúng như giáo viên đang thấy):\n' + JSON.stringify(cur) + '\n'
+                    + 'YÊU CẦU CHỈNH SỬA CỦA GIÁO VIÊN:\n"""\n' + instruction + '\n"""\n'
+                    + 'Hãy áp dụng đúng các chỉnh sửa trên. Câu nào giáo viên không nhắc tới thì giữ nguyên y như cũ (sao chép nguyên văn, không tự ý đổi). Khi thay hoặc thêm câu, phải đảm bảo đáp án chắc chắn đúng. Trả về TOÀN BỘ đề sau khi chỉnh sửa, không chỉ các câu đã đổi.\n'
+                    + AI_RULES + AI_SCHEMA;
             }
             function aiToText(items) {
                 const clean = s => str(s).replace(/^\s*(?:Câu|Bài)\s*\d+\s*[:.]\s*/i, '').trim();
@@ -4362,57 +4411,93 @@ window.addEventListener('popstate', function () {
                     if (!it || typeof it !== 'object') { skipped++; return; }
                     const t = str(it.type).toUpperCase(), stem = clean(it.stem), ans = str(it.answer).trim();
                     const ops = (Array.isArray(it.options) ? it.options : []).map(opt);
-                    const sol = str(it.solution).trim();
+                    const sol = str(it.solution).trim(), row = parseInt(it.row, 10) || 0;
                     if (!stem) { skipped++; return; }
                     if (t === 'MCQ') {
                         const a = ans.toUpperCase().replace(/[^A-D]/g, '').charAt(0);
                         if (ops.length !== 4 || ops.some(o => !o) || !a) { skipped++; return; }
-                        groups.MCQ.push({ stem, ops, ans: a, sol });
+                        groups.MCQ.push({ type: 'MCQ', stem, ops, ans: a, sol, row });
                     } else if (t === 'TF') {
                         const a = ans.toUpperCase().replace(/Đ/g, 'D').replace(/[^DS]/g, '');
                         if (ops.length !== 4 || ops.some(o => !o) || a.length !== 4) { skipped++; return; }
-                        groups.TF.push({ stem, ops, ans: a.replace(/D/g, 'Đ'), sol });
+                        groups.TF.push({ type: 'TF', stem, ops, ans: a, sol, row });
                     } else if (t === 'SA') {
                         const a = ans.replace(/\s+/g, '').replace(/[^0-9,.\-]/g, '');
                         if (!a) { skipped++; return; }
-                        groups.SA.push({ stem, ops: [], ans: a, sol });
+                        groups.SA.push({ type: 'SA', stem, ops: [], ans: a, sol, row });
                     } else skipped++;
                 });
                 const lines = []; let n = 0;
                 groups.MCQ.forEach(q => { n++; lines.push('Câu ' + n + '. ' + q.stem, 'A. ' + q.ops[0], 'B. ' + q.ops[1], 'C. ' + q.ops[2], 'D. ' + q.ops[3], 'Đáp án: ' + q.ans, q.sol ? 'Lời giải: ' + q.sol : '', ''); });
-                groups.TF.forEach(q => { n++; lines.push('Câu ' + n + '. ' + q.stem, 'a) ' + q.ops[0], 'b) ' + q.ops[1], 'c) ' + q.ops[2], 'd) ' + q.ops[3], 'Đáp án: ' + q.ans, q.sol ? 'Lời giải: ' + q.sol : '', ''); });
+                groups.TF.forEach(q => { n++; lines.push('Câu ' + n + '. ' + q.stem, 'a) ' + q.ops[0], 'b) ' + q.ops[1], 'c) ' + q.ops[2], 'd) ' + q.ops[3], 'Đáp án: ' + q.ans.replace(/D/g, 'Đ'), q.sol ? 'Lời giải: ' + q.sol : '', ''); });
                 groups.SA.forEach(q => { n++; lines.push('Câu ' + n + '. ' + q.stem, 'Đáp án: ' + q.ans, q.sol ? 'Lời giải: ' + q.sol : '', ''); });
-                return { text: lines.join('\n'), count: n, skipped, mcq: groups.MCQ.length, tf: groups.TF.length, sa: groups.SA.length };
+                return { text: lines.join('\n'), count: n, skipped, mcq: groups.MCQ.length, tf: groups.TF.length, sa: groups.SA.length, ordered: [].concat(groups.MCQ, groups.TF, groups.SA) };
             }
+            function aiShow(out) {
+                const box = $('direct-raw-text');
+                box.innerHTML = out.text.split('\n').map(l => esc(l)).join('<br>');
+                aiLastHtml = box.innerHTML; aiCur = out.ordered;
+                if (typeof parseDirectExam === 'function') { try { parseDirectExam(); } catch (e) { } }
+                $('ai-revise-box').style.display = 'block';
+                $('ai-undo').style.display = aiHist.length ? 'inline-block' : 'none';
+            }
+            function aiErr(e) { return (e && e.code === 'cancelled') ? 'Đã dừng.' : (e && e.code === 'trunc' ? 'Đề quá dài nên bị cắt. Cô giảm xuống khoảng 10 câu mỗi lần rồi soạn thêm.' : errText(e)); }
+            function aiBusy(on) { aiCtl = on ? new AbortController() : null; $('ai-go').disabled = on; $('ai-rev-go').disabled = on; $('ai-stop').style.display = on ? 'inline-block' : 'none'; }
             async function aiDraftRun() {
                 if (aiCtl) return;
                 if (!S.connected) { aiMsg('Cô bấm Kết nối Gemini ở phía trên trước.', '#dc2626'); return; }
-                const topic = ($('ai-topic').value || '').trim();
-                if (!topic) { aiMsg('Cô ghi chủ đề, nội dung cần soạn.', '#dc2626'); return; }
-                const nM = aiNum('ai-n-mcq', 20), nT = aiNum('ai-n-tf', 10), nS = aiNum('ai-n-sa', 10);
-                if (nM + nT + nS === 0) { aiMsg('Cô nhập số câu cần soạn.', '#dc2626'); return; }
-                if (nM + nT + nS > 24) { aiMsg('Mỗi lần chỉ nên soạn tối đa 24 câu. Cô giảm số câu rồi soạn thêm lần nữa.', '#dc2626'); return; }
+                const rows = aiRows();
+                if (!rows.length) { aiMsg('Cô ghi nội dung kiến thức cho ít nhất một dòng của ma trận.', '#dc2626'); return; }
+                const total = rows.reduce((s, r) => s + r.n, 0);
+                if (total > 24) { aiMsg('Mỗi lần chỉ nên soạn tối đa 24 câu. Cô giảm số câu, soạn xong lần này rồi soạn thêm phần tiếp.', '#dc2626'); return; }
                 const box = $('direct-raw-text');
                 if (box && box.textContent.trim() && !confirm('Khung dán đề đang có nội dung. Bấm OK để thay bằng đề AI soạn (nội dung cũ sẽ mất). Bấm Hủy để giữ nguyên.')) return;
                 S.model = ($('rv-model') || {}).value || S.model;
                 const grade = ($('new-exam-grade') || {}).value || '12';
                 const source = ($('ai-source').value || '').trim().slice(0, 12000);
-                aiCtl = new AbortController(); $('ai-go').disabled = true; $('ai-stop').style.display = 'inline-block';
-                aiMsg('Đang soạn đề, có thể mất 30 đến 60 giây…');
+                aiBusy(true); aiMsg('Đang soạn đề, có thể mất 30 đến 90 giây…');
                 try {
-                    const items = await genJson([{ text: aiPrompt(grade, topic, $('ai-level').value, nM, nT, nS, source) }], 0.7, aiCtl.signal);
+                    const items = await genJson([{ text: aiPrompt(grade, ($('ai-topic').value || '').trim(), rows, source) }], 0.7, aiCtl.signal);
                     const out = aiToText(items);
                     if (!out.count) { aiMsg('AI không soạn được câu nào đúng khuôn. Cô bấm Soạn đề lại.', '#dc2626'); return; }
-                    box.innerHTML = out.text.split('\n').map(l => esc(l)).join('<br>');
-                    if (typeof parseDirectExam === 'function') { try { parseDirectExam(); } catch (e) { } }
-                    aiMsg('Đã soạn ' + out.count + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn), đã đưa vào khung dán và bấm Tự Động Phân Tích.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + ' Cô đọc lại, rồi bấm Bắt đầu rà soát.', '#16a34a');
-                } catch (e) {
-                    if (e && e.code === 'cancelled') aiMsg('Đã dừng.');
-                    else aiMsg(e && e.code === 'trunc' ? 'Đề quá dài nên bị cắt. Cô giảm xuống khoảng 10 câu mỗi lần rồi soạn thêm.' : errText(e), '#dc2626');
-                } finally { aiCtl = null; $('ai-go').disabled = false; $('ai-stop').style.display = 'none'; }
+                    aiHist = []; aiShow(out);
+                    const lack = []; rows.forEach((r, i) => { const got = out.ordered.filter(q => q.row === i + 1).length; if (got !== r.n) lack.push('dòng ' + (i + 1) + ' cần ' + r.n + ' câu, AI soạn ' + got); });
+                    aiMsg('Đã soạn ' + out.count + '/' + total + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn), đã đưa vào khung dán và bấm Tự Động Phân Tích.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + (lack.length ? ' Lệch so với ma trận: ' + lack.join('; ') + '.' : '') + ' Cô đọc lại rồi mô tả chỗ cần sửa, hoặc bấm Bắt đầu rà soát.', lack.length || out.skipped ? '#b45309' : '#16a34a');
+                } catch (e) { aiMsg(aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
+                finally { aiBusy(false); }
             }
-            window.aiDraftRun = aiDraftRun;
+            async function aiReviseRun() {
+                if (aiCtl) return;
+                if (!S.connected) { aiMsg('Cô bấm Kết nối Gemini ở phía trên trước.', '#dc2626'); return; }
+                const ins = ($('ai-revise').value || '').trim();
+                if (!aiCur || !aiCur.length) { aiMsg('Cô soạn đề bằng AI trước, rồi mới chỉnh sửa.', '#dc2626'); return; }
+                if (!ins) { aiMsg('Cô mô tả chỗ cần chỉnh sửa.', '#dc2626'); return; }
+                const box = $('direct-raw-text');
+                if (box.innerHTML !== aiLastHtml && !confirm('Cô đã sửa tay trong khung dán. Chỉnh sửa bằng AI sẽ thay toàn bộ khung dán bằng bản AI chỉnh, các sửa tay sẽ mất. Bấm OK để tiếp tục, Hủy để giữ nguyên.')) return;
+                S.model = ($('rv-model') || {}).value || S.model;
+                const grade = ($('new-exam-grade') || {}).value || '12';
+                const prev = { html: aiLastHtml, cur: aiCur };
+                aiBusy(true); aiMsg('Đang chỉnh sửa đề, có thể mất 30 đến 90 giây…');
+                try {
+                    const items = await genJson([{ text: aiRevisePrompt(grade, aiCur, ins) }], 0.4, aiCtl.signal);
+                    const out = aiToText(items);
+                    if (!out.count) { aiMsg('AI không trả về đề đúng khuôn. Cô bấm Chỉnh sửa đề lại.', '#dc2626'); return; }
+                    aiHist.push(prev); aiShow(out);
+                    aiMsg('Đã chỉnh sửa, đề hiện có ' + out.count + ' câu.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + ' Cô đọc lại, nếu chưa ưng thì bấm "Quay lại bản trước".', out.skipped ? '#b45309' : '#16a34a');
+                } catch (e) { aiMsg(aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
+                finally { aiBusy(false); }
+            }
+            function aiUndo() {
+                if (aiCtl || !aiHist.length) return;
+                const p = aiHist.pop();
+                $('direct-raw-text').innerHTML = p.html; aiLastHtml = p.html; aiCur = p.cur;
+                if (typeof parseDirectExam === 'function') { try { parseDirectExam(); } catch (e) { } }
+                $('ai-undo').style.display = aiHist.length ? 'inline-block' : 'none';
+                aiMsg('Đã quay lại bản trước.');
+            }
+            window.aiAddRow = aiAddRow; window.aiDraftRun = aiDraftRun; window.aiReviseRun = aiReviseRun; window.aiUndo = aiUndo;
             window.aiDraftStop = function () { if (aiCtl) aiCtl.abort(); };
+            aiAddRow({ type: 'MCQ', level: 'thông hiểu', n: 4 }); aiAddRow({ type: 'TF', level: 'vận dụng', n: 2 }); aiAddRow({ type: 'SA', level: 'vận dụng', n: 2 });
 
             window.rvToggle = function () { const b = $('rv-body'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; };
             window.rvConnect = connect; window.rvRun = run;
