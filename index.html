@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v31] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v32] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -628,7 +628,8 @@
                                         <label style="font-size:.88rem; display:block; margin-top:6px;"><input type="checkbox" id="pdf-solve" checked> Nếu đề không có đáp án thì để AI tự giải. Cô phải kiểm tra lại các câu này.</label>
                                         <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                             <button type="button" class="btn-start" id="img-go" style="background:#b45309;" onclick="aiImgRun()">Gemini đọc ảnh</button>
-                                            <button type="button" class="rv-btn" onclick="aiExtCopy('img')">📋 Hết lượt? Sao chép lời nhắc để dán sang AI khác (kèm ảnh)</button>
+                                            <button type="button" class="rv-btn" onclick="aiExtCopy('imgtxt')" title="AI khác trả về đề dạng chữ thường, cô sao chép rồi dán thẳng vào khung dán đề">📋 Hết lượt? Lời nhắc cho AI khác (trả về chữ thường, dán thẳng vào khung dán)</button>
+                                            <button type="button" class="rv-btn" onclick="aiExtCopy('img')">📋 Lời nhắc dạng dữ liệu JSON (dán vào khung dán cũng được)</button>
                                             <span id="pdf-msg" style="font-size:.88rem; color:#475569;"></span>
                                         </div>
                                         <div style="font-size:.8rem; color:#64748b; margin-top:4px;">Với AI khác: dán lời nhắc, đính kèm chính các ảnh đó, gửi, rồi sao chép kết quả dán vào ô "Kết quả AI trả về" trong mục "Hết lượt Gemini? Dùng AI khác" ở trên và bấm Nhập vào khung dán. Có file PDF thì cũng làm được: <a href="#" onclick="aiExtCopy('pdf'); return false;">sao chép lời nhắc đọc PDF</a>.</div>
@@ -4999,6 +5000,19 @@ window.addEventListener('popstate', function () {
                     + pdfPrompt(from, to, solve).replace(/file PDF đính kèm/g, 'các ảnh đính kèm').replace(/PDF/g, 'ảnh')
                     + '\nLưu ý thêm: nếu một câu bị cắt ngang giữa hai ảnh thì ghép lại thành một câu. Ký tự mờ hoặc không chắc thì chép theo đúng nhất có thể và không bịa số liệu.';
             }
+            function imgPromptText(from, to, solve) {
+                return 'Tôi đính kèm các ảnh chụp đề Toán (theo thứ tự ảnh 1, 2, 3...). Hãy đọc kỹ các ảnh và chép lại đề thành VĂN BẢN THƯỜNG theo đúng khuôn dưới đây để tôi dán vào phần mềm.\n\n'
+                    + (from || to ? 'Chỉ chép các câu từ câu ' + (from || 1) + ' đến câu ' + (to || 'cuối') + ' theo số thứ tự ghi trên ảnh.\n' : 'Chép tất cả các câu hỏi trong ảnh.\n')
+                    + '- Chép đúng nguyên văn đề, giữ đúng số liệu và từng phương án. Không tự soạn thêm, không sửa đề, không bỏ sót, không gộp câu. Nếu một câu bị cắt giữa hai ảnh thì ghép lại thành một câu. Nếu không thấy ảnh hoặc không đọc được thì nói rõ "không đọc được ảnh", đừng bịa đề.\n'
+                    + '- Công thức viết bằng LaTeX trong dấu $...$, ví dụ $x^2-3x+2$, $\\frac{a}{b}$, $\\sqrt{x}$, $\\int_0^1 x\\,dx$.\n'
+                    + '- Đánh số lại liên tục: Câu 1., Câu 2., ... theo thứ tự trong ảnh.\n'
+                    + '- Trắc nghiệm 4 phương án thì viết đúng khuôn:\nCâu 1. Nội dung câu hỏi\nA. phương án A\nB. phương án B\nC. phương án C\nD. phương án D\nĐáp án: B\n'
+                    + '- Câu đúng/sai có 4 ý a), b), c), d) thì viết đúng khuôn (Đ là Đúng, S là Sai, đủ 4 ký tự theo thứ tự a, b, c, d):\nCâu 2. Nội dung câu dẫn\na) ý a\nb) ý b\nc) ý c\nd) ý d\nĐáp án: ĐSĐS\n'
+                    + '- Câu trả lời ngắn (không có phương án) thì viết đúng khuôn (đáp số là số thập phân dùng dấu chấm):\nCâu 3. Nội dung câu hỏi\nĐáp án: 2.5\n'
+                    + (solve ? '- Nếu ảnh không ghi đáp án của câu nào thì tự giải thật cẩn thận rồi ghi đáp án. Sau khối văn bản, ghi thêm một dòng ngoài khối: "Đáp án tôi tự giải: câu ...".\n' : '- Nếu ảnh không ghi đáp án thì để trống sau chữ "Đáp án:".\n')
+                    + '- Câu nào cần hình vẽ, đồ thị hoặc bảng mà bạn không chép được thành chữ thì ghi thêm (CẦN CHÈN HÌNH) ở cuối câu dẫn.\n'
+                    + 'ĐẦU RA: chỉ MỘT khối mã duy nhất chứa toàn bộ đề theo khuôn trên (để tôi bấm nút sao chép), không giải thích thêm trong khối.';
+            }
             function imgRender() {
                 const box = $('img-list'); if (!box) return;
                 box.innerHTML = '';
@@ -5097,6 +5111,9 @@ window.addEventListener('popstate', function () {
                     if (!aiCur || !aiCur.length) { aiExtSay('Cô soạn hoặc nhập đề vào khung dán trước rồi mới chỉnh sửa.', '#dc2626'); return; }
                     if (!ins) { aiExtSay('Cô ghi chỗ cần chỉnh sửa vào ô "Chỉnh sửa đề theo mô tả của cô" ở dưới khung dán.', '#dc2626'); return; }
                     text = aiRevisePrompt(grade, aiCur, ins, fig); label = 'chỉnh sửa';
+                } else if (mode === 'imgtxt') {
+                    const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
+                    text = imgPromptText(from, to, $('pdf-solve').checked); label = 'đọc ảnh đề (trả về chữ thường)';
                 } else if (mode === 'img') {
                     const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
                     text = imgPrompt(from, to, $('pdf-solve').checked); label = 'đọc ảnh đề';
@@ -5104,9 +5121,9 @@ window.addEventListener('popstate', function () {
                     const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
                     text = 'Tôi đính kèm file PDF đề Toán. Hãy đọc file đính kèm và làm theo yêu cầu sau.\n\n' + pdfPrompt(from, to, $('pdf-solve').checked); label = 'đọc PDF';
                 }
-                text += '\n\nLƯU Ý: hãy trả lời bằng MỘT khối mã duy nhất chứa mảng JSON (để tôi bấm nút sao chép), không giải thích thêm.';
+                if (mode !== 'imgtxt') text += '\n\nLƯU Ý: hãy trả lời bằng MỘT khối mã duy nhất chứa mảng JSON (để tôi bấm nút sao chép), không giải thích thêm.';
                 aiExtMode = mode;
-                const note = $('ai-ext-note'), after = () => { if (note) note.textContent = 'Đã sao chép lời nhắc ' + label + '. Cô dán vào AI khác' + (mode === 'pdf' ? ', đính kèm file PDF,' : (mode === 'img' ? ', đính kèm các ảnh đề,' : '')) + ' rồi gửi. Khi AI trả lời, cô sao chép kết quả dán vào ô bên dưới.'; aiExtSay(''); };
+                const note = $('ai-ext-note'), after = () => { if (note) note.textContent = 'Đã sao chép lời nhắc ' + label + '. Cô dán vào AI khác' + (mode === 'pdf' ? ', đính kèm file PDF,' : ((mode === 'img' || mode === 'imgtxt') ? ', đính kèm các ảnh đề,' : '')) + ' rồi gửi. Khi AI trả lời, cô sao chép kết quả dán vào ô bên dưới.'; aiExtSay(''); if (mode === 'imgtxt') imgSay('Đã sao chép. Cô dán vào AI khác và đính kèm các ảnh đề. AI trả về khối chữ thì sao chép khối đó, dán thẳng vào khung dán đề rồi bấm Tự Động Phân Tích.', '#16a34a'); else if (mode === 'img') imgSay('Đã sao chép lời nhắc dạng JSON. AI trả về thì sao chép khối kết quả và dán vào khung dán đề rồi bấm Tự Động Phân Tích.', '#16a34a'); };
                 if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(after, () => { prompt('Cô sao chép đoạn này (Ctrl+C):', text); after(); });
                 else { prompt('Cô sao chép đoạn này (Ctrl+C):', text); after(); }
             }
