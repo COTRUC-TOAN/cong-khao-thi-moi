@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v32] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v33] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5128,7 +5128,7 @@ window.addEventListener('popstate', function () {
                 else { prompt('Cô sao chép đoạn này (Ctrl+C):', text); after(); }
             }
             async function aiExtImport() {
-                const raw = ($('ai-ext-paste').value || '').trim();
+                const raw = ($('ai-ext-paste').value || '').replace(/[\u00a0\u2007\u202f\u200b\ufeff]/g, ' ').trim();
                 if (!raw) { aiExtSay('Cô dán kết quả AI trả về vào ô trước.', '#dc2626'); return; }
                 let v = parseJson(raw);
                 if (v && !Array.isArray(v)) v = v.questions || v.items || v.cau_hoi || v.data || null;
@@ -5158,7 +5158,7 @@ window.addEventListener('popstate', function () {
             }
             // Dán nhầm kết quả JSON của AI khác vào khung dán đề: tự nhận ra và nhập như ở ô "Kết quả AI trả về"
             window.aiExtAuto = function (txt) {
-                const t = String(txt || '').trim();
+                const t = String(txt || '').replace(/[\u00a0\u2007\u202f\u200b\ufeff]/g, ' ').trim();
                 if (!/^(```[a-z]*\s*)?\[\s*\{/.test(t) || t.length < 40) return false;
                 let v = parseJson(t);
                 if (!Array.isArray(v) || !v.length || !v.every(x => x && typeof x === 'object' && 'stem' in x && 'type' in x)) return false;
