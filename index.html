@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v35] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v37] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -625,7 +625,11 @@
                                         <input type="file" id="img-file" accept="image/*" multiple style="display:none;">
                                         <div id="img-list" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;"></div>
                                         <div style="margin-top:6px; font-size:.9rem;">Chỉ chép từ câu <input type="number" id="pdf-from" min="1" style="width:64px; padding:5px; border:1px solid #cbd5e1; border-radius:6px;"> đến câu <input type="number" id="pdf-to" min="1" style="width:64px; padding:5px; border:1px solid #cbd5e1; border-radius:6px;"> <span style="color:#64748b;">(để trống là chép hết; mỗi lần nên khoảng 20 câu trở xuống)</span></div>
-                                        <label style="font-size:.88rem; display:block; margin-top:6px;"><input type="checkbox" id="pdf-solve" checked> Nếu đề không có đáp án thì để AI tự giải. Cô phải kiểm tra lại các câu này.</label>
+                                        <div style="margin-top:6px; font-size:.9rem; border:1px solid #fcd34d; background:#fffbeb; border-radius:8px; padding:6px 8px;">
+                                            <b>Đề trong ảnh:</b>
+                                            <label style="display:block; margin-top:3px;"><input type="radio" name="pdf-mode" id="pdf-mode-has"> <b>Có đáp án</b>: AI chép đề và đáp án, rồi kiểm tra lại đáp án giúp cô</label>
+                                            <label style="display:block; margin-top:3px;"><input type="radio" name="pdf-mode" id="pdf-mode-no" checked> <b>Không có đáp án</b>: AI chép đề rồi giải, có cách kiểm tra để hạn chế sai (cô vẫn phải xem lại)</label>
+                                        </div>
                                         <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                             <button type="button" class="btn-start" id="img-go" style="background:#b45309;" onclick="aiImgRun()">Gemini đọc ảnh</button>
                                             <button type="button" class="rv-btn" onclick="aiExtCopy('imgtxt')" title="AI khác trả về đề dạng chữ thường, cô sao chép rồi dán thẳng vào khung dán đề">📋 Hết lượt? Lời nhắc cho AI khác (trả về chữ thường, dán thẳng vào khung dán)</button>
@@ -4886,7 +4890,7 @@ window.addEventListener('popstate', function () {
                 outCopy(head + outRules(fig) + outFormat(fig), $('ai-msg'));
             };
             window.pdfCopyOutside = function () {
-                const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0, solve = $('pdf-solve').checked;
+                const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0, solve = imgSolve();
                 const t = 'NHIỆM VỤ: CHUYỂN ĐỀ TOÁN TRONG FILE PDF/ẢNH ĐÍNH KÈM THÀNH VĂN BẢN\nHãy đọc file đính kèm và chép lại từng câu hỏi, giữ đúng thứ tự trong file. '
                     + (from || to ? 'Chỉ chép các câu từ câu ' + (from || 1) + ' đến câu ' + (to || 'cuối') + '. ' : 'Chép tất cả các câu. ')
                     + 'Chép đúng nguyên văn, không tự sửa đề, không bỏ sót, không gộp. Công thức viết bằng LaTeX trong dấu $...$. '
@@ -5001,7 +5005,32 @@ window.addEventListener('popstate', function () {
                 return 'Tôi đính kèm các ảnh chụp đề Toán (theo thứ tự ảnh 1, 2, 3...). Hãy đọc kỹ các ảnh và làm theo yêu cầu sau.\n\n'
                     + pdfPrompt(from, to, solve).replace(/file PDF đính kèm/g, 'các ảnh đính kèm').replace(/PDF/g, 'ảnh')
                     + '\nLưu ý thêm: nếu một câu bị cắt ngang giữa hai ảnh thì ghép lại thành một câu. Ký tự mờ hoặc không chắc thì chép theo đúng nhất có thể và không bịa số liệu.'
+                    + IMG_SAFE.replace(/\n6\. [^\n]*\n/, '\n').replace('1. Bạn chỉ làm một việc là CHÉP LẠI ĐỀ. Không giải toán, không tìm đáp án, không sửa đề, không bổ sung dữ kiện, kể cả khi thấy đề có vẻ sai hoặc thiếu. Câu nào ảnh không ghi đáp án thì để trống đáp án, tuyệt đối không tự điền hay đoán đáp án.', '1. Phần chép đề phải chép đúng nguyên văn, không sửa đề, không bổ sung dữ kiện.')
+                    + imgAnsRules(solve).replace('Ngoài khối mã, ghi thêm một dòng', 'Trong trường "note" của câu, ghi').replace('vẫn GIỮ đáp án trong ảnh ở khối, và ghi riêng ngoài khối một dòng "Đáp án nghi sai: câu ..., tôi tính ra ..." để giáo viên kiểm tra. Nếu không có câu nào nghi sai thì ghi "Đáp án nghi sai: không có".', 'vẫn GIỮ đáp án trong ảnh trong "answer", và đặt "guess":true cho câu đó để giáo viên kiểm tra lại.').replace(/\n7\. [^\n]*\n/, '\n7. Câu tự giải thì đặt "guess":true; câu để trống đáp án thì đặt "answer":"".\n').replace(/Ngoài khối mã[^\n]*/, '')
                     + '\nHÌNH VẼ: câu nào trong ảnh có hình vẽ, đồ thị hoặc bảng biến thiên thì hãy phân tích kỹ hình (đọc đúng các mốc, dấu, giá trị, toạ độ, độ dài, tên điểm) rồi thêm trường "figure" để máy vẽ lại đúng hình đó, theo một trong các cách sau. Câu đã có "figure" thì đặt "needs_figure":false; chỉ đặt "needs_figure":true khi thật sự không vẽ được. Chép đúng hình trong ảnh, không tự đổi hình.\n' + AI_FIG_RULES;
+            }
+
+            const IMG_SAFE = '\nCÁCH LÀM ĐỂ KHÔNG SAI (bắt buộc làm đúng):\n'
+                + '1. Bạn chỉ làm một việc là CHÉP LẠI ĐỀ. Không giải toán, không tìm đáp án, không sửa đề, không bổ sung dữ kiện, kể cả khi thấy đề có vẻ sai hoặc thiếu. Câu nào ảnh không ghi đáp án thì để trống đáp án, tuyệt đối không tự điền hay đoán đáp án.\n'
+                + '2. Đọc từng ảnh từ trên xuống dưới, từng dòng, không bỏ sót câu nào, không gộp hai câu, không thêm câu.\n'
+                + '3. Sau khi chép xong, SOÁT LẠI HAI LẦN trước khi trả lời: (a) đếm số câu bạn chép và so với số câu trong ảnh; (b) với từng câu, so lại từng con số, dấu cộng trừ, chỉ số dưới, số mũ, ký hiệu vectơ, tên điểm, đơn vị và nội dung của từng phương án với ảnh. Chỗ nào khác ảnh thì sửa lại cho giống ảnh.\n'
+                + '4. Các chỗ dễ đọc nhầm, hãy nhìn thật kỹ: 1 với l, 0 với O, dấu trừ với gạch nối, x với dấu nhân, v với ν, √, ∞, ≤ ≥, phân số, căn bậc hai, tọa độ trong ngoặc, chữ cái viết hoa và viết thường của tên điểm.\n'
+                + '5. Chữ nào mờ hoặc không chắc thì chép theo đúng nhất có thể, tuyệt đối không bịa số liệu, và ghi vào danh sách chỗ chưa chắc.\n'
+                + '6. Cuối câu trả lời, NGOÀI khối mã, ghi một dòng "Chỗ chưa chắc: câu ..., câu ..." (ghi rõ câu và chỗ nào), hoặc "Chỗ chưa chắc: không có".\n';
+            const imgSolve = () => { const e = $('pdf-mode-no'); return !!(e && e.checked); };
+            function imgAnsRules(solve) {
+                if (!solve) return '\nĐỀ TRONG ẢNH CÓ ĐÁP ÁN:\n'
+                    + '- Chép đúng đáp án ghi trong ảnh (bảng đáp án, chữ khoanh tròn hoặc gạch chân, dòng "Đáp án"). Không tự đổi đáp án trong ảnh.\n'
+                    + '- Sau khi chép xong, tự giải nhanh từng câu để kiểm tra đáp án trong ảnh. Nếu kết quả của bạn khác đáp án trong ảnh, vẫn GIỮ đáp án trong ảnh ở khối, và ghi riêng ngoài khối một dòng "Đáp án nghi sai: câu ..., tôi tính ra ..." để giáo viên kiểm tra. Nếu không có câu nào nghi sai thì ghi "Đáp án nghi sai: không có".\n';
+                return '\nĐỀ TRONG ẢNH KHÔNG CÓ ĐÁP ÁN, HÃY GIẢI THẬT CẨN THẬN:\n'
+                    + 'Sau khi chép xong đề, giải từng câu theo đúng quy trình sau. Thà để trống đáp án còn hơn đoán bừa.\n'
+                    + '1. Giải từng bước, không nhảy cóc. Không chọn đáp án chỉ vì trông có vẻ đúng.\n'
+                    + '2. Kiểm tra bằng cách thứ hai: thay ngược kết quả vào đề, hoặc thử từng phương án, hoặc giải lại bằng cách khác. Hai cách phải ra cùng một kết quả mới được ghi đáp án.\n'
+                    + '3. Câu đúng/sai: xét RIÊNG từng ý a, b, c, d, mỗi ý đều tự tính hoặc tự chứng minh, rồi mới ghi Đ hoặc S cho ý đó.\n'
+                    + '4. Câu trả lời ngắn: tính ra số, làm tròn đúng yêu cầu của đề, viết số thập phân dùng dấu chấm, và tính lại một lần nữa để chắc.\n'
+                    + '5. Câu trắc nghiệm: nếu kết quả của bạn không khớp phương án nào, hoặc hai cách giải ra khác nhau, hoặc có từ hai phương án cùng đúng, hoặc thiếu hình/dữ kiện để giải thì để TRỐNG đáp án câu đó và ghi vào danh sách đáp án chưa chắc.\n'
+                    + '6. Không chỉnh đề cho khớp đáp án. Không đổi chữ đề vì thấy đề có vẻ sai.\n'
+                    + '7. Ngoài khối mã, ghi thêm một dòng "Đáp án chưa chắc: câu ..., câu ..." (những câu bạn để trống hoặc ít chắc chắn), hoặc "Đáp án chưa chắc: không có". Đáp án bạn tự giải đều phải để giáo viên kiểm tra lại.\n';
             }
             function imgPromptText(from, to, solve) {
                 return 'Tôi đính kèm các ảnh chụp đề Toán (theo thứ tự ảnh 1, 2, 3...). Hãy đọc kỹ các ảnh và chép lại đề thành VĂN BẢN THƯỜNG theo đúng khuôn dưới đây để tôi dán vào phần mềm.\n\n'
@@ -5012,9 +5041,11 @@ window.addEventListener('popstate', function () {
                     + '- Trắc nghiệm 4 phương án thì viết đúng khuôn:\nCâu 1. Nội dung câu hỏi\nA. phương án A\nB. phương án B\nC. phương án C\nD. phương án D\nĐáp án: B\n'
                     + '- Câu đúng/sai có 4 ý a), b), c), d) thì viết đúng khuôn (Đ là Đúng, S là Sai, đủ 4 ký tự theo thứ tự a, b, c, d):\nCâu 2. Nội dung câu dẫn\na) ý a\nb) ý b\nc) ý c\nd) ý d\nĐáp án: ĐSĐS\n'
                     + '- Câu trả lời ngắn (không có phương án) thì viết đúng khuôn (đáp số là số thập phân dùng dấu chấm):\nCâu 3. Nội dung câu hỏi\nĐáp án: 2.5\n'
-                    + (solve ? '- Nếu ảnh không ghi đáp án của câu nào thì tự giải thật cẩn thận rồi ghi đáp án. Sau khối văn bản, ghi thêm một dòng ngoài khối: "Đáp án tôi tự giải: câu ...".\n' : '- Nếu ảnh không ghi đáp án thì để trống sau chữ "Đáp án:".\n')
+                    + (solve ? '- Phần đáp án: ghi theo kết quả giải ở mục "ĐỀ TRONG ẢNH KHÔNG CÓ ĐÁP ÁN" bên dưới; câu nào không chắc thì để trống sau chữ "Đáp án:".\n' : '- Phần đáp án: chép đúng đáp án ghi trong ảnh; câu nào ảnh không ghi thì để trống sau chữ "Đáp án:".\n')
                     + '- Câu nào trong ảnh có hình vẽ, đồ thị hoặc bảng biến thiên thì hãy phân tích kỹ hình (đọc đúng các mốc, dấu, giá trị, toạ độ, độ dài, tên điểm) và viết đúng MỘT dòng mã hình có dạng [[HINH {...}]] ngay sau nội dung câu hỏi (trước các phương án), JSON viết trên một dòng bằng dấu nháy kép, để máy vẽ lại đúng hình đó. Không chèn chữ "Câu" hay số vào bên trong dòng mã hình. Các cách vẽ (phần sau dấu [[HINH là nội dung {...}):\n' + AI_FIG_RULES.replace(/"figure":/g, '') + '- Nếu thật sự không vẽ được hình thì ghi (CẦN CHÈN HÌNH) ở cuối câu dẫn.\n'
-                    + 'ĐẦU RA: chỉ MỘT khối mã duy nhất chứa toàn bộ đề theo khuôn trên (để tôi bấm nút sao chép), không giải thích thêm trong khối.';
+                    + IMG_SAFE.replace('1. Bạn chỉ làm một việc là CHÉP LẠI ĐỀ. Không giải toán, không tìm đáp án, không sửa đề, không bổ sung dữ kiện, kể cả khi thấy đề có vẻ sai hoặc thiếu. Câu nào ảnh không ghi đáp án thì để trống đáp án, tuyệt đối không tự điền hay đoán đáp án.', '1. Phần chép đề phải chép đúng nguyên văn, không sửa đề, không bổ sung dữ kiện, kể cả khi thấy đề có vẻ sai hoặc thiếu.')
+                    + imgAnsRules(solve)
+                    + 'ĐẦU RA: chỉ MỘT khối mã duy nhất chứa toàn bộ đề theo khuôn trên (để tôi bấm nút sao chép), không giải thích thêm trong khối; sau khối mã chỉ có các dòng ghi chú theo yêu cầu ở trên.';
             }
             function imgRender() {
                 const box = $('img-list'); if (!box) return;
@@ -5076,7 +5107,7 @@ window.addEventListener('popstate', function () {
                 if (box && box.textContent.trim() && !confirm('Khung dán đề đang có nội dung. Bấm OK để thay bằng đề đọc từ ảnh (nội dung cũ sẽ mất). Bấm Hủy để giữ nguyên.')) return;
                 S.model = ($('rv-model') || {}).value || S.model;
                 const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
-                const parts = [{ text: imgPrompt(from, to, $('pdf-solve').checked) }];
+                const parts = [{ text: imgPrompt(from, to, imgSolve()) }];
                 imgs.forEach((im, i) => { parts.push({ text: 'ẢNH ' + (i + 1) + ':' }); parts.push({ inline_data: { mime_type: 'image/jpeg', data: im.data } }); });
                 let doAuto = false;
                 aiBusy(true, imgSay); $('img-go').disabled = true; imgSay('Gemini đang đọc ảnh, có thể mất 30 đến 90 giây…');
@@ -5116,13 +5147,13 @@ window.addEventListener('popstate', function () {
                     text = aiRevisePrompt(grade, aiCur, ins, fig); label = 'chỉnh sửa';
                 } else if (mode === 'imgtxt') {
                     const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
-                    text = imgPromptText(from, to, $('pdf-solve').checked); label = 'đọc ảnh đề (trả về chữ thường)';
+                    text = imgPromptText(from, to, imgSolve()); label = 'đọc ảnh đề (trả về chữ thường)';
                 } else if (mode === 'img') {
                     const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
-                    text = imgPrompt(from, to, $('pdf-solve').checked); label = 'đọc ảnh đề';
+                    text = imgPrompt(from, to, imgSolve()); label = 'đọc ảnh đề';
                 } else {
                     const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
-                    text = 'Tôi đính kèm file PDF đề Toán. Hãy đọc file đính kèm và làm theo yêu cầu sau.\n\n' + pdfPrompt(from, to, $('pdf-solve').checked); label = 'đọc PDF';
+                    text = 'Tôi đính kèm file PDF đề Toán. Hãy đọc file đính kèm và làm theo yêu cầu sau.\n\n' + pdfPrompt(from, to, imgSolve()); label = 'đọc PDF';
                 }
                 if (mode !== 'imgtxt') text += '\n\nLƯU Ý: hãy trả lời bằng MỘT khối mã duy nhất chứa mảng JSON (để tôi bấm nút sao chép), không giải thích thêm.';
                 aiExtMode = mode;
