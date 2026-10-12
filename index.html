@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v30] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v31] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1543,6 +1543,7 @@
 
         function parseDirectExam() {
             const h = ((document.getElementById('direct-raw-text') || {}).innerHTML || '').normalize('NFC');
+            if (window.aiExtAuto) { try { if (window.aiExtAuto(((document.getElementById('direct-raw-text') || {}).innerText || ''))) return; } catch (e) { } }
             if (window.rvFigReplace && /\[\[\s*H[IÌ]NH\b/i.test(h)) { window.rvFigReplace().then(parseDirectExamCore, parseDirectExamCore); return; }
             return parseDirectExamCore();
         }
@@ -5138,6 +5139,19 @@ window.addEventListener('popstate', function () {
                     if (S.connected) aiAuto(true);
                 } catch (e) { aiExtSay('Có lỗi khi nhập: ' + (e && e.message ? e.message : 'không rõ'), '#dc2626'); }
             }
+            // Dán nhầm kết quả JSON của AI khác vào khung dán đề: tự nhận ra và nhập như ở ô "Kết quả AI trả về"
+            window.aiExtAuto = function (txt) {
+                const t = String(txt || '').trim();
+                if (!/^(```[a-z]*\s*)?\[\s*\{/.test(t) || t.length < 40) return false;
+                let v = parseJson(t);
+                if (!Array.isArray(v) || !v.length || !v.every(x => x && typeof x === 'object' && 'stem' in x && 'type' in x)) return false;
+                const box = $('direct-raw-text'), keep = box.innerHTML;
+                $('ai-ext-paste').value = t;
+                aiExtMode = v.some(x => 'row' in x) ? 'draft' : 'pdf';
+                box.innerHTML = '';
+                aiExtImport().then(() => { if (!box.innerHTML.trim()) box.innerHTML = keep; });
+                return true;
+            };
             window.aiExtCopy = aiExtCopy; window.aiExtImport = aiExtImport;
             window.aiAddRow = aiAddRow; window.aiDraftRun = aiDraftRun; window.aiReviseRun = aiReviseRun; window.aiUndo = aiUndo;
             window.aiDraftStop = function () { if (aiCtl) aiCtl.abort(); };
