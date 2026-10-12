@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v34] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v35] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1416,8 +1416,10 @@
                 .replace(/&nbsp;/gi, ' ')
                 .replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-            textContent = textContent.replace(/(?:Đ\s*[\/]?\s*A|Đáp\s*án)[:\s]*([A-D])/gi, '\nĐáp án: $1\n');
-            textContent = textContent.replace(/([^\n])\s*(C[âa]u|B[àa]i|C)\s*(\d+)[\s:.]/gi, '$1\n\nCâu $3.');
+            // "Đáp án" phải là từ đứng riêng; dạng viết tắt Đ/A, ĐA chỉ nhận khi đứng đầu dòng (tránh nhầm "đa diện", "rađa")
+            textContent = textContent.replace(/(?<![\p{L}\p{N}])Đáp\s*án[:\s]*([A-D])(?![\p{L}\p{N}])/giu, '\nĐáp án: $1\n');
+            textContent = textContent.replace(/(^|\n)[ \t]*Đ\s*\/?\s*A[ \t]*[:\-.]?[ \t]*([A-D])(?![\p{L}\p{N}])/giu, '$1Đáp án: $2\n');
+            textContent = textContent.replace(/([^\n])\s*(C[âa]u|B[àa]i)\s*(\d+)[\s:.]/gi, '$1\n\nCâu $3.');
             textContent = textContent.replace(/\n\s*\n+/g, '\n\n');
 
             textContent = cleanLatexAndText(textContent);
@@ -1492,9 +1494,9 @@
 
                     let rest = "A. " + splitA.slice(1).join("A. ");
                     let mOptA = rest.match(/A[\.\)]\s*([\s\S]*?)(?=(?:^|\s)B[\.\)]\s*)/i);
-                    let mOptB = rest.match(/B[\.\)]\s*([\s\S]*?)(?=(?:^|\s)C[\.\)]\s*)/i);
-                    let mOptC = rest.match(/C[\.\)]\s*([\s\S]*?)(?=(?:^|\s)D[\.\)]\s*)/i);
-                    let mOptD = rest.match(/D[\.\)]\s*([\s\S]*)$/i);
+                    let mOptB = rest.match(/(?:^|\s)B[\.\)]\s*([\s\S]*?)(?=(?:^|\s)C[\.\)]\s*)/i);
+                    let mOptC = rest.match(/(?:^|\s)C[\.\)]\s*([\s\S]*?)(?=(?:^|\s)D[\.\)]\s*)/i);
+                    let mOptD = rest.match(/(?:^|\s)D[\.\)]\s*([\s\S]*)$/i);
 
                     options[0] = mOptA ? mOptA[1].trim() : '';
                     options[1] = mOptB ? mOptB[1].trim() : '';
