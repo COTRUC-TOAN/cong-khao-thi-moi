@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v33] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v34] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4998,7 +4998,8 @@ window.addEventListener('popstate', function () {
             function imgPrompt(from, to, solve) {
                 return 'Tôi đính kèm các ảnh chụp đề Toán (theo thứ tự ảnh 1, 2, 3...). Hãy đọc kỹ các ảnh và làm theo yêu cầu sau.\n\n'
                     + pdfPrompt(from, to, solve).replace(/file PDF đính kèm/g, 'các ảnh đính kèm').replace(/PDF/g, 'ảnh')
-                    + '\nLưu ý thêm: nếu một câu bị cắt ngang giữa hai ảnh thì ghép lại thành một câu. Ký tự mờ hoặc không chắc thì chép theo đúng nhất có thể và không bịa số liệu.';
+                    + '\nLưu ý thêm: nếu một câu bị cắt ngang giữa hai ảnh thì ghép lại thành một câu. Ký tự mờ hoặc không chắc thì chép theo đúng nhất có thể và không bịa số liệu.'
+                    + '\nHÌNH VẼ: câu nào trong ảnh có hình vẽ, đồ thị hoặc bảng biến thiên thì hãy phân tích kỹ hình (đọc đúng các mốc, dấu, giá trị, toạ độ, độ dài, tên điểm) rồi thêm trường "figure" để máy vẽ lại đúng hình đó, theo một trong các cách sau. Câu đã có "figure" thì đặt "needs_figure":false; chỉ đặt "needs_figure":true khi thật sự không vẽ được. Chép đúng hình trong ảnh, không tự đổi hình.\n' + AI_FIG_RULES;
             }
             function imgPromptText(from, to, solve) {
                 return 'Tôi đính kèm các ảnh chụp đề Toán (theo thứ tự ảnh 1, 2, 3...). Hãy đọc kỹ các ảnh và chép lại đề thành VĂN BẢN THƯỜNG theo đúng khuôn dưới đây để tôi dán vào phần mềm.\n\n'
@@ -5010,7 +5011,7 @@ window.addEventListener('popstate', function () {
                     + '- Câu đúng/sai có 4 ý a), b), c), d) thì viết đúng khuôn (Đ là Đúng, S là Sai, đủ 4 ký tự theo thứ tự a, b, c, d):\nCâu 2. Nội dung câu dẫn\na) ý a\nb) ý b\nc) ý c\nd) ý d\nĐáp án: ĐSĐS\n'
                     + '- Câu trả lời ngắn (không có phương án) thì viết đúng khuôn (đáp số là số thập phân dùng dấu chấm):\nCâu 3. Nội dung câu hỏi\nĐáp án: 2.5\n'
                     + (solve ? '- Nếu ảnh không ghi đáp án của câu nào thì tự giải thật cẩn thận rồi ghi đáp án. Sau khối văn bản, ghi thêm một dòng ngoài khối: "Đáp án tôi tự giải: câu ...".\n' : '- Nếu ảnh không ghi đáp án thì để trống sau chữ "Đáp án:".\n')
-                    + '- Câu nào cần hình vẽ, đồ thị hoặc bảng mà bạn không chép được thành chữ thì ghi thêm (CẦN CHÈN HÌNH) ở cuối câu dẫn.\n'
+                    + '- Câu nào trong ảnh có hình vẽ, đồ thị hoặc bảng biến thiên thì hãy phân tích kỹ hình (đọc đúng các mốc, dấu, giá trị, toạ độ, độ dài, tên điểm) và viết đúng MỘT dòng mã hình có dạng [[HINH {...}]] ngay sau nội dung câu hỏi (trước các phương án), JSON viết trên một dòng bằng dấu nháy kép, để máy vẽ lại đúng hình đó. Không chèn chữ "Câu" hay số vào bên trong dòng mã hình. Các cách vẽ (phần sau dấu [[HINH là nội dung {...}):\n' + AI_FIG_RULES.replace(/"figure":/g, '') + '- Nếu thật sự không vẽ được hình thì ghi (CẦN CHÈN HÌNH) ở cuối câu dẫn.\n'
                     + 'ĐẦU RA: chỉ MỘT khối mã duy nhất chứa toàn bộ đề theo khuôn trên (để tôi bấm nút sao chép), không giải thích thêm trong khối.';
             }
             function imgRender() {
