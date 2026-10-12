@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v20] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v29] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -271,6 +271,81 @@
         .rv-err { background:#fee2e2; color:#991b1b; padding:6px 8px; border-radius:6px; margin-top:6px; }
         .parsed-q-preview-card.rv-flag { border:2px solid #dc2626 !important; background:#fff7f7 !important; }
     </style>
+    <!-- GIAO DIỆN MỚI v28: "vở ô li" cho Góc Học Sinh (chỉ thêm kiểu hiển thị, không đổi chức năng). Xóa cả khối này để quay về giao diện cũ. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style id="skin-hocsinh">
+        :root { --ink: #1c3aa9; --ink-deep: #14297a; --ink-soft: #e8eefc; --red-pen: #c4283a; --red-margin: #e9a9b1; --paper: #ffffff; --desk: #eef2f9; --grid: #dde5f2; --line: #d3dcec; --text: #15203b; --muted: #55627f; --ui: 'Be Vietnam Pro', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif; }
+        body { background-color: var(--desk); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 26px 26px; background-attachment: fixed; }
+
+        .navbar, #portal-view { font-family: var(--ui); }
+        .navbar button, #portal-view button { font-family: var(--ui); }
+        #portal-view { font-size: 1rem; line-height: 1.5; color: var(--text); }
+
+        .navbar { border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 1px 0 var(--line); padding: 12px 20px; }
+        .navbar .brand { font-size: 1.05rem; font-weight: 700; color: var(--text); letter-spacing: 0; }
+        .navbar .brand i { color: var(--ink) !important; }
+        .btn-nav { border-radius: 8px; font-size: .95rem; font-weight: 600; padding: 9px 14px; }
+        .btn-nav-primary { background: var(--ink); }
+        .btn-nav-primary:hover { background: var(--ink-deep); }
+        .btn-nav-outline { border-color: var(--line); color: var(--text); }
+
+        .grade-bar { padding: 4px 2px 16px; }
+        .grade-pill { font-family: var(--ui); font-size: .95rem; font-weight: 600; padding: 8px 18px; border-radius: 8px; border: 1px solid var(--line); color: var(--text); background: var(--paper); }
+        .grade-pill:hover { background: var(--ink-soft); }
+        .grade-pill.active { background: var(--ink); border-color: var(--ink); color: #fff; box-shadow: none; }
+
+        .portal-layout { grid-template-columns: 300px 1fr; gap: 22px; }
+        @media (max-width: 900px) { .portal-layout { grid-template-columns: 1fr; } }
+        .sidebar { border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 1px 0 var(--line); padding: 16px 12px; }
+        .sidebar-title { font-size: 1rem; font-weight: 700; color: var(--text); padding: 0 6px 10px; border-bottom: 2px solid var(--red-margin); margin-bottom: 10px; }
+        .sidebar-title i { color: var(--red-pen); }
+        .topic-group-title { text-transform: none; font-size: .9rem; font-weight: 700; color: var(--ink-deep); background: none; padding: 6px 6px 4px; margin: 14px 0 4px; border-bottom: 1px solid var(--line); border-radius: 0; }
+        .topic-item { font-size: .95rem; border-radius: 8px; color: var(--text); }
+        .topic-item:hover { background: var(--ink-soft); color: var(--ink); }
+        .topic-item.active { background: var(--ink-soft); color: var(--ink); font-weight: 600; border-left: 3px solid var(--ink); }
+
+        /* Thẻ đề: một trang vở ô li, có lề đỏ bên trái; chữ nằm trên dòng kẻ */
+        .exam-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+        .exam-card { position: relative; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); box-shadow: 0 1px 0 var(--line), 0 10px 18px -14px rgba(28,58,169,.45); transition: box-shadow .2s, transform .2s; }
+        .exam-card:hover { transform: translateY(-2px); box-shadow: 0 1px 0 var(--line), 0 14px 22px -14px rgba(28,58,169,.55); }
+        .exam-card::before { content: ''; position: absolute; left: 26px; top: 0; bottom: 0; width: 2px; background: var(--red-margin); z-index: 1; }
+        .exam-card:has(.exam-mode)::before { background: var(--red-pen); }
+        .card-banner, .card-banner.exam-mode, .card-banner.kahoot-mode, .card-banner.lecture-mode { position: static; height: auto; min-height: 0; display: flex; align-items: center; gap: 10px; padding: 12px 14px 10px 40px; background: var(--paper) !important; color: var(--text); border-bottom: 1px solid var(--line); justify-content: flex-start; flex-wrap: wrap; }
+        .card-icon { order: 3; position: static; width: 32px; height: 32px; border-radius: 8px; background: var(--ink-soft); color: var(--ink); font-size: .95rem; margin-left: auto; }
+        .card-badge { order: 1; position: static; background: none; padding: 0; border-radius: 0; font-size: .85rem; font-weight: 600; color: var(--muted); }
+        .card-mode-badge { order: 2; position: static; background: var(--ink-soft); border-radius: 6px; padding: 3px 8px; font-size: .78rem; font-weight: 700; }
+        .exam-card:has(.exam-mode) .card-mode-badge { background: #fde8ea; }
+        .card-body { padding: 8px 16px 16px 40px; background-image: linear-gradient(transparent 27px, #e7edf8 27px, #e7edf8 28px); background-size: 100% 28px; background-position: 0 6px; }
+        .card-title { font-size: 1.02rem; font-weight: 700; line-height: 28px; margin-bottom: 0; color: var(--text); }
+        .card-meta { font-size: .9rem; line-height: 28px; font-weight: 500; color: var(--muted); margin: 0 0 14px; gap: 16px; }
+        .card-actions { grid-template-columns: 1fr auto; gap: 8px; }
+        .btn-start { border-radius: 8px; font-weight: 600; font-size: .95rem; background: var(--ink); }
+        .btn-start:hover { background: var(--ink-deep); }
+        .exam-card:has(.exam-mode) .btn-start { background: var(--red-pen); }
+        .exam-card:has(.exam-mode) .btn-start:hover { background: #a11f2f; }
+        .btn-share { border-radius: 8px; border-color: var(--line); background: #fff; color: var(--muted); }
+        .btn-share:hover { background: var(--ink-soft); color: var(--ink); }
+        .navbar button:focus-visible, #portal-view button:focus-visible, .topic-item:focus-visible { outline: 3px solid #8fa6f0; outline-offset: 2px; }
+        @media (max-width: 640px) {
+            .wrapper { padding: 12px; }
+            .navbar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .navbar .brand { font-size: 1rem; }
+            .nav-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+            .btn-nav { justify-content: center; padding: 10px 8px; font-size: .88rem; }
+            .exam-grid { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) { .exam-card, .exam-card:hover { transition: none; transform: none; } }
+        /* Màn soạn đề: thanh 3 bước */
+        .step-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; font-family: var(--ui); position: sticky; top: 0; z-index: 5; background: #fff; padding: 8px 0; border-bottom: 1px solid var(--line); }
+        .step-bar button { font-family: var(--ui); font-size: .92rem; font-weight: 600; background: var(--ink-soft); color: var(--ink-deep); border: 1px solid transparent; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+        .step-bar button b { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; align-items: center; justify-content: center; font-size: .8rem; margin-right: 6px; }
+        .step-bar button:hover { border-color: var(--ink); }
+        .step-arrow { color: var(--muted); }
+        #sec-t-creator .creator-card { font-family: var(--ui); }
+        #sec-t-creator .creator-card h3 { font-size: 1.1rem; font-weight: 700; }
+    </style>
 </head>
 <body>
 
@@ -427,9 +502,17 @@
 
             <!-- TAB 3: TẠO & SOẠN ĐỀ MỚI ALL-IN-ONE (ĐẦY ĐỦ 3 NGUỒN TẠO ĐỀ) -->
             <div id="sec-t-creator" style="display: none;">
+                <div class="step-bar" id="step-bar">
+                    <button type="button" onclick="document.querySelector('#sec-t-creator .creator-card').scrollIntoView({behavior:'smooth'})"><b>1</b> Thông tin đề</button>
+                    <span class="step-arrow">→</span>
+                    <button type="button" onclick="document.querySelectorAll('#sec-t-creator .creator-card')[1].scrollIntoView({behavior:'smooth'})"><b>2</b> Nhập câu hỏi</button>
+                    <span class="step-arrow">→</span>
+                    <button type="button" onclick="document.getElementById('step3-card').scrollIntoView({behavior:'smooth'})"><b>3</b> Xuất bản</button>
+                </div>
                 <div class="creator-container">
                     <div class="creator-card">
-                        <h3 style="margin-bottom: 14px; color: var(--primary);"><i class="fa-solid fa-file-signature"></i> 1. Cấu Hình Đề Thi & Bảo Mật</h3>
+                        <h3 style="margin-bottom: 14px; color: var(--primary);"><i class="fa-solid fa-file-signature"></i> Bước 1: Thông tin đề thi</h3>
+                        <div style="font-size:.9rem; color:#475569; margin-bottom:10px;">Điền tên, khối lớp, thời gian và (nếu cần) mật khẩu phòng thi. Xong bước này cô kéo xuống bước 2.</div>
                         <div class="form-row"><label>Khối Lớp:</label><select class="form-input" id="new-exam-grade" onchange="updateNewExamTopicDropdown(); renderMatrixTable();"><option value="12">Lớp 12</option><option value="11">Lớp 11</option><option value="10">Lớp 10</option></select></div>
                         <div class="form-row"><label>Chuyên Mục Chung:</label><select class="form-input" id="new-exam-topic"></select></div>
                         <div class="form-row"><label>Mã Đề:</label><input type="text" class="form-input" id="new-exam-id" placeholder="KT12-01"></div>
@@ -458,32 +541,29 @@
                         <div class="form-row"><label style="color:#16a34a;">🟢 Thời gian BẮT ĐẦU mở đề:</label><input type="datetime-local" class="form-input" id="new-exam-start-time"></div>
                         <div class="form-row"><label style="color:#dc2626;">🔴 Thời hạn ĐÓNG đề (Deadline):</label><input type="datetime-local" class="form-input" id="new-exam-deadline"></div>
 
-                        <div class="selected-list-box" id="bank-selected-box">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <strong style="color: #334155;"><i class="fa-solid fa-list-check"></i> Đã Chọn (<span id="selected-q-count" style="color: var(--primary);">0</span> câu)</strong>
-                                <button onclick="clearSelectedQuestions()" style="background: none; border: none; color: #dc2626; cursor: pointer; font-weight: bold;">Xóa hết</button>
-                            </div>
-                            <div id="selected-items-container" style="max-height: 200px; overflow-y: auto;"><p style="text-align: center; color: #94a3b8;">Chưa chọn câu hỏi.</p></div>
-                        </div>
-                        <button class="btn-start" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="saveExamFinal()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Xuất Bản Đề</button>
                     </div>
 
                     <div class="creator-card">
-                        <h3 style="color: #059669; margin-bottom: 14px;"><i class="fa-solid fa-layer-group"></i> 2. Nguồn Tạo Đề</h3>
+                        <h3 style="color: #059669; margin-bottom: 14px;"><i class="fa-solid fa-layer-group"></i> Bước 2: Nhập câu hỏi cho đề</h3>
+                        <div style="font-size:.9rem; color:#475569; margin-bottom:10px;">Chọn một cách nhập bên dưới. Cách thông dụng nhất: <b>dán đề có sẵn</b> vào khung rồi bấm Tự Động Phân Tích, hoặc <b>nhờ AI soạn đề</b> (bấm nút tím "Nhờ AI" dưới khung dán).</div>
                         <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                            <button class="btn-t-tab active" id="tab-add-paste" onclick="switchAddMethod('paste')">Nạp Đề Thông Minh (All-in-One)</button>
-                            <button class="btn-t-tab" id="tab-add-bank" onclick="switchAddMethod('bank')">Chọn Từ Ngân Hàng</button>
-                            <button class="btn-t-tab" id="tab-add-matrix" onclick="switchAddMethod('matrix')">Trộn Ma Trận (Đề Động)</button>
+                            <button class="btn-t-tab active" id="tab-add-paste" onclick="switchAddMethod('paste')">Dán đề hoặc nhờ AI soạn</button>
+                            <button class="btn-t-tab" id="tab-add-bank" onclick="switchAddMethod('bank')">Chọn từ ngân hàng câu hỏi</button>
+                            <button class="btn-t-tab" id="tab-add-matrix" onclick="switchAddMethod('matrix')">Đề trộn ngẫu nhiên (đề động)</button>
                         </div>
 
                         <!-- 1. TẠO ĐỀ NHANH ALL-IN-ONE THÔNG MINH -->
                         <div id="add-method-paste">
                             <p style="font-size: 0.95rem; color: #1e40af; font-weight: bold; margin-bottom: 10px;">✨ Chế độ Tự Động: Dán hỗn hợp mọi dạng câu hỏi (Trắc nghiệm, Đúng/Sai, Ngắn), hệ thống tự bóc tách chuẩn 100% không cần chọn dạng!</p>
                             <div class="rich-textarea" id="direct-raw-text" contenteditable="true" style="height: 55vh; max-height: 55vh;" placeholder="Dán văn bản đề thi..."></div>
+                            <details style="margin-top:8px;"><summary style="cursor:pointer; font-size:.9rem; font-weight:bold; color:#4338ca;">🖼️ Dán mã hình (đồ thị, hình chóp, bảng biến thiên...) lấy từ AI khác</summary>
+                                <div style="font-size:.88rem; color:#475569; margin-top:4px;">Cô có thể nhờ Gemini, ChatGPT hay Claude ở ngoài cho <b>mã hình</b>, rồi dán mã vào ngay vị trí cần hình trong câu, dạng <code>[[HINH {...}]]</code>. Bấm "Tự Động Phân Tích" thì web đổi mã thành hình ngay trong câu. Các dạng hình: đồ thị hàm số, hình chóp/lăng trụ/hộp/tứ diện, bảng biến thiên, hình phẳng (viết bằng SVG). Cô cũng gửi được <b>ảnh chụp</b> hình hoặc bảng biến thiên cho AI đó, nhờ AI phân tích ảnh rồi tạo mã. Mã LaTeX/TikZ của Overleaf thì web chưa vẽ được.</div>
+                                <button type="button" class="rv-btn" style="margin-top:6px;" onclick="rvCopyFigGuide()">📋 Sao chép hướng dẫn để dán cho AI khác</button> <span id="fig-guide-msg" style="font-size:.85rem;"></span>
+                            </details>
                             <button class="btn-start" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự Động Phân Tích</button>
                             <button class="btn-start" id="btn-lock-batch" style="width: 100%; background: #0f766e; margin-top: 8px;" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt Phần Này Để Dán Phần Tiếp</button>
                             <div class="rv-panel">
-                                <button type="button" class="btn-start" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Gemini: soạn đề và rà soát đề (giảm sai sót)</button>
+                                <button type="button" class="btn-start" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Nhờ AI soạn đề, đọc PDF, rà soát đề (bấm để mở)</button>
                                 <div id="rv-body" style="display:none; margin-top:8px;">
                                     <div style="font-size:.85rem; color:#475569;">Bấm "Tự Động Phân Tích" trước, rồi rà soát. Gemini giải độc lập 2 lượt, máy tính kiểm lại phép tính, rồi một lượt phản biện. Kết quả chỉ để cô xem lại, không tự sửa đề.</div>
                                     <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Khóa Gemini (tạo tại aistudio.google.com/apikey)</label>
@@ -494,22 +574,40 @@
                                     <div id="rv-model-row" style="display:none; margin-top:6px;"><label style="font-weight:bold; font-size:.9rem;">Mô hình</label><select id="rv-model"></select></div>
                                     <div id="ai-draft" style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;">
                                         <strong style="color:#4338ca;">✍️ Soạn đề bằng AI theo ma trận</strong>
-                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô mô tả đề như một ma trận: mỗi dòng bấm chọn chủ đề (lấy từ tab ChuDe của Sheet), chọn dạng câu, mức độ và số câu, không cần gõ. AI soạn theo từng dòng. Soạn xong, cô mô tả chỗ cần sửa để AI chỉnh lại. AI có thể sai nên cô đọc lại và rà soát. Đề chỉ có chữ và công thức, chưa có hình.</div>
+                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô mô tả đề như một ma trận: bấm chọn chủ đề (lấy từ tab ChuDe của Sheet), rồi nhập số câu vào bảng: hàng là dạng câu (trắc nghiệm, đúng/sai, trả lời ngắn), cột là mức độ (nhận biết đến vận dụng cao). Ô nào không cần thì để 0. AI soạn theo từng dòng. Soạn xong, cô mô tả chỗ cần sửa để AI chỉnh lại. AI có thể sai nên cô đọc lại và rà soát. AI có thể vẽ hình (đồ thị hàm số, hình khối, hình phẳng) khi câu cần hình.</div>
                                         <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Phạm vi, bối cảnh chung (không bắt buộc)</label>
                                         <textarea id="ai-topic" rows="2" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Ví dụ: Lớp 12, Chương 1 Ứng dụng đạo hàm để khảo sát hàm số. Học sinh khá, đề kiểm tra 45 phút."></textarea>
                                         <div id="ai-rows" style="margin-top:6px;"></div>
                                         <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                                            <button type="button" class="rv-btn" onclick="aiAddRow()">+ Thêm dòng</button>
+                                            <button type="button" class="rv-btn" onclick="aiAddRow()">+ Thêm chủ đề</button>
                                             <span id="ai-total" style="font-size:.85rem; color:#475569;"></span>
                                         </div>
+                                        <label style="font-size:.88rem; display:block; margin-top:6px;"><input type="checkbox" id="ai-fig" checked> Cho phép AI vẽ hình khi câu cần (đồ thị, bảng biến thiên, hình chóp, lăng trụ, hình phẳng). Cô nên xem lại hình.</label>
+                                        <label style="font-size:.88rem; display:block; margin-top:2px;"><input type="checkbox" id="ai-auto" checked> Tự rà soát đề ngay sau khi soạn hoặc chỉnh sửa (tốn thêm khoảng 1 phút)</label>
                                         <details style="margin-top:6px;"><summary style="cursor:pointer; font-size:.9rem; font-weight:bold;">Dán ma trận hoặc tài liệu có sẵn (không bắt buộc)</summary>
                                             <textarea id="ai-source" rows="4" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Dán ma trận của tổ, nội dung bài học hoặc đề mẫu. AI sẽ bám theo nội dung này."></textarea>
                                         </details>
                                         <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                             <button type="button" class="btn-start" id="ai-go" style="background:#7c3aed;" onclick="aiDraftRun()">Soạn đề</button>
                                             <button type="button" class="rv-btn" id="ai-stop" style="display:none;" onclick="aiDraftStop()">Dừng</button>
+                                            <button type="button" class="rv-btn" onclick="aiCopyOutside()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lệnh soạn đề để dán sang AI khác</button>
                                             <span id="ai-msg" style="font-size:.9rem; color:#475569;"></span>
                                         </div>
+                                        <details id="ai-ext" style="margin-top:8px; border:1px solid #c7d2fe; border-radius:8px; padding:6px 8px; background:#eef2ff;"><summary style="cursor:pointer; font-size:.92rem; font-weight:bold; color:#4338ca;">🔗 Hết lượt Gemini? Dùng AI khác (ChatGPT, Claude, Gemini trên web…), không cần khóa</summary>
+                                            <div style="font-size:.86rem; color:#475569; margin-top:4px;">Cách làm: (1) cô điền ma trận phía trên như bình thường, bấm nút sao chép bên dưới; (2) dán vào một cuộc trò chuyện của AI khác rồi gửi; (3) AI trả về một đoạn dữ liệu, cô sao chép đoạn đó dán vào ô "Kết quả" bên dưới và bấm Nhập vào khung dán. Làm theo cách này không dùng lượt của khóa Gemini.</div>
+                                            <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
+                                                <button type="button" class="rv-btn" onclick="aiExtCopy('draft')">📋 1. Sao chép lời nhắc soạn đề</button>
+                                                <button type="button" class="rv-btn" onclick="aiExtCopy('revise')">📋 Sao chép lời nhắc chỉnh sửa đề</button>
+                                                <button type="button" class="rv-btn" onclick="aiExtCopy('pdf')">📋 Sao chép lời nhắc đọc PDF (đính kèm file PDF ở AI đó)</button>
+                                            </div>
+                                            <div id="ai-ext-note" style="font-size:.85rem; color:#4338ca; margin-top:4px;"></div>
+                                            <label style="font-weight:bold; font-size:.9rem; display:block; margin-top:6px;">2. Kết quả AI trả về (dán vào đây)</label>
+                                            <textarea id="ai-ext-paste" rows="4" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Dán nguyên đoạn AI trả về, bắt đầu bằng dấu [ và kết thúc bằng dấu ]. Nếu có thêm chữ hay dấu ba nháy thì cứ dán, web tự lọc."></textarea>
+                                            <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                                <button type="button" class="btn-start" style="background:#4338ca;" onclick="aiExtImport()">Nhập vào khung dán</button>
+                                                <span id="ai-ext-msg" style="font-size:.9rem; color:#475569;"></span>
+                                            </div>
+                                        </details>
                                         <div id="ai-revise-box" style="display:none; margin-top:8px; border-top:1px dotted #94a3b8; padding-top:6px;">
                                             <label style="font-weight:bold; font-size:.9rem; display:block;">Chỉnh sửa đề theo mô tả của cô</label>
                                             <textarea id="ai-revise" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Ví dụ: Câu 3 dễ quá, đổi thành dạng có tham số m. Thay câu 5 bằng bài toán thực tế. Thêm 1 câu trả lời ngắn về cực trị. Bỏ câu 8."></textarea>
@@ -519,6 +617,13 @@
                                             </div>
                                             <div style="font-size:.8rem; color:#64748b; margin-top:4px;">Số câu theo như đang hiện trong khung dán. Chỉnh sửa bằng AI dựa trên bản AI soạn gần nhất; nếu cô tự sửa tay trong khung dán, web sẽ hỏi lại trước khi thay.</div>
                                         </div>
+                                    </div>
+                                    <div id="pdf-box" style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;">
+                                        <strong style="color:#b45309;">📄 Nạp đề từ file PDF (nhờ AI khác đọc)</strong>
+                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô bấm nút sao chép lời nhắc bên dưới, dán vào AI khác (ChatGPT, Claude, Gemini trên web), <b>đính kèm file PDF ở đó</b> rồi gửi. AI trả về dữ liệu thì cô dán vào ô "Kết quả AI trả về" trong mục "Hết lượt Gemini? Dùng AI khác" ở phần Soạn đề phía trên, bấm Nhập vào khung dán.</div>
+                                        <div style="margin-top:6px; font-size:.9rem;">Chỉ chép từ câu <input type="number" id="pdf-from" min="1" style="width:64px; padding:5px; border:1px solid #cbd5e1; border-radius:6px;"> đến câu <input type="number" id="pdf-to" min="1" style="width:64px; padding:5px; border:1px solid #cbd5e1; border-radius:6px;"> <span style="color:#64748b;">(để trống là chép cả file)</span></div>
+                                        <label style="font-size:.88rem; display:block; margin-top:6px;"><input type="checkbox" id="pdf-solve" checked> Nếu PDF không có đáp án thì để AI tự giải. Cô phải kiểm tra lại các câu này.</label>
+                                        <div style="margin-top:6px;"><button type="button" class="btn-start" style="background:#b45309;" onclick="aiExtCopy('pdf')">📋 Sao chép lời nhắc đọc PDF</button> <span id="pdf-msg" style="font-size:.88rem; color:#475569;"></span></div>
                                     </div>
                                     <div style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;"><strong style="color:#1d4ed8;">🔍 Rà soát đề</strong></div>
                                     <div style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -557,6 +662,19 @@
                             <div id="matrix-topics-container" style="max-height: 380px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;"></div>
                             <button class="btn-start" style="width: 100%; background: #059669;" onclick="generateMatrixExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Lưu Ma Trận Động</button>
                         </div>
+                    </div>
+
+                    <div class="creator-card" id="step3-card">
+                        <h3 style="color: #b45309; margin-bottom: 6px;"><i class="fa-solid fa-cloud-arrow-up"></i> Bước 3: Xem lại và xuất bản</h3>
+                        <div style="font-size:.9rem; color:#475569; margin-bottom:8px;">Các câu cô đã bóc tách hoặc chọn ở bước 2 nằm trong danh sách dưới đây. Cô kiểm tra số câu, xóa câu không cần, rồi bấm Lưu & Xuất Bản Đề. Học sinh chỉ thấy đề sau khi cô xuất bản.</div>
+                        <div class="selected-list-box" id="bank-selected-box">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong style="color: #334155;"><i class="fa-solid fa-list-check"></i> Đã Chọn (<span id="selected-q-count" style="color: var(--primary);">0</span> câu)</strong>
+                                <button onclick="clearSelectedQuestions()" style="background: none; border: none; color: #dc2626; cursor: pointer; font-weight: bold;">Xóa hết</button>
+                            </div>
+                            <div id="selected-items-container" style="max-height: 200px; overflow-y: auto;"><p style="text-align: center; color: #94a3b8;">Chưa chọn câu hỏi.</p></div>
+                        </div>
+                        <button class="btn-start" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="saveExamFinal()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Xuất Bản Đề</button>
                     </div>
                 </div>
             </div>
@@ -1416,6 +1534,11 @@
         }
 
         function parseDirectExam() {
+            const h = ((document.getElementById('direct-raw-text') || {}).innerHTML || '').normalize('NFC');
+            if (window.rvFigReplace && /\[\[\s*H[IÌ]NH\b/i.test(h)) { window.rvFigReplace().then(parseDirectExamCore, parseDirectExamCore); return; }
+            return parseDirectExamCore();
+        }
+        function parseDirectExamCore() {
             const rawHtml = document.getElementById('direct-raw-text').innerHTML.trim();
             if (!rawHtml) { alert("Vui lòng dán văn bản đề thi!"); return; }
             
@@ -3934,10 +4057,15 @@ window.addEventListener('popstate', function () {
                 return { code, status, message: m };
             }
             async function gfetch(path, opts, signal) {
-                const delays = [0, 2500, 7000];
+                // Lỗi hết lượt (rate): chờ lâu hơn rồi tự thử lại, vì giới hạn miễn phí tính theo phút. Lỗi khác: thử lại nhanh.
+                const wait = (code, i) => code === 'rate' ? [3000, 20000, 45000][i - 1] : [2500, 7000][i - 1];
                 let last = { code: 'net' };
-                for (let i = 0; i < delays.length; i++) {
-                    if (delays[i]) await sleep(delays[i], signal);
+                for (let i = 0; ; i++) {
+                    if (i > 0) {
+                        const d = wait(last.code, i); if (d == null) break;
+                        if (d >= 10000 && S.onWait) S.onWait(Math.round(d / 1000));
+                        await sleep(d, signal);
+                    }
                     const url = API + path + (path.indexOf('?') >= 0 ? '&' : '?') + 'key=' + encodeURIComponent(S.key);
                     let r;
                     try { r = await fetch(url, Object.assign({ signal }, opts)); }
@@ -4389,113 +4517,400 @@ window.addEventListener('popstate', function () {
                 });
                 aiTotal();
             }
+            const AI_LV = [['nhận biết', 'Nhận biết'], ['thông hiểu', 'Thông hiểu'], ['vận dụng', 'Vận dụng'], ['vận dụng cao', 'VD cao']];
+            const AI_TY = [['MCQ', 'Trắc nghiệm'], ['TF', 'Đúng/Sai'], ['SA', 'Trả lời ngắn']];
             function aiAddRow(v) {
                 v = v || {};
                 const box = $('ai-rows'); if (!box) return;
                 const d = document.createElement('div'); d.className = 'ai-row';
-                d.style.cssText = 'border:1px solid #cbd5e1; background:#fff; border-radius:8px; padding:6px; margin-top:6px;';
-                const sel = (cls, opts, val) => '<select class="' + cls + '" style="padding:6px; border:1px solid #cbd5e1; border-radius:6px;">' + opts.map(o => '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select>';
-                d.innerHTML = '<select class="ai-r-topic-sel" style="width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></select>'
+                d.style.cssText = 'border:1px solid #cbd5e1; background:#fff; border-radius:8px; padding:8px; margin-top:8px;';
+                const cell = (t, l) => '<td style="padding:2px;"><input type="number" class="ai-c" data-t="' + t + '" data-l="' + l + '" min="0" max="10" value="' + ((v.cells && v.cells[t + '|' + l]) || 0) + '" style="width:100%; min-width:44px; padding:6px 2px; border:1px solid #cbd5e1; border-radius:6px; text-align:center; box-sizing:border-box;"></td>';
+                d.innerHTML = '<div style="display:flex; gap:6px; align-items:center;"><select class="ai-r-topic-sel" style="flex:1; min-width:0; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box;"></select>'
+                    + '<button type="button" class="rv-btn" title="Xóa chủ đề này" onclick="this.closest(\'.ai-row\').remove(); aiTotal();">✕</button></div>'
                     + '<input class="ai-r-topic" style="display:none; width:100%; padding:7px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:5px;" placeholder="Gõ nội dung kiến thức, ví dụ: Tính đơn điệu của hàm số" value="' + esc(v.topic || '') + '">'
-                    + '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:5px; align-items:center;">'
-                    + sel('ai-r-type', [['MCQ', 'Trắc nghiệm'], ['TF', 'Đúng/Sai'], ['SA', 'Trả lời ngắn']], v.type || 'MCQ')
-                    + sel('ai-r-level', [['nhận biết', 'Nhận biết'], ['thông hiểu', 'Thông hiểu'], ['vận dụng', 'Vận dụng'], ['vận dụng cao', 'Vận dụng cao']], v.level || 'thông hiểu')
-                    + '<label style="font-size:.85rem;">Số câu <input type="number" class="ai-r-n" min="1" max="10" value="' + (v.n || 1) + '" style="width:60px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>'
-                    + '<button type="button" class="rv-btn" title="Xóa dòng này" onclick="this.closest(\'.ai-row\').remove(); aiTotal();">✕</button></div>'
-                    + '<input class="ai-r-note" style="width:100%; padding:6px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box; margin-top:5px; font-size:.9rem;" placeholder="Yêu cầu thêm cho dòng này (không bắt buộc), ví dụ: có tham số m, bài toán thực tế" value="' + esc(v.note || '') + '">';
+                    + '<table style="width:100%; border-collapse:collapse; margin-top:6px; font-size:.82rem; table-layout:fixed;"><tr><th style="width:24%;"></th>' + AI_LV.map(l => '<th style="padding:2px; font-weight:bold; color:#475569;">' + l[1] + '</th>').join('') + '</tr>'
+                    + AI_TY.map(t => '<tr><td style="font-weight:bold; padding:2px;">' + t[1] + '</td>' + AI_LV.map(l => cell(t[0], l[0])).join('') + '</tr>').join('') + '</table>'
+                    + '<div class="ai-r-sub" style="font-size:.82rem; color:#475569; margin-top:3px;"></div>'
+                    + '<details style="margin-top:4px;"' + (v.sample ? ' open' : '') + '><summary style="cursor:pointer; font-size:.85rem; color:#4338ca;">Câu mẫu của cô cho chủ đề này (không bắt buộc)</summary><textarea class="ai-r-sample" rows="3" style="width:100%; padding:6px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box; margin-top:4px; font-size:.9rem;" placeholder="Dán 1 đến 2 câu cô ưng ý. AI sẽ soạn câu mới cùng cách hỏi và độ khó, đổi số liệu, không chép lại.">' + esc(v.sample || '') + '</textarea></details>'
+                    + '<input class="ai-r-note" style="width:100%; padding:6px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box; margin-top:5px; font-size:.9rem;" placeholder="Mô tả sát hơn cho chủ đề này (không bắt buộc), ví dụ: hàm bậc ba, có tham số m, bài toán thực tế" value="' + esc(v.note || '') + '">';
                 d.addEventListener('input', aiTotal);
                 d.addEventListener('change', () => { aiTopicToggle(d); aiTotal(); });
                 box.appendChild(d); aiFillTopicSel(d, v.topic || '', !!v.topic); aiTotal();
             }
+            function aiCellN(c) { return Math.max(0, Math.min(10, parseInt(c.value, 10) || 0)); }
             function aiRows() {
-                return Array.from(document.querySelectorAll('#ai-rows .ai-row')).map(r => ({
-                    topic: aiRowTopic(r),
-                    type: r.querySelector('.ai-r-type').value,
-                    level: r.querySelector('.ai-r-level').value,
-                    n: Math.max(1, Math.min(10, parseInt(r.querySelector('.ai-r-n').value, 10) || 1)),
-                    note: r.querySelector('.ai-r-note').value.trim()
-                })).filter(r => r.topic);
+                const out = [];
+                document.querySelectorAll('#ai-rows .ai-row').forEach(r => {
+                    const topic = aiRowTopic(r), note = r.querySelector('.ai-r-note').value.trim();
+                    if (!topic) return;
+                    AI_TY.forEach(t => AI_LV.forEach(l => {
+                        const c = r.querySelector('.ai-c[data-t="' + t[0] + '"][data-l="' + l[0] + '"]'), n = aiCellN(c);
+                        if (n > 0) out.push({ topic, type: t[0], level: l[0], n, note, sample: (r.querySelector('.ai-r-sample').value || '').trim().slice(0, 1500) });
+                    }));
+                });
+                return out;
+            }
+            function aiNoTopic() {
+                return Array.from(document.querySelectorAll('#ai-rows .ai-row')).filter(r => !aiRowTopic(r) && Array.from(r.querySelectorAll('.ai-c')).some(c => aiCellN(c) > 0)).length;
             }
             function aiTotal() {
                 const t = aiRows().reduce((s, r) => s + r.n, 0), e = $('ai-total');
+                document.querySelectorAll('#ai-rows .ai-row').forEach(r => {
+                    const sub = r.querySelector('.ai-r-sub'); if (!sub) return;
+                    const cnt = {}; AI_TY.forEach(x => { cnt[x[0]] = 0; }); r.querySelectorAll('.ai-c').forEach(c => { cnt[c.dataset.t] += aiCellN(c); });
+                    sub.textContent = 'Chủ đề này: ' + cnt.MCQ + ' trắc nghiệm, ' + cnt.TF + ' đúng/sai, ' + cnt.SA + ' trả lời ngắn.';
+                });
                 if (e) e.textContent = 'Tổng: ' + t + ' câu' + (t > 24 ? ' (nhiều quá, mỗi lần chỉ nên tối đa 24 câu)' : '');
             }
-            const AI_SCHEMA = 'ĐẦU RA: chỉ một mảng JSON, mỗi phần tử: {"row":số thứ tự dòng ma trận,"type":"MCQ"|"TF"|"SA","stem":"nội dung câu hỏi","options":["...","...","...","..."],"answer":"...","solution":"..."}.\n'
+            const AI_SCHEMA = 'ĐẦU RA: chỉ một mảng JSON, mỗi phần tử: {"row":số thứ tự dòng ma trận,"type":"MCQ"|"TF"|"SA","stem":"nội dung câu hỏi","options":["...","...","...","..."],"answer":"...","solution":"...","figure":(chỉ khi câu cần hình)}.\n'
                 + '"options": 4 phần tử cho MCQ và TF, mảng rỗng cho SA. "answer": MCQ ghi A, B, C hoặc D; TF ghi chuỗi 4 ký tự D hoặc S theo thứ tự a, b, c, d (D là Đúng, S là Sai); SA ghi số.';
-            const AI_RULES = 'YÊU CẦU CHUNG:\n'
-                + '- Mỗi câu phải có đúng một đáp án chắc chắn đúng. Tự giải lại kỹ trước khi ghi đáp án. Không soạn câu nếu không chắc đáp án.\n'
-                + '- Không dùng hình vẽ, bảng biến thiên, đồ thị hay cụm "như hình bên". Đề chỉ có chữ và công thức, mô tả bằng lời.\n'
-                + '- Công thức viết bằng LaTeX trong dấu $...$, ví dụ $x^2-3x+2$, $\\frac{a}{b}$, $\\sqrt{x}$.\n'
-                + '- Câu đúng/sai: 4 ý, có cả ý đúng và ý sai, không để cả 4 ý giống nhau.\n'
-                + '- Trả lời ngắn: đáp số là một số ghi dạng thập phân dùng dấu chấm (không dùng phân số hay chữ). Nếu cần làm tròn thì nói rõ trong đề.\n'
-                + '- Trắc nghiệm: 4 phương án khác nhau, chỉ một đúng. Không ghi chữ A, B, C, D trong nội dung phương án.\n'
-                + '- Các câu trong đề không được trùng ý nhau. Lời giải ngắn gọn 2 đến 4 dòng.\n';
-            function aiPrompt(grade, general, rows, source) {
+            const AI_FIG_RULES = `  + Đồ thị hàm số y=f(x): "figure":{"kind":"graph","funcs":["x^3-3*x"],"xmin":-3,"xmax":3,"ymin":-4,"ymax":4}. Biểu thức viết theo cú pháp math.js với biến x (ví dụ x^3-3*x, (x+1)/(x-1), sqrt(x), abs(x), sin(x), exp(x), log(x)), tối đa 3 hàm. Máy tự vẽ chính xác. Chọn khoảng xmin, xmax, ymin, ymax đủ thấy các điểm đặc biệt. Nếu câu hỏi bắt đọc tính chất từ đồ thị thì không ghi công thức hàm trong đề.
+  + Hình khối đa diện (hình chóp, lăng trụ, hình hộp, tứ diện): "figure":{"kind":"solid","points":{"S":[2,2,5],"A":[0,0,0],"B":[4,0,0],"C":[4,4,0],"D":[0,4,0]},"faces":[["A","B","C","D"],["S","A","B"],["S","B","C"],["S","C","D"],["S","D","A"]],"extra":[["S","O"]],"labels":["S","A","B","C","D"]}. Toạ độ [x,y,z] là toạ độ thật trong không gian: x sang phải, y là chiều sâu (ra xa người nhìn), z hướng lên. Đặt cạnh đáy phía trước song song trục x, đáy nằm ở z=0. "faces": mọi mặt của khối, mỗi mặt là danh sách tên đỉnh theo thứ tự đi vòng quanh mặt (khối phải lồi). Máy tự chiếu hình và tự vẽ nét khuất bằng nét đứt, nên chỉ cần toạ độ đúng với số liệu đề (ví dụ đáy hình vuông cạnh a thì toạ độ phải đúng như vậy; góc vuông, trung điểm, đường cao phải khớp). "extra": các đoạn thêm không phải cạnh khối (đường cao, đoạn nối trung điểm...), mỗi đoạn là [tên điểm, tên điểm] vẽ nét đứt, hoặc {"a":"S","b":"H","dashed":false} để vẽ nét liền; các điểm phụ như H, O, M cũng khai trong "points" nhưng không đưa vào "faces". "labels": các điểm cần ghi tên.
+  + Hình phẳng (tam giác, tứ giác, đường tròn, hình nón, hình trụ, hình cầu...): "figure":{"kind":"svg","svg":"<svg viewBox='0 0 400 300' xmlns='http://www.w3.org/2000/svg'>...</svg>"}. Nét đen trên nền trắng, tên điểm viết bằng thẻ <text> cỡ 16, không dùng script, ảnh ngoài hay font ngoài. Tính toạ độ các điểm thật cẩn thận để hình khớp số liệu trong đề (độ dài, góc vuông, trung điểm). Đề vẫn phải đủ dữ kiện bằng chữ, không chỉ dựa vào hình.
+  + Bảng biến thiên: "figure":{"kind":"bbt","x":["-∞","-1","1","+∞"],"yp":["+","0","-","0","+"],"y":["-∞","3","-1","+∞"]}. "x": các mốc của biến x từ trái sang phải. "yp": dấu của y' xen kẽ khoảng và mốc, bắt đầu và kết thúc bằng một khoảng, gồm đúng 2n-3 phần tử (n là số mốc của "x", kể cả hai đầu -∞ và +∞, vì hai đầu không có giá trị y'): dấu "+" hoặc "-" cho mỗi khoảng, "0" cho mốc mà y' bằng 0, "||" cho mốc mà hàm không xác định. Ví dụ x có 4 mốc thì yp có 5 phần tử. "y": giá trị của hàm tại từng mốc, đúng n phần tử, viết chữ thường như "-∞", "+∞", "3", "1/2", "m". Mốc có tiệm cận đứng (yp là "||") thì giá trị là mảng hai phần tử [giá trị bên trái, giá trị bên phải], ví dụ ["+∞","-∞"]. Máy tự vẽ mũi tên đi lên hoặc đi xuống theo dấu của y' và tự đặt giá trị cao hoặc thấp. Tối đa 7 mốc.
+`;
+            function aiRules(allowFig) {
+                return 'YÊU CẦU CHUNG:\n'
+                    + '- Mỗi câu phải có đúng một đáp án chắc chắn đúng. Tự giải lại kỹ trước khi ghi đáp án. Không soạn câu nếu không chắc đáp án.\n'
+                    + (allowFig ? '- Hình vẽ: chỉ thêm hình khi câu hỏi thật sự cần hình (đọc đồ thị, bảng biến thiên, hình học). Câu không cần hình thì bỏ trường "figure". Không dùng cụm "như hình bên" nếu không có figure. Có bốn cách vẽ:\n' + AI_FIG_RULES : '- Không dùng hình vẽ, bảng biến thiên, đồ thị hay cụm "như hình bên". Đề chỉ có chữ và công thức, mô tả bằng lời.\n')
+                    + '- Công thức viết bằng LaTeX trong dấu $...$, ví dụ $x^2-3x+2$, $\\frac{a}{b}$, $\\sqrt{x}$.\n'
+                    + '- Câu đúng/sai: 4 ý, có cả ý đúng và ý sai, không để cả 4 ý giống nhau.\n'
+                    + '- Trả lời ngắn: đáp số là một số ghi dạng thập phân dùng dấu chấm (không dùng phân số hay chữ). Nếu cần làm tròn thì nói rõ trong đề.\n'
+                    + '- Trắc nghiệm: 4 phương án khác nhau, chỉ một đúng. Không ghi chữ A, B, C, D trong nội dung phương án.\n'
+                    + '- Các câu trong đề không được trùng ý nhau. Lời giải ngắn gọn 2 đến 4 dòng.\n';
+            }
+            function aiPrompt(grade, general, rows, source, allowFig) {
+                const sm = new Map(); rows.forEach(r => { if (r.sample && !sm.has(r.topic)) sm.set(r.topic, r.sample); });
+                const samples = Array.from(sm).map(([t, x]) => 'Chủ đề "' + t + '":\n"""\n' + x + '\n"""').join('\n');
                 const lines = rows.map((r, i) => (i + 1) + ') Nội dung: ' + r.topic + '. Dạng: ' + AI_TYPES[r.type] + '. Mức độ: ' + r.level + '. Số câu: ' + r.n + '.' + (r.note ? ' Yêu cầu thêm: ' + r.note : '')).join('\n');
                 return 'NHIỆM VỤ: SOẠN ĐỀ TOÁN THPT THEO MA TRẬN\n'
                     + 'Bạn là giáo viên Toán THPT giàu kinh nghiệm, soạn đề theo chương trình GDPT 2018 của Việt Nam.\n'
                     + 'Khối lớp: ' + grade + '.' + (general ? ' Phạm vi, bối cảnh chung: ' + general + '.' : '') + '\n'
                     + 'MA TRẬN ĐỀ (mỗi dòng soạn đủ số câu, đúng dạng, đúng mức độ, đúng nội dung của dòng đó):\n' + lines + '\n'
+                    + (samples ? 'CÂU MẪU CỦA GIÁO VIÊN (bắt chước cách hỏi, độ khó, văn phong; tuyệt đối không chép lại, phải đổi số liệu và tình huống):\n' + samples + '\n' : '')
                     + (source ? 'Tài liệu hoặc ma trận do giáo viên cung cấp, hãy bám theo:\n"""\n' + source + '\n"""\n' : '')
-                    + AI_RULES + AI_SCHEMA;
+                    + aiRules(allowFig) + AI_SCHEMA;
             }
-            function aiRevisePrompt(grade, ordered, instruction) {
-                const cur = ordered.map((q, i) => ({ n: i + 1, row: q.row, type: q.type, stem: q.stem, options: q.ops, answer: q.ans, solution: q.sol }));
+            function aiRevisePrompt(grade, ordered, instruction, allowFig) {
+                const cur = ordered.map((q, i) => ({ n: i + 1, row: q.row, type: q.type, stem: q.stem, options: q.ops, answer: q.ans, solution: q.sol, figure: q.fig || undefined }));
                 return 'NHIỆM VỤ: CHỈNH SỬA ĐỀ TOÁN THPT THEO YÊU CẦU CỦA GIÁO VIÊN\n'
                     + 'Bạn là giáo viên Toán THPT giàu kinh nghiệm. Khối lớp: ' + grade + '.\n'
                     + 'ĐỀ HIỆN TẠI (số câu "n" đúng như giáo viên đang thấy):\n' + JSON.stringify(cur) + '\n'
                     + 'YÊU CẦU CHỈNH SỬA CỦA GIÁO VIÊN:\n"""\n' + instruction + '\n"""\n'
-                    + 'Hãy áp dụng đúng các chỉnh sửa trên. Câu nào giáo viên không nhắc tới thì giữ nguyên y như cũ (sao chép nguyên văn, không tự ý đổi). Khi thay hoặc thêm câu, phải đảm bảo đáp án chắc chắn đúng. Trả về TOÀN BỘ đề sau khi chỉnh sửa, không chỉ các câu đã đổi.\n'
-                    + AI_RULES + AI_SCHEMA;
+                    + 'Hãy áp dụng đúng các chỉnh sửa trên. Câu nào giáo viên không nhắc tới thì giữ nguyên y như cũ (sao chép nguyên văn, không tự ý đổi). Câu giữ nguyên thì sao chép nguyên cả trường "figure" nếu có. Khi thay hoặc thêm câu, phải đảm bảo đáp án chắc chắn đúng. Trả về TOÀN BỘ đề sau khi chỉnh sửa, không chỉ các câu đã đổi.\n'
+                    + aiRules(allowFig) + AI_SCHEMA;
             }
-            function aiToText(items) {
+            function aiToText(items, cfg) {
+                cfg = cfg || {};
                 const clean = s => str(s).replace(/^\s*(?:Câu|Bài)\s*\d+\s*[:.]\s*/i, '').trim();
                 const opt = s => str(s).replace(/^\s*[A-Da-d][\.\)]\s*/, '').trim();
-                const groups = { MCQ: [], TF: [], SA: [] };
+                const groups = { MCQ: [], TF: [], SA: [] }, all = [];
                 let skipped = 0;
                 (Array.isArray(items) ? items : []).forEach(it => {
                     if (!it || typeof it !== 'object') { skipped++; return; }
-                    const t = str(it.type).toUpperCase(), stem = clean(it.stem), ans = str(it.answer).trim();
+                    const t = str(it.type).toUpperCase(), stem = clean(it.stem) + ((cfg.pdf && it.needs_figure) ? ' (CẦN CHÈN HÌNH)' : ''), ans = str(it.answer).trim();
                     const ops = (Array.isArray(it.options) ? it.options : []).map(opt);
                     const sol = str(it.solution).trim(), row = parseInt(it.row, 10) || 0;
+                    const fg = (it.figure && typeof it.figure === 'object' && (it.figure.kind === 'graph' || it.figure.kind === 'solid' || it.figure.kind === 'bbt' || (it.figure.kind === 'svg' && typeof it.figure.svg === 'string'))) ? it.figure : null;
                     if (!stem) { skipped++; return; }
                     if (t === 'MCQ') {
                         const a = ans.toUpperCase().replace(/[^A-D]/g, '').charAt(0);
-                        if (ops.length !== 4 || ops.some(o => !o) || !a) { skipped++; return; }
-                        groups.MCQ.push({ type: 'MCQ', stem, ops, ans: a, sol, row });
+                        if (ops.length !== 4 || ops.some(o => !o) || (!a && !cfg.noAns)) { skipped++; return; }
+                        groups.MCQ.push({ type: 'MCQ', stem, ops, ans: a, sol, row, fig: fg, guess: !!it.guess, nf: !!(cfg.pdf && it.needs_figure) });
                     } else if (t === 'TF') {
                         const a = ans.toUpperCase().replace(/Đ/g, 'D').replace(/[^DS]/g, '');
-                        if (ops.length !== 4 || ops.some(o => !o) || a.length !== 4) { skipped++; return; }
-                        groups.TF.push({ type: 'TF', stem, ops, ans: a, sol, row });
+                        if (ops.length !== 4 || ops.some(o => !o) || (a.length !== 4 && !(cfg.noAns && !a))) { skipped++; return; }
+                        groups.TF.push({ type: 'TF', stem, ops, ans: a, sol, row, fig: fg, guess: !!it.guess, nf: !!(cfg.pdf && it.needs_figure) });
                     } else if (t === 'SA') {
                         const a = ans.replace(/\s+/g, '').replace(/[^0-9,.\-]/g, '');
-                        if (!a) { skipped++; return; }
-                        groups.SA.push({ type: 'SA', stem, ops: [], ans: a, sol, row });
+                        if (!a && !cfg.noAns) { skipped++; return; }
+                        groups.SA.push({ type: 'SA', stem, ops: [], ans: a, sol, row, fig: fg, guess: !!it.guess, nf: !!(cfg.pdf && it.needs_figure) });
                     } else skipped++;
+                    const lastQ = ['MCQ', 'TF', 'SA'].map(k => groups[k][groups[k].length - 1]).filter(x => x && all.indexOf(x) < 0)[0]; if (lastQ) all.push(lastQ);
                 });
                 const lines = []; let n = 0;
-                groups.MCQ.forEach(q => { n++; lines.push('Câu ' + n + '. ' + q.stem, 'A. ' + q.ops[0], 'B. ' + q.ops[1], 'C. ' + q.ops[2], 'D. ' + q.ops[3], 'Đáp án: ' + q.ans, q.sol ? 'Lời giải: ' + q.sol : '', ''); });
-                groups.TF.forEach(q => { n++; lines.push('Câu ' + n + '. ' + q.stem, 'a) ' + q.ops[0], 'b) ' + q.ops[1], 'c) ' + q.ops[2], 'd) ' + q.ops[3], 'Đáp án: ' + q.ans.replace(/D/g, 'Đ'), q.sol ? 'Lời giải: ' + q.sol : '', ''); });
-                groups.SA.forEach(q => { n++; lines.push('Câu ' + n + '. ' + q.stem, 'Đáp án: ' + q.ans, q.sol ? 'Lời giải: ' + q.sol : '', ''); });
-                return { text: lines.join('\n'), count: n, skipped, mcq: groups.MCQ.length, tf: groups.TF.length, sa: groups.SA.length, ordered: [].concat(groups.MCQ, groups.TF, groups.SA) };
+                const ordered = cfg.keepOrder ? all : [].concat(groups.MCQ, groups.TF, groups.SA);
+                const fg = q => q.fig ? ' [[FIG ' + n + ']]' : '', an = q => q.ans ? 'Đáp án: ' + (q.type === 'TF' ? q.ans.replace(/D/g, 'Đ') : q.ans) : '', ls = q => q.sol ? 'Lời giải: ' + q.sol : '';
+                ordered.forEach(q => {
+                    n++;
+                    if (q.type === 'MCQ') lines.push('Câu ' + n + '. ' + q.stem + fg(q), 'A. ' + q.ops[0], 'B. ' + q.ops[1], 'C. ' + q.ops[2], 'D. ' + q.ops[3], an(q), ls(q), '');
+                    else if (q.type === 'TF') lines.push('Câu ' + n + '. ' + q.stem + fg(q), 'a) ' + q.ops[0], 'b) ' + q.ops[1], 'c) ' + q.ops[2], 'd) ' + q.ops[3], an(q), ls(q), '');
+                    else lines.push('Câu ' + n + '. ' + q.stem + fg(q), an(q), ls(q), '');
+                });
+                return { text: lines.join('\n'), count: n, skipped, mcq: groups.MCQ.length, tf: groups.TF.length, sa: groups.SA.length, ordered, guessed: ordered.map((q, i) => q.guess ? i + 1 : 0).filter(Boolean), needFig: ordered.map((q, i) => q.nf ? i + 1 : 0).filter(Boolean) };
+            }
+            // ---------- Vẽ hình (đồ thị do máy vẽ, hình học do AI viết SVG) ----------
+            const FIG_W = 480, FIG_H = 360;
+            const aiNum = (v, d) => { const n = parseFloat(v); return isFinite(n) ? n : d; };
+            function niceStep(r) { const raw = r / 8, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+            async function aiFigGraph(f) {
+                await loadMath();
+                if (!window.math || !math.compile) throw new Error('nomath');
+                const fs = (Array.isArray(f.funcs) ? f.funcs : (f.expr ? [f.expr] : [])).map(x => typeof x === 'string' ? x : (x && x.expr) || '').filter(Boolean).slice(0, 3);
+                if (!fs.length) throw new Error('nofunc');
+                let x0 = aiNum(f.xmin, -5), x1 = aiNum(f.xmax, 5), y0 = aiNum(f.ymin, -5), y1 = aiNum(f.ymax, 5);
+                if (x1 <= x0) { x0 = -5; x1 = 5; } if (y1 <= y0) { y0 = -5; y1 = 5; }
+                const codes = fs.map(e => math.compile(e.replace(/\*\*/g, '^')));
+                const c = document.createElement('canvas'); c.width = FIG_W; c.height = FIG_H; const g = c.getContext('2d');
+                g.fillStyle = '#fff'; g.fillRect(0, 0, FIG_W, FIG_H);
+                const L = 30, R = 20, T = 20, B = 26, pw = FIG_W - L - R, ph = FIG_H - T - B;
+                const X = x => L + (x - x0) / (x1 - x0) * pw, Y = y => T + (y1 - y) / (y1 - y0) * ph;
+                const axY = (y0 <= 0 && y1 >= 0) ? Y(0) : Y(y0), axX = (x0 <= 0 && x1 >= 0) ? X(0) : X(x0);
+                const sx = niceStep(x1 - x0), sy = niceStep(y1 - y0);
+                const fmt = v => String(Math.round(v * 1000) / 1000);
+                g.font = '12px Arial, sans-serif'; g.lineWidth = 1;
+                for (let v = Math.ceil(x0 / sx) * sx; v <= x1 + 1e-9; v += sx) { g.strokeStyle = '#e5e7eb'; g.beginPath(); g.moveTo(X(v), T); g.lineTo(X(v), T + ph); g.stroke(); }
+                for (let v = Math.ceil(y0 / sy) * sy; v <= y1 + 1e-9; v += sy) { g.strokeStyle = '#e5e7eb'; g.beginPath(); g.moveTo(L, Y(v)); g.lineTo(L + pw, Y(v)); g.stroke(); }
+                g.strokeStyle = '#111'; g.fillStyle = '#111'; g.lineWidth = 1.5;
+                g.beginPath(); g.moveTo(L, axY); g.lineTo(L + pw + 8, axY); g.moveTo(axX, T + ph); g.lineTo(axX, T - 8); g.stroke();
+                g.beginPath(); g.moveTo(L + pw + 10, axY); g.lineTo(L + pw + 2, axY - 4); g.lineTo(L + pw + 2, axY + 4); g.fill();
+                g.beginPath(); g.moveTo(axX, T - 10); g.lineTo(axX - 4, T - 2); g.lineTo(axX + 4, T - 2); g.fill();
+                g.textAlign = 'center'; g.textBaseline = 'top';
+                for (let v = Math.ceil(x0 / sx) * sx; v <= x1 + 1e-9; v += sx) { if (Math.abs(v) < 1e-9) continue; g.beginPath(); g.moveTo(X(v), axY - 3); g.lineTo(X(v), axY + 3); g.stroke(); g.fillText(fmt(v), X(v), Math.min(axY + 5, FIG_H - 16)); }
+                g.textAlign = 'right'; g.textBaseline = 'middle';
+                for (let v = Math.ceil(y0 / sy) * sy; v <= y1 + 1e-9; v += sy) { if (Math.abs(v) < 1e-9) continue; g.beginPath(); g.moveTo(axX - 3, Y(v)); g.lineTo(axX + 3, Y(v)); g.stroke(); g.fillText(fmt(v), Math.max(axX - 6, 26), Y(v)); }
+                g.textAlign = 'right'; g.textBaseline = 'top'; g.fillText('O', axX - 4, axY + 4);
+                g.font = 'italic 14px Arial, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText('x', L + pw + 10, axY + 12); g.textBaseline = 'bottom'; g.fillText('y', axX + 8, T - 2);
+                g.save(); g.beginPath(); g.rect(L, T, pw, ph); g.clip();
+                const cols = ['#1d4ed8', '#dc2626', '#16a34a']; g.lineWidth = 2.2;
+                codes.forEach((code, k) => {
+                    g.strokeStyle = cols[k]; g.beginPath(); let pen = false, py = null; const N = 900;
+                    for (let i = 0; i <= N; i++) {
+                        const x = x0 + (x1 - x0) * i / N; let y; try { y = code.evaluate({ x }); } catch (e) { y = NaN; }
+                        if (typeof y !== 'number' || !isFinite(y) || Math.abs(y) > 1e6) { pen = false; py = null; continue; }
+                        if (py != null && Math.abs(y - py) > 2 * (y1 - y0)) pen = false;
+                        if (!pen) { g.moveTo(X(x), Y(y)); pen = true; } else g.lineTo(X(x), Y(y));
+                        py = y;
+                    }
+                    g.stroke();
+                });
+                g.restore();
+                return c.toDataURL('image/png');
+            }
+            function aiFigSvg(svgText) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        const doc = new DOMParser().parseFromString(String(svgText || '').trim(), 'image/svg+xml');
+                        const root = doc.documentElement;
+                        if (!root || root.nodeName.toLowerCase() !== 'svg' || doc.getElementsByTagName('parsererror').length) return reject(new Error('badsvg'));
+                        doc.querySelectorAll('script,foreignObject,image,iframe,use').forEach(n => n.remove());
+                        doc.querySelectorAll('*').forEach(n => Array.from(n.attributes).forEach(a => { if (/^on/i.test(a.name) || /href/i.test(a.name)) n.removeAttribute(a.name); }));
+                        root.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                        let vb = (root.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
+                        if (vb.length !== 4 || vb.some(isNaN) || vb[2] <= 0 || vb[3] <= 0) { vb = [0, 0, 400, 300]; root.setAttribute('viewBox', '0 0 400 300'); }
+                        const sc = Math.min(1.4, 560 / vb[2]), W = Math.round(vb[2] * sc), H = Math.round(vb[3] * sc);
+                        root.setAttribute('width', W); root.setAttribute('height', H);
+                        if (!root.getAttribute('font-family')) root.setAttribute('font-family', 'Arial, sans-serif');
+                        const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(root));
+                        const im = new Image();
+                        im.onload = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.drawImage(im, 0, 0, W, H); try { resolve(c.toDataURL('image/png')); } catch (e) { reject(e); } };
+                        im.onerror = () => reject(new Error('svgload'));
+                        im.src = url;
+                    } catch (e) { reject(e); }
+                });
+            }
+            // Hình khối đa diện lồi (chóp, lăng trụ, hộp, tứ diện): AI cho toạ độ 3 chiều, máy chiếu song song và tự vẽ nét khuất bằng nét đứt
+            function aiFigSolid(f) {
+                const P = f.points, F = f.faces;
+                if (!P || typeof P !== 'object' || !Array.isArray(F) || F.length < 3) throw new Error('badsolid');
+                const pt = {}; Object.keys(P).forEach(k => { const a = P[k]; if (Array.isArray(a) && a.length === 3 && a.every(v => isFinite(parseFloat(v)))) pt[k] = a.map(parseFloat); });
+                const faces = F.filter(fc => Array.isArray(fc) && fc.length >= 3 && fc.every(n => pt[n]));
+                if (faces.length < 3) throw new Error('badfaces');
+                const used = new Set(); faces.forEach(fc => fc.forEach(n => used.add(n)));
+                const cen = [0, 0, 0]; used.forEach(n => { for (let i = 0; i < 3; i++) cen[i] += pt[n][i] / used.size; });
+                const k = 0.5, cs = Math.SQRT1_2, view = [k * cs, -1, k * cs]; // hướng từ vật tới mắt (nhìn từ phía trước, bên phải, phía trên)
+                const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+                const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+                const edges = new Map();
+                faces.forEach(fc => {
+                    let n = cross(sub(pt[fc[1]], pt[fc[0]]), sub(pt[fc[2]], pt[fc[0]]));
+                    const fcen = [0, 0, 0]; fc.forEach(nm => { for (let i = 0; i < 3; i++) fcen[i] += pt[nm][i] / fc.length; });
+                    if (dot(n, sub(fcen, cen)) < 0) n = n.map(v => -v);
+                    const front = dot(n, view) > 1e-9;
+                    for (let i = 0; i < fc.length; i++) {
+                        const a = fc[i], b = fc[(i + 1) % fc.length], key = a < b ? a + '|' + b : b + '|' + a;
+                        const e = edges.get(key) || { a, b, vis: false }; if (front) e.vis = true; edges.set(key, e);
+                    }
+                });
+                const segs = []; edges.forEach(e => segs.push({ a: e.a, b: e.b, dashed: !e.vis }));
+                (Array.isArray(f.extra) ? f.extra : []).forEach(x => {
+                    const a = Array.isArray(x) ? x[0] : x && x.a, b = Array.isArray(x) ? x[1] : x && x.b;
+                    if (pt[a] && pt[b]) segs.push({ a, b, dashed: Array.isArray(x) ? true : x.dashed !== false });
+                });
+                const proj = nm => { const q = pt[nm]; return [q[0] + k * cs * q[1], q[2] + k * cs * q[1]]; };
+                const all = Object.keys(pt).map(nm => proj(nm));
+                const minX = Math.min(...all.map(a => a[0])), maxX = Math.max(...all.map(a => a[0])), minY = Math.min(...all.map(a => a[1])), maxY = Math.max(...all.map(a => a[1]));
+                const bw = Math.max(maxX - minX, 1e-6), bh = Math.max(maxY - minY, 1e-6), sc = Math.min(360 / bw, 270 / bh);
+                const ox = (FIG_W - bw * sc) / 2, oy = (FIG_H - bh * sc) / 2;
+                const S = nm => { const a = proj(nm); return [ox + (a[0] - minX) * sc, FIG_H - oy - (a[1] - minY) * sc]; };
+                const c = document.createElement('canvas'); c.width = FIG_W; c.height = FIG_H; const g = c.getContext('2d');
+                g.fillStyle = '#fff'; g.fillRect(0, 0, FIG_W, FIG_H); g.strokeStyle = '#111'; g.lineWidth = 2; g.lineCap = 'round';
+                segs.sort((u, v) => (u.dashed ? 0 : 1) - (v.dashed ? 0 : 1)).forEach(sg => {
+                    const A = S(sg.a), B = S(sg.b); g.setLineDash(sg.dashed ? [7, 5] : []); g.beginPath(); g.moveTo(A[0], A[1]); g.lineTo(B[0], B[1]); g.stroke();
+                });
+                g.setLineDash([]);
+                const shown = Array.isArray(f.labels) ? f.labels : Object.keys(pt);
+                const mid = [FIG_W / 2, FIG_H / 2]; g.fillStyle = '#111'; g.font = 'bold 17px Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+                shown.forEach(nm => {
+                    if (!pt[nm]) return; const A = S(nm); let dx = A[0] - mid[0], dy = A[1] - mid[1];
+                    if (!used.has(nm)) { dx = 1; dy = -0.6; }
+                    const L = Math.hypot(dx, dy) || 1; g.fillText(nm, A[0] + dx / L * 15, A[1] + dy / L * 15);
+                    g.beginPath(); g.arc(A[0], A[1], 2.2, 0, 7); g.fill();
+                });
+                return c.toDataURL('image/png');
+            }
+            // Bảng biến thiên: AI cho mốc, dấu y' và giá trị, máy tự vẽ bảng và mũi tên
+            function aiFigBbt(f) {
+                const xs = (Array.isArray(f.x) ? f.x : []).map(v => String(v).trim()), yp = (Array.isArray(f.yp) ? f.yp : []).map(v => String(v).trim()), ys = Array.isArray(f.y) ? f.y : [];
+                const n = xs.length;
+                if (n < 2 || n > 7 || yp.length !== 2 * n - 3 || ys.length !== n) throw new Error('badbbt');
+                const mn = t => String(t).trim().replace(/^[-–]/, '\u2212');
+                const dirs = []; for (let i = 0; i < n - 1; i++) { const sg = yp[2 * i]; dirs.push(sg === '+' ? 1 : (sg === '-' || sg === '\u2212' || sg === '–') ? -1 : 0); if (!dirs[i]) throw new Error('badsign'); }
+                const W = 640, L = 100, R = 20, H1 = 46, H2 = 46, H3 = 140, T = 6, H = T + H1 + H2 + H3 + 6;
+                const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+                g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.strokeStyle = '#111'; g.fillStyle = '#111'; g.lineWidth = 1.6;
+                const y1 = T, y2 = T + H1, y3 = y2 + H2, y4 = y3 + H3, x0 = 8, x9 = W - 8;
+                g.strokeRect(x0, y1, x9 - x0, y4 - y1);
+                [y2, y3].forEach(y => { g.beginPath(); g.moveTo(x0, y); g.lineTo(x9, y); g.stroke(); });
+                g.beginPath(); g.moveTo(L, y1); g.lineTo(L, y4); g.stroke();
+                const X = k => L + 44 + k * (W - L - R - 88) / (n - 1);
+                g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 20px "Times New Roman", serif';
+                g.fillText('x', (x0 + L) / 2, (y1 + y2) / 2); g.fillText("y'", (x0 + L) / 2, (y2 + y3) / 2); g.fillText('y', (x0 + L) / 2, (y3 + y4) / 2);
+                g.font = '18px Arial, sans-serif';
+                xs.forEach((t, k) => g.fillText(mn(t), X(k), (y1 + y2) / 2));
+                const dbl = k => { [-2.5, 2.5].forEach(d => { g.beginPath(); g.moveTo(X(k) + d, y2); g.lineTo(X(k) + d, y4); g.stroke(); }); };
+                yp.forEach((t, i) => {
+                    if (i % 2 === 1) { const k = (i + 1) / 2; if (t === '||') dbl(k); else if (t) g.fillText(t === '0' ? '0' : mn(t), X(k), (y2 + y3) / 2); }
+                    else g.fillText(mn(t), (X(i / 2) + X(i / 2 + 1)) / 2, (y2 + y3) / 2);
+                });
+                const TOP = y3 + 24, BOT = y4 - 24, MID = (TOP + BOT) / 2;
+                const before = k => dirs[k - 1] === 1 ? TOP : BOT, after = k => dirs[k] === 1 ? BOT : TOP;
+                const lv = [];
+                ys.forEach((v, k) => {
+                    let lft, rgt, tl, tr;
+                    if (Array.isArray(v)) { tl = mn(v[0] == null ? '' : v[0]); tr = mn(v[1] == null ? '' : v[1]); lft = k > 0 ? before(k) : after(k); rgt = k < n - 1 ? after(k) : before(k); }
+                    else { const t = mn(v); tl = tr = t; let p; if (k === 0) p = after(k); else if (k === n - 1) p = before(k); else { const b = before(k), a = after(k); p = b === a ? b : MID; } lft = rgt = p; }
+                    lv.push({ l: lft, r: rgt, tl, tr, arr: Array.isArray(v) });
+                    if (lv[k].arr) { g.textAlign = 'right'; g.fillText(tl, X(k) - 6, lft); g.textAlign = 'left'; g.fillText(tr, X(k) + 6, rgt); g.textAlign = 'center'; }
+                    else g.fillText(tl, X(k), lft);
+                });
+                const half = (t, side) => g.measureText(t).width / 2 + 8;
+                for (let k = 0; k < n - 1; k++) {
+                    const A = lv[k], B = lv[k + 1];
+                    const sx = A.arr ? X(k) + 6 + g.measureText(A.tr).width + 6 : X(k) + half(A.tl), ex = B.arr ? X(k + 1) - 6 - g.measureText(B.tl).width - 6 : X(k + 1) - half(B.tl);
+                    let sy = A.r, ey = B.l; const dy = ey - sy, dx = ex - sx, ln = Math.hypot(dx, dy) || 1;
+                    const gap = 4; sy += dy / ln * 0; 
+                    g.beginPath(); g.moveTo(sx, sy); g.lineTo(ex, ey); g.stroke();
+                    const ang = Math.atan2(ey - sy, ex - sx);
+                    g.beginPath(); g.moveTo(ex, ey); g.lineTo(ex - 10 * Math.cos(ang - 0.4), ey - 10 * Math.sin(ang - 0.4)); g.lineTo(ex - 10 * Math.cos(ang + 0.4), ey - 10 * Math.sin(ang + 0.4)); g.closePath(); g.fill();
+                }
+                return c.toDataURL('image/png');
+            }
+            // Mã hình dán thẳng vào khung dán: [[HINH {...}]] hoặc [[HINH <svg>...</svg>]] (lấy từ AI khác), bấm Tự Động Phân Tích thì đổi thành ảnh
+            async function figFromSpec(f) {
+                if (!f || typeof f !== 'object') throw new Error('badspec');
+                if (f.kind === 'graph') return aiFigGraph(f);
+                if (f.kind === 'solid') return aiFigSolid(f);
+                if (f.kind === 'bbt') return aiFigBbt(f);
+                if (f.kind === 'svg' && typeof f.svg === 'string') return aiFigSvg(f.svg);
+                throw new Error('badkind');
+            }
+            const htmlToPlain = h => { const t = document.createElement('textarea'); t.innerHTML = String(h).replace(/<br\s*\/?>/gi, '\n').replace(/<\/(div|p)>/gi, '\n').replace(/<[^>]*>/g, ''); return t.value; };
+            async function rvFigReplace() {
+                const box = $('direct-raw-text'); if (!box) return;
+                let html = box.innerHTML.normalize('NFC'), bad = 0, done = 0;
+                const startRe = /\[\[\s*H[IÌ]NH\b/gi; let guard = 0, from = 0;
+                while (guard++ < 40) {
+                    startRe.lastIndex = from; const m = startRe.exec(html); if (!m) break;
+                    let end = html.indexOf(']]', m.index + m[0].length), ok = false;
+                    while (end >= 0) {
+                        const raw = htmlToPlain(html.slice(m.index + m[0].length, end)).replace(/^[\s:]+/, '').trim();
+                        let spec = null;
+                        if (/^<svg/i.test(raw)) spec = { kind: 'svg', svg: raw };
+                        else { try { spec = JSON.parse(raw); } catch (e) { spec = null; } }
+                        if (spec && !spec.kind && spec.figure) spec = spec.figure;
+                        if (spec) {
+                            let png = null; try { png = await figFromSpec(spec); } catch (e) { png = null; }
+                            if (png) { html = html.slice(0, m.index) + ' <img src="' + png + '" style="max-width:100%; height:auto;" alt="hình minh họa"> ' + html.slice(end + 2); done++; ok = true; from = m.index + 1; break; }
+                        }
+                        end = html.indexOf(']]', end + 2);
+                    }
+                    if (!ok) { bad++; from = m.index + m[0].length; }
+                }
+                if (done) box.innerHTML = html;
+                if (bad) alert('Có ' + bad + ' mã hình chưa vẽ được (mã sai hoặc thiếu). Mã đó được giữ nguyên trong khung dán. Cô kiểm tra lại mã, hoặc xóa đi và tự dán hình.');
+            }
+            window.rvFigReplace = rvFigReplace;
+            window.rvCopyFigGuide = function () {
+                const t = 'Tôi soạn đề Toán THPT và cần AI cho MÃ để máy tự vẽ hình. NẾU TÔI GỬI KÈM ẢNH: hãy phân tích kỹ ảnh (đọc đúng các mốc, dấu, giá trị, toạ độ, độ dài, tên điểm) rồi tạo mã vẽ lại ĐÚNG hình hoặc bảng trong ảnh; bảng biến thiên dùng kind bbt, đồ thị hàm số dùng graph (nếu đọc được công thức hoặc ước lượng được hàm hợp lý, nếu không thì dùng svg), hình chóp, lăng trụ, hình hộp, tứ diện dùng solid, hình phẳng dùng svg. Ảnh có nhiều hình thì mỗi hình một dòng, ghi số thứ tự hình ở đầu dòng. NẾU KHÔNG CÓ ẢNH: vẽ theo mô tả của tôi ở cuối. Mỗi hình trả về đúng một dòng có dạng [[HINH {...}]] trong đó {...} là phần JSON bắt đầu từ {"kind":... của các cách vẽ bên dưới (không cần chữ "figure":) (JSON viết trên một dòng, dùng dấu nháy kép). Chỉ trả về dòng mã, không giải thích.\n\nCÁC CÁCH VẼ:\n' + AI_FIG_RULES + '\nVí dụ: [[HINH {"kind":"graph","funcs":["x^3-3*x"],"xmin":-3,"xmax":3,"ymin":-4,"ymax":4}]]\n\nYÊU CẦU HÌNH CỦA TÔI (hoặc ảnh đính kèm): ';
+                const done = () => { const e = $('fig-guide-msg'); if (e) { e.textContent = 'Đã sao chép. Cô dán vào AI, ghi thêm hình cần vẽ ở cuối.'; e.style.color = '#16a34a'; } };
+                if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { prompt('Cô sao chép đoạn này:', t); });
+                else prompt('Cô sao chép đoạn này:', t);
+            };
+            // ---------- Soạn đề ở AI khác (không dùng khóa Gemini, không tốn lượt) ----------
+            function outFormat(allowFig) {
+                return 'ĐỊNH DẠNG TRẢ LỜI (rất quan trọng): chỉ trả về nội dung đề dạng văn bản thuần, không giải thích thêm, không dùng bảng markdown, không dùng khung code cho phần đề. Sắp xếp theo thứ tự: trắc nghiệm, rồi đúng/sai, rồi trả lời ngắn. Đánh số câu liên tục từ Câu 1. Mỗi câu theo đúng mẫu:\n\n'
+                    + 'Trắc nghiệm:\nCâu 1. nội dung câu hỏi\nA. phương án\nB. phương án\nC. phương án\nD. phương án\nĐáp án: B\nLời giải: 2 đến 4 dòng\n\n'
+                    + 'Đúng/sai:\nCâu 9. nội dung dẫn\na) ý a\nb) ý b\nc) ý c\nd) ý d\nĐáp án: ĐSĐS\nLời giải: ngắn gọn\n(Đ là đúng, S là sai, theo thứ tự a, b, c, d)\n\n'
+                    + 'Trả lời ngắn:\nCâu 13. nội dung câu hỏi\nĐáp án: 2.5\nLời giải: ngắn gọn\n\n'
+                    + (allowFig ? 'Câu nào cần hình thì viết đúng MỘT dòng mã hình có dạng [[HINH {...}]] ngay sau nội dung câu hỏi (trước các phương án), JSON viết trên một dòng bằng dấu nháy kép. Không chèn chữ "Câu" hay số vào bên trong dòng mã hình.\n' : 'Không dùng hình vẽ.\n');
+            }
+            function outRules(allowFig) {
+                return aiRules(allowFig).replace(/"figure":/g, '').replace('bỏ trường "figure"', 'không ghi dòng mã hình').replace('nếu không có figure', 'nếu không có mã hình');
+            }
+            function outCopy(t, el) {
+                const done = () => { if (el) { el.textContent = 'Đã sao chép. Cô mở AI khác, dán vào rồi gửi. Khi AI trả lời xong, cô sao chép toàn bộ đề, dán vào khung dán rồi bấm Tự Động Phân Tích.'; el.style.color = '#16a34a'; } };
+                if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { prompt('Cô sao chép đoạn này:', t); });
+                else prompt('Cô sao chép đoạn này:', t);
+            }
+            window.aiCopyOutside = function () {
+                const rows = aiRows();
+                if (aiNoTopic()) { aiMsg('Có chủ đề đã nhập số câu nhưng chưa chọn chủ đề. Cô chọn chủ đề cho đủ.', '#dc2626'); return; }
+                if (!rows.length) { aiMsg('Cô chọn ít nhất một chủ đề và nhập số câu vào các ô.', '#dc2626'); return; }
+                const grade = ($('new-exam-grade') || {}).value || '12', fig = $('ai-fig').checked;
+                const source = ($('ai-source').value || '').trim().slice(0, 12000);
+                const base = aiPrompt(grade, ($('ai-topic').value || '').trim(), rows, source, fig);
+                const head = base.slice(0, base.indexOf('YÊU CẦU CHUNG:'));
+                outCopy(head + outRules(fig) + outFormat(fig), $('ai-msg'));
+            };
+            window.pdfCopyOutside = function () {
+                const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0, solve = $('pdf-solve').checked;
+                const t = 'NHIỆM VỤ: CHUYỂN ĐỀ TOÁN TRONG FILE PDF/ẢNH ĐÍNH KÈM THÀNH VĂN BẢN\nHãy đọc file đính kèm và chép lại từng câu hỏi, giữ đúng thứ tự trong file. '
+                    + (from || to ? 'Chỉ chép các câu từ câu ' + (from || 1) + ' đến câu ' + (to || 'cuối') + '. ' : 'Chép tất cả các câu. ')
+                    + 'Chép đúng nguyên văn, không tự sửa đề, không bỏ sót, không gộp. Công thức viết bằng LaTeX trong dấu $...$. '
+                    + (solve ? 'Nếu file không có đáp án thì tự giải cẩn thận và ghi đáp án, rồi thêm chữ (AI tự giải, cần kiểm tra) ở cuối dòng Lời giải. ' : 'Nếu file không có đáp án thì bỏ dòng Đáp án, không tự đoán. ')
+                    + 'Câu nào có hình, đồ thị hoặc bảng biến thiên thì viết một dòng mã hình [[HINH {...}]] ngay sau nội dung câu hỏi, theo các cách vẽ sau:\n'
+                    + AI_FIG_RULES.replace(/"figure":/g, '') + '\n'
+                    + outFormat(true);
+                outCopy(t, $('pdf-msg'));
+            };
+            async function aiRenderFigs(out) {
+                let fail = 0, n = 0;
+                for (const q of out.ordered) {
+                    if (!q.fig) continue; n++;
+                    try { q.png = q.fig.kind === 'graph' ? await aiFigGraph(q.fig) : q.fig.kind === 'solid' ? aiFigSolid(q.fig) : q.fig.kind === 'bbt' ? aiFigBbt(q.fig) : await aiFigSvg(q.fig.svg); } catch (e) { q.png = null; fail++; }
+                }
+                out.figN = n; out.figFail = fail;
             }
             function aiShow(out) {
                 const box = $('direct-raw-text');
-                box.innerHTML = out.text.split('\n').map(l => esc(l)).join('<br>');
+                box.innerHTML = out.text.split('\n').map(l => esc(l).replace(/\[\[FIG (\d+)\]\]/, (m, k) => { const q = out.ordered[k - 1]; return (q && q.png) ? '<img src="' + q.png + '" style="max-width:100%; height:auto; display:block; margin:4px 0;" alt="hình minh họa">' : '(CẦN CHÈN HÌNH: máy chưa vẽ được hình cho câu này)'; })).join('<br>');
                 aiLastHtml = box.innerHTML; aiCur = out.ordered;
                 if (typeof parseDirectExam === 'function') { try { parseDirectExam(); } catch (e) { } }
                 $('ai-revise-box').style.display = 'block';
                 $('ai-undo').style.display = aiHist.length ? 'inline-block' : 'none';
             }
             function aiErr(e) { return (e && e.code === 'cancelled') ? 'Đã dừng.' : (e && e.code === 'trunc' ? 'Đề quá dài nên bị cắt. Cô giảm xuống khoảng 10 câu mỗi lần rồi soạn thêm.' : errText(e)); }
-            function aiBusy(on) { aiCtl = on ? new AbortController() : null; $('ai-go').disabled = on; $('ai-rev-go').disabled = on; $('ai-stop').style.display = on ? 'inline-block' : 'none'; }
+            function aiBusy(on, msgFn) { aiCtl = on ? new AbortController() : null; $('ai-go').disabled = on; $('ai-rev-go').disabled = on; $('ai-stop').style.display = on ? 'inline-block' : 'none'; S.onWait = on ? (sec => (msgFn || aiMsg)('Gemini đang bận (hết lượt tạm thời), tự thử lại sau ' + sec + ' giây…', '#b45309')) : null; }
             async function aiDraftRun() {
                 if (aiCtl) return;
                 if (!S.connected) { aiMsg('Cô bấm Kết nối Gemini ở phía trên trước.', '#dc2626'); return; }
                 const rows = aiRows();
-                if (!rows.length) { aiMsg('Cô ghi nội dung kiến thức cho ít nhất một dòng của ma trận.', '#dc2626'); return; }
+                if (aiNoTopic()) { aiMsg('Có chủ đề đã nhập số câu nhưng chưa chọn chủ đề. Cô chọn chủ đề cho đủ.', '#dc2626'); return; }
+                if (!rows.length) { aiMsg('Cô chọn ít nhất một chủ đề và nhập số câu vào các ô.', '#dc2626'); return; }
                 const total = rows.reduce((s, r) => s + r.n, 0);
                 if (total > 24) { aiMsg('Mỗi lần chỉ nên soạn tối đa 24 câu. Cô giảm số câu, soạn xong lần này rồi soạn thêm phần tiếp.', '#dc2626'); return; }
+                let doAuto = false;
                 const box = $('direct-raw-text');
                 if (box && box.textContent.trim() && !confirm('Khung dán đề đang có nội dung. Bấm OK để thay bằng đề AI soạn (nội dung cũ sẽ mất). Bấm Hủy để giữ nguyên.')) return;
                 S.model = ($('rv-model') || {}).value || S.model;
@@ -4503,14 +4918,22 @@ window.addEventListener('popstate', function () {
                 const source = ($('ai-source').value || '').trim().slice(0, 12000);
                 aiBusy(true); aiMsg('Đang soạn đề, có thể mất 30 đến 90 giây…');
                 try {
-                    const items = await genJson([{ text: aiPrompt(grade, ($('ai-topic').value || '').trim(), rows, source) }], 0.7, aiCtl.signal);
+                    const fig = $('ai-fig').checked;
+                    const items = await genJson([{ text: aiPrompt(grade, ($('ai-topic').value || '').trim(), rows, source, fig) }], 0.7, aiCtl.signal);
                     const out = aiToText(items);
                     if (!out.count) { aiMsg('AI không soạn được câu nào đúng khuôn. Cô bấm Soạn đề lại.', '#dc2626'); return; }
-                    aiHist = []; aiShow(out);
-                    const lack = []; rows.forEach((r, i) => { const got = out.ordered.filter(q => q.row === i + 1).length; if (got !== r.n) lack.push('dòng ' + (i + 1) + ' cần ' + r.n + ' câu, AI soạn ' + got); });
-                    aiMsg('Đã soạn ' + out.count + '/' + total + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn), đã đưa vào khung dán và bấm Tự Động Phân Tích.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + (lack.length ? ' Lệch so với ma trận: ' + lack.join('; ') + '.' : '') + ' Cô đọc lại rồi mô tả chỗ cần sửa, hoặc bấm Bắt đầu rà soát.', lack.length || out.skipped ? '#b45309' : '#16a34a');
+                    aiMsg('Đã soạn xong, đang vẽ hình…'); await aiRenderFigs(out);
+                    aiHist = []; aiShow(out); doAuto = true;
+                    const lack = []; rows.forEach((r, i) => { const got = out.ordered.filter(q => q.row === i + 1).length; if (got !== r.n) lack.push('mục ' + (i + 1) + ' (' + r.topic + ', ' + r.level + ') cần ' + r.n + ' câu, AI soạn ' + got); });
+                    aiMsg('Đã soạn ' + out.count + '/' + total + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn), đã đưa vào khung dán và bấm Tự Động Phân Tích.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + (out.figN ? ' Có ' + out.figN + ' câu kèm hình' + (out.figFail ? ', ' + out.figFail + ' hình máy chưa vẽ được' : '') + '.' : '') + (lack.length ? ' Lệch so với ma trận: ' + lack.join('; ') + '.' : '') + ' Cô đọc lại rồi mô tả chỗ cần sửa.', lack.length || out.skipped || out.figFail ? '#b45309' : '#16a34a');
                 } catch (e) { aiMsg(aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
                 finally { aiBusy(false); }
+                aiAuto(doAuto);
+            }
+            function aiAuto(go) {
+                if (!go || !$('ai-auto').checked) return;
+                const m = $('ai-msg'); if (m) m.textContent += ' Đang tự rà soát đề…';
+                run();
             }
             async function aiReviseRun() {
                 if (aiCtl) return;
@@ -4522,16 +4945,18 @@ window.addEventListener('popstate', function () {
                 if (box.innerHTML !== aiLastHtml && !confirm('Cô đã sửa tay trong khung dán. Chỉnh sửa bằng AI sẽ thay toàn bộ khung dán bằng bản AI chỉnh, các sửa tay sẽ mất. Bấm OK để tiếp tục, Hủy để giữ nguyên.')) return;
                 S.model = ($('rv-model') || {}).value || S.model;
                 const grade = ($('new-exam-grade') || {}).value || '12';
-                const prev = { html: aiLastHtml, cur: aiCur };
+                const prev = { html: aiLastHtml, cur: aiCur }; let doAuto = false; const fig = $('ai-fig').checked;
                 aiBusy(true); aiMsg('Đang chỉnh sửa đề, có thể mất 30 đến 90 giây…');
                 try {
-                    const items = await genJson([{ text: aiRevisePrompt(grade, aiCur, ins) }], 0.4, aiCtl.signal);
+                    const items = await genJson([{ text: aiRevisePrompt(grade, aiCur, ins, fig) }], 0.4, aiCtl.signal);
                     const out = aiToText(items);
                     if (!out.count) { aiMsg('AI không trả về đề đúng khuôn. Cô bấm Chỉnh sửa đề lại.', '#dc2626'); return; }
-                    aiHist.push(prev); aiShow(out);
-                    aiMsg('Đã chỉnh sửa, đề hiện có ' + out.count + ' câu.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + ' Cô đọc lại, nếu chưa ưng thì bấm "Quay lại bản trước".', out.skipped ? '#b45309' : '#16a34a');
+                    aiMsg('Đang vẽ hình…'); await aiRenderFigs(out);
+                    aiHist.push(prev); aiShow(out); doAuto = true;
+                    aiMsg('Đã chỉnh sửa, đề hiện có ' + out.count + ' câu.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + (out.figFail ? ' Có ' + out.figFail + ' hình máy chưa vẽ được.' : '') + ' Cô đọc lại, nếu chưa ưng thì bấm "Quay lại bản trước".', out.skipped || out.figFail ? '#b45309' : '#16a34a');
                 } catch (e) { aiMsg(aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
                 finally { aiBusy(false); }
+                aiAuto(doAuto);
             }
             function aiUndo() {
                 if (aiCtl || !aiHist.length) return;
@@ -4541,9 +4966,83 @@ window.addEventListener('popstate', function () {
                 $('ai-undo').style.display = aiHist.length ? 'inline-block' : 'none';
                 aiMsg('Đã quay lại bản trước.');
             }
+            // ---------- Nạp đề từ PDF (v24) ----------
+            const pdfMsg = (t, c) => { const e = $('pdf-msg'); if (e) { e.textContent = t; e.style.color = c || '#475569'; } };
+            function pdfPrompt(from, to, solve) {
+                return 'NHIỆM VỤ: CHUYỂN ĐỀ TOÁN TRONG FILE PDF ĐÍNH KÈM THÀNH DỮ LIỆU\n'
+                    + 'Hãy đọc file PDF đính kèm và chép từng câu hỏi thành một phần tử JSON, giữ đúng thứ tự trong PDF.\n'
+                    + (from || to ? 'Chỉ chép các câu có số thứ tự từ câu ' + (from || 1) + ' đến câu ' + (to || 'cuối') + ' theo số thứ tự ghi trong PDF.\n' : 'Chép tất cả các câu hỏi trong PDF.\n')
+                    + '- Chép đúng nguyên văn đề, không tự sửa đề, không bỏ sót, không gộp, không thêm câu. Giữ đúng số liệu và từng phương án.\n'
+                    + '- Công thức viết bằng LaTeX trong dấu $...$, ví dụ $x^2-3x+2$, $\\frac{a}{b}$, $\\sqrt{x}$, $\\int_0^1 x\\,dx$.\n'
+                    + '- Nhận dạng dạng câu: "MCQ" là trắc nghiệm 4 phương án A, B, C, D; "TF" là câu đúng/sai có 4 ý a), b), c), d); "SA" là trả lời ngắn không có phương án.\n'
+                    + '- "options": MCQ và TF có đúng 4 phần tử (chép nội dung, không ghi chữ A, B, C, D hay a, b, c, d ở đầu); SA là mảng rỗng.\n'
+                    + '- Đáp án: nếu PDF có đáp án, bảng đáp án hoặc lời giải thì dùng đúng đáp án đó (MCQ ghi A, B, C hoặc D; TF ghi chuỗi 4 ký tự D hoặc S theo thứ tự a, b, c, d, D là Đúng, S là Sai; SA ghi số dạng thập phân dùng dấu chấm). '
+                    + (solve ? 'Nếu PDF không ghi đáp án của câu nào thì tự giải thật cẩn thận, ghi đáp án và đặt "guess":true cho câu đó. Câu có đáp án trong PDF thì không ghi "guess".\n' : 'Nếu PDF không ghi đáp án thì để "answer" là chuỗi rỗng, tuyệt đối không tự đoán.\n')
+                    + '- "solution": chép lời giải trong PDF nếu có, không có thì để chuỗi rỗng.\n'
+                    + '- Câu nào cần hình vẽ, đồ thị hoặc bảng mà bạn không chép được thành chữ thì đặt "needs_figure":true và vẫn chép phần chữ của câu.\n'
+                    + 'ĐẦU RA: chỉ một mảng JSON, mỗi phần tử: {"type":"MCQ"|"TF"|"SA","stem":"nội dung câu hỏi","options":[...],"answer":"...","solution":"...","guess":false,"needs_figure":false}.';
+            }
+            // ---------- Dùng AI khác (không cần khóa Gemini): sao chép lời nhắc, dán kết quả về ----------
+            let aiExtMode = 'draft';
+            const aiExtSay = (t, c) => { const e = $('ai-ext-msg'); if (e) { e.textContent = t; e.style.color = c || '#475569'; } };
+            function aiExtCopy(mode) {
+                const grade = ($('new-exam-grade') || {}).value || '12', fig = $('ai-fig').checked;
+                let text = '', label = '';
+                if (mode === 'draft') {
+                    const rows = aiRows();
+                    if (aiNoTopic()) { aiExtSay('Có chủ đề đã nhập số câu nhưng chưa chọn chủ đề.', '#dc2626'); return; }
+                    if (!rows.length) { aiExtSay('Cô chọn ít nhất một chủ đề và nhập số câu vào bảng ma trận phía trên.', '#dc2626'); return; }
+                    const total = rows.reduce((x, r) => x + r.n, 0);
+                    if (total > 24) { aiExtSay('Mỗi lần chỉ nên tối đa 24 câu. Cô giảm số câu.', '#dc2626'); return; }
+                    text = aiPrompt(grade, ($('ai-topic').value || '').trim(), rows, ($('ai-source').value || '').trim().slice(0, 12000), fig); label = 'soạn đề';
+                } else if (mode === 'revise') {
+                    const ins = ($('ai-revise').value || '').trim();
+                    if (!aiCur || !aiCur.length) { aiExtSay('Cô soạn hoặc nhập đề vào khung dán trước rồi mới chỉnh sửa.', '#dc2626'); return; }
+                    if (!ins) { aiExtSay('Cô ghi chỗ cần chỉnh sửa vào ô "Chỉnh sửa đề theo mô tả của cô" ở dưới khung dán.', '#dc2626'); return; }
+                    text = aiRevisePrompt(grade, aiCur, ins, fig); label = 'chỉnh sửa';
+                } else {
+                    const from = parseInt($('pdf-from').value, 10) || 0, to = parseInt($('pdf-to').value, 10) || 0;
+                    text = 'Tôi đính kèm file PDF đề Toán. Hãy đọc file đính kèm và làm theo yêu cầu sau.\n\n' + pdfPrompt(from, to, $('pdf-solve').checked); label = 'đọc PDF';
+                }
+                text += '\n\nLƯU Ý: hãy trả lời bằng MỘT khối mã duy nhất chứa mảng JSON (để tôi bấm nút sao chép), không giải thích thêm.';
+                aiExtMode = mode;
+                const note = $('ai-ext-note'), after = () => { if (note) note.textContent = 'Đã sao chép lời nhắc ' + label + '. Cô dán vào AI khác' + (mode === 'pdf' ? ', đính kèm file PDF,' : '') + ' rồi gửi. Khi AI trả lời, cô sao chép kết quả dán vào ô bên dưới.'; aiExtSay(''); };
+                if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(after, () => { prompt('Cô sao chép đoạn này (Ctrl+C):', text); after(); });
+                else { prompt('Cô sao chép đoạn này (Ctrl+C):', text); after(); }
+            }
+            async function aiExtImport() {
+                const raw = ($('ai-ext-paste').value || '').trim();
+                if (!raw) { aiExtSay('Cô dán kết quả AI trả về vào ô trước.', '#dc2626'); return; }
+                let v = parseJson(raw);
+                if (v && !Array.isArray(v)) v = v.questions || v.items || v.cau_hoi || v.data || null;
+                if (!Array.isArray(v) || !v.length) { aiExtSay('Không đọc được dữ liệu. Cô dán đủ từ dấu [ đến dấu ] mà AI trả về, hoặc nhờ AI "trả lại đúng mảng JSON, không thiếu dấu".', '#dc2626'); return; }
+                const mode = aiExtMode, pdf = mode === 'pdf';
+                const box = $('direct-raw-text');
+                if (mode === 'revise') {
+                    if (!aiCur || !aiCur.length) { aiExtSay('Chưa có đề để chỉnh sửa.', '#dc2626'); return; }
+                    if (box.innerHTML !== aiLastHtml && !confirm('Cô đã sửa tay trong khung dán. Nhập kết quả sẽ thay toàn bộ khung dán, các sửa tay sẽ mất. Bấm OK để tiếp tục.')) return;
+                } else if (box && box.textContent.trim() && !confirm('Khung dán đề đang có nội dung. Bấm OK để thay bằng kết quả vừa dán (nội dung cũ sẽ mất).')) return;
+                const prev = { html: aiLastHtml, cur: aiCur };
+                aiExtSay('Đang nhập và vẽ hình…');
+                try {
+                    const out = aiToText(v, pdf ? { pdf: true, keepOrder: true, noAns: true } : {});
+                    if (!out.count) { aiExtSay('Không có câu nào đúng khuôn (cần các mục type, stem, options, answer). Cô kiểm tra lại kết quả AI trả về.', '#dc2626'); return; }
+                    await aiRenderFigs(out);
+                    if (mode === 'revise') aiHist.push(prev); else aiHist = [];
+                    aiShow(out);
+                    aiExtSay('Đã nhập ' + out.count + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn) vào khung dán và bấm Tự Động Phân Tích.'
+                        + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '')
+                        + (out.figN ? ' Có ' + out.figN + ' câu kèm hình' + (out.figFail ? ', ' + out.figFail + ' hình chưa vẽ được' : '') + '.' : '')
+                        + (pdf && out.guessed.length ? ' Đáp án AI tự giải: câu ' + out.guessed.join(', ') + '.' : '')
+                        + (pdf && out.needFig.length ? ' Câu cần chèn hình: ' + out.needFig.join(', ') + '.' : '')
+                        + ' Cô đọc lại đề.', (out.skipped || out.figFail) ? '#b45309' : '#16a34a');
+                    if (S.connected) aiAuto(true);
+                } catch (e) { aiExtSay('Có lỗi khi nhập: ' + (e && e.message ? e.message : 'không rõ'), '#dc2626'); }
+            }
+            window.aiExtCopy = aiExtCopy; window.aiExtImport = aiExtImport;
             window.aiAddRow = aiAddRow; window.aiDraftRun = aiDraftRun; window.aiReviseRun = aiReviseRun; window.aiUndo = aiUndo;
             window.aiDraftStop = function () { if (aiCtl) aiCtl.abort(); };
-            aiAddRow({ type: 'MCQ', level: 'thông hiểu', n: 4 }); aiAddRow({ type: 'TF', level: 'vận dụng', n: 2 }); aiAddRow({ type: 'SA', level: 'vận dụng', n: 2 });
+            aiAddRow();
 
             window.rvToggle = function () { const b = $('rv-body'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; if (b.style.display === 'block') aiRefreshTopics(); };
             { const gs = $('new-exam-grade'); if (gs) gs.addEventListener('change', aiRefreshTopics); }
