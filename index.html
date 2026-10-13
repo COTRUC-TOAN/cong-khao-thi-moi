@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v41] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v43] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2077,10 +2077,7 @@ function removeQuestionFromSelected(qId) {
 
             if (questionsToSave.length > 0) questionsToSave[0].maxAttempts = maxAttemptsVal;
             const qJsonStr = JSON.stringify(questionsToSave);
-            if (qJsonStr.length > 45000) {
-                alert("⚠️ Đề quá lớn nên Google Sheet không lưu được (" + qJsonStr.length.toLocaleString('vi-VN') + " ký tự, giới hạn khoảng 45.000).\nNguyên nhân thường là ảnh dán vào câu hỏi hoặc hình quá nặng, hoặc đề ma trận có ngân hàng quá nhiều câu có hình.\nCô giảm bớt số câu có hình, dùng ảnh nhỏ hơn, hoặc chia thành hai đề rồi xuất bản lại.");
-                return;
-            }
+            if (qJsonStr.length > 200000 && !confirm('⚠️ Đề này rất dài (' + qJsonStr.length.toLocaleString('vi-VN') + ' ký tự, hơn 200.000). Đề quá dài có thể tải chậm hoặc không lưu đủ trên Google Sheet.\n\nBấm OK để vẫn xuất bản, Hủy để quay lại bớt hình/bớt câu.')) return;
 
             const newExamObj = {
                 id: examId,
@@ -2120,6 +2117,19 @@ function removeQuestionFromSelected(qId) {
              alert(mode === 'KIEMTRA' 
                     ? "🎉 Xuất bản ĐỀ KIỂM TRA thành công! Đề đã được mã hóa bảo mật chống F12." 
                     : "🎉 Xuất bản đề thành công!");
+                // Đọc lại đề từ máy chủ để chắc đề không bị cắt bớt (đề nhiều ảnh rất lớn); chạy nền, không chặn
+                (async () => {
+                    try {
+                        const vr = await fetch(SCRIPT_URL + (SCRIPT_URL.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now());
+                        const vd = await vr.json();
+                        const rows = (vd && vd.exams || []).filter(e => String(e.id) === String(newExamObj.id));
+                        if (!rows.length) return;
+                        const saved = String(rows[rows.length - 1].questionsJson || '');
+                        let bad = saved.length < qJsonStr.length;
+                        if (!bad) { try { JSON.parse(saved); } catch (e) { bad = true; } }
+                        if (bad) alert("⚠️ CẢNH BÁO: đề [" + newExamObj.title + "] trên Google Sheet bị cắt bớt (đã lưu " + saved.length.toLocaleString('vi-VN') + " trên " + qJsonStr.length.toLocaleString('vi-VN') + " ký tự) nên học sinh có thể thấy đề lỗi hoặc thiếu câu.\nNguyên nhân là đề có quá nhiều ảnh nặng. Cô giảm bớt ảnh hoặc chia thành hai đề rồi xuất bản lại, và nhớ mở thử đề bằng link học sinh trước khi cho làm.");
+                    } catch (e) { /* không kiểm tra được thì bỏ qua */ }
+                })();
                 
                 // Ghi đè lên đề cũ nếu trùng ID, chưa có thì mới tạo thẻ mới
                 const existingIdx = examBank.findIndex(e => e.id === newExamObj.id);
