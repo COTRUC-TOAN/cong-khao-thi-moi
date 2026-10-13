@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v43] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v44] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5850,5 +5850,241 @@ window.addEventListener('popstate', function () {
 })();
 
 </script>
+<script>
+/* ===== v44: Chấm bài giấy bằng điện thoại (nhập tay) ===== */
+(function () {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const LS = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } } };
+    const b64e = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const b64d = s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/')))));
+    const fmt = n => String(Math.round(n * 100) / 100).replace('.', ',');
+
+    const CSS = `
+#cg-ov{position:fixed;inset:0;z-index:99999;background:#f1f5f9;overflow:auto;display:none;font-family:system-ui,'Segoe UI',Arial,sans-serif;color:#0f172a;-webkit-text-size-adjust:100%}
+#cg-ov *{box-sizing:border-box}
+#cg-ov .cg-w{max-width:560px;margin:0 auto;padding:10px 12px 90px}
+#cg-ov h2{font-size:1.1rem;margin:4px 0 8px;color:#0f766e}
+#cg-ov .cg-card{background:#fff;border-radius:12px;padding:10px 12px;margin:8px 0;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+#cg-ov input[type=text],#cg-ov input[type=number]{width:100%;padding:11px;border:1px solid #94a3b8;border-radius:8px;font-size:1.05rem;margin:3px 0}
+#cg-ov .cg-codes{display:flex;flex-wrap:wrap;gap:6px}
+#cg-ov .cg-codes button{padding:10px 14px;border:2px solid #0f766e;background:#fff;color:#0f766e;border-radius:8px;font-weight:700;font-size:1rem}
+#cg-ov .cg-codes button.on{background:#0f766e;color:#fff}
+#cg-ov .cg-row{display:flex;align-items:center;gap:6px;margin:5px 0}
+#cg-ov .cg-n{width:30px;font-weight:700;text-align:right;flex:none}
+#cg-ov .cg-opt{flex:1;padding:11px 0;border:2px solid #cbd5e1;background:#fff;border-radius:8px;font-weight:700;font-size:1.05rem;color:#334155}
+#cg-ov .cg-opt.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+#cg-ov .cg-opt.ok{background:#16a34a;border-color:#16a34a;color:#fff}
+#cg-ov .cg-opt.no{background:#dc2626;border-color:#dc2626;color:#fff}
+#cg-ov .cg-sub{font-weight:700;color:#475569;margin:8px 0 2px}
+#cg-ov .cg-tfq{border-top:1px dashed #cbd5e1;padding-top:4px;margin-top:6px}
+#cg-ov .cg-bar{position:fixed;left:0;right:0;bottom:0;background:#0f172a;color:#fff;padding:8px 12px;display:flex;gap:8px;align-items:center;z-index:2}
+#cg-ov .cg-bar .sc{flex:1;font-size:1rem}#cg-ov .cg-bar .sc b{font-size:1.4rem;color:#fde047}
+#cg-ov .cg-bar button{padding:12px 16px;border:0;border-radius:10px;font-weight:700;font-size:1rem;color:#fff;background:#16a34a}
+#cg-ov .cg-bar button.g{background:#475569}
+#cg-ov .cg-small{font-size:.85rem;color:#475569}
+#cg-ov .cg-list div{padding:4px 0;border-bottom:1px solid #e2e8f0;font-size:.95rem}
+#cg-ov .cg-pend{background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:8px;margin:8px 0;font-size:.95rem}
+#cg-ov .cg-tog{display:flex;gap:6px;margin:6px 0}
+#cg-ov .cg-tog button{flex:1;padding:8px;border:1px solid #94a3b8;background:#fff;border-radius:8px;font-size:.9rem}
+#cg-ov .cg-tog button.on{background:#e0f2fe;border-color:#0284c7;font-weight:700}
+`;
+
+    let DATA = null, CUR = null, ANS = null, SAVED = [], SHOWKEY = false;
+
+    function init() {
+        if ($('cg-ov')) return;
+        const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
+        const ov = document.createElement('div'); ov.id = 'cg-ov'; document.body.appendChild(ov);
+    }
+
+    // ---------- tạo link gửi sang điện thoại ----------
+    function makePayload() {
+        const ps = window.paperState && window.paperState();
+        if (!ps || !ps.sets || !ps.sets.length) return null;
+        const exId = (($('new-exam-id') || {}).value || ps.opt.exam || 'de').trim();
+        const stored = JSON.parse(LS.get('paper_sets') || '{}');
+        const s = [];
+        ps.sets.forEach(set => {
+            const r = stored[exId + '|' + set.code];
+            if (r) s.push([set.code, r.mcq.map(a => a || '-').join(''), r.tf, r.sa, r.es || 0]);
+        });
+        if (!s.length) return null;
+        const o = ps.opt || {};
+        return { u: (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : ''), t: o.exam || exId, id: exId, p: [o.pm, o.pt, o.ps, o.pe], s: s };
+    }
+    function linkFor(p) { return location.origin + location.pathname + '#cham=' + b64e(p); }
+
+    function showLinkBox() {
+        const p = makePayload();
+        const box = $('cg-linkbox');
+        if (!p) { box.innerHTML = '<span style="color:#dc2626">Cô bấm "Tạo mã đề &amp; xem trước" trước, rồi mới gửi đáp án sang điện thoại.</span>'; return; }
+        const lk = linkFor(p);
+        box.innerHTML = '<div style="margin-top:8px;padding:8px;background:#ecfeff;border:1px solid #0891b2;border-radius:8px;font-size:.9rem"><b>Link chấm bài giấy (' + p.s.length + ' mã đề).</b> Cô bấm "Sao chép link", gửi vào Zalo của cô, mở trên điện thoại rồi chọn "Thêm vào màn hình chính". Link chứa đáp án nên cô đừng gửi cho học sinh.<br><textarea id="cg-lk" readonly style="width:100%;height:60px;margin-top:6px;font-size:.75rem">' + esc(lk) + '</textarea><br><button type="button" class="b" id="cg-copy" style="padding:8px 12px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer">Sao chép link</button> <button type="button" id="cg-here" style="padding:8px 12px;border:0;border-radius:8px;background:#475569;color:#fff;font-weight:700;cursor:pointer">Mở thử trên máy này</button></div>';
+        $('cg-copy').onclick = () => { const t = $('cg-lk'); t.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { } try { navigator.clipboard && navigator.clipboard.writeText(lk); ok = true; } catch (e) { } $('cg-copy').textContent = ok ? 'Đã sao chép' : 'Cô bôi đen ô trên rồi chép'; };
+        $('cg-here').onclick = () => { open(p); };
+    }
+
+    function hookPaper() {
+        const orig = window.paperOpen;
+        if (typeof orig !== 'function') return;
+        window.paperOpen = function () {
+            const r = orig.apply(this, arguments);
+            const bt = document.querySelector('#pp-ov .pp-btns');
+            if (bt && !$('pp-ph')) {
+                const b = document.createElement('button'); b.id = 'pp-ph'; b.type = 'button'; b.style.background = '#7c3aed'; b.textContent = 'Gửi đáp án sang điện thoại (chấm bài)';
+                b.onclick = showLinkBox; bt.insertBefore(b, $('pp-x'));
+                const bx = document.createElement('div'); bx.id = 'cg-linkbox'; bt.parentNode.insertBefore(bx, bt.nextSibling);
+            }
+            return r;
+        };
+    }
+
+    // ---------- màn hình chấm ----------
+    function open(p) {
+        init(); DATA = p; LS.set('cham_last', JSON.stringify(p));
+        try { const sv = JSON.parse(LS.get('cham_saved_' + p.id) || '[]'); SAVED = Array.isArray(sv) ? sv : []; } catch (e) { SAVED = []; }
+        CUR = null; SHOWKEY = false;
+        $('cg-ov').style.display = 'block'; document.body.style.overflow = 'hidden';
+        render();
+    }
+    function close() { $('cg-ov').style.display = 'none'; document.body.style.overflow = ''; if (location.hash.indexOf('cham=') >= 0) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { } } }
+
+    function setCode(code) {
+        const r = DATA.s.find(x => x[0] === code); if (!r) return;
+        CUR = { code: code, mcq: r[1].split(''), tf: r[2], sa: r[3], es: r[4] };
+        ANS = { mcq: CUR.mcq.map(() => ''), tf: CUR.tf.map(() => ['-', '-', '-', '-']), sa: CUR.sa.map(() => ''), es: Array(CUR.es).fill('') };
+        render();
+    }
+
+    function calc() {
+        const pm = +DATA.p[0] || 0, pt = +DATA.p[1] || 0, ps = +DATA.p[2] || 0, pe = +DATA.p[3] || 0;
+        let g = 0, mx = CUR.mcq.length * pm + CUR.tf.length * pt + CUR.sa.length * ps + CUR.es * pe;
+        CUR.mcq.forEach((k, i) => { if (k !== '-' && ANS.mcq[i] === k) g += pm; });
+        const ratio = [0, 0.1, 0.25, 0.5, 1];
+        CUR.tf.forEach((k, i) => { let c = 0; for (let j = 0; j < 4; j++) if (ANS.tf[i][j] !== '-' && k[j] !== '-' && ANS.tf[i][j] === k[j]) c++; g += ratio[c] * pt; });
+        CUR.sa.forEach((k, i) => { if (ANS.sa[i] !== '' && k && sameShortAns(ANS.sa[i], k)) g += ps; });
+        let es = 0; ANS.es.forEach(v => { const x = parseFloat(String(v).replace(',', '.')); if (!isNaN(x)) es += Math.max(0, Math.min(pe, x)); });
+        g += es;
+        return { raw: g, max: mx, s10: mx > 0 ? Math.round(g / mx * 1000) / 100 : 0 };
+    }
+
+    function render() {
+        const ov = $('cg-ov'); let h = '<div class="cg-w">';
+        h += '<h2>Chấm bài giấy: ' + esc(DATA.t) + '</h2>';
+        const pend = JSON.parse(LS.get('cham_pending') || '[]');
+        if (pend.length) h += '<div class="cg-pend">Có <b>' + pend.length + '</b> bài chưa gửi được lên Google Sheet (mất mạng?). <button type="button" id="cg-retry" style="padding:6px 10px;border:0;border-radius:6px;background:#d97706;color:#fff;font-weight:700">Gửi lại</button></div>';
+        h += '<div class="cg-card"><b>Mã đề trên tờ bài làm</b><div class="cg-codes">' + DATA.s.map(r => '<button type="button" data-code="' + esc(r[0]) + '" class="' + (CUR && CUR.code === r[0] ? 'on' : '') + '">' + esc(r[0]) + '</button>').join('') + '</div></div>';
+        if (!CUR) { h += '<div class="cg-card cg-small">Chọn mã đề trước, rồi nhập từng em.</div>'; }
+        else {
+            const nm = ($('cg-name') || {}).value || '', cl = ($('cg-class') || {}).value || LS.get('cham_class') || '';
+            h += '<div class="cg-card"><input type="text" id="cg-name" placeholder="Họ và tên học sinh" autocomplete="off" value="' + esc(nm) + '"><input type="text" id="cg-class" placeholder="Lớp (ví dụ 12A3)" autocomplete="off" value="' + esc(cl) + '"></div>';
+            if (CUR.mcq.length) {
+                h += '<div class="cg-card"><div class="cg-sub">Phần I - Trắc nghiệm</div>';
+                CUR.mcq.forEach((k, i) => { h += '<div class="cg-row"><span class="cg-n">' + (i + 1) + '</span>' + ['A', 'B', 'C', 'D'].map(L => '<button type="button" class="cg-opt ' + cls(ANS.mcq[i] === L, k === L, ANS.mcq[i] !== '') + '" data-t="m" data-i="' + i + '" data-v="' + L + '">' + L + '</button>').join('') + '</div>'; });
+                h += '</div>';
+            }
+            if (CUR.tf.length) {
+                h += '<div class="cg-card"><div class="cg-sub">Phần II - Đúng/Sai (a, b, c, d)</div>';
+                CUR.tf.forEach((k, i) => {
+                    h += '<div class="cg-tfq"><b>Câu ' + (i + 1) + '</b>';
+                    ['a', 'b', 'c', 'd'].forEach((ch, j) => { h += '<div class="cg-row"><span class="cg-n">' + ch + ')</span>' + [['D', 'Đúng'], ['S', 'Sai']].map(v => '<button type="button" class="cg-opt ' + cls(ANS.tf[i][j] === v[0], k[j] === v[0], ANS.tf[i][j] !== '-') + '" data-t="t" data-i="' + i + '" data-j="' + j + '" data-v="' + v[0] + '">' + v[1] + '</button>').join('') + '</div>'; });
+                    h += '</div>';
+                });
+                h += '</div>';
+            }
+            if (CUR.sa.length) {
+                h += '<div class="cg-card"><div class="cg-sub">Phần III - Trả lời ngắn (gõ số học sinh ghi)</div>';
+                CUR.sa.forEach((k, i) => { h += '<div class="cg-row"><span class="cg-n">' + (i + 1) + '</span><input type="text" inputmode="decimal" data-t="s" data-i="' + i + '" value="' + esc(ANS.sa[i]) + '" placeholder="đáp án em ghi"></div>'; });
+                h += '</div>';
+            }
+            if (CUR.es) {
+                h += '<div class="cg-card"><div class="cg-sub">Phần IV - Tự luận (cô chấm tay, nhập điểm, tối đa ' + fmt(+DATA.p[3]) + ' mỗi câu)</div>';
+                for (let i = 0; i < CUR.es; i++) h += '<div class="cg-row"><span class="cg-n">' + (i + 1) + '</span><input type="number" step="0.25" min="0" max="' + (+DATA.p[3]) + '" inputmode="decimal" data-t="e" data-i="' + i + '" value="' + esc(ANS.es[i]) + '" placeholder="điểm"></div>';
+                h += '</div>';
+            }
+            h += '<div class="cg-card cg-small">Ô cô chọn hiện màu xanh lá nếu đúng, màu đỏ nếu sai.</div>';
+        }
+        if (SAVED.length) h += '<div class="cg-card cg-list"><b>Đã lưu ' + SAVED.length + ' bài</b>' + SAVED.slice(-8).reverse().map(x => '<div>' + esc(x.name) + ' (' + esc(x.cls) + ', mã ' + esc(x.code) + '): <b>' + fmt(x.s) + '</b></div>').join('') + '</div>';
+        h += '<div class="cg-card cg-small">Điểm lưu vào Google Sheet của cô, cùng sổ điểm với bài làm trên web (tên đề: [Giấy] ' + esc(DATA.t) + ').</div>';
+        h += '</div>';
+        if (CUR) { const c = calc(); h += '<div class="cg-bar"><div class="sc">Điểm: <b id="cg-sc">' + fmt(c.s10) + '</b>/10<div class="cg-small" id="cg-raw" style="color:#cbd5e1">' + fmt(c.raw) + '/' + fmt(c.max) + ' điểm gốc</div></div><button type="button" class="g" id="cg-close">Đóng</button><button type="button" id="cg-save">Lưu bài</button></div>'; }
+        else h += '<div class="cg-bar"><div class="sc">Chọn mã đề</div><button type="button" class="g" id="cg-close">Đóng</button></div>';
+        const keep = ov.scrollTop; ov.innerHTML = h; ov.scrollTop = keep;
+        wire();
+    }
+    function cls(picked, correct, any) { if (!picked) return (any && correct && SHOWKEY) ? 'ok' : ''; return (correct ? 'ok' : 'no'); }
+
+    function wire() {
+        const ov = $('cg-ov');
+        ov.querySelectorAll('[data-code]').forEach(b => b.onclick = () => { if (CUR && CUR.code !== b.dataset.code && !confirm('Đổi mã đề sẽ xóa bài đang nhập. Tiếp tục?')) return; if (CUR && CUR.code === b.dataset.code) return; setCode(b.dataset.code); });
+        ov.querySelectorAll('button[data-t]').forEach(b => b.onclick = () => {
+            const i = +b.dataset.i, v = b.dataset.v;
+            if (b.dataset.t === 'm') ANS.mcq[i] = (ANS.mcq[i] === v ? '' : v);
+            else { const j = +b.dataset.j; ANS.tf[i][j] = (ANS.tf[i][j] === v ? '-' : v); }
+            const nm = $('cg-name').value, cl = $('cg-class').value; render(); $('cg-name').value = nm; $('cg-class').value = cl;
+        });
+        ov.querySelectorAll('input[data-t]').forEach(inp => inp.oninput = () => { const i = +inp.dataset.i; if (inp.dataset.t === 's') ANS.sa[i] = inp.value.trim(); else ANS.es[i] = inp.value; const c = calc(); const sc = $('cg-sc'); if (sc) sc.textContent = fmt(c.s10); const rw = $('cg-raw'); if (rw) rw.textContent = fmt(c.raw) + '/' + fmt(c.max) + ' điểm gốc'; });
+        const cl = $('cg-close'); if (cl) cl.onclick = close;
+        const sv = $('cg-save'); if (sv) sv.onclick = save;
+        const rt = $('cg-retry'); if (rt) rt.onclick = retry;
+    }
+
+    async function post(body) {
+        for (let i = 0; i < 3; i++) {
+            try {
+                const r = await fetch(DATA.u, { method: 'POST', body: JSON.stringify(body) });
+                if (r.ok) { let ok = true; try { const j = await r.clone().json(); if (j && (j.status === 'error' || j.success === false || j.error)) ok = false; } catch (e) { } if (ok) return true; }
+            } catch (e) { }
+            await new Promise(r => setTimeout(r, 800 * (i + 1)));
+        }
+        return false;
+    }
+    function body(name, cls, code, s10) {
+        const g = /^1[012]/.test(cls) ? cls.slice(0, 2) : '12';
+        return { action: 'submit_quiz', time: new Date().toLocaleString('vi-VN'), examId: '', examTitle: '[Giấy] ' + DATA.t, name: name, class: cls, grade: g, mode: 'GIAY', totalScore: s10.toFixed(2), answers: null, leaveCount: 0, drawnIds: [], paperCode: code };
+    }
+    async function save() {
+        const name = ($('cg-name').value || '').trim(), cl = ($('cg-class').value || '').trim().toUpperCase();
+        if (!name || !cl) { alert('Cô nhập họ tên và lớp của học sinh trước khi lưu.'); return; }
+        if (!DATA.u) { alert('Link này thiếu địa chỉ Google Sheet. Cô tạo lại link từ máy tính.'); return; }
+        if (SAVED.some(x => x.name.toLowerCase() === name.toLowerCase() && x.cls === cl) && !confirm('Em ' + name + ' (' + cl + ') đã được lưu điểm rồi. Lưu thêm một dòng nữa?')) return;
+        const c = calc(), btn = $('cg-save'); btn.disabled = true; btn.textContent = 'Đang lưu...';
+        LS.set('cham_class', cl);
+        const b = body(name, cl, CUR.code, c.s10);
+        const ok = await post(b);
+        if (!ok) { const p = JSON.parse(LS.get('cham_pending') || '[]'); p.push(b); LS.set('cham_pending', JSON.stringify(p)); }
+        SAVED.push({ name: name, cls: cl, code: CUR.code, s: c.s10 }); LS.set('cham_saved_' + DATA.id, JSON.stringify(SAVED));
+        alert(ok ? '✅ Đã lưu: ' + name + ' - ' + fmt(c.s10) + ' điểm.' : '⚠️ Chưa gửi được lên Google Sheet (mất mạng?). Bài đã được giữ trong điện thoại, cô bấm "Gửi lại" khi có mạng.');
+        const code = CUR.code; $('cg-name').value = ''; CUR = null; setCode(code); const ci = $('cg-class'); if (ci) ci.value = cl;
+        const ovs = $('cg-ov'); ovs.scrollTop = 0;
+    }
+    async function retry() {
+        let p = JSON.parse(LS.get('cham_pending') || '[]'), left = [];
+        for (const b of p) { if (!(await post(b))) left.push(b); }
+        LS.set('cham_pending', JSON.stringify(left));
+        alert(left.length ? 'Còn ' + left.length + ' bài chưa gửi được.' : '✅ Đã gửi hết.'); render();
+    }
+
+    window.chamOpen = open;
+    window.chamState = () => ({ data: DATA, cur: CUR, ans: ANS, calc: CUR ? calc() : null });
+
+    function boot() {
+        init(); hookPaper();
+        const m = /[#&]cham=([^&]+)/.exec(location.hash || '');
+        if (m) {
+            try {
+                const p = b64d(m[1]);
+                const g = $('teacher-portal-gate'); if (g) g.style.display = 'none';
+                open(p);
+                // trang chính có thể hiện lại cổng đăng nhập sau khi tải; lớp phủ chấm bài luôn nằm trên
+            } catch (e) { alert('Link chấm bài bị lỗi hoặc bị cắt. Cô tạo lại link từ máy tính.'); }
+        }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+
 </body>
 </html>
