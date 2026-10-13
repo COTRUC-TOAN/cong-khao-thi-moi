@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v40] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v41] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1680,11 +1680,17 @@
         async function saveBankBulkToSheets() {
             if (directParsedQuestions.length === 0) return;
             document.body.style.cursor = 'wait';
+            let okN = 0, badN = 0, lastWhy = '';
             for (const q of directParsedQuestions) {
-                await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) });
+                try {
+                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) });
+                    const j = await r.json();
+                    if (j && j.status === 'success') okN++; else { badN++; lastWhy = (j && (j.message || j.error)) ? String(j.message || j.error).slice(0, 160) : ''; }
+                } catch (e) { badN++; lastWhy = 'không kết nối được máy chủ'; }
             }
             document.body.style.cursor = 'default';
-            alert("🎉 Đã lưu toàn bộ câu vừa bóc tách vào Ngân Hàng!");
+            if (badN === 0) alert("🎉 Đã lưu " + okN + " câu vào Ngân Hàng!");
+            else alert((okN ? "Đã lưu " + okN + " câu. " : "") + "❌ CÓ " + badN + " CÂU CHƯA LƯU ĐƯỢC" + (lastWhy ? " (máy chủ báo: " + lastWhy + ")" : "") + ".\nNguyên nhân hay gặp: sai mật khẩu quản lý, mạng yếu, hoặc câu có ảnh quá nặng. Cô bấm lưu lại sau khi xử lý (câu đã lưu rồi sẽ được cập nhật, không bị mất).");
             loadQuestionBank();
         }
 
@@ -1708,9 +1714,12 @@
                             q: q.q || '',
                             options: (typeof optRaw === 'string') ? JSON.parse(optRaw) : optRaw,
                             ans: q.ans || '',
-                            ansOptions: (typeof aOptRaw === 'string') ? JSON.parse(aOptRaw) : aOptRaw
+                            ansOptions: (typeof aOptRaw === 'string') ? JSON.parse(aOptRaw) : aOptRaw,
+                            explanation: q.explanation || ''
                         };
                     }).filter(q => q.id && q.id !== "");
+                    // Sheet có thể có nhiều dòng cùng mã (do sửa câu nhiều lần): chỉ giữ bản mới nhất (dòng cuối)
+                    { const byId = new Map(); questionBank.forEach(q => byId.set(q.id, q)); questionBank = Array.from(byId.values()); }
                     
                     filterQuestionBankList(); 
                     renderMatrixTable();
@@ -2012,10 +2021,6 @@ function removeQuestionFromSelected(qId) {
             const deadline = document.getElementById('new-exam-deadline').value;
             const maxAttemptsVal = parseInt(document.getElementById('new-exam-max-attempts')?.value) || 0;
             
-            if (selectedQuestions.length > 0) {
-                selectedQuestions[0].maxAttempts = maxAttemptsVal;
-            }
-
             if (!examId || !title) { alert("⚠️ Vui lòng nhập đầy đủ Mã đề và Tên đề thi!"); return; }
             if (examId !== typedExamId) {
                 document.getElementById('new-exam-id').value = examId;
@@ -2029,7 +2034,7 @@ function removeQuestionFromSelected(qId) {
                 if (!confirm("⚠️ Còn " + rvPendingCount() + " câu bị Gemini đánh dấu 'cần xem kỹ' mà cô chưa bấm 'Đã xem'.\nVẫn lưu đề?")) return;
             }
 
-            let questionsToSave = selectedQuestions;
+            let questionsToSave = selectedQuestions.map(q => ({ ...q }));
             if (mode === 'KIEMTRA') {
                 let secretKeys = {};
                 
@@ -2070,6 +2075,13 @@ function removeQuestionFromSelected(qId) {
                 }
             }
 
+            if (questionsToSave.length > 0) questionsToSave[0].maxAttempts = maxAttemptsVal;
+            const qJsonStr = JSON.stringify(questionsToSave);
+            if (qJsonStr.length > 45000) {
+                alert("⚠️ Đề quá lớn nên Google Sheet không lưu được (" + qJsonStr.length.toLocaleString('vi-VN') + " ký tự, giới hạn khoảng 45.000).\nNguyên nhân thường là ảnh dán vào câu hỏi hoặc hình quá nặng, hoặc đề ma trận có ngân hàng quá nhiều câu có hình.\nCô giảm bớt số câu có hình, dùng ảnh nhỏ hơn, hoặc chia thành hai đề rồi xuất bản lại.");
+                return;
+            }
+
             const newExamObj = {
                 id: examId,
                 title: title,
@@ -2082,8 +2094,9 @@ function removeQuestionFromSelected(qId) {
                 deadline: deadline,
                 youtubeUrl: document.getElementById('lecture-youtube-url')?.value.trim() || '',
                 pdfData: lecturePdfBase64 || '',
+                maxAttempts: maxAttemptsVal,
                 questions: questionsToSave,
-                questionsJson: JSON.stringify(questionsToSave)
+                questionsJson: qJsonStr
             };
 
             document.body.style.cursor = 'wait';
@@ -2098,6 +2111,11 @@ function removeQuestionFromSelected(qId) {
                 });
                 const data = await res.json();
                 document.body.style.cursor = 'default';
+                if (!data || data.status !== 'success') {
+                    const why = data && (data.message || data.error) ? String(data.message || data.error).slice(0, 200) : 'không rõ nguyên nhân';
+                    alert("❌ CHƯA XUẤT BẢN ĐƯỢC. Máy chủ (Google Sheet) báo lỗi: " + why + "\nHọc sinh CHƯA thấy đề này. Cô kiểm tra lại (mật khẩu quản lý, đề quá lớn, thiếu tab DeThi) rồi bấm Lưu & Xuất Bản Đề lần nữa.");
+                    return;
+                }
 
              alert(mode === 'KIEMTRA' 
                     ? "🎉 Xuất bản ĐỀ KIỂM TRA thành công! Đề đã được mã hóa bảo mật chống F12." 
@@ -2115,17 +2133,7 @@ function removeQuestionFromSelected(qId) {
                 showPortalView();
             } catch (err) {
                 document.body.style.cursor = 'default';
-                
-                const existingIdx = examBank.findIndex(e => e.id === newExamObj.id);
-                if (existingIdx !== -1) {
-                    examBank[existingIdx] = newExamObj;
-                } else {
-                    examBank.unshift(newExamObj);
-                }
-                
-                renderExams();
-                alert("🎉 Đã lưu trên giao diện (Vui lòng kiểm tra lại mạng nếu Sheets chưa cập nhật)!");
-                showPortalView();
+                alert("❌ CHƯA XUẤT BẢN ĐƯỢC: không kết nối được máy chủ (có thể do mạng yếu). Học sinh CHƯA thấy đề này.\nCô kiểm tra mạng rồi bấm Lưu & Xuất Bản Đề lần nữa. Nội dung đề cô vừa soạn vẫn còn trên màn hình.");
             }
         }
 
@@ -2523,10 +2531,16 @@ async function loadExamToEdit(examId) {
         async function deleteExamFromSystem(examId) {
             if (!confirm(`⚠️ Xóa đề [${examId}]?`)) return;
             try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_exam', password: teacherPassAuth, examId: examId }) });
-                const data = await res.json();
-                if (data.status === "success") { alert("🗑️ Đã xóa!"); examBank = examBank.filter(e => e.id !== examId); renderExams(); renderTeacherExamList(); }
-            } catch (e) { alert("Lỗi khi xóa!"); }
+                // Mỗi lần sửa và xuất bản lại, Sheet có thêm một dòng cùng mã; máy chủ mỗi lệnh chỉ xóa một dòng nên xóa lặp đến khi hết
+                let removed = 0, lastData = null;
+                for (let k = 0; k < 40; k++) {
+                    const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_exam', password: teacherPassAuth, examId: examId }) });
+                    lastData = await res.json();
+                    if (lastData && lastData.status === "success") removed++; else break;
+                }
+                if (removed > 0) { alert("🗑️ Đã xóa đề!"); examBank = examBank.filter(e => e.id !== examId); renderExams(); renderTeacherExamList(); }
+                else alert("❌ Chưa xóa được đề (máy chủ không xóa dòng nào). Cô kiểm tra mật khẩu quản lý và mạng rồi thử lại.");
+            } catch (e) { alert("❌ Lỗi khi xóa: không kết nối được máy chủ. Cô kiểm tra mạng rồi thử lại."); }
         }
 
         function showPortalView() {
@@ -3932,15 +3946,19 @@ function closeEditQuestionModal() { document.getElementById('edit-question-modal
 
             document.body.style.cursor = 'wait';
             try {
+                let ok = true, why = '';
                 if (qBank) {
-                    await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: qBank }) });
+                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: qBank }) });
+                    const j = await r.json();
+                    if (!j || j.status !== 'success') { ok = false; why = (j && (j.message || j.error)) ? String(j.message || j.error).slice(0, 200) : 'không rõ nguyên nhân'; }
                 }
                 document.body.style.cursor = 'default';
-                alert("🎉 Đã lưu cập nhật câu hỏi thành công!");
+                if (ok) alert(qBank ? "🎉 Đã lưu cập nhật câu hỏi vào Ngân hàng." : "🎉 Đã sửa câu này trong đề đang soạn. Cô nhớ bấm Lưu & Xuất Bản Đề để cập nhật cho học sinh.");
+                else alert("❌ Câu đã sửa trên màn hình nhưng CHƯA lưu được vào Ngân hàng (máy chủ báo lỗi: " + why + "). Cô kiểm tra mật khẩu quản lý hoặc kích thước ảnh trong câu rồi bấm Lưu lại.");
                 closeEditQuestionModal(); filterQuestionBankList();
             } catch (err) {
                 document.body.style.cursor = 'default';
-                alert("Đã lưu trên giao diện thành công!");
+                alert("❌ Câu đã sửa trên màn hình nhưng CHƯA lưu được vào Ngân hàng vì không kết nối được máy chủ. Cô kiểm tra mạng rồi mở câu và bấm Lưu lại.");
                 closeEditQuestionModal(); filterQuestionBankList();
             }
         }
