@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v47] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v48] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -338,6 +338,10 @@
         }
         @media (prefers-reduced-motion: reduce) { .exam-card, .exam-card:hover { transition: none; transform: none; } }
         /* Màn soạn đề: thanh 3 bước */
+        #add-method-paste[data-m="paste"] #ai-draft, #add-method-paste[data-m="paste"] #pdf-box { display: none; }
+        #add-method-paste[data-m="ai"] #pdf-box, #add-method-paste[data-m="img"] #ai-draft { display: none; }
+        #add-method-paste[data-m="ai"] .m-paste, #add-method-paste[data-m="img"] .m-paste { display: none; }
+        #add-method-paste[data-m="ai"] #rv-toggle-btn, #add-method-paste[data-m="img"] #rv-toggle-btn { display: none; }
         .step-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; font-family: var(--ui); position: sticky; top: 0; z-index: 5; background: #fff; padding: 8px 0; border-bottom: 1px solid var(--line); }
         .step-bar button { font-family: var(--ui); font-size: .92rem; font-weight: 600; background: var(--ink-soft); color: var(--ink-deep); border: 1px solid transparent; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
         .step-bar button b { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; align-items: center; justify-content: center; font-size: .8rem; margin-right: 6px; }
@@ -545,25 +549,28 @@
 
                     <div class="creator-card">
                         <h3 style="color: #059669; margin-bottom: 14px;"><i class="fa-solid fa-layer-group"></i> Bước 2: Nhập câu hỏi cho đề</h3>
-                        <div style="font-size:.9rem; color:#475569; margin-bottom:10px;">Chọn một cách nhập bên dưới. Cách thông dụng nhất: <b>dán đề có sẵn</b> vào khung rồi bấm Tự Động Phân Tích, hoặc <b>nhờ AI soạn đề</b> (bấm nút tím "Nhờ AI" dưới khung dán).</div>
-                        <div style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                            <button class="btn-t-tab active" id="tab-add-paste" onclick="switchAddMethod('paste')">Dán đề hoặc nhờ AI soạn</button>
-                            <button class="btn-t-tab" id="tab-add-bank" onclick="switchAddMethod('bank')">Chọn từ ngân hàng câu hỏi</button>
-                            <button class="btn-t-tab" id="tab-add-matrix" onclick="switchAddMethod('matrix')">Đề trộn ngẫu nhiên (đề động)</button>
+                        <div style="font-size:.9rem; color:#475569; margin-bottom:10px;">Chọn <b>một</b> cách nhập, các cách khác sẽ ẩn đi cho gọn. Cách thông dụng nhất: <b>A. dán đề có sẵn</b> vào khung rồi bấm Tự Động Phân Tích, hoặc <b>nhờ AI soạn đề</b> (bấm nút tím "Nhờ AI" dưới khung dán).</div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                            <button class="btn-t-tab active" id="tab-add-paste" onclick="switchAddMethod('paste')">A. Dán đề có sẵn</button>
+                            <button class="btn-t-tab" id="tab-add-ai" onclick="switchAddMethod('ai')">B. AI soạn theo ma trận</button>
+                            <button class="btn-t-tab" id="tab-add-img" onclick="switchAddMethod('img')">C. Từ ảnh chụp đề</button>
+                            <button class="btn-t-tab" id="tab-add-bank" onclick="switchAddMethod('bank')">D. Chọn từ ngân hàng câu hỏi</button>
+                            <button class="btn-t-tab" id="tab-add-matrix" onclick="switchAddMethod('matrix')">E. Đề trộn ngẫu nhiên (đề động)</button>
                         </div>
+                        <div id="m-hint" style="display:none; font-size:.86rem; color:#475569; background:#f1f5f9; border-radius:8px; padding:6px 10px; margin-bottom:8px;"></div>
 
                         <!-- 1. TẠO ĐỀ NHANH ALL-IN-ONE THÔNG MINH -->
-                        <div id="add-method-paste">
-                            <p style="font-size: 0.95rem; color: #1e40af; font-weight: bold; margin-bottom: 10px;">✨ Chế độ Tự Động: Dán hỗn hợp mọi dạng câu hỏi (Trắc nghiệm, Đúng/Sai, Ngắn), hệ thống tự bóc tách chuẩn 100% không cần chọn dạng!</p>
-                            <div class="rich-textarea" id="direct-raw-text" contenteditable="true" style="height: 55vh; max-height: 55vh;" placeholder="Dán văn bản đề thi..."></div>
-                            <details style="margin-top:8px;"><summary style="cursor:pointer; font-size:.9rem; font-weight:bold; color:#4338ca;">🖼️ Dán mã hình (đồ thị, hình chóp, bảng biến thiên...) lấy từ AI khác</summary>
+                        <div id="add-method-paste" data-m="paste">
+                            <p class="m-paste" style="font-size: 0.95rem; color: #1e40af; font-weight: bold; margin-bottom: 10px;">✨ Chế độ Tự Động: Dán hỗn hợp mọi dạng câu hỏi (Trắc nghiệm, Đúng/Sai, Ngắn), hệ thống tự bóc tách chuẩn 100% không cần chọn dạng!</p>
+                            <div class="rich-textarea m-paste" id="direct-raw-text" contenteditable="true" style="height: 55vh; max-height: 55vh;" placeholder="Dán văn bản đề thi..."></div>
+                            <details class="m-paste" style="margin-top:8px;"><summary style="cursor:pointer; font-size:.9rem; font-weight:bold; color:#4338ca;">🖼️ Dán mã hình (đồ thị, hình chóp, bảng biến thiên...) lấy từ AI khác</summary>
                                 <div style="font-size:.88rem; color:#475569; margin-top:4px;">Cô có thể nhờ Gemini, ChatGPT hay Claude ở ngoài cho <b>mã hình</b>, rồi dán mã vào ngay vị trí cần hình trong câu, dạng <code>[[HINH {...}]]</code>. Bấm "Tự Động Phân Tích" thì web đổi mã thành hình ngay trong câu. Các dạng hình: đồ thị hàm số, hình chóp/lăng trụ/hộp/tứ diện, bảng biến thiên, hình phẳng (viết bằng SVG). Cô cũng gửi được <b>ảnh chụp</b> hình hoặc bảng biến thiên cho AI đó, nhờ AI phân tích ảnh rồi tạo mã. Mã LaTeX/TikZ của Overleaf thì web chưa vẽ được.</div>
                                 <button type="button" class="rv-btn" style="margin-top:6px;" onclick="rvCopyFigGuide()">📋 Sao chép hướng dẫn để dán cho AI khác</button> <span id="fig-guide-msg" style="font-size:.85rem;"></span>
                             </details>
-                            <button class="btn-start" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự Động Phân Tích</button>
-                            <button class="btn-start" id="btn-lock-batch" style="width: 100%; background: #0f766e; margin-top: 8px;" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt Phần Này Để Dán Phần Tiếp</button>
+                            <button class="btn-start m-paste" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự Động Phân Tích</button>
+                            <button class="btn-start m-paste" id="btn-lock-batch" style="width: 100%; background: #0f766e; margin-top: 8px;" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt Phần Này Để Dán Phần Tiếp</button>
                             <div class="rv-panel">
-                                <button type="button" class="btn-start" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Nhờ AI soạn đề, đọc PDF, rà soát đề (bấm để mở)</button>
+                                <button type="button" class="btn-start" id="rv-toggle-btn" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Nhờ AI soạn đề, đọc PDF, rà soát đề (bấm để mở)</button>
                                 <div id="rv-body" style="display:none; margin-top:8px;">
                                     <div style="font-size:.85rem; color:#475569;">Bấm "Tự Động Phân Tích" trước, rồi rà soát. Gemini giải độc lập 2 lượt, máy tính kiểm lại phép tính, rồi một lượt phản biện. Kết quả chỉ để cô xem lại, không tự sửa đề.</div>
                                     <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Khóa Gemini (tạo tại aistudio.google.com/apikey)</label>
@@ -700,7 +707,7 @@
 
                     <div class="creator-card" id="step3-card">
                         <h3 style="color: #b45309; margin-bottom: 6px;"><i class="fa-solid fa-cloud-arrow-up"></i> Bước 3: Xem lại và xuất bản</h3>
-                        <div style="font-size:.9rem; color:#475569; margin-bottom:8px;">Các câu cô đã bóc tách hoặc chọn ở bước 2 nằm trong danh sách dưới đây. Cô kiểm tra số câu, xóa câu không cần, rồi bấm Lưu & Xuất Bản Đề. Học sinh chỉ thấy đề sau khi cô xuất bản.</div>
+                        <div style="font-size:.9rem; color:#475569; margin-bottom:8px;">Các câu cô đã bóc tách hoặc chọn ở bước 2 nằm trong danh sách dưới đây. Cô kiểm tra số câu, xóa câu không cần, rồi chọn cách dùng đề: <b>cho học sinh làm trên web</b> hoặc <b>in đề giấy</b>. Học sinh chỉ thấy đề sau khi cô xuất bản.</div>
                         <div class="selected-list-box" id="bank-selected-box">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                 <strong style="color: #334155;"><i class="fa-solid fa-list-check"></i> Đã Chọn (<span id="selected-q-count" style="color: var(--primary);">0</span> câu)</strong>
@@ -708,8 +715,16 @@
                             </div>
                             <div id="selected-items-container" style="max-height: 200px; overflow-y: auto;"><p style="text-align: center; color: #94a3b8;">Chưa chọn câu hỏi.</p></div>
                         </div>
-                        <button class="btn-start" style="width: 100%; margin-top: 15px; padding: 12px;" onclick="saveExamFinal()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Xuất Bản Đề</button>
-                        <button class="btn-start" id="btn-paper" style="width: 100%; margin-top: 8px; padding: 12px; background:#0f766e;" onclick="paperOpen()"><i class="fa-solid fa-print"></i> Xuất đề giấy (PDF): phiếu tô ô ở trên, đề ở dưới</button>
+                        <div style="margin-top:14px; border:2px solid #bfdbfe; border-radius:10px; padding:10px; background:#eff6ff;">
+                            <b style="color:#1d4ed8;">A. Cho học sinh làm trên web</b>
+                            <div style="font-size:.85rem; color:#475569; margin:2px 0 6px;">Học sinh vào link làm bài, web tự chấm và ghi điểm vào sổ điểm.</div>
+                            <button class="btn-start" style="width: 100%; padding: 12px;" onclick="saveExamFinal()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Xuất Bản Đề</button>
+                        </div>
+                        <div style="margin-top:10px; border:2px solid #99f6e4; border-radius:10px; padding:10px; background:#f0fdfa;">
+                            <b style="color:#0f766e;">B. In đề giấy</b>
+                            <div style="font-size:.85rem; color:#475569; margin:2px 0 6px;">Nhiều mã đề, phiếu tô đáp án ở trên, đề ở dưới, vừa 2 trang A4. Chấm bằng điện thoại.</div>
+                            <button class="btn-start" id="btn-paper" style="width: 100%; padding: 12px; background:#0f766e;" onclick="paperOpen()"><i class="fa-solid fa-print"></i> In đề giấy (nhiều mã đề)</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2379,11 +2394,27 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
         }
 
         function switchAddMethod(method) {
-            ['paste', 'bank', 'matrix'].forEach(m => {
-                document.getElementById(`tab-add-${m}`).classList.toggle('active', m === method);
-                document.getElementById(`add-method-${m}`).style.display = (m === method) ? 'block' : 'none';
+            const HINTS = {
+                ai: 'Cách B: AI soạn đề theo bảng ma trận. Đề AI soạn xong hiện ở khung "Xem Trước Gọn Gàng" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).',
+                img: 'Cách C: chụp ảnh đề cho AI đọc. Đề đọc xong hiện ở khung "Xem Trước Gọn Gàng" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).'
+            };
+            ['paste', 'ai', 'img', 'bank', 'matrix'].forEach(m => {
+                const t = document.getElementById(`tab-add-${m}`); if (t) t.classList.toggle('active', m === method);
             });
-            
+            const inPaste = (method === 'paste' || method === 'ai' || method === 'img');
+            const pb = document.getElementById('add-method-paste');
+            pb.style.display = inPaste ? 'block' : 'none';
+            if (inPaste) pb.dataset.m = method;
+            document.getElementById('add-method-bank').style.display = method === 'bank' ? 'block' : 'none';
+            document.getElementById('add-method-matrix').style.display = method === 'matrix' ? 'block' : 'none';
+            const hint = document.getElementById('m-hint');
+            if (hint) { hint.style.display = HINTS[method] ? 'block' : 'none'; hint.textContent = HINTS[method] || ''; }
+            // cách B, C cần khung Gemini mở sẵn (có ô nhập khóa)
+            if (method === 'ai' || method === 'img') {
+                const b = document.getElementById('rv-body');
+                if (b && b.style.display === 'none' && typeof window.rvToggle === 'function') window.rvToggle();
+            }
+
             // SỬA Ở ĐÂY: Luôn luôn HIỆN hộp "Đã Chọn" ở tất cả các Tab
             document.getElementById('bank-selected-box').style.display = 'block'; 
             
@@ -5612,7 +5643,7 @@ window.addEventListener('popstate', function () {
 #pp-ov .pp-chk{font-size:.9rem;display:flex;gap:6px;align-items:flex-start;margin-top:6px}
 #pp-ov .pp-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 #pp-ov .pp-btns button{padding:9px 14px;border:0;border-radius:8px;font-weight:700;cursor:pointer;color:#fff;background:#0f766e;font-size:.95rem}
-#pp-ov .pp-btns button.g{background:#475569}#pp-ov .pp-btns button.b{background:#1d4ed8}#pp-ov .pp-btns button.r{background:#b91c1c}
+#pp-ov .pp-sec2{font-weight:700;color:#0f766e;margin:8px 0 2px;font-size:.92rem}#pp-ov .pp-more{margin:8px 0;border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px}#pp-ov .pp-more summary{cursor:pointer;font-weight:600;color:#334155;font-size:.92rem}#pp-ov .pp-btns button:disabled{opacity:.4;cursor:not-allowed}#pp-ov .pp-btns button.g{background:#475569}#pp-ov .pp-btns button.b{background:#1d4ed8}#pp-ov .pp-btns button.r{background:#b91c1c}
 #pp-ov #pp-msg{margin-top:10px;font-size:.9rem;line-height:1.5}
 #pp-ov .pp-hint{font-size:.8rem;color:#64748b;margin-top:6px;line-height:1.45}
 .pp-page{width:210mm;height:296mm;background:#fff;margin:10px auto;position:relative;box-shadow:0 1px 8px rgba(0,0,0,.25);overflow:hidden;box-sizing:border-box;padding:10mm;color:#000;break-after:page;page-break-after:always}
@@ -5651,29 +5682,40 @@ window.addEventListener('popstate', function () {
 }`;
     const DLG = `
 <div class="pp-dlg">
- <h3>🖨️ Xuất đề giấy (PDF)</h3>
- <div style="font-size:.88rem;color:#475569;margin-bottom:8px">Đề được lấy từ danh sách đang chọn ở Bước 2 (đề ma trận động thì web bốc ngẫu nhiên từ ngân hàng cho từng mã đề). Phiếu tô đáp án nằm ở đầu trang 1, nội dung đề ở dưới.</div>
+ <h3>🖨️ In đề giấy (nhiều mã đề)</h3>
+ <div style="font-size:.88rem;color:#475569;margin-bottom:8px">Đề được lấy từ danh sách đang chọn ở Bước 2 (đề ma trận động thì web bốc ngẫu nhiên từ ngân hàng cho từng mã đề). Phiếu tô đáp án nằm ở đầu trang 1, nội dung đề ở dưới. Cô làm lần lượt từ ① đến ④.</div>
+ <div class="pp-sec2">Thông tin đề</div>
  <div class="pp-grid">
   <label class="pp-f">Tên trường<input id="pp-school" value="TRƯỜNG THPT LONG THỚI"></label>
   <label class="pp-f">Tên bài kiểm tra<input id="pp-exam" placeholder="KIỂM TRA GIỮA KỲ 1"></label>
   <label class="pp-f">Năm học<input id="pp-year" placeholder="2026 - 2027"></label>
   <label class="pp-f">Môn<input id="pp-subj" value="TOÁN"></label>
   <label class="pp-f">Thời gian (phút)<input id="pp-time" type="number" min="1" value="90"></label>
+ </div>
+ <div class="pp-sec2">Mã đề</div>
+ <div class="pp-grid">
   <label class="pp-f">Số mã đề<input id="pp-n" type="number" min="1" max="12" value="4"></label>
   <label class="pp-f">Mã đề đầu tiên (3 chữ số)<input id="pp-code" type="number" min="100" max="997" value="101"></label>
-  <label class="pp-f">Cỡ chữ<select id="pp-font"><option value="auto">Tự động (lớn nhất mà vẫn vừa)</option><option value="12">12</option><option value="11.5">11,5</option><option value="11">11</option><option value="10.5">10,5</option><option value="10">10</option><option value="9.5">9,5</option><option value="9">9</option></select></label>
-  <label class="pp-f">Điểm mỗi câu trắc nghiệm<input id="pp-pm" value="0,25"></label>
-  <label class="pp-f">Điểm tối đa mỗi câu đúng/sai<input id="pp-pt" value="1"></label>
-  <label class="pp-f">Điểm mỗi câu trả lời ngắn<input id="pp-ps" value="0,5"></label>
-  <label class="pp-f">Điểm mỗi câu tự luận<input id="pp-pe" value="1"></label>
  </div>
- <label class="pp-chk"><input type="checkbox" id="pp-sheet" checked> In phiếu tô đáp án ở đầu trang 1 (để chấm bằng điện thoại)</label>
- <label class="pp-chk"><input type="checkbox" id="pp-shuf" checked> Đảo thứ tự câu và đáp án A, B, C, D giữa các mã (mã đầu giữ nguyên thứ tự gốc của đề cố định)</label>
- <label class="pp-chk"><input type="checkbox" id="pp-limit" checked> Cố gắng gọn trong 2 trang A4 (tự thu nhỏ chữ)</label>
+ <div class="pp-sec2">Điểm mỗi câu</div>
+ <div class="pp-grid">
+  <label class="pp-f">Trắc nghiệm<input id="pp-pm" value="0,25"></label>
+  <label class="pp-f">Đúng/sai (tối đa)<input id="pp-pt" value="1"></label>
+  <label class="pp-f">Trả lời ngắn<input id="pp-ps" value="0,5"></label>
+  <label class="pp-f">Tự luận<input id="pp-pe" value="1"></label>
+ </div>
+ <details class="pp-more"><summary>Tùy chọn thêm (cỡ chữ, in phiếu tô ô, đảo câu, gọn 2 trang)</summary>
+  <div class="pp-grid" style="margin-top:6px">
+   <label class="pp-f">Cỡ chữ<select id="pp-font"><option value="auto">Tự động (lớn nhất mà vẫn vừa)</option><option value="12">12</option><option value="11.5">11,5</option><option value="11">11</option><option value="10.5">10,5</option><option value="10">10</option><option value="9.5">9,5</option><option value="9">9</option></select></label>
+  </div>
+  <label class="pp-chk"><input type="checkbox" id="pp-sheet" checked> In phiếu tô đáp án ở đầu trang 1 (để chấm bằng điện thoại)</label>
+  <label class="pp-chk"><input type="checkbox" id="pp-shuf" checked> Đảo thứ tự câu và đáp án A, B, C, D giữa các mã (mã đầu giữ nguyên thứ tự gốc của đề cố định)</label>
+  <label class="pp-chk"><input type="checkbox" id="pp-limit" checked> Cố gắng gọn trong 2 trang A4 (tự thu nhỏ chữ)</label>
+ </details>
  <div class="pp-btns">
-  <button id="pp-go">Tạo mã đề &amp; xem trước</button>
-  <button class="b" id="pp-pr1">In / Lưu PDF đề</button>
-  <button class="g" id="pp-pr2">In / Lưu PDF đáp án</button>
+  <button id="pp-go">① Tạo mã đề &amp; xem trước</button>
+  <button class="b" id="pp-pr1" disabled>② In đề (Lưu PDF)</button>
+  <button class="g" id="pp-pr2" disabled>③ In đáp án (Lưu PDF)</button>
   <button class="r" id="pp-x">Đóng</button>
  </div>
  <div id="pp-msg"></div>
@@ -5940,7 +5982,7 @@ window.addEventListener('popstate', function () {
                 SETS.forEach(s => { store[exId + '|' + s.code] = { exam: exId, title: o.exam, code: s.code, at: now, pts: { mcq: o.pm, tf: o.pt, sa: o.ps, es: o.pe }, mcq: s.mcq.map(q => q.ans), tf: s.tf.map(q => q.ans), sa: s.sa.map(q => q.ans), es: s.es.length, layout: s.sheet ? s.sheet.layout : null }; });
                 LS.set('paper_sets', JSON.stringify(store));
             } catch (e) { }
-            READY = true;
+            READY = true; ['pp-pr1', 'pp-pr2', 'pp-ph'].forEach(i => { const e = $(i); if (e) e.disabled = false; });
             const s0 = SETS[0];
             let html = '<b>Đã tạo ' + SETS.length + ' mã đề (' + SETS.map(s => s.code).join(', ') + ').</b> Mỗi mã: ' + s0.mcq.length + ' trắc nghiệm, ' + s0.tf.length + ' đúng/sai, ' + s0.sa.length + ' trả lời ngắn' + (s0.es.length ? ', ' + s0.es.length + ' tự luận' : '') + '. Cỡ chữ ' + String(chosen).replace('.', ',') + ' pt, ' + maxPages + ' trang đề.';
             const total = s0.mcq.length * o.pm + s0.tf.length * o.pt + s0.sa.length * o.ps + s0.es.length * o.pe;
@@ -6054,7 +6096,7 @@ window.addEventListener('popstate', function () {
             const r = orig.apply(this, arguments);
             const bt = document.querySelector('#pp-ov .pp-btns');
             if (bt && !$('pp-ph')) {
-                const b = document.createElement('button'); b.id = 'pp-ph'; b.type = 'button'; b.style.background = '#7c3aed'; b.textContent = 'Gửi đáp án sang điện thoại (chấm bài)';
+                const b = document.createElement('button'); b.id = 'pp-ph'; b.type = 'button'; b.style.background = '#7c3aed'; b.textContent = '④ Chấm bằng điện thoại (gửi đáp án sang điện thoại)'; b.disabled = !(window.paperState && window.paperState().sets && window.paperState().sets.length);
                 b.onclick = showLinkBox; bt.insertBefore(b, $('pp-x'));
                 const bx = document.createElement('div'); bx.id = 'cg-linkbox'; bt.parentNode.insertBefore(bx, bt.nextSibling);
             }
