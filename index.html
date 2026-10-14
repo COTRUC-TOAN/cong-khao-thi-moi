@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v44] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v45] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -592,6 +592,10 @@
                                             <button type="button" class="rv-btn" id="ai-stop" style="display:none;" onclick="aiDraftStop()">Dừng</button>
                                             <button type="button" class="rv-btn" onclick="aiCopyOutside()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lệnh soạn đề để dán sang AI khác</button>
                                             <span id="ai-msg" style="font-size:.9rem; color:#475569;"></span>
+                                        </div>
+                                        <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; border-top:1px dashed #c7d2fe; padding-top:6px;">
+                                            <button type="button" class="rv-btn" id="mx-go" onclick="aiMatrixDoc()" title="Lấy từ bảng số câu ở trên">📊 Tạo bảng ma trận &amp; bản đặc tả (Word)</button>
+                                            <label style="font-size:.85rem;"><input type="checkbox" id="mx-ai" checked> Nhờ Gemini viết cột "Yêu cầu cần đạt"</label>
                                         </div>
                                         <details id="ai-ext" style="margin-top:8px; border:1px solid #c7d2fe; border-radius:8px; padding:6px 8px; background:#eef2ff;"><summary style="cursor:pointer; font-size:.92rem; font-weight:bold; color:#4338ca;">🔗 Hết lượt Gemini? Dùng AI khác (ChatGPT, Claude, Gemini trên web…), không cần khóa</summary>
                                             <div style="font-size:.86rem; color:#475569; margin-top:4px;">Cách làm: (1) cô điền ma trận phía trên như bình thường, bấm nút sao chép bên dưới; (2) dán vào một cuộc trò chuyện của AI khác rồi gửi; (3) AI trả về một đoạn dữ liệu, cô sao chép đoạn đó dán vào ô "Kết quả" bên dưới và bấm Nhập vào khung dán. Làm theo cách này không dùng lượt của khóa Gemini.</div>
@@ -5443,6 +5447,102 @@ window.addEventListener('popstate', function () {
             window.cnApply = function (i) { const r = CN.rows[i]; if (!r || !r.cons) return; cnSet(r); cnRender(Array.from({ length: (r.vals || []).length }, (_, k) => ({ name: ($('cn-n' + (k + 1)).value || '').trim() || ('AI ' + (k + 1)) }))); };
             window.cnApplyAll = function () { let n = 0; CN.rows.forEach(r => { if (r.state === 'agree' && r.verdict === 'blank') { cnSet(r); n++; } }); cnRender(Array.from({ length: (CN.rows[0] ? CN.rows[0].vals.length : 0) }, (_, k) => ({ name: ($('cn-n' + (k + 1)).value || '').trim() || ('AI ' + (k + 1)) }))); cnSay('Đã áp dụng đáp án cho ' + n + ' câu. Cô đừng bấm Tự Động Phân Tích lại vì đáp án sẽ bị xóa.', '#16a34a'); };
             window.aiExtCopy = aiExtCopy; window.aiExtImport = aiExtImport;
+            // ---------- (v45) Tạo bảng ma trận + bản đặc tả (Word) từ bảng số câu ----------
+            const MX_G = [['nb', 'NB'], ['th', 'TH'], ['vd', 'VD']];
+            const MX_P = [['MCQ', 'PHẦN I', 'TNKQ nhiều lựa chọn', 'TN'], ['TF', 'PHẦN II', 'Đúng - Sai', 'ĐS'], ['SA', 'PHẦN III', 'Trả lời ngắn', 'TLN'], ['ES', 'PHẦN IV', 'Tự luận', 'TL']];
+            function mxData() {
+                const out = [];
+                document.querySelectorAll('#ai-rows .ai-row').forEach(r => {
+                    const topic = aiRowTopic(r); if (!topic) return;
+                    const sel = r.querySelector('.ai-r-topic-sel'), op = sel && sel.selectedOptions && sel.selectedOptions[0];
+                    const og = (op && op.parentElement && op.parentElement.tagName === 'OPTGROUP') ? op.parentElement.label : '';
+                    const note = r.querySelector('.ai-r-note').value.trim(), c = {}; let any = 0;
+                    AI_TY.forEach(t => AI_LV.forEach(l => {
+                        const n = aiCellN(r.querySelector('.ai-c[data-t="' + t[0] + '"][data-l="' + l[0] + '"]'));
+                        if (n) { const g = l[0] === 'nhận biết' ? 'nb' : (l[0] === 'thông hiểu' ? 'th' : 'vd'); c[t[0] + '|' + g] = (c[t[0] + '|' + g] || 0) + n; any += n; }
+                    }));
+                    if (any) out.push({ topic, chapter: og || topic, note, c });
+                });
+                return out;
+            }
+            function mxPts() {
+                const v = (id, d) => { const x = parseFloat((($(id) || {}).value || '').replace(',', '.')); return isNaN(x) ? d : x; };
+                return { MCQ: v('pp-pm', 0.25), TF: v('pp-pt', 1), SA: v('pp-ps', 0.5), ES: v('pp-pe', 1) };
+            }
+            const mxF = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
+            function mxCellText(c, g) { return MX_P.map(p => (c[p[0] + '|' + g] ? c[p[0] + '|' + g] + ' ' + p[3] : '')).filter(Boolean).join(', '); }
+            function mxHtml(rows, spec, pts) {
+                const hasES = rows.some(r => Object.keys(r.c).some(k => k.indexOf('ES|') === 0));
+                const parts = MX_P.filter(p => p[0] !== 'ES' || hasES);
+                const title = (($('pp-exam') || {}).value || ($('new-exam-title') || {}).value || 'ĐỀ KIỂM TRA').trim().toUpperCase();
+                const ttl = /^ĐỀ\b/.test(title) ? title : 'ĐỀ ' + title; const tm = (($('pp-time') || {}).value || '').trim(), grade = ($('new-exam-grade') || {}).value || '12';
+                const tot = {}; let allN = 0, allP = 0;
+                const rp = r => { let n = 0, p = 0; Object.keys(r.c).forEach(k => { n += r.c[k]; p += r.c[k] * pts[k.split('|')[0]]; }); return { n, p }; };
+                rows.forEach(r => { const x = rp(r); allN += x.n; allP += x.p; Object.keys(r.c).forEach(k => { tot[k] = (tot[k] || 0) + r.c[k]; }); });
+                const th = 'style="border:1px solid #000;padding:3pt;text-align:center;font-weight:bold;background:#e5e7eb"', td = 'style="border:1px solid #000;padding:3pt;text-align:center"', tl = 'style="border:1px solid #000;padding:3pt;text-align:left"';
+                let h = '<table style="border-collapse:collapse;width:100%;font-size:10pt"><tr><td ' + th + ' rowspan="3">' + 'TT</td><td ' + th + ' rowspan="3">' + 'CHƯƠNG / CHỦ ĐỀ</td><td ' + th + ' rowspan="3">' + 'NỘI DUNG / ĐƠN VỊ KIẾN THỨC</td><td ' + th + ' colspan="' + parts.length * 3 + '">' + 'MỨC ĐỘ NHẬN THỨC</td><td ' + th + ' colspan="3" rowspan="2">' + 'TỔNG</td></tr>';
+                h += '<tr>' + parts.map(p => '<td ' + th + ' colspan="3">' + p[1] + '<br>' + p[2] + '</td>').join('') + '</tr>';
+                h += '<tr>' + parts.map(p => MX_G.map(g => '<td ' + th + '>' + g[1] + '</td>').join('')).join('') + '<td ' + th + '>Số câu</td><td ' + th + '>Số điểm</td><td ' + th + '>Tỉ lệ (%)</td></tr>';
+                let i = 0;
+                rows.forEach((r, k) => {
+                    const x = rp(r); i++;
+                    const same = k > 0 && rows[k - 1].chapter === r.chapter && r.chapter !== r.topic;
+                    let span = 1; if (!same && r.chapter !== r.topic) { for (let j = k + 1; j < rows.length && rows[j].chapter === r.chapter; j++) span++; }
+                    h += '<tr><td ' + td + '>' + i + '</td>' + (same ? '' : '<td ' + tl + (span > 1 ? ' rowspan="' + span + '"' : '') + '>' + esc(r.chapter) + '</td>') + '<td ' + tl + '>' + esc(r.topic) + (r.chapter === r.topic ? '' : '') + '</td>'
+                        + parts.map(p => MX_G.map(g => '<td ' + td + '>' + (r.c[p[0] + '|' + g[0]] || '') + '</td>').join('')).join('')
+                        + '<td ' + td + '>' + x.n + '</td><td ' + td + '>' + mxF(x.p) + '</td><td ' + td + '>' + (allP ? mxF(x.p / allP * 100) : 0) + '%</td></tr>';
+                });
+                const cellP = (p, g) => (tot[p + '|' + g] || 0) * pts[p];
+                h += '<tr><td ' + td + ' colspan="3"><b>Tổng số câu</b></td>' + parts.map(p => MX_G.map(g => '<td ' + td + '>' + (tot[p[0] + '|' + g[0]] || '') + '</td>').join('')).join('') + '<td ' + td + '><b>' + allN + '</b></td><td ' + td + '></td><td ' + td + '></td></tr>';
+                h += '<tr><td ' + td + ' colspan="3"><b>Tổng số điểm</b></td>' + parts.map(p => MX_G.map(g => '<td ' + td + '>' + (tot[p[0] + '|' + g[0]] ? mxF(cellP(p[0], g[0])) : '') + '</td>').join('')).join('') + '<td ' + td + '></td><td ' + td + '><b>' + mxF(allP) + '</b></td><td ' + td + '></td></tr>';
+                h += '<tr><td ' + td + ' colspan="3"><b>Tỉ lệ (%)</b></td>' + parts.map(p => MX_G.map(g => '<td ' + td + '>' + (tot[p[0] + '|' + g[0]] && allP ? mxF(cellP(p[0], g[0]) / allP * 100) : '') + '</td>').join('')).join('') + '<td ' + td + '></td><td ' + td + '></td><td ' + td + '><b>100%</b></td></tr></table>';
+                const lvTot = g => { let s = 0; MX_P.forEach(p => { s += cellP(p[0], g); }); return allP ? mxF(s / allP * 100) : '0'; };
+                const matrix = h + '<p style="font-size:10pt">Tỉ lệ theo mức độ: Nhận biết ' + lvTot('nb') + '%, Thông hiểu ' + lvTot('th') + '%, Vận dụng ' + lvTot('vd') + '%. Phần I: trắc nghiệm nhiều lựa chọn (TN); Phần II: đúng - sai (ĐS); Phần III: trả lời ngắn (TLN)' + (hasES ? '; Phần IV: tự luận (TL)' : '') + '.</p>';
+                // đặc tả
+                const LV = { nb: ['Biết (Nhận biết)', 'Nhận biết'], th: ['Hiểu (Thông hiểu)', 'Thông hiểu'], vd: ['Vận dụng', 'Vận dụng'] };
+                let s = '<table style="border-collapse:collapse;width:100%;font-size:10pt"><tr><td ' + th + ' rowspan="2">' + 'TT</td><td ' + th + ' rowspan="2">' + 'CHƯƠNG / CHỦ ĐỀ</td><td ' + th + ' rowspan="2">' + 'NỘI DUNG / ĐƠN VỊ KIẾN THỨC</td><td ' + th + ' rowspan="2">' + 'YÊU CẦU CẦN ĐẠT</td><td ' + th + ' colspan="3">' + 'SỐ CÂU HỎI THEO MỨC ĐỘ</td></tr><tr>' + MX_G.map(g => '<td ' + th + '>' + LV[g[0]][0] + '</td>').join('') + '</tr>';
+                i = 0;
+                rows.forEach((r, k) => {
+                    i++; const sp = (spec && spec[k]) || {};
+                    const req = MX_G.filter(g => mxCellText(r.c, g[0])).map(g => '<b>* ' + LV[g[0]][1] + ':</b>' + ((sp[g[0]] || []).length ? (sp[g[0]] || []).map(x => '<br>- ' + esc(x)).join('') : '<br>- ...')).join('<br>');
+                    s += '<tr><td ' + td + '>' + i + '</td><td ' + tl + '>' + esc(r.chapter) + '</td><td ' + tl + '>' + esc(r.topic) + (r.note ? '<br><i>(' + esc(r.note) + ')</i>' : '') + '</td><td ' + tl + '>' + req + '</td>' + MX_G.map(g => '<td ' + td + '>' + esc(mxCellText(r.c, g[0]).replace(/, /g, '\n')).replace(/\n/g, '<br>') + '</td>').join('') + '</tr>';
+                });
+                s += '</table>';
+                const head = t => '<p style="text-align:center;font-weight:bold;font-size:13pt;margin:4pt 0">' + t + '</p>';
+                return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Ma trận và bản đặc tả</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]--><style>@page Section1{size:841.9pt 595.3pt;mso-page-orientation:landscape;margin:28pt 28pt 28pt 28pt}@page{size:landscape}div.Section1{page:Section1}body{font-family:"Times New Roman",serif}</style></head><body><div class="Section1">'
+                    + head('MA TRẬN ' + esc(ttl) + ' - TOÁN ' + esc(grade)) + (tm ? head('THỜI GIAN: ' + esc(tm) + ' PHÚT') : '') + matrix
+                    + '<br style="page-break-before:always" clear="all">' + head('BẢNG ĐẶC TẢ ' + esc(ttl) + ' - TOÁN ' + esc(grade)) + s + '</div></body></html>';
+            }
+            async function aiMatrixDoc() {
+                if (aiCtl) return;
+                if (aiNoTopic()) { aiMsg('Có chủ đề đã nhập số câu nhưng chưa chọn chủ đề. Cô chọn chủ đề cho đủ.', '#dc2626'); return; }
+                const rows = mxData();
+                if (!rows.length) { aiMsg('Cô chọn ít nhất một chủ đề và nhập số câu vào bảng trước.', '#dc2626'); return; }
+                const pts = mxPts(); let spec = null, note = '';
+                const wantAi = $('mx-ai') && $('mx-ai').checked;
+                if (wantAi && !S.connected) note = ' Chưa kết nối Gemini nên cột "Yêu cầu cần đạt" để trống (cô tự điền trong Word).';
+                else if (wantAi) {
+                    S.model = ($('rv-model') || {}).value || S.model;
+                    const grade = ($('new-exam-grade') || {}).value || '12';
+                    const lines = rows.map((r, i) => (i + 1) + ') Chương/chủ đề: ' + r.chapter + '. Nội dung: ' + r.topic + '. Mức độ có câu hỏi: ' + MX_G.filter(g => mxCellText(r.c, g[0])).map(g => g[0]).join(', ') + '.' + (r.note ? ' Mô tả thêm của giáo viên: ' + r.note : '')).join('\n');
+                    const prompt = 'NHIỆM VỤ: VIẾT CỘT "YÊU CẦU CẦN ĐẠT" CHO BẢN ĐẶC TẢ ĐỀ KIỂM TRA TOÁN THPT\nChương trình GDPT 2018 của Việt Nam, khối lớp ' + grade + '. Với mỗi nội dung dưới đây, chỉ viết cho những mức độ được liệt kê ("nb" là nhận biết, "th" là thông hiểu, "vd" là vận dụng). Mỗi mức viết 1 đến 3 ý ngắn: mức nb bắt đầu bằng "Nhận biết được ...", mức th bắt đầu bằng "Hiểu được ..." hoặc "Giải thích được ...", mức vd bắt đầu bằng "Vận dụng được ..." hoặc "Giải quyết được ...". Ý phải đúng nội dung kiến thức của dòng đó và đúng mức độ, bám theo mô tả thêm nếu có. Không dùng LaTeX, không dùng ký hiệu $, viết công thức bằng chữ thường.\n' + lines + '\nĐẦU RA: chỉ một mảng JSON, mỗi phần tử {"row":số thứ tự dòng,"nb":["..."],"th":["..."],"vd":["..."]} (mức không có câu hỏi thì để mảng rỗng).';
+                    aiBusy(true); aiMsg('Đang nhờ Gemini viết "Yêu cầu cần đạt"…');
+                    try {
+                        const arr = await genJson([{ text: prompt }], 0.4, aiCtl.signal);
+                        spec = []; (Array.isArray(arr) ? arr : []).forEach(x => { if (x && +x.row >= 1) spec[+x.row - 1] = { nb: [].concat(x.nb || []).map(String), th: [].concat(x.th || []).map(String), vd: [].concat(x.vd || []).map(String) }; });
+                    } catch (e) {
+                        if (e && e.code === 'cancelled') { aiBusy(false); aiMsg('Đã dừng.'); return; }
+                        note = ' Gemini chưa viết được "Yêu cầu cần đạt" (' + aiErr(e) + '), cột này để trống để cô tự điền.';
+                    } finally { aiBusy(false); }
+                }
+                const html = mxHtml(rows, spec, pts);
+                const blob = new Blob(['﻿' + html], { type: 'application/msword' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Ma_tran_va_dac_ta.doc'; document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+                const total = Object.keys(rows).length; let allP = 0; rows.forEach(r => Object.keys(r.c).forEach(k => { allP += r.c[k] * pts[k.split('|')[0]]; }));
+                aiMsg('Đã tạo file Word "Ma_tran_va_dac_ta.doc" (' + total + ' nội dung, tổng ' + mxF(allP) + ' điểm' + (Math.abs(allP - 10) > 0.01 ? ', chưa bằng 10, cô kiểm tra điểm mỗi câu ở khung Xuất đề giấy' : '') + ').' + note, note ? '#b45309' : '#16a34a');
+            }
+            window.aiMatrixDoc = aiMatrixDoc; window.mxHtml = mxHtml; window.mxData = mxData;
             window.aiAddRow = aiAddRow; window.aiDraftRun = aiDraftRun; window.aiReviseRun = aiReviseRun; window.aiUndo = aiUndo;
             window.aiDraftStop = function () { if (aiCtl) aiCtl.abort(); };
             aiAddRow();
