@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v48] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v49] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5498,9 +5498,12 @@ window.addEventListener('popstate', function () {
                 });
                 return out;
             }
-            function mxPts() {
-                const v = (id, d) => { const x = parseFloat((($(id) || {}).value || '').replace(',', '.')); return isNaN(x) ? d : x; };
-                return { MCQ: v('pp-pm', 0.25), TF: v('pp-pt', 1), SA: v('pp-ps', 0.5), ES: v('pp-pe', 1) };
+            function mxPts(rows) {
+                const c = { MCQ: 0, TF: 0, SA: 0, ES: 0 };
+                (rows || []).forEach(r => Object.keys(r.c).forEach(k => { c[k.split('|')[0]] += r.c[k]; }));
+                const p = window.paperPts && window.paperPts(c);
+                if (p) return { MCQ: p.pm, TF: p.pt, SA: p.ps, ES: p.pe };
+                return { MCQ: 0.25, TF: 1, SA: 0.5, ES: 1 };
             }
             const mxF = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
             function mxCellText(c, g) { return MX_P.map(p => (c[p[0] + '|' + g] ? c[p[0] + '|' + g] + ' ' + p[3] : '')).filter(Boolean).join(', '); }
@@ -5564,7 +5567,7 @@ window.addEventListener('popstate', function () {
                 if (aiNoTopic()) { aiMsg('Có chủ đề đã nhập số câu nhưng chưa chọn chủ đề. Cô chọn chủ đề cho đủ.', '#dc2626'); return; }
                 const rows = mxData();
                 if (!rows.length) { aiMsg('Cô chọn ít nhất một chủ đề và nhập số câu vào bảng trước.', '#dc2626'); return; }
-                const pts = mxPts(); let spec = null, note = '';
+                const pts = mxPts(rows); let spec = null, note = '';
                 const pasted = (($('mx-paste') || {}).value || '').replace(/[\u00a0\u2007\u202f\u200b\ufeff]/g, ' ').trim();
                 const wantAi = !pasted && $('mx-ai') && $('mx-ai').checked;
                 if (pasted) {
@@ -5643,7 +5646,7 @@ window.addEventListener('popstate', function () {
 #pp-ov .pp-chk{font-size:.9rem;display:flex;gap:6px;align-items:flex-start;margin-top:6px}
 #pp-ov .pp-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 #pp-ov .pp-btns button{padding:9px 14px;border:0;border-radius:8px;font-weight:700;cursor:pointer;color:#fff;background:#0f766e;font-size:.95rem}
-#pp-ov .pp-sec2{font-weight:700;color:#0f766e;margin:8px 0 2px;font-size:.92rem}#pp-ov .pp-more{margin:8px 0;border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px}#pp-ov .pp-more summary{cursor:pointer;font-weight:600;color:#334155;font-size:.92rem}#pp-ov .pp-btns button:disabled{opacity:.4;cursor:not-allowed}#pp-ov .pp-btns button.g{background:#475569}#pp-ov .pp-btns button.b{background:#1d4ed8}#pp-ov .pp-btns button.r{background:#b91c1c}
+#pp-ov #pp-tot{margin:6px 0;font-size:.9rem;padding:6px 10px;border-radius:8px;background:#f1f5f9}#pp-ov #pp-tot button{margin-left:6px;padding:4px 10px;border:0;border-radius:6px;background:#b45309;color:#fff;font-weight:700;cursor:pointer}#pp-ov .pp-sec2{font-weight:700;color:#0f766e;margin:8px 0 2px;font-size:.92rem}#pp-ov .pp-more{margin:8px 0;border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px}#pp-ov .pp-more summary{cursor:pointer;font-weight:600;color:#334155;font-size:.92rem}#pp-ov .pp-btns button:disabled{opacity:.4;cursor:not-allowed}#pp-ov .pp-btns button.g{background:#475569}#pp-ov .pp-btns button.b{background:#1d4ed8}#pp-ov .pp-btns button.r{background:#b91c1c}
 #pp-ov #pp-msg{margin-top:10px;font-size:.9rem;line-height:1.5}
 #pp-ov .pp-hint{font-size:.8rem;color:#64748b;margin-top:6px;line-height:1.45}
 .pp-page{width:210mm;height:296mm;background:#fff;margin:10px auto;position:relative;box-shadow:0 1px 8px rgba(0,0,0,.25);overflow:hidden;box-sizing:border-box;padding:10mm;color:#000;break-after:page;page-break-after:always}
@@ -5697,13 +5700,22 @@ window.addEventListener('popstate', function () {
   <label class="pp-f">Số mã đề<input id="pp-n" type="number" min="1" max="12" value="4"></label>
   <label class="pp-f">Mã đề đầu tiên (3 chữ số)<input id="pp-code" type="number" min="100" max="997" value="101"></label>
  </div>
- <div class="pp-sec2">Điểm mỗi câu</div>
- <div class="pp-grid">
-  <label class="pp-f">Trắc nghiệm<input id="pp-pm" value="0,25"></label>
-  <label class="pp-f">Đúng/sai (tối đa)<input id="pp-pt" value="1"></label>
-  <label class="pp-f">Trả lời ngắn<input id="pp-ps" value="0,5"></label>
-  <label class="pp-f">Tự luận<input id="pp-pe" value="1"></label>
+ <div class="pp-sec2">Điểm</div>
+ <label class="pp-f" style="max-width:420px">Cách nhập điểm<select id="pp-pmode"><option value="each">Nhập điểm mỗi câu</option><option value="part">Nhập tổng điểm cả phần (web tự chia đều cho các câu)</option></select></label>
+ <div class="pp-grid" id="pp-pts-each">
+  <label class="pp-f">Trắc nghiệm (mỗi câu)<input id="pp-pm" value="0,25"></label>
+  <label class="pp-f">Đúng/sai (tối đa mỗi câu)<input id="pp-pt" value="1"></label>
+  <label class="pp-f">Trả lời ngắn (mỗi câu)<input id="pp-ps" value="0,5"></label>
+  <label class="pp-f">Tự luận (mỗi câu)<input id="pp-pe" value="1"></label>
  </div>
+ <div class="pp-grid" id="pp-pts-part" style="display:none">
+  <label class="pp-f">Phần I - Trắc nghiệm (cả phần)<input id="pp-tm" value="3"></label>
+  <label class="pp-f">Phần II - Đúng/sai (cả phần)<input id="pp-tt" value="4"></label>
+  <label class="pp-f">Phần III - Trả lời ngắn (cả phần)<input id="pp-ts" value="3"></label>
+  <label class="pp-f">Phần IV - Tự luận (cả phần)<input id="pp-te" value="0"></label>
+ </div>
+ <label class="pp-f">Điểm từng câu tự luận (không bắt buộc)<input id="pp-pel" placeholder="Ví dụ: 1,5; 1; 0,5 (cách nhau bằng dấu chấm phẩy). Để trống thì các câu bằng nhau."></label>
+ <div id="pp-tot"></div>
  <details class="pp-more"><summary>Tùy chọn thêm (cỡ chữ, in phiếu tô ô, đảo câu, gọn 2 trang)</summary>
   <div class="pp-grid" style="margin-top:6px">
    <label class="pp-f">Cỡ chữ<select id="pp-font"><option value="auto">Tự động (lớn nhất mà vẫn vừa)</option><option value="12">12</option><option value="11.5">11,5</option><option value="11">11</option><option value="10.5">10,5</option><option value="10">10</option><option value="9.5">9,5</option><option value="9">9</option></select></label>
@@ -5734,14 +5746,74 @@ window.addEventListener('popstate', function () {
         $('pp-pr2').onclick = () => doPrint('key');
         $('pp-x').onclick = () => { ov.style.display = 'none'; document.body.style.overflow = ''; };
         try { const c = JSON.parse(LS.get('pp_cfg') || '{}'); Object.keys(c).forEach(k => { const e = $(k); if (e) { if (e.type === 'checkbox') e.checked = !!c[k]; else e.value = c[k]; } }); } catch (e) { }
+        wirePts();
     }
     function saveCfg() {
-        const c = {}; ['pp-school', 'pp-exam', 'pp-year', 'pp-subj', 'pp-time', 'pp-n', 'pp-code', 'pp-font', 'pp-pm', 'pp-pt', 'pp-ps', 'pp-pe'].forEach(k => { c[k] = $(k).value; });
+        const c = {}; ['pp-school', 'pp-exam', 'pp-year', 'pp-subj', 'pp-time', 'pp-n', 'pp-code', 'pp-font', 'pp-pm', 'pp-pt', 'pp-ps', 'pp-pe', 'pp-pmode', 'pp-tm', 'pp-tt', 'pp-ts', 'pp-te', 'pp-pel'].forEach(k => { c[k] = $(k).value; });
         ['pp-sheet', 'pp-shuf', 'pp-limit'].forEach(k => { c[k] = $(k).checked; });
         LS.set('pp_cfg', JSON.stringify(c));
     }
     const num = (id, d) => { const v = parseFloat(String($(id).value).replace(',', '.')); return isFinite(v) ? v : d; };
     const msg = (t, c) => { const e = $('pp-msg'); e.innerHTML = t; e.style.color = c || '#334155'; };
+
+    // ---------- Điểm linh hoạt (theo từng phần hoặc từng câu) ----------
+    const sumL = a => a.reduce((x, y) => x + y, 0);
+    const ptxt = n => String(Math.round(n * 1000) / 1000).replace('.', ',');
+    const pnum = (id, d) => { const e = $(id); const v = parseFloat(String(e ? e.value : '').replace(',', '.')); return isFinite(v) && v >= 0 ? v : d; };
+    function baseCounts() {
+        const base = (typeof selectedQuestions !== 'undefined' && selectedQuestions) ? selectedQuestions : [], c = { MCQ: 0, TF: 0, SA: 0, ES: 0 };
+        const add = q => { if (q && c[q.type] !== undefined) c[q.type]++; };
+        if (base.length === 1 && base[0].isDynamicConfig) base[0].configs.forEach(g => (g.pool || []).slice(0, +g.count || 0).forEach(add)); else base.forEach(add);
+        return c;
+    }
+    function parseList(t) {
+        t = String(t || '').trim(); if (!t) return [];
+        const parts = t.indexOf(';') >= 0 ? t.split(/;+/) : t.split(/\s+/);
+        return parts.map(x => parseFloat(x.replace(',', '.'))).filter(x => isFinite(x) && x >= 0);
+    }
+    function ptsRead(counts) {
+        ensureUi();
+        const part = $('pp-pmode').value === 'part', w = [];
+        let pm, pt, ps, pe;
+        if (part) { pm = counts.MCQ ? pnum('pp-tm', 0) / counts.MCQ : 0; pt = counts.TF ? pnum('pp-tt', 0) / counts.TF : 0; ps = counts.SA ? pnum('pp-ts', 0) / counts.SA : 0; pe = counts.ES ? pnum('pp-te', 0) / counts.ES : 0; }
+        else { pm = pnum('pp-pm', 0.25); pt = pnum('pp-pt', 1); ps = pnum('pp-ps', 0.5); pe = pnum('pp-pe', 1); }
+        let list = parseList($('pp-pel').value), esList = [];
+        if (counts.ES) {
+            if (list.length) {
+                if (list.length > counts.ES) { w.push('Có ' + list.length + ' điểm nhưng đề chỉ có ' + counts.ES + ' câu tự luận, web bỏ các số thừa.'); list = list.slice(0, counts.ES); }
+                if (list.length < counts.ES && list.length > 1) w.push('Mới nhập ' + list.length + ' điểm cho ' + counts.ES + ' câu tự luận, các câu còn lại lấy bằng số cuối.');
+                while (list.length < counts.ES) list.push(list[list.length - 1]);
+                esList = list; pe = sumL(list) / counts.ES;
+            } else esList = Array(counts.ES).fill(pe);
+        }
+        return { pm, pt, ps, pe, esList, warn: w, part };
+    }
+    function ptsTotal(counts, p) { return counts.MCQ * p.pm + counts.TF * p.pt + counts.SA * p.ps + sumL(p.esList); }
+    function updTot() {
+        const box = $('pp-tot'); if (!box) return;
+        const c = baseCounts(), p = ptsRead(c), t = ptsTotal(c, p), ok = Math.abs(t - 10) < 0.005;
+        box.innerHTML = 'Đề này có <b>' + c.MCQ + '</b> trắc nghiệm, <b>' + c.TF + '</b> đúng/sai, <b>' + c.SA + '</b> trả lời ngắn, <b>' + c.ES + '</b> tự luận. Tổng điểm: <b style="color:' + (ok ? '#16a34a' : '#b45309') + '">' + ptxt(t) + '</b>' + (ok ? ' ✓' : ' (chưa bằng 10) <button type="button" id="pp-fix">Chia lại cho đủ 10</button>') + (p.warn.length ? '<br><span style="color:#b45309">' + p.warn.map(esc).join('<br>') + '</span>' : '');
+        const f = $('pp-fix'); if (f) f.onclick = fixTo10;
+    }
+    function fixTo10() {
+        const c = baseCounts(), p = ptsRead(c), t = ptsTotal(c, p); if (t <= 0) return;
+        const T = [c.MCQ * p.pm, c.TF * p.pt, c.SA * p.ps, sumL(p.esList)], k = 10 / t, q = T.map(x => Math.round(x * k * 4) / 4);
+        const diff = Math.round((10 - sumL(q)) * 100) / 100; if (Math.abs(diff) > 0.001) { let m = 0; q.forEach((x, i) => { if (x > q[m]) m = i; }); q[m] = Math.round((q[m] + diff) * 100) / 100; }
+        const hadList = $('pp-pel').value.trim() && p.esList.length;
+        $('pp-pmode').value = 'part'; $('pp-tm').value = ptxt(q[0]); $('pp-tt').value = ptxt(q[1]); $('pp-ts').value = ptxt(q[2]); $('pp-te').value = ptxt(q[3]);
+        if (hadList) {
+            const s0 = sumL(p.esList), nl = p.esList.map(x => Math.round(x * q[3] / s0 * 4) / 4), d2 = Math.round((q[3] - sumL(nl)) * 100) / 100; nl[nl.length - 1] = Math.round((nl[nl.length - 1] + d2) * 100) / 100;
+            $('pp-pel').value = nl.map(ptxt).join('; ');
+        }
+        syncMode(); updTot();
+    }
+    function syncMode() { const part = $('pp-pmode').value === 'part'; $('pp-pts-each').style.display = part ? 'none' : ''; $('pp-pts-part').style.display = part ? '' : 'none'; }
+    function wirePts() {
+        $('pp-pmode').onchange = () => { syncMode(); updTot(); };
+        ['pp-pm', 'pp-pt', 'pp-ps', 'pp-pe', 'pp-tm', 'pp-tt', 'pp-ts', 'pp-te', 'pp-pel'].forEach(i => { $(i).oninput = updTot; });
+        syncMode();
+    }
+    window.paperPts = counts => { try { return ptsRead(counts || baseCounts()); } catch (e) { return null; } };
 
     window.paperOpen = function () {
         const base = (typeof selectedQuestions !== 'undefined') ? selectedQuestions : [];
@@ -5753,6 +5825,7 @@ window.addEventListener('popstate', function () {
         if (!$('pp-year').value) { const d = new Date(), y = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1; $('pp-year').value = y + ' - ' + (y + 1); }
         $('pp-ov').style.display = 'block'; document.body.style.overflow = 'hidden'; $('pp-ov').scrollTop = 0;
         const dyn = base.length === 1 && base[0].isDynamicConfig;
+        updTot();
         msg(dyn ? 'Đề ma trận động: mỗi mã đề sẽ được bốc ngẫu nhiên từ ngân hàng theo ma trận.' : 'Đề cố định: ' + base.length + ' câu.');
     };
 
@@ -5835,9 +5908,9 @@ window.addEventListener('popstate', function () {
         }
         return { w: Math.min(n, per) * cw - 3, h: 4.8 + rows * rh - 1.5, els };
     }
-    function blkIV(n, maxW, pe) {
+    function blkIV(n, maxW, peList) {
         const bw = 19, per = Math.max(1, Math.min(6, Math.floor((maxW + 2) / (bw + 2)))), rows = Math.ceil(n / per), els = [{ k: 't', x: 0, y: 0, s: 'PHẦN IV - TỰ LUẬN', b: 1 }];
-        for (let q = 0; q < n; q++) els.push({ k: 'r', x: (q % per) * (bw + 2), y: 4.8 + Math.floor(q / per) * 10.5, w: bw, h: 8.5, s: 'Câu ' + (q + 1) + ' (/' + fmt(pe) + ')' });
+        for (let q = 0; q < n; q++) els.push({ k: 'r', x: (q % per) * (bw + 2), y: 4.8 + Math.floor(q / per) * 10.5, w: bw, h: 8.5, s: 'Câu ' + (q + 1) + ' (/' + fmt(peList[q] == null ? 0 : peList[q]) + ')' });
         return { w: Math.max(Math.min(n, per) * (bw + 2) - 2, 34), h: 4.8 + rows * 10.5 - 2, els };
     }
     function buildSheet(set, o) {
@@ -5848,7 +5921,7 @@ window.addEventListener('popstate', function () {
             if (set.mcq.length) blocks.push(blkI(set.mcq.length));
             if (set.tf.length) blocks.push(blkII(set.tf.length, 80));
             if (set.sa.length) blocks.push(blkIII(set.sa.length, W));
-            if (set.es.length) blocks.push(blkIV(set.es.length, W, o.pe));
+            if (set.es.length) blocks.push(blkIV(set.es.length, W, o.peList));
             const perms = []; (function p(a, r) { if (!a.length) { perms.push(r); return; } a.forEach((x, i) => p(a.slice(0, i).concat(a.slice(i + 1)), r.concat([x]))); })(blocks.slice(), []);
             perms.forEach(pm => {
                 let x = 0, y = 0, sh = 0; const pos = [];
@@ -5891,8 +5964,8 @@ window.addEventListener('popstate', function () {
             set.sa.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(q.stem) + '</div>'));
         }
         if (set.es.length) {
-            mk('<div class="pp-sec"><b>PHẦN IV. Tự luận.</b> <i>(' + fmt(set.es.length * o.pe) + ' điểm)</i></div>', 1);
-            set.es.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> <i>(' + fmt(o.pe) + ' điểm)</i> ' + clean(q.stem) + '</div>'));
+            mk('<div class="pp-sec"><b>PHẦN IV. Tự luận.</b> <i>(' + fmt(sumL(o.peList)) + ' điểm)</i></div>', 1);
+            set.es.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> <i>(' + fmt(o.peList[i]) + ' điểm)</i> ' + clean(q.stem) + '</div>'));
         }
         out.push({ el: (function () { const d = document.createElement('div'); d.className = 'pp-it'; d.style.textAlign = 'center'; d.innerHTML = '<i>--- HẾT ---</i>'; return d; })(), keep: 0 });
         return out;
@@ -5915,9 +5988,10 @@ window.addEventListener('popstate', function () {
     async function generate() {
         const btn = $('pp-go'); btn.disabled = true; saveCfg();
         try {
-            const o = { n: Math.max(1, Math.min(12, Math.round(num('pp-n', 4)))), code0: Math.max(100, Math.min(997, Math.round(num('pp-code', 101)))), pm: num('pp-pm', 0.25), pt: num('pp-pt', 1), ps: num('pp-ps', 0.5), pe: num('pp-pe', 1), sheet: $('pp-sheet').checked, shuf: $('pp-shuf').checked, limit: $('pp-limit').checked, font: $('pp-font').value, school: $('pp-school').value, exam: $('pp-exam').value, year: $('pp-year').value, subj: $('pp-subj').value, time: $('pp-time').value };
+            const o = { n: Math.max(1, Math.min(12, Math.round(num('pp-n', 4)))), code0: Math.max(100, Math.min(997, Math.round(num('pp-code', 101)))), pm: 0, pt: 0, ps: 0, pe: 0, peList: [], sheet: $('pp-sheet').checked, shuf: $('pp-shuf').checked, limit: $('pp-limit').checked, font: $('pp-font').value, school: $('pp-school').value, exam: $('pp-exam').value, year: $('pp-year').value, subj: $('pp-subj').value, time: $('pp-time').value };
             msg('Đang tạo mã đề, xin cô chờ vài giây...', '#1d4ed8');
             OPT = o; SETS = []; for (let i = 0; i < o.n; i++) SETS.push(makeSet(i, o));
+            { const pr = ptsRead({ MCQ: SETS[0].mcq.length, TF: SETS[0].tf.length, SA: SETS[0].sa.length, ES: SETS[0].es.length }); o.pm = pr.pm; o.pt = pr.pt; o.ps = pr.ps; o.pe = pr.pe; o.peList = pr.esList; o.ptWarn = pr.warn; }
             const tot = SETS[0].mcq.length + SETS[0].tf.length + SETS[0].sa.length + SETS[0].es.length;
             if (!tot) { msg('Đề không có câu nào thuộc các dạng trắc nghiệm, đúng/sai, trả lời ngắn, tự luận.', '#dc2626'); return; }
             const out = $('pp-out'); out.innerHTML = '';
@@ -5967,7 +6041,7 @@ window.addEventListener('popstate', function () {
                 if (set.mcq.length) h += '<b>Phần I</b><table><tr>' + set.mcq.map((q, i) => '<th>' + (i + 1) + '</th>').join('') + '</tr><tr>' + set.mcq.map(q => '<td>' + (q.ans || '?') + '</td>').join('') + '</tr></table>';
                 if (set.tf.length) h += '<b>Phần II</b><table><tr><th>Câu</th><th>a</th><th>b</th><th>c</th><th>d</th></tr>' + set.tf.map((q, i) => '<tr><td>' + (i + 1) + '</td>' + q.ans.split('').map(c => '<td>' + (c === 'D' ? 'Đ' : (c === 'S' ? 'S' : '?')) + '</td>').join('') + '</tr>').join('') + '</table>';
                 if (set.sa.length) h += '<b>Phần III</b><table><tr>' + set.sa.map((q, i) => '<th>' + (i + 1) + '</th>').join('') + '</tr><tr>' + set.sa.map(q => '<td>' + esc(q.ans || '?') + '</td>').join('') + '</tr></table>';
-                if (set.es.length) h += '<b>Phần IV (tự luận)</b><div style="font-size:10pt">' + set.es.map((q, i) => '<div style="margin:1mm 0"><b>Câu ' + (i + 1) + ' (' + fmt(o.pe) + ' điểm):</b> ' + (q.sol ? clean(q.sol) : '<i>(chưa có hướng dẫn chấm)</i>') + '</div>').join('') + '</div>';
+                if (set.es.length) h += '<b>Phần IV (tự luận)</b><div style="font-size:10pt">' + set.es.map((q, i) => '<div style="margin:1mm 0"><b>Câu ' + (i + 1) + ' (' + fmt(o.peList[i]) + ' điểm):</b> ' + (q.sol ? clean(q.sol) : '<i>(chưa có hướng dẫn chấm)</i>') + '</div>').join('') + '</div>';
                 return h;
             };
             for (let i = 0; i < SETS.length; i += 3) {
@@ -5979,13 +6053,13 @@ window.addEventListener('popstate', function () {
             // lưu đáp án từng mã để sau này chấm bằng điện thoại
             try {
                 const store = JSON.parse(LS.get('paper_sets') || '{}'), exId = (($('new-exam-id') || {}).value || o.exam || 'de').trim(), now = Date.now();
-                SETS.forEach(s => { store[exId + '|' + s.code] = { exam: exId, title: o.exam, code: s.code, at: now, pts: { mcq: o.pm, tf: o.pt, sa: o.ps, es: o.pe }, mcq: s.mcq.map(q => q.ans), tf: s.tf.map(q => q.ans), sa: s.sa.map(q => q.ans), es: s.es.length, layout: s.sheet ? s.sheet.layout : null }; });
+                SETS.forEach(s => { store[exId + '|' + s.code] = { exam: exId, title: o.exam, code: s.code, at: now, pts: { mcq: o.pm, tf: o.pt, sa: o.ps, es: o.pe, esList: o.peList }, mcq: s.mcq.map(q => q.ans), tf: s.tf.map(q => q.ans), sa: s.sa.map(q => q.ans), es: s.es.length, layout: s.sheet ? s.sheet.layout : null }; });
                 LS.set('paper_sets', JSON.stringify(store));
             } catch (e) { }
             READY = true; ['pp-pr1', 'pp-pr2', 'pp-ph'].forEach(i => { const e = $(i); if (e) e.disabled = false; });
             const s0 = SETS[0];
             let html = '<b>Đã tạo ' + SETS.length + ' mã đề (' + SETS.map(s => s.code).join(', ') + ').</b> Mỗi mã: ' + s0.mcq.length + ' trắc nghiệm, ' + s0.tf.length + ' đúng/sai, ' + s0.sa.length + ' trả lời ngắn' + (s0.es.length ? ', ' + s0.es.length + ' tự luận' : '') + '. Cỡ chữ ' + String(chosen).replace('.', ',') + ' pt, ' + maxPages + ' trang đề.';
-            const total = s0.mcq.length * o.pm + s0.tf.length * o.pt + s0.sa.length * o.ps + s0.es.length * o.pe;
+            const total = s0.mcq.length * o.pm + s0.tf.length * o.pt + s0.sa.length * o.ps + sumL(o.peList);
             html += '<br>Tổng điểm theo thang đã nhập: <b>' + fmt(total) + '</b>' + (Math.abs(total - 10) > 0.01 ? ' <span style="color:#b45309">(chưa bằng 10, cô kiểm tra lại điểm mỗi câu)</span>' : '') + '.';
             if (o.limit && maxPages > 2) html += '<br><span style="color:#dc2626">Đề dài hơn 2 trang ngay cả khi thu nhỏ chữ. Cô bớt câu, bớt hình, hoặc bỏ chọn "Cố gắng gọn trong 2 trang".</span>';
             else if (maxPages <= 2) html += ' <span style="color:#16a34a">Vừa 2 trang A4.</span>';
@@ -6075,7 +6149,7 @@ window.addEventListener('popstate', function () {
         if (!s.length) return null;
         const o = ps.opt || {};
         const lay = ps.sets[0].sheet && ps.sets[0].sheet.layout;
-        return { u: (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : ''), t: o.exam || exId, id: exId, p: [o.pm, o.pt, o.ps, o.pe], s: s, L: lay ? { w: lay.w, h: lay.h, bd: 3.9, b: lay.bubbles.map(b => [b[0], b[1], b[2]]) } : null };
+        return { u: (typeof SCRIPT_URL !== 'undefined' ? SCRIPT_URL : ''), t: o.exam || exId, id: exId, p: [o.pm, o.pt, o.ps, o.pe, o.peList || []], s: s, L: lay ? { w: lay.w, h: lay.h, bd: 3.9, b: lay.bubbles.map(b => [b[0], b[1], b[2]]) } : null };
     }
     function linkFor(p) { return location.origin + location.pathname + '#cham=' + b64e(p); }
 
@@ -6121,14 +6195,16 @@ window.addEventListener('popstate', function () {
         render();
     }
 
+    const esMax = i => (Array.isArray(DATA.p[4]) && DATA.p[4][i] != null) ? (+DATA.p[4][i] || 0) : (+DATA.p[3] || 0);
     function calc() {
         const pm = +DATA.p[0] || 0, pt = +DATA.p[1] || 0, ps = +DATA.p[2] || 0, pe = +DATA.p[3] || 0;
-        let g = 0, mx = CUR.mcq.length * pm + CUR.tf.length * pt + CUR.sa.length * ps + CUR.es * pe;
+        let mxEs = 0; for (let i = 0; i < CUR.es; i++) mxEs += esMax(i);
+        let g = 0, mx = CUR.mcq.length * pm + CUR.tf.length * pt + CUR.sa.length * ps + mxEs;
         CUR.mcq.forEach((k, i) => { if (k !== '-' && ANS.mcq[i] === k) g += pm; });
         const ratio = [0, 0.1, 0.25, 0.5, 1];
         CUR.tf.forEach((k, i) => { let c = 0; for (let j = 0; j < 4; j++) if (ANS.tf[i][j] !== '-' && k[j] !== '-' && ANS.tf[i][j] === k[j]) c++; g += ratio[c] * pt; });
         CUR.sa.forEach((k, i) => { if (ANS.sa[i] !== '' && k && sameShortAns(ANS.sa[i], k)) g += ps; });
-        let es = 0; ANS.es.forEach(v => { const x = parseFloat(String(v).replace(',', '.')); if (!isNaN(x)) es += Math.max(0, Math.min(pe, x)); });
+        let es = 0; ANS.es.forEach((v, i) => { const x = parseFloat(String(v).replace(',', '.')); if (!isNaN(x)) es += Math.max(0, Math.min(esMax(i), x)); });
         g += es;
         return { raw: g, max: mx, s10: mx > 0 ? Math.round(g / mx * 1000) / 100 : 0 };
     }
@@ -6164,8 +6240,8 @@ window.addEventListener('popstate', function () {
                 h += '</div>';
             }
             if (CUR.es) {
-                h += '<div class="cg-card"><div class="cg-sub">Phần IV - Tự luận (cô chấm tay, nhập điểm, tối đa ' + fmt(+DATA.p[3]) + ' mỗi câu)</div>';
-                for (let i = 0; i < CUR.es; i++) h += '<div class="cg-row"><span class="cg-n">' + (i + 1) + '</span><input type="number" step="0.25" min="0" max="' + (+DATA.p[3]) + '" inputmode="decimal" data-t="e" data-i="' + i + '" value="' + esc(ANS.es[i]) + '" placeholder="điểm"></div>';
+                h += '<div class="cg-card"><div class="cg-sub">Phần IV - Tự luận (cô chấm tay, nhập điểm từng câu)</div>';
+                for (let i = 0; i < CUR.es; i++) h += '<div class="cg-row"><span class="cg-n">' + (i + 1) + '</span><input type="number" step="0.25" min="0" max="' + esMax(i) + '" inputmode="decimal" data-t="e" data-i="' + i + '" value="' + esc(ANS.es[i]) + '" placeholder="điểm (tối đa ' + fmt(esMax(i)) + ')"></div>';
                 h += '</div>';
             }
             h += '<div class="cg-card cg-small">Ô cô chọn hiện màu xanh lá nếu đúng, màu đỏ nếu sai.</div>';
