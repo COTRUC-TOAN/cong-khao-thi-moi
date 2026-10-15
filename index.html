@@ -600,11 +600,20 @@
                                             <button type="button" class="rv-btn" onclick="aiCopyOutside()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lệnh soạn đề để dán sang AI khác</button>
                                             <span id="ai-msg" style="font-size:.9rem; color:#475569;"></span>
                                         </div>
-                                        <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; border-top:1px dashed #c7d2fe; padding-top:6px;">
-                                            <button type="button" class="rv-btn" id="mx-go" onclick="aiMatrixDoc()" title="Lấy từ bảng số câu ở trên">📊 Tạo bảng ma trận &amp; bản đặc tả (Word)</button>
-                                            <label style="font-size:.85rem;"><input type="checkbox" id="mx-ai" checked> Nhờ Gemini viết cột "Yêu cầu cần đạt"</label>
-                                            <button type="button" class="rv-btn" onclick="mxCopy()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lời nhắc sang AI khác</button>
-                                        </div>
+                                       <div style="margin-top:6px; border-top:1px dashed #c7d2fe; padding-top:6px;">
+    <div style="font-size:0.9rem; color:#b45309; margin-bottom:8px; font-weight:bold; background:#fffbeb; padding:6px 10px; border-radius:6px; border:1px solid #fcd34d;">
+        Điểm mỗi câu: 
+        <label style="margin-left:6px; color:#1e293b;">Trắc nghiệm <input type="number" id="mx-pm" value="0.25" step="0.05" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label> | 
+        <label style="margin-left:4px; color:#1e293b;">Đúng/Sai <input type="number" id="mx-pt" value="1.0" step="0.1" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label> | 
+        <label style="margin-left:4px; color:#1e293b;">Ngắn <input type="number" id="mx-ps" value="0.5" step="0.1" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label> | 
+        <label style="margin-left:4px; color:#1e293b;">Tự luận <input type="number" id="mx-pe" value="1.0" step="0.25" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <button type="button" class="rv-btn" id="mx-go" onclick="aiMatrixDoc()" title="Lấy từ bảng số câu ở trên">📊 Tạo bảng ma trận &amp; bản đặc tả (Word)</button>
+        <label style="font-size:.85rem;"><input type="checkbox" id="mx-ai" checked> Nhờ Gemini viết cột "Yêu cầu cần đạt"</label>
+        <button type="button" class="rv-btn" onclick="mxCopy()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lời nhắc sang AI khác</button>
+    </div>
+</div>
                                         <textarea id="mx-paste" rows="2" style="width:100%; padding:6px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box; margin-top:4px; font-size:.85rem;" placeholder="Nếu dùng AI khác: dán kết quả AI trả về (mảng JSON) vào đây rồi bấm Tạo bảng ma trận. Để trống thì web dùng Gemini (nếu đã kết nối)."></textarea>
                                         <details id="ai-ext" style="margin-top:8px; border:1px solid #c7d2fe; border-radius:8px; padding:6px 8px; background:#eef2ff;"><summary style="cursor:pointer; font-size:.92rem; font-weight:bold; color:#4338ca;">🔗 Hết lượt Gemini? Dùng AI khác (ChatGPT, Claude, Gemini trên web…), không cần khóa</summary>
                                             <div style="font-size:.86rem; color:#475569; margin-top:4px;">Cách làm: (1) cô điền ma trận phía trên như bình thường, bấm nút sao chép bên dưới; (2) dán vào một cuộc trò chuyện của AI khác rồi gửi; (3) AI trả về một đoạn dữ liệu, cô sao chép đoạn đó dán vào ô "Kết quả" bên dưới và bấm Nhập vào khung dán. Làm theo cách này không dùng lượt của khóa Gemini.</div>
@@ -5499,12 +5508,12 @@ window.addEventListener('popstate', function () {
                 return out;
             }
             function mxPts(rows) {
-                const c = { MCQ: 0, TF: 0, SA: 0, ES: 0 };
-                (rows || []).forEach(r => Object.keys(r.c).forEach(k => { c[k.split('|')[0]] += r.c[k]; }));
-                const p = window.paperPts && window.paperPts(c);
-                if (p) return { MCQ: p.pm, TF: p.pt, SA: p.ps, ES: p.pe };
-                return { MCQ: 0.25, TF: 1, SA: 0.5, ES: 1 };
-            }
+    const pm = parseFloat(document.getElementById('mx-pm')?.value?.replace(',', '.')) || 0.25;
+    const pt = parseFloat(document.getElementById('mx-pt')?.value?.replace(',', '.')) || 1.0;
+    const ps = parseFloat(document.getElementById('mx-ps')?.value?.replace(',', '.')) || 0.5;
+    const pe = parseFloat(document.getElementById('mx-pe')?.value?.replace(',', '.')) || 1.0;
+    return { MCQ: pm, TF: pt, SA: ps, ES: pe };
+}
             const mxF = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
             function mxCellText(c, g) { return MX_P.map(p => (c[p[0] + '|' + g] ? c[p[0] + '|' + g] + ' ' + p[3] : '')).filter(Boolean).join(', '); }
             function mxHtml(rows, spec, pts) {
