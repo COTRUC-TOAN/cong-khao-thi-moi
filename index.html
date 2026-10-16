@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v55] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v56] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6128,7 +6128,7 @@ window.addEventListener('popstate', function () {
             };
             for (let i = 0; i < SETS.length; i += 3) {
                 const pg = document.createElement('div'); pg.className = 'pp-page pp-keypage pp-key pp-txt'; pg.style.fontSize = '10.5pt';
-                pg.innerHTML = '<div style="text-align:center;font-weight:bold;font-size:12pt;margin-bottom:2mm">ĐÁP ÁN - ' + esc(o.exam || 'ĐỀ KIỂM TRA') + ' (CHỈ GIÁO VIÊN GIỮ)</div>' + SETS.slice(i, i + 3).map(keyHtml).join('<hr>');
+                pg.innerHTML = '<div style="text-align:center;font-weight:bold;font-size:12pt;margin-bottom:2mm">ĐÁP ÁN - ' + esc(o.exam || 'ĐỀ KIỂM TRA') + ' (CHỈ GIÁO VIÊN GIỮ)</div><div style="text-align:center;font-size:9pt;margin-bottom:2mm">Ngày tạo: ' + new Date().toLocaleDateString('vi-VN') + ' - Số mã đề: ' + SETS.length + ' (' + SETS.map(x => x.code).join(', ') + ') - Tệp chấm bài trên điện thoại: <b class="pp-keyfile">dap-an-cham-bai-....txt</b></div>' + SETS.slice(i, i + 3).map(keyHtml).join('<hr>');
                 out.appendChild(pg); renderM(pg);
             }
             out.querySelectorAll('.pp-exampage').forEach(pg => { /* công thức đã dàn khi đo */ });
@@ -6156,6 +6156,7 @@ window.addEventListener('popstate', function () {
 
     function doPrint(mode) {
         if (!READY || !SETS.length) { msg('Cô bấm "Tạo mã đề & xem trước" trước, rồi mới in.', '#dc2626'); return; }
+        if (mode === 'key') { try { document.querySelectorAll('.pp-keyfile').forEach(e => { e.textContent = (window.chamFileName && window.chamFileName()) || 'dap-an-cham-bai-....txt'; }); if (window.chamAutoSave) window.chamAutoSave(); } catch (e) { } }
         document.body.classList.add('pp-printing', mode === 'key' ? 'pp-only-key' : 'pp-only-exam');
         const done = () => { document.body.classList.remove('pp-printing', 'pp-only-key', 'pp-only-exam'); window.removeEventListener('afterprint', done); };
         window.addEventListener('afterprint', done);
@@ -6236,6 +6237,9 @@ window.addEventListener('popstate', function () {
     function linkFor(p) { return location.origin + location.pathname + '#cham=' + b64e(p); }
 
     const DATA_NAME = p => (p && p.t) ? p.t : 'de';
+    const keyFileName = p => 'dap-an-cham-bai-' + (String(DATA_NAME(p)).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'de') + '.txt';
+    window.chamFileName = () => { const p = makePayload(); return p ? keyFileName(p) : ''; };
+    window.chamAutoSave = async () => { const p = makePayload(); if (!p) return false; const code = await packLink(p); saveBlob(new Blob([code], { type: 'text/plain' }), keyFileName(p)); return true; };
     async function showLinkBox() {
         const p = makePayload();
         const box = $('cg-linkbox');
@@ -6247,7 +6251,7 @@ window.addEventListener('popstate', function () {
             + '<div style="margin-top:6px"><b>Cách 2 - Một link duy nhất:</b> một số ứng dụng (Zalo) có thể làm hỏng link dài, nếu mở ra trang chính thì cô dùng Cách 1.<br><textarea id="cg-lk" readonly style="width:100%;height:56px;margin-top:4px;font-size:.75rem">' + esc(lk) + '</textarea><br><button type="button" id="cg-copy" style="' + bs + 'background:#1d4ed8">Sao chép link</button> <button type="button" id="cg-here" style="' + bs + 'background:#475569">Mở thử trên máy này</button></div></div>';
         $('cg-copy').onclick = () => { const t = $('cg-lk'); t.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { } try { navigator.clipboard && navigator.clipboard.writeText(lk); ok = true; } catch (e) { } $('cg-copy').textContent = ok ? 'Đã sao chép' : 'Cô bôi đen ô trên rồi chép'; };
         $('cg-copy-short').onclick = () => { let ok = false; try { navigator.clipboard && navigator.clipboard.writeText(short); ok = true; } catch (e) { } $('cg-copy-short').textContent = ok ? 'Đã sao chép' : short; };
-        $('cg-file-dl').onclick = () => { const bl = new Blob([code], { type: 'text/plain' }), a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = 'dap-an-cham-bai-' + String(DATA_NAME(p)).replace(/[^A-Za-z0-9]+/g, '-').slice(0, 30) + '.txt'; document.body.appendChild(a); a.click(); setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 500); };
+        $('cg-file-dl').onclick = () => { const bl = new Blob([code], { type: 'text/plain' }), a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = keyFileName(p); document.body.appendChild(a); a.click(); setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 500); };
         $('cg-here').onclick = () => { open(p); };
     }
 
