@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v51] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v52] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6234,13 +6234,19 @@ window.addEventListener('popstate', function () {
     }
     function linkFor(p) { return location.origin + location.pathname + '#cham=' + b64e(p); }
 
+    const DATA_NAME = p => (p && p.t) ? p.t : 'de';
     async function showLinkBox() {
         const p = makePayload();
         const box = $('cg-linkbox');
         if (!p) { box.innerHTML = '<span style="color:#dc2626">Cô bấm "Tạo mã đề &amp; xem trước" trước, rồi mới gửi đáp án sang điện thoại.</span>'; return; }
-        const lk = location.origin + location.pathname + '#' + await packLink(p);
-        box.innerHTML = '<div style="margin-top:8px;padding:8px;background:#ecfeff;border:1px solid #0891b2;border-radius:8px;font-size:.9rem"><b>Link chấm bài giấy (' + p.s.length + ' mã đề).</b> Cô bấm "Sao chép link", gửi vào Zalo của cô, mở trên điện thoại rồi chọn "Thêm vào màn hình chính". Link chứa đáp án nên cô đừng gửi cho học sinh. Điện thoại có thể chấm bằng cách chụp phiếu tô ô, hoặc nhập tay khi phiếu tô không đọc được.<br><textarea id="cg-lk" readonly style="width:100%;height:60px;margin-top:6px;font-size:.75rem">' + esc(lk) + '</textarea><br><button type="button" class="b" id="cg-copy" style="padding:8px 12px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer">Sao chép link</button> <button type="button" id="cg-here" style="padding:8px 12px;border:0;border-radius:8px;background:#475569;color:#fff;font-weight:700;cursor:pointer">Mở thử trên máy này</button></div>';
+        const code = await packLink(p), lk = location.origin + location.pathname + '?' + code, short = location.origin + location.pathname + '?cham=1';
+        const bs = 'padding:8px 12px;border:0;border-radius:8px;color:#fff;font-weight:700;cursor:pointer;margin:2px 2px 0 0;';
+        box.innerHTML = '<div style="margin-top:8px;padding:8px;background:#ecfeff;border:1px solid #0891b2;border-radius:8px;font-size:.9rem"><b>Gửi đáp án sang điện thoại (' + p.s.length + ' mã đề).</b> Đáp án nằm trong link/tệp nên cô đừng gửi cho học sinh.'
+            + '<div style="margin-top:6px"><b>Cách 1 - Gửi tệp (chắc nhất, dùng được qua Zalo):</b> bấm "Lưu tệp đáp án", gửi tệp đó vào Zalo của cô. Trên điện thoại cô mở link ngắn <span style="word-break:break-all">' + esc(short) + '</span> rồi chọn tệp vừa nhận.<br><button type="button" id="cg-file-dl" style="' + bs + 'background:#7c3aed">Lưu tệp đáp án</button> <button type="button" id="cg-copy-short" style="' + bs + 'background:#0891b2">Sao chép link ngắn</button></div>'
+            + '<div style="margin-top:6px"><b>Cách 2 - Một link duy nhất:</b> một số ứng dụng (Zalo) có thể làm hỏng link dài, nếu mở ra trang chính thì cô dùng Cách 1.<br><textarea id="cg-lk" readonly style="width:100%;height:56px;margin-top:4px;font-size:.75rem">' + esc(lk) + '</textarea><br><button type="button" id="cg-copy" style="' + bs + 'background:#1d4ed8">Sao chép link</button> <button type="button" id="cg-here" style="' + bs + 'background:#475569">Mở thử trên máy này</button></div></div>';
         $('cg-copy').onclick = () => { const t = $('cg-lk'); t.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) { } try { navigator.clipboard && navigator.clipboard.writeText(lk); ok = true; } catch (e) { } $('cg-copy').textContent = ok ? 'Đã sao chép' : 'Cô bôi đen ô trên rồi chép'; };
+        $('cg-copy-short').onclick = () => { let ok = false; try { navigator.clipboard && navigator.clipboard.writeText(short); ok = true; } catch (e) { } $('cg-copy-short').textContent = ok ? 'Đã sao chép' : short; };
+        $('cg-file-dl').onclick = () => { const bl = new Blob([code], { type: 'text/plain' }), a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = 'dap-an-cham-bai-' + String(DATA_NAME(p)).replace(/[^A-Za-z0-9]+/g, '-').slice(0, 30) + '.txt'; document.body.appendChild(a); a.click(); setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 500); };
         $('cg-here').onclick = () => { open(p); };
     }
 
@@ -6267,7 +6273,7 @@ window.addEventListener('popstate', function () {
         $('cg-ov').style.display = 'block'; document.body.style.overflow = 'hidden';
         render();
     }
-    function close() { $('cg-ov').style.display = 'none'; document.body.style.overflow = ''; if (/cham/.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { } } }
+    function close() { $('cg-ov').style.display = 'none'; document.body.style.overflow = ''; if (/cham/.test(location.hash) || /[?&]cham/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e) { } } }
 
     function setCode(code) {
         const r = DATA.s.find(x => x[0] === code); if (!r) return;
@@ -6418,14 +6424,15 @@ window.addEventListener('popstate', function () {
         return 'cham=' + b64e(p);
     }
     async function unpackLink(hash) {
-        let m = /[#&]chamz=([^&]+)/.exec(hash || '');
+        hash = String(hash || ''); if (/^\s*chamz?=/.test(hash)) hash = '#' + hash.trim();
+        let m = /[#&?]chamz=([^&#\s]+)/.exec(hash);
         if (m) {
             let raw = m[1]; try { raw = decodeURIComponent(raw); } catch (e) { } raw = raw.replace(/[^A-Za-z0-9_\-+\/]/g, ''); while (raw.length % 4 === 1) raw = raw.slice(0, -1);
             const s = raw.replace(/-/g, '+').replace(/_/g, '/'), bin = atob(s), arr = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
             const ds = new DecompressionStream('gzip'), w = ds.writable.getWriter(); w.write(arr); w.close();
             return JSON.parse(await new Response(ds.readable).text());
         }
-        m = /[#&]cham=([^&]+)/.exec(hash || ''); return m ? b64d(m[1]) : null;
+        m = /[#&?]cham=([^&#\s]+)/.exec(hash); return m ? b64d(m[1]) : null;
     }
     function solveH(src, dst) { // src, dst: 4 cặp [x,y]; trả về ma trận 8 hệ số biến đổi src -> dst
         const A = [], B = [];
@@ -6572,13 +6579,35 @@ window.addEventListener('popstate', function () {
 
     function boot() {
         init(); hookPaper();
-        if (/[#&]chamz?=/.test(location.hash || '')) {
-            unpackLink(location.hash).then(p => {
+        const src = (location.hash || '') + '&' + (location.search || '').replace(/^\?/, '&');
+        if (/[#&?]cham=1(&|$)/.test(src)) entry('');
+        else if (/[#&?]chamz?=/.test(src)) {
+            unpackLink(src).then(p => {
                 if (!p) throw new Error('x');
                 const g = $('teacher-portal-gate'); if (g) g.style.display = 'none';
                 open(p);
-            }).catch(e => { alert('Không mở được link chấm bài (' + ((e && e.message) || e) + '). Cô tạo lại link từ máy tính, bấm "Sao chép link" rồi mở lại. Nếu vẫn lỗi, cô chụp màn hình dòng này gửi cho người hỗ trợ.'); });
+            }).catch(e => { entry('Link bị hỏng hoặc bị cắt (thường do Zalo làm hỏng link dài). Cô dùng tệp đáp án hoặc dán mã vào đây.'); });
         }
+    }
+    function entry(msg) {
+        const g = $('teacher-portal-gate'); if (g) g.style.display = 'none';
+        let e = $('cg-entry'); if (e) e.remove();
+        e = document.createElement('div'); e.id = 'cg-entry'; e.style.cssText = 'position:fixed;inset:0;z-index:100000;background:#f1f5f9;overflow:auto;padding:16px;font-family:inherit';
+        let last = null; try { last = JSON.parse(LS.get('cham_last') || 'null'); } catch (er) { }
+        e.innerHTML = '<div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px #0002"><h2 style="margin:0 0 8px">Chấm bài giấy</h2>'
+            + (msg ? '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:8px;margin-bottom:8px;font-size:.9rem">' + esc(msg) + '</div>' : '')
+            + '<div style="font-size:.95rem">Chọn <b>tệp đáp án</b> mà cô đã gửi qua Zalo (tên dạng dap-an-cham-bai-....txt):</div><input type="file" id="cg-entry-file" style="margin:8px 0;width:100%">'
+            + '<div style="font-size:.95rem;margin-top:6px">Hoặc dán <b>mã</b> vào đây:</div><textarea id="cg-entry-code" rows="3" style="width:100%;box-sizing:border-box;margin:6px 0" placeholder="chamz=..."></textarea>'
+            + '<button type="button" id="cg-entry-go" style="padding:10px 14px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700">Mở bài chấm</button> '
+            + (last && last.s ? '<button type="button" id="cg-entry-last" style="padding:10px 14px;border:0;border-radius:8px;background:#475569;color:#fff;font-weight:700">Tiếp tục: ' + esc(last.t || 'bài gần nhất') + '</button> ' : '')
+            + '<button type="button" id="cg-entry-x" style="padding:10px 14px;border:0;border-radius:8px;background:#e2e8f0;font-weight:700">Về trang chính</button><div id="cg-entry-msg" style="color:#dc2626;margin-top:8px;font-size:.9rem"></div></div>';
+        document.body.appendChild(e);
+        const fail = t => { $('cg-entry-msg').textContent = t; };
+        const go = async txt => { try { const p = await unpackLink(String(txt || '').trim()); if (!p || !p.s) throw new Error('Nội dung không đúng'); e.remove(); open(p); } catch (er) { fail('Mã bị thiếu hoặc bị cắt nên máy không đọc được. Cô gửi lại tệp đáp án từ máy tính.'); } };
+        $('cg-entry-file').onchange = ev => { const f = ev.target.files && ev.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => go(r.result); r.onerror = () => fail('Không đọc được tệp.'); r.readAsText(f); };
+        $('cg-entry-go').onclick = () => go($('cg-entry-code').value);
+        const lb = $('cg-entry-last'); if (lb) lb.onclick = () => { e.remove(); open(last); };
+        $('cg-entry-x').onclick = () => { e.remove(); try { history.replaceState(null, '', location.pathname); } catch (er) { } };
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
