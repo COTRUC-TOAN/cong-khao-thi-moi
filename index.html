@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v56] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v57] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -582,6 +582,20 @@
                                     <div id="ai-draft" style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;">
                                         <strong style="color:#4338ca;">✍️ Soạn đề bằng AI theo ma trận</strong>
                                         <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô mô tả đề như một ma trận: bấm chọn chủ đề (lấy từ tab ChuDe của Sheet), rồi nhập số câu vào bảng: hàng là dạng câu (trắc nghiệm, đúng/sai, trả lời ngắn), cột là mức độ (nhận biết đến vận dụng cao). Ô nào không cần thì để 0. AI soạn theo từng dòng. Soạn xong, cô mô tả chỗ cần sửa để AI chỉnh lại. AI có thể sai nên cô đọc lại và rà soát. AI có thể vẽ hình (đồ thị hàm số, hình khối, hình phẳng) khi câu cần hình.</div>
+                                        <div id="mt-box" style="margin-top:8px; border:1px solid #c7d2fe; border-radius:8px; padding:8px; background:#fff;">
+                                            <strong style="color:#4338ca;">⚡ Cách nhanh: dán ma trận của tổ (không cần chọn từng chủ đề)</strong>
+                                            <div style="font-size:.85rem; color:#475569; margin-top:2px;">Cô chép bảng ma trận hoặc bản đặc tả trong Word rồi dán vào ô dưới. Bảng chia cột vẫn đọc được. Bấm "Đọc ma trận", web tự điền bảng chủ đề bên dưới để cô xem lại, rồi cô bấm "Soạn đề". Cô cũng có thể bỏ qua ô này và tự chọn chủ đề như cũ.</div>
+                                            <textarea id="mt-text" rows="5" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Dán ma trận hoặc bản đặc tả vào đây (Ctrl+V)"></textarea>
+                                            <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                                <button type="button" class="btn-start" id="mt-go" style="background:#4338ca;" onclick="mtRead()">Đọc ma trận → điền bảng chủ đề</button>
+                                                <button type="button" class="rv-btn" onclick="mtCopy()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lời nhắc đọc ma trận (cho AI khác)</button>
+                                            </div>
+                                            <div id="mt-msg" style="font-size:.88rem; margin-top:4px; color:#475569;"></div>
+                                            <details style="margin-top:4px;"><summary style="cursor:pointer; font-size:.88rem; color:#4338ca;">Đã nhờ AI khác đọc ma trận? Dán kết quả vào đây</summary>
+                                                <textarea id="mt-back" rows="3" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Dán kết quả AI trả về (khối JSON)"></textarea>
+                                                <button type="button" class="rv-btn" onclick="mtLoad()">Nạp vào bảng chủ đề</button>
+                                            </details>
+                                        </div>
                                         <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Phạm vi, bối cảnh chung (không bắt buộc)</label>
                                         <textarea id="ai-topic" rows="2" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; box-sizing:border-box; margin-top:4px;" placeholder="Ví dụ: Lớp 12, Chương 1 Ứng dụng đạo hàm để khảo sát hàm số. Học sinh khá, đề kiểm tra 45 phút."></textarea>
                                         <div id="ai-rows" style="margin-top:6px;"></div>
@@ -697,6 +711,12 @@
                             <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
                                 <strong style="color: #334155;">Xem Trước Gọn Gàng (<span id="direct-parsed-count">0</span> câu)</strong>
                                 <button class="btn-start" id="btn-save-parsed-bank" style="background: #059669; padding: 4px 10px; font-size: 0.9rem; display: none;" onclick="saveBankBulkToSheets()">Lưu Ngân Hàng</button>
+                            </div>
+                            <div id="fa-bar" style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <span style="font-size:.88rem; color:#475569;">Đề chưa có đáp án?</span>
+                                <button type="button" class="rv-btn" id="fa-go" onclick="faRun()">🤖 AI điền đáp án còn thiếu (Gemini)</button>
+                                <button type="button" class="rv-btn" onclick="faOutside()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Nhờ AI khác (sao chép lời nhắc)</button>
+                                <span id="fa-msg" style="font-size:.88rem; color:#475569;"></span>
                             </div>
                             <div class="preview-box" id="direct-preview-box" style="height: 35vh; max-height: 35vh; overflow-y: auto;"><em>Chưa bóc tách.</em></div>
                         </div>
@@ -5586,6 +5606,128 @@ window.addEventListener('popstate', function () {
                 const lines = rows.map((r, i) => (i + 1) + ') Chương/chủ đề: ' + r.chapter + '. Nội dung: ' + r.topic + '. Mức độ có câu hỏi: ' + MX_G.filter(g => mxCellText(r.c, g[0])).map(g => g[0]).join(', ') + '.' + (r.note ? ' Mô tả thêm của giáo viên: ' + r.note : '')).join('\n');
                 return 'NHIỆM VỤ: VIẾT CỘT "YÊU CẦU CẦN ĐẠT" CHO BẢN ĐẶC TẢ ĐỀ KIỂM TRA TOÁN THPT\nChương trình GDPT 2018 của Việt Nam, khối lớp ' + grade + '. Với mỗi nội dung dưới đây, chỉ viết cho những mức độ được liệt kê ("nb" là nhận biết, "th" là thông hiểu, "vd" là vận dụng). Mỗi mức viết 1 đến 3 ý ngắn: mức nb bắt đầu bằng "Nhận biết được ...", mức th bắt đầu bằng "Hiểu được ..." hoặc "Giải thích được ...", mức vd bắt đầu bằng "Vận dụng được ..." hoặc "Giải quyết được ...". Ý phải đúng nội dung kiến thức của dòng đó và đúng mức độ, bám theo mô tả thêm nếu có. Không dùng LaTeX, không dùng ký hiệu $, viết công thức bằng chữ thường.\n' + lines + '\nĐẦU RA: chỉ một mảng JSON, mỗi phần tử {"row":số thứ tự dòng,"nb":["..."],"th":["..."],"vd":["..."]} (mức không có câu hỏi thì để mảng rỗng).';
             }
+            // ---------- (v57) Dán ma trận dạng văn bản: web đọc rồi điền bảng chủ đề ----------
+            const MT_LV = ['nhận biết', 'thông hiểu', 'vận dụng', 'vận dụng cao'];
+            function mtPrompt(text) {
+                return 'NHIỆM VỤ: ĐỌC MA TRẬN ĐỀ KIỂM TRA\n'
+                    + 'Văn bản dưới đây được chép từ bảng ma trận và/hoặc bản đặc tả của tổ Toán THPT. Các cột cách nhau bằng dấu | hoặc dấu tab; ô gộp có thể bị lặp lại hoặc để trống. Hãy trích ra từng dòng "nội dung / đơn vị kiến thức" cùng số câu của từng dạng câu, từng mức độ.\n'
+                    + 'QUY TẮC:\n'
+                    + '1. Mỗi dòng nội dung / đơn vị kiến thức là một phần tử. Ghi "topic" theo dạng "Chương - Nội dung" nếu có chương.\n'
+                    + '2. Dạng câu: MCQ = Phần I trắc nghiệm nhiều lựa chọn (TN, TNKQ); TF = Phần II đúng sai (ĐS); SA = Phần III trả lời ngắn (TLN); ES = tự luận (TL).\n'
+                    + '3. Mức độ theo thứ tự 4 số: [nhận biết (NB, Biết), thông hiểu (TH, Hiểu), vận dụng (VD), vận dụng cao (VDC)].\n'
+                    + '4. Số câu của MCQ, SA, ES là số CÂU. Với TF cũng đếm theo số CÂU, không đếm số ý: các ý a, b, c, d cùng một câu (ví dụ "1a", "1b,c,d" đều thuộc câu 1) chỉ tính MỘT câu trong toàn bảng, tại dòng xuất hiện đầu tiên của câu đó, theo mức độ của ý đầu tiên; dòng nào chỉ có thêm ý của câu đã tính thì không cộng nữa.\n'
+                    + '5. Ô ghi "1 / TD", "2 / MHH", "1 / GQVĐ" thì số câu là số đứng trước dấu /; chữ TD, MHH, GQVĐ là năng lực toán học, bỏ qua. Ô trống là 0.\n'
+                    + '6. Bỏ qua các cột và dòng TỔNG, tỉ lệ %, số điểm.\n'
+                    + '7. Nếu có cả bảng ma trận và bảng đặc tả: lấy số câu từ bảng ma trận; lấy từ bảng đặc tả phần "yêu cầu cần đạt" rút gọn tối đa 40 từ gắn vào đúng dòng cùng nội dung (trường "req"). Không có thì để "".\n'
+                    + '8. Không bịa số. Không chắc thì để 0 và ghi vào trường "warn" của phần tử đó.\n'
+                    + 'ĐẦU RA: chỉ MỘT mảng JSON (đặt trong một khối mã duy nhất), mỗi phần tử có dạng: {"topic":"Chương - Nội dung","req":"yêu cầu cần đạt hoặc rỗng","c":{"MCQ":[nb,th,vd,vdc],"TF":[nb,th,vd,vdc],"SA":[nb,th,vd,vdc],"ES":[nb,th,vd,vdc]},"warn":""}. Dạng không có thì cho [0,0,0,0].\n\nVĂN BẢN MA TRẬN:\n' + text;
+            }
+            function mtMsg(t, c) { const e = $('mt-msg'); if (e) { e.textContent = t; e.style.color = c || '#475569'; } }
+            function mtText() { return (($('mt-text') || {}).value || '').replace(/[\u00a0\u2007\u202f\u200b\ufeff]/g, ' ').trim().slice(0, 30000); }
+            function mtApply(arr) {
+                if (!Array.isArray(arr) || !arr.length) { mtMsg('Kết quả không đúng dạng bảng nên chưa nạp được. Cô thử đọc lại hoặc dán đúng khối JSON.', '#dc2626'); return false; }
+                const rows = []; let warns = [];
+                arr.forEach(x => {
+                    if (!x || !x.topic) return; const c = x.c || {}, cells = {}; let any = 0;
+                    ['MCQ', 'TF', 'SA', 'ES'].forEach(t => { const a = [].concat(c[t] || []); MT_LV.forEach((l, i) => { const n = Math.max(0, Math.min(10, parseInt(a[i], 10) || 0)); if (n) { cells[t + '|' + l] = n; any += n; } }); });
+                    if (any) rows.push({ topic: String(x.topic).trim(), cells, req: String(x.req || '').trim() });
+                    if (x.warn) warns.push(String(x.topic).trim() + ': ' + String(x.warn));
+                });
+                if (!rows.length) { mtMsg('Không đọc ra dòng nào có số câu. Cô kiểm tra lại văn bản đã dán.', '#dc2626'); return false; }
+                const had = aiRows().length;
+                if (had && !confirm('Bảng chủ đề đang có ' + had + ' mục đã nhập. Bấm OK để thay bằng kết quả đọc ma trận (mục cũ sẽ mất). Bấm Hủy để giữ nguyên.')) return false;
+                $('ai-rows').innerHTML = '';
+                rows.forEach(r => { aiAddRow({ topic: r.topic, cells: r.cells }); const d = $('ai-rows').lastElementChild; if (d && r.req) { const n = d.querySelector('.ai-r-note'); if (n) n.value = r.req; } });
+                aiTotal();
+                const sum = { MCQ: 0, TF: 0, SA: 0, ES: 0 }; rows.forEach(r => Object.keys(r.cells).forEach(k => { sum[k.split('|')[0]] += r.cells[k]; }));
+                mtMsg('Đã đọc ' + rows.length + ' dòng nội dung: ' + sum.MCQ + ' trắc nghiệm, ' + sum.TF + ' đúng/sai, ' + sum.SA + ' trả lời ngắn, ' + sum.ES + ' tự luận. Cô đối chiếu với ma trận của tổ ở bảng bên dưới (sửa số nếu máy đọc sai), rồi bấm "Soạn đề".' + (warns.length ? ' Máy chưa chắc: ' + warns.join('; ') : ''), '#16a34a');
+                const first = $('ai-rows'); if (first && first.scrollIntoView) first.scrollIntoView({ block: 'nearest' });
+                return true;
+            }
+            async function mtRead() {
+                if (aiCtl) return;
+                const text = mtText(); if (!text) { mtMsg('Cô dán ma trận vào ô trên trước.', '#dc2626'); return; }
+                if (!S.connected) { mtMsg('Cô bấm Kết nối Gemini ở phía trên trước, hoặc dùng nút "Sao chép lời nhắc" để nhờ AI khác.', '#dc2626'); return; }
+                S.model = ($('rv-model') || {}).value || S.model;
+                aiBusy(true, mtMsg); mtMsg('Gemini đang đọc ma trận, có thể mất 20 đến 60 giây…');
+                try { const arr = await genJson([{ text: mtPrompt(text) }], 0.2, aiCtl.signal); mtApply(arr); }
+                catch (e) { mtMsg((e && e.code === 'trunc') ? 'Ma trận dài quá nên AI bị cắt giữa chừng. Cô dán từng phần (mỗi lần một bảng hoặc nửa bảng).' : aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
+                finally { aiBusy(false); }
+            }
+            function mtCopy() {
+                const text = mtText(); if (!text) { mtMsg('Cô dán ma trận vào ô trên trước.', '#dc2626'); return; }
+                const t = mtPrompt(text), done = () => mtMsg('Đã sao chép lời nhắc. Cô dán vào AI khác, rồi chép kết quả (khối JSON) dán vào ô "Đã nhờ AI khác đọc ma trận" bên dưới và bấm "Nạp vào bảng chủ đề".', '#16a34a');
+                if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { prompt('Cô sao chép đoạn này (Ctrl+C):', t); done(); });
+                else { prompt('Cô sao chép đoạn này (Ctrl+C):', t); done(); }
+            }
+            function mtLoad() { const v = (($('mt-back') || {}).value || '').replace(/[\u00a0\u2007\u202f\u200b\ufeff]/g, ' ').trim(); if (!v) { mtMsg('Cô dán kết quả AI trả về vào ô trước.', '#dc2626'); return; } let a = parseJson(v); if (a && !Array.isArray(a)) a = a.rows || a.items || null; mtApply(a); }
+            // Dán bảng từ Word: đổi bảng HTML thành chữ có dấu | để giữ đúng cột (ô gộp được trải ra)
+            (function () {
+                const ta = $('mt-text'); if (!ta) return;
+                ta.addEventListener('paste', ev => {
+                    try {
+                        const cd = ev.clipboardData; if (!cd) return; const html = cd.getData('text/html'); if (!html || !/<table/i.test(html)) return;
+                        const doc = new DOMParser().parseFromString(html, 'text/html'), out = [];
+                        doc.querySelectorAll('table').forEach(tb => {
+                            const grid = []; const trs = tb.querySelectorAll('tr');
+                            trs.forEach((tr, ri) => {
+                                grid[ri] = grid[ri] || []; let ci = 0;
+                                tr.querySelectorAll('td,th').forEach(td => {
+                                    while (grid[ri][ci] !== undefined) ci++;
+                                    const t = td.textContent.replace(/\s+/g, ' ').trim(), rs = Math.max(1, +td.getAttribute('rowspan') || 1), cs = Math.max(1, +td.getAttribute('colspan') || 1);
+                                    for (let r = 0; r < rs; r++) for (let c = 0; c < cs; c++) { grid[ri + r] = grid[ri + r] || []; grid[ri + r][ci + c] = (c === 0) ? t : ''; }
+                                    ci += cs;
+                                });
+                            });
+                            grid.forEach(r => { if (r && r.some(x => x)) out.push(Array.from(r, x => x === undefined ? '' : x).join(' | ')); }); out.push('');
+                        });
+                        if (!out.join('').trim()) return;
+                        ev.preventDefault(); const txt = out.join('\n'), s0 = ta.selectionStart, e0 = ta.selectionEnd; ta.value = ta.value.slice(0, s0) + txt + ta.value.slice(e0);
+                        ta.selectionStart = ta.selectionEnd = s0 + txt.length;
+                    } catch (e) { }
+                });
+            })();
+            window.mtRead = mtRead; window.mtCopy = mtCopy; window.mtLoad = mtLoad; window.mtApply = mtApply;
+
+            // ---------- (v57) Dán đề: AI điền đáp án còn thiếu ----------
+            function faMsg(t, c) { const e = $('fa-msg'); if (e) { e.textContent = t; e.style.color = c || '#475569'; } }
+            function faTargets() {
+                if (typeof directParsedQuestions === 'undefined' || !directParsedQuestions.length) return null;
+                const items = cnBuild() || [];
+                return items.filter(it => !it.v.ans || it.v.guessed);
+            }
+            async function faRun() {
+                if (aiCtl) return;
+                const need = faTargets(); if (need === null) { faMsg('Cô dán đề vào khung và bấm "Tự Động Phân Tích" trước.', '#dc2626'); return; }
+                if (!need.length) { faMsg('Các câu đều đã có đáp án.', '#16a34a'); return; }
+                if (!S.connected) { faMsg('Cô mở mục "Nhờ AI soạn đề…" ở trên, dán khóa Gemini và bấm Kết nối, hoặc dùng nút "Nhờ AI khác".', '#dc2626'); return; }
+                S.model = ($('rv-model') || {}).value || S.model;
+                const imgs = S.imgs; aiBusy(true, faMsg); let done = 0, fail = 0;
+                try {
+                    for (let i = 0; i < need.length; i += 10) {
+                        const chunk = need.slice(i, i + 10); faMsg('Gemini đang giải câu ' + (i + 1) + ' đến ' + Math.min(i + 10, need.length) + ' trên ' + need.length + ' câu…');
+                        const arr = await genJson([{ text: solvePrompt(chunk, imgs) }], 0.2, aiCtl.signal), map = new Map();
+                        (Array.isArray(arr) ? arr : []).forEach(o => { if (o && o.n != null) map.set(+o.n, o); });
+                        chunk.forEach(it => {
+                            const val = cnVal(it.v.type, map.get(it.n)); if (!val || (it.v.type !== 'SA' && /X/.test(val.k))) { fail++; return; }
+                            const q = it.v.q, k = it.v.type === 'SA' ? String(val.k).replace(/\s+/g, '').replace(',', '.') : val.k;
+                            q.ans = k; if (it.v.type === 'TF') q.ansOptions = k.split('');
+                            if (typeof ANS_GUESSED !== 'undefined') ANS_GUESSED.add(q.id);
+                            const card = cardOf(q.id); if (card) { const a = card.querySelector('.parsed-ans'); if (a) a.textContent = 'Đ/A: ' + q.ans + ' (AI điền, cô kiểm tra)'; }
+                            done++;
+                        });
+                    }
+                    faMsg('Đã điền đáp án cho ' + done + ' câu' + (fail ? ', ' + fail + ' câu AI không chắc nên để trống' : '') + '. Đáp án do AI điền chỉ để tham khảo, cô kiểm tra lại trước khi dùng.', done ? '#16a34a' : '#b45309');
+                } catch (e) { faMsg((e && e.code === 'trunc') ? 'AI bị cắt giữa chừng, cô bấm lại.' : aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
+                finally { aiBusy(false); }
+            }
+            function faOutside() {
+                const need = faTargets(); if (need === null) { faMsg('Cô dán đề vào khung và bấm "Tự Động Phân Tích" trước.', '#dc2626'); return; }
+                const b = $('rv-body'); if (b && b.style.display === 'none' && window.rvToggle) window.rvToggle();
+                cnCopy(); const c = $('cn-box'); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'start' });
+                faMsg('Đã sao chép lời nhắc giải đề. Cô dán sang AI khác, rồi dán kết quả vào ô trong mục "Hội đồng AI" (vừa mở ra) và bấm "So sánh kết quả", sau đó "Áp dụng đáp án".', '#16a34a');
+            }
+            window.faRun = faRun; window.faOutside = faOutside;
             function mxCopy() {
                 if (aiNoTopic()) { aiMsg('Có chủ đề đã nhập số câu nhưng chưa chọn chủ đề.', '#dc2626'); return; }
                 const rows = mxData(); if (!rows.length) { aiMsg('Cô chọn chủ đề và nhập số câu vào bảng trước.', '#dc2626'); return; }
