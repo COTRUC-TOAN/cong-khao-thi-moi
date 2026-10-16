@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v52] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v55] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5725,9 +5725,10 @@ window.addEventListener('popstate', function () {
 .pp-hd .r b{font-size:19pt;line-height:1.1}
 .pp-info{font-size:10.5pt;margin:2mm 0 2mm;display:flex;gap:5mm}
 .pp-sheet{position:relative;border:.35mm solid #000;box-sizing:border-box}
-.pp-mk{position:absolute;width:5mm;height:5mm;background:#000}
+.pp-sheet,.pp-sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pp-mk{position:absolute;width:5mm;height:5mm;background:#000;border:2.5mm solid #000;box-sizing:border-box}
 .pp-b{position:absolute;border:.28mm solid #000;border-radius:50%;box-sizing:border-box;text-align:center;font:2.5mm/3.3mm Arial,sans-serif;color:#000;overflow:hidden}
-.pp-b.f{background:#000;color:#000}
+.pp-b.f{background:#000;color:#000;border-width:1.95mm}
 .pp-st{position:absolute;font:3mm/3.6mm Arial,sans-serif;white-space:nowrap;color:#000}
 .pp-sb{position:absolute;border:.3mm solid #000;box-sizing:border-box;font:2.6mm Arial,sans-serif;padding:.3mm 1mm}
 .pp-key table{border-collapse:collapse;font-size:10pt;margin:1mm 0 3mm}.pp-key td,.pp-key th{border:.2mm solid #444;padding:.6mm 1.6mm;text-align:center}
@@ -6322,9 +6323,20 @@ window.addEventListener('popstate', function () {
                 });
                 h += '</div>';
             }
-            if (CUR.sa.length) {
+          if (CUR.sa.length) {
                 h += '<div class="cg-card"><div class="cg-sub">Phần III - Trả lời ngắn (gõ số học sinh ghi)</div>';
-                CUR.sa.forEach((k, i) => { h += '<div class="cg-row"><span class="cg-n' + (FLAG.s[i] ? ' warn' : '') + '">' + (i + 1) + '</span><input type="text" inputmode="decimal" data-t="s" data-i="' + i + '" value="' + esc(ANS.sa[i]) + '" placeholder="đáp án em ghi"></div>'; });
+                CUR.sa.forEach((k, i) => { 
+                    let st = ''; let lbl = '';
+                    if (ANS.sa[i] !== '' && k !== '') {
+                        if (sameShortAns(ANS.sa[i], k)) {
+                            st = 'background-color:#dcfce7; border-color:#16a34a; color:#166534; font-weight:bold;';
+                        } else {
+                            st = 'background-color:#fee2e2; border-color:#dc2626; color:#991b1b; font-weight:bold;';
+                            lbl = '<span class="sa-ans-lbl" style="color:#16a34a; font-weight:bold; font-size:0.95rem; white-space:nowrap;">Đ/A: ' + esc(k) + '</span>';
+                        }
+                    }
+                    h += '<div class="cg-row"><span class="cg-n' + (FLAG.s[i] ? ' warn' : '') + '">' + (i + 1) + '</span><input type="text" inputmode="decimal" data-t="s" data-i="' + i + '" value="' + esc(ANS.sa[i]) + '" placeholder="đáp án em ghi" style="' + st + '">' + lbl + '</div>'; 
+                });
                 h += '</div>';
             }
             if (CUR.es) {
@@ -6334,6 +6346,7 @@ window.addEventListener('popstate', function () {
             }
             h += '<div class="cg-card cg-small">Ô cô chọn hiện màu xanh lá nếu đúng, màu đỏ nếu sai.</div>';
         }
+        h += '<div class="cg-card"><button type="button" id="cg-hist-btn" style="width:100%;padding:11px;border:0;border-radius:8px;background:#0f766e;color:#fff;font-weight:700;font-size:1rem">📁 Bài đã chấm & ảnh bằng chứng</button></div>';
         if (SAVED.length) h += '<div class="cg-card cg-list"><b>Đã lưu ' + SAVED.length + ' bài</b>' + SAVED.slice(-8).reverse().map(x => '<div>' + esc(x.name) + ' (' + esc(x.cls) + ', mã ' + esc(x.code) + '): <b>' + fmt(x.s) + '</b></div>').join('') + '</div>';
         h += '<div class="cg-card cg-small">Điểm lưu vào Google Sheet của cô, cùng sổ điểm với bài làm trên web (tên đề: [Giấy] ' + esc(DATA.t) + ').</div>';
         h += '</div>';
@@ -6355,12 +6368,44 @@ window.addEventListener('popstate', function () {
             else { const j = +b.dataset.j; ANS.tf[i][j] = (ANS.tf[i][j] === v ? '-' : v); }
             const nm = $('cg-name').value, cl = $('cg-class').value; render(); $('cg-name').value = nm; $('cg-class').value = cl;
         });
-        ov.querySelectorAll('input[data-t]').forEach(inp => inp.oninput = () => { const i = +inp.dataset.i; if (inp.dataset.t === 's') delete FLAG.s[i]; if (inp.dataset.t === 's') ANS.sa[i] = inp.value.trim(); else ANS.es[i] = inp.value; const c = calc(); const sc = $('cg-sc'); if (sc) sc.textContent = fmt(c.s10); const rw = $('cg-raw'); if (rw) rw.textContent = fmt(c.raw) + '/' + fmt(c.max) + ' điểm gốc'; });
+        ov.querySelectorAll('input[data-t]').forEach(inp => inp.oninput = () => { 
+            const i = +inp.dataset.i; 
+            if (inp.dataset.t === 's') {
+                delete FLAG.s[i]; 
+                ANS.sa[i] = inp.value.trim(); 
+                const k = CUR.sa[i];
+                const row = inp.parentNode;
+                let lbl = row.querySelector('.sa-ans-lbl');
+                if (ANS.sa[i] !== '' && k !== '') {
+                    if (sameShortAns(ANS.sa[i], k)) {
+                        inp.style.backgroundColor = '#dcfce7'; inp.style.borderColor = '#16a34a'; inp.style.color = '#166534'; inp.style.fontWeight = 'bold';
+                        if (lbl) lbl.remove();
+                    } else {
+                        inp.style.backgroundColor = '#fee2e2'; inp.style.borderColor = '#dc2626'; inp.style.color = '#991b1b'; inp.style.fontWeight = 'bold';
+                        if (!lbl) {
+                            lbl = document.createElement('span');
+                            lbl.className = 'sa-ans-lbl';
+                            lbl.style.cssText = 'color:#16a34a; font-weight:bold; font-size:0.95rem; white-space:nowrap;';
+                            lbl.textContent = 'Đ/A: ' + k;
+                            row.appendChild(lbl);
+                        }
+                    }
+                } else {
+                    inp.style.backgroundColor = ''; inp.style.borderColor = ''; inp.style.color = ''; inp.style.fontWeight = '';
+                    if (lbl) lbl.remove();
+                }
+            } else {
+                ANS.es[i] = inp.value; 
+            }
+            const c = calc(); 
+            const sc = $('cg-sc'); if (sc) sc.textContent = fmt(c.s10); 
+            const rw = $('cg-raw'); if (rw) rw.textContent = fmt(c.raw) + '/' + fmt(c.max) + ' điểm gốc'; 
+        });
         const fi = $('cg-file'); if (fi) fi.onchange = () => { if (fi.files && fi.files[0]) scanFile(fi.files[0]); };
         const cl = $('cg-close'); if (cl) cl.onclick = close;
         const sv = $('cg-save'); if (sv) sv.onclick = save;
         const rt = $('cg-retry'); if (rt) rt.onclick = retry;
-        wireSbd();
+        wireSbd(); const hb = $('cg-hist-btn'); if (hb) hb.onclick = histOpen;
     }
 
     async function post(body) {
@@ -6398,9 +6443,10 @@ window.addEventListener('popstate', function () {
         const b = body(name + (SBD ? ' (SBD ' + SBD + ')' : ''), cl, CUR.code, c.s10); if (SBD) b.sbd = SBD;
         const ok = await post(b);
         if (!ok) { const p = JSON.parse(LS.get('cham_pending') || '[]'); p.push(b); LS.set('cham_pending', JSON.stringify(p)); }
+        let kept = false; if (LASTIMG) { try { kept = await keepPhoto(name, cl, SBD, CUR.code, c.s10); } catch (er) { kept = false; } }
         SAVED.push({ name: name, cls: cl, code: CUR.code, s: c.s10, sbd: SBD }); LS.set('cham_saved_' + DATA.id, JSON.stringify(SAVED));
-        alert(ok ? '✅ Đã lưu: ' + name + ' - ' + fmt(c.s10) + ' điểm.' : '⚠️ Chưa gửi được lên Google Sheet (mất mạng?). Bài đã được giữ trong điện thoại, cô bấm "Gửi lại" khi có mạng.');
-        LASTCV = null; LASTMSG = ''; FLAG = { m: {}, t: {}, s: {}, sbd: false }; SBD = ''; const code = CUR.code; $('cg-name').value = ''; CUR = null; setCode(code); const ci = $('cg-class'); if (ci) ci.value = cl;
+        alert((ok ? '✅ Đã lưu: ' + name + ' - ' + fmt(c.s10) + ' điểm.' : '⚠️ Chưa gửi được lên Google Sheet (mất mạng?). Bài đã được giữ trong điện thoại, cô bấm "Gửi lại" khi có mạng.') + (kept ? '\n📷 Đã giữ ảnh phiếu làm bằng chứng (mục "Bài đã chấm & ảnh").' : (LASTIMG ? '\n⚠️ Chưa giữ được ảnh phiếu trong điện thoại, cô tự lưu ảnh chụp.' : '')));
+        LASTCV = null; LASTMSG = ''; FLAG = { m: {}, t: {}, s: {}, sbd: false }; SBD = ''; LASTIMG = null; const code = CUR.code; $('cg-name').value = ''; CUR = null; setCode(code); const ci = $('cg-class'); if (ci) ci.value = cl;
         const ovs = $('cg-ov'); ovs.scrollTop = 0;
     }
     async function retry() {
@@ -6411,7 +6457,7 @@ window.addEventListener('popstate', function () {
     }
 
     // ---------- (v46) Chụp phiếu tô ô: máy đọc đáp án ----------
-    let FLAG = { m: {}, t: {}, s: {}, sbd: false }, LASTCV = null, LASTMSG = '', SBD = '';
+    let FLAG = { m: {}, t: {}, s: {}, sbd: false }, LASTCV = null, LASTMSG = '', SBD = '', LASTIMG = null;
     async function packLink(p) {
         const j = JSON.stringify(p);
         if (window.CompressionStream) {
@@ -6555,14 +6601,14 @@ window.addEventListener('popstate', function () {
             msg('Đang đọc phiếu…');
             const sets = DATA.s, s0 = CUR ? DATA.s.find(x => x[0] === CUR.code) : DATA.s[0];
             const im = await loadImg(file), res = readSheet(im, DATA.L, s0[1].length, s0[2].length, s0[3].length);
-            if (res.err) { msg('⚠️ ' + res.err); LASTCV = null; render(); return; }
+            if (res.err) { msg('⚠️ ' + res.err); LASTCV = null; LASTIMG = null; render(); return; }
             let code = res.code, found = DATA.s.find(x => x[0] === code);
             if (!found) { found = CUR ? DATA.s.find(x => x[0] === CUR.code) : null; LASTMSG = '⚠️ Máy không đọc được mã đề trên phiếu' + (found ? ', đang dùng mã ' + found[0] + ' cô đã chọn.' : '. Cô chọn mã đề rồi chụp lại.'); if (!found) { LASTCV = null; render(); return; } }
             if (found[1].length !== res.mcq.length || found[2].length !== res.tf.length || found[3].length !== res.sa.length) { /* số câu giữa các mã giống nhau */ }
             const nm = ($('cg-name') || {}).value || '', cl = ($('cg-class') || {}).value || '';
             setCode(found[0]);
             ANS.mcq = res.mcq.slice(0, CUR.mcq.length); ANS.tf = res.tf.slice(0, CUR.tf.length); ANS.sa = res.sa.slice(0, CUR.sa.length);
-            FLAG = { m: res.flags.m, t: res.flags.t, s: res.flags.s, sbd: !!res.flags.sbd }; if (res.sbd) SBD = res.sbd; window.chamLast = res;
+            FLAG = { m: res.flags.m, t: res.flags.t, s: res.flags.s, sbd: !!res.flags.sbd }; if (res.sbd) SBD = res.sbd; window.chamLast = res; LASTIMG = { cv: im.cv, W: res.W, H: res.H, marks: res.marks.filter(m => m[2] >= 0.55 && !/^MA/.test(m[3])).map(m => [Math.round(m[0]), Math.round(m[1])]) };
             const nflag = Object.keys(FLAG.m).length + Object.keys(FLAG.t).length + Object.keys(FLAG.s).length;
             // ảnh xem lại: vẽ vòng đã đọc
             const cv = document.createElement('canvas'), W = res.W, Hh = res.H; cv.width = W; cv.height = Hh; const cx = cv.getContext('2d'); cx.drawImage(im.cv, 0, 0);
@@ -6573,6 +6619,83 @@ window.addEventListener('popstate', function () {
             render(); const a = $('cg-name'); if (a) { a.value = nm; if (!nm.trim() && SBD && SBD.indexOf('?') < 0) { const rn = rosterName(SBD); if (rn) { a.value = rn; a.dataset.auto = '1'; } } } const b = $('cg-class'); if (b && cl) b.value = cl;
         } catch (e) { LASTCV = null; LASTMSG = '⚠️ Không đọc được ảnh (' + (e && e.message || e) + '). Cô chụp lại hoặc nhập tay bên dưới.'; render(); }
     }
+
+
+    // ---------- (v55) Giữ ảnh phiếu làm bằng chứng ----------
+    const slug = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+    const fileOf = r => [slug(r.cls).replace(/[^A-Za-z0-9]+/g, ''), slug(r.sbd).replace(/[^A-Za-z0-9]+/g, ''), slug(r.name).replace(/[^A-Za-z0-9]+/g, ''), 'ma' + slug(r.code).replace(/[^A-Za-z0-9]+/g, '')].filter(Boolean).join('_') + '.jpg';
+    function pdb() { return new Promise((res, rej) => { try { if (!window.indexedDB) return rej(new Error('no idb')); const q = indexedDB.open('v2_cham_photos', 1); q.onupgradeneeded = () => { q.result.createObjectStore('p', { keyPath: 'id', autoIncrement: true }); }; q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); } catch (e) { rej(e); } }); }
+    async function pAll() { const d = await pdb(); return new Promise((res, rej) => { const q = d.transaction('p').objectStore('p').getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => rej(q.error); }); }
+    async function pPut(r) { const d = await pdb(); return new Promise((res, rej) => { const t = d.transaction('p', 'readwrite'); t.objectStore('p').put(r); t.oncomplete = () => res(true); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); }); }
+    async function pDel(id) { const d = await pdb(); return new Promise((res, rej) => { const t = d.transaction('p', 'readwrite'); t.objectStore('p').delete(id); t.oncomplete = () => res(true); t.onerror = () => rej(t.error); }); }
+    async function keepPhoto(name, cls, sbd, code, s10) {
+        if (!LASTIMG) return false;
+        const blob = await new Promise(r => LASTIMG.cv.toBlob(r, 'image/jpeg', 0.78)); if (!blob) return false;
+        await pPut({ exam: DATA.id, title: DATA.t, name: name, cls: cls, sbd: sbd || '', code: code, s10: s10, at: Date.now(), blob: blob, marks: LASTIMG.marks, W: LASTIMG.W, H: LASTIMG.H });
+        try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
+        return true;
+    }
+    const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = t[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }; })();
+    function makeZip(files) {
+        const enc = new TextEncoder(), parts = [], cd = []; let off = 0;
+        files.forEach(f => {
+            const nm = enc.encode(f.name), crc = CRC(f.data), sz = f.data.length;
+            const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(12, 0x21, true); lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true);
+            parts.push(new Uint8Array(lh.buffer), nm, f.data);
+            const ch = new DataView(new ArrayBuffer(46)); ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(14, 0x21, true); ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+            cd.push(new Uint8Array(ch.buffer), nm); off += 30 + nm.length + sz;
+        });
+        let cdl = 0; cd.forEach(x => { cdl += x.length; });
+        const en = new DataView(new ArrayBuffer(22)); en.setUint32(0, 0x06054b50, true); en.setUint16(8, files.length, true); en.setUint16(10, files.length, true); en.setUint32(12, cdl, true); en.setUint32(16, off, true);
+        return new Blob(parts.concat(cd, [new Uint8Array(en.buffer)]), { type: 'application/zip' });
+    }
+    function saveBlob(bl, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 1500); }
+    const fdt = t => { const d = new Date(t); return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN'); };
+    async function histOpen() {
+        let rows = []; try { rows = await pAll(); } catch (e) { alert('Điện thoại này không cho lưu ảnh trong trình duyệt (có thể đang mở ở chế độ ẩn danh hoặc trong Zalo). Cô mở bằng Chrome/Safari bình thường nhé.'); return; }
+        let o = $('cg-hist'); if (o) o.remove();
+        o = document.createElement('div'); o.id = 'cg-hist'; o.style.cssText = 'position:fixed;inset:0;z-index:100001;background:#f1f5f9;overflow:auto;padding:12px 12px 60px;font-family:inherit';
+        document.body.appendChild(o);
+        const st = { q: '', ex: DATA && DATA.id ? DATA.id : '__all' };
+        const draw = () => {
+            const exams = {}; rows.forEach(r => { exams[r.exam] = r.title; });
+            let list = rows.filter(r => (st.ex === '__all' || r.exam === st.ex) && (!st.q || slug(r.name + ' ' + r.cls + ' ' + r.sbd + ' ' + r.code).toLowerCase().indexOf(slug(st.q).toLowerCase()) >= 0)).sort((a, b) => b.at - a.at);
+            const mb = (list.reduce((a, r) => a + (r.blob ? r.blob.size : 0), 0) / 1048576).toFixed(1);
+            o.innerHTML = '<div style="max-width:560px;margin:0 auto"><div style="display:flex;gap:8px;align-items:center"><h2 style="margin:0;flex:1">Bài đã chấm & ảnh</h2><button id="gh-x" style="padding:8px 12px;border:0;border-radius:8px;background:#475569;color:#fff;font-weight:700">Đóng</button></div>'
+                + '<select id="gh-ex" style="width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid #cbd5e1"><option value="__all">Tất cả các đề</option>' + Object.keys(exams).map(k => '<option value="' + esc(k) + '"' + (k === st.ex ? ' selected' : '') + '>' + esc(exams[k]) + '</option>').join('') + '</select>'
+                + '<input id="gh-q" value="' + esc(st.q) + '" placeholder="Tìm theo tên, lớp, số báo danh, mã đề" style="width:100%;box-sizing:border-box;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #cbd5e1">'
+                + '<div style="margin:8px 0;font-size:.9rem;color:#334155">' + list.length + ' bài, ảnh chiếm khoảng ' + mb + ' MB. ' + (list.length ? '<button id="gh-zip" style="padding:7px 10px;border:0;border-radius:8px;background:#7c3aed;color:#fff;font-weight:700">Tải tất cả (1 tệp .zip)</button>' : '') + '</div>'
+                + (list.length ? '' : '<div style="background:#fff;border-radius:10px;padding:12px">Chưa có bài nào. Ảnh chỉ được giữ khi cô chấm bằng cách <b>chụp phiếu</b> rồi bấm Lưu điểm.</div>')
+                + list.map(r => '<div style="background:#fff;border-radius:10px;padding:8px 10px;margin:6px 0;box-shadow:0 1px 3px #0002"><b>' + esc(r.name) + '</b> - ' + esc(r.cls) + (r.sbd ? ' - SBD ' + esc(r.sbd) : '') + '<br><span style="font-size:.88rem;color:#475569">mã ' + esc(r.code) + ' - <b>' + fmt(r.s10) + ' điểm</b> - ' + fdt(r.at) + '</span><br><button data-a="v" data-i="' + r.id + '" style="padding:6px 10px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700">Xem ảnh</button> <button data-a="d" data-i="' + r.id + '" style="padding:6px 10px;border:0;border-radius:8px;background:#0f766e;color:#fff;font-weight:700">Tải ảnh</button> <button data-a="x" data-i="' + r.id + '" style="padding:6px 10px;border:0;border-radius:8px;background:#e2e8f0;font-weight:700">Xóa</button></div>').join('') + '</div>';
+            $('gh-x').onclick = () => o.remove();
+            $('gh-ex').onchange = e => { st.ex = e.target.value; draw(); };
+            const qi = $('gh-q'); qi.oninput = () => { st.q = qi.value; const pos = qi.selectionStart; draw(); const n = $('gh-q'); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) { } };
+            const zb = $('gh-zip'); if (zb) zb.onclick = async () => {
+                zb.disabled = true; zb.textContent = 'Đang gói...';
+                const used = {}, files = [], csv = ['Họ tên,Lớp,Số báo danh,Mã đề,Điểm,Giờ chấm,Tên ảnh'];
+                for (const r of list) { let n = fileOf(r); if (used[n]) { used[n]++; n = n.replace(/\.jpg$/, '_' + used[n] + '.jpg'); } else used[n] = 1; files.push({ name: n, data: new Uint8Array(await r.blob.arrayBuffer()) }); csv.push([r.name, r.cls, r.sbd, r.code, String(r.s10.toFixed(2)).replace('.', ','), fdt(r.at), n].map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',')); }
+                files.push({ name: 'bang-diem.csv', data: new TextEncoder().encode('﻿' + csv.join('\r\n')) });
+                saveBlob(makeZip(files), 'anh-cham-bai-' + slug(st.ex === '__all' ? 'tat-ca' : (exams[st.ex] || 'de')).replace(/[^A-Za-z0-9]+/g, '-').slice(0, 30) + '.zip');
+                zb.disabled = false; zb.textContent = 'Tải tất cả (1 tệp .zip)';
+            };
+            o.querySelectorAll('button[data-a]').forEach(b => b.onclick = async () => {
+                const r = rows.find(x => x.id === +b.dataset.i); if (!r) return;
+                if (b.dataset.a === 'd') saveBlob(r.blob, fileOf(r));
+                else if (b.dataset.a === 'x') { if (confirm('Xóa ảnh và dòng này khỏi điện thoại? (Điểm đã gửi lên Google Sheet vẫn còn.)')) { await pDel(r.id); rows = rows.filter(x => x.id !== r.id); draw(); } }
+                else view(r);
+            });
+        };
+        const view = async r => {
+            const v = document.createElement('div'); v.style.cssText = 'position:fixed;inset:0;z-index:100002;background:#0f172a;overflow:auto;padding:10px';
+            v.innerHTML = '<div style="color:#fff;font-size:.95rem;max-width:700px;margin:0 auto"><b>' + esc(r.name) + '</b> - ' + esc(r.cls) + (r.sbd ? ' - SBD ' + esc(r.sbd) : '') + ' - mã ' + esc(r.code) + ' - <b>' + fmt(r.s10) + ' điểm</b> - ' + fdt(r.at) + '<br><label><input type="checkbox" id="gv-ring"> Hiện vòng xanh các ô máy đọc được</label> <button id="gv-x" style="margin-left:8px;padding:6px 10px;border:0;border-radius:8px;background:#e2e8f0;font-weight:700">Đóng</button><br><canvas id="gv-cv" style="width:100%;margin-top:6px;background:#fff"></canvas></div>';
+            document.body.appendChild(v);
+            const bmp = await createImageBitmap(r.blob), cv = $('gv-cv'); cv.width = bmp.width; cv.height = bmp.height;
+            const paint = () => { const cx = cv.getContext('2d'); cx.drawImage(bmp, 0, 0); if ($('gv-ring').checked) { const k = bmp.width / (r.W || bmp.width); cx.lineWidth = 3; cx.strokeStyle = '#16a34a'; (r.marks || []).forEach(m => { cx.beginPath(); cx.arc(m[0] * k, m[1] * k, 8 * k, 0, 7); cx.stroke(); }); } };
+            paint(); $('gv-ring').onchange = paint; $('gv-x').onclick = () => v.remove();
+        };
+        draw();
+    }
+    window.chamHist = { all: pAll, open: histOpen, zip: makeZip };
 
     window.chamOpen = open; window.chamScan = scanFile; window.chamRead = readSheet; window.chamLoad = loadImg;
     window.chamState = () => ({ data: DATA, cur: CUR, ans: ANS, calc: CUR ? calc() : null });
