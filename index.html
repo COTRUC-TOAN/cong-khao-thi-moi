@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v49] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v50] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -600,20 +600,29 @@
                                             <button type="button" class="rv-btn" onclick="aiCopyOutside()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lệnh soạn đề để dán sang AI khác</button>
                                             <span id="ai-msg" style="font-size:.9rem; color:#475569;"></span>
                                         </div>
-                                       <div style="margin-top:6px; border-top:1px dashed #c7d2fe; padding-top:6px;">
-    <div style="font-size:0.9rem; color:#b45309; margin-bottom:8px; font-weight:bold; background:#fffbeb; padding:6px 10px; border-radius:6px; border:1px solid #fcd34d;">
-        Điểm mỗi câu: 
-        <label style="margin-left:6px; color:#1e293b;">Trắc nghiệm <input type="number" id="mx-pm" value="0.25" step="0.05" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label> | 
-        <label style="margin-left:4px; color:#1e293b;">Đúng/Sai <input type="number" id="mx-pt" value="1.0" step="0.1" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label> | 
-        <label style="margin-left:4px; color:#1e293b;">Ngắn <input type="number" id="mx-ps" value="0.5" step="0.1" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label> | 
-        <label style="margin-left:4px; color:#1e293b;">Tự luận <input type="number" id="mx-pe" value="1.0" step="0.25" style="width:55px; padding:2px 4px; border:1px solid #cbd5e1; border-radius:4px;"></label>
-    </div>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <button type="button" class="rv-btn" id="mx-go" onclick="aiMatrixDoc()" title="Lấy từ bảng số câu ở trên">📊 Tạo bảng ma trận &amp; bản đặc tả (Word)</button>
-        <label style="font-size:.85rem;"><input type="checkbox" id="mx-ai" checked> Nhờ Gemini viết cột "Yêu cầu cần đạt"</label>
-        <button type="button" class="rv-btn" onclick="mxCopy()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lời nhắc sang AI khác</button>
-    </div>
-</div>
+                                        <div id="mx-pts" style="margin-top:8px; border:1px solid #c7d2fe; border-radius:8px; padding:8px; background:#fff;">
+                                            <strong style="color:#4338ca; font-size:.92rem;">Điểm của đề (dùng cho bảng ma trận, đề in và chấm bài)</strong>
+                                            <div style="margin-top:4px;"><select id="mp-pmode" style="padding:6px; border:1px solid #cbd5e1; border-radius:6px; max-width:100%;"><option value="each">Nhập điểm mỗi câu</option><option value="part">Nhập tổng điểm cả phần (web tự chia đều cho các câu)</option></select></div>
+                                            <div id="mp-pts-each" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;">
+                                                <label style="font-size:.82rem;">Trắc nghiệm / câu<br><input id="mp-pm" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                                <label style="font-size:.82rem;">Đúng/sai / câu (4 ý)<br><input id="mp-pt" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                                <label style="font-size:.82rem;">Trả lời ngắn / câu<br><input id="mp-ps" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                                <label style="font-size:.82rem;">Tự luận / câu<br><input id="mp-pe" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                            </div>
+                                            <div id="mp-pts-part" style="display:none; gap:6px; flex-wrap:wrap; margin-top:4px;">
+                                                <label style="font-size:.82rem;">Phần I cả phần<br><input id="mp-tm" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                                <label style="font-size:.82rem;">Phần II cả phần<br><input id="mp-tt" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                                <label style="font-size:.82rem;">Phần III cả phần<br><input id="mp-ts" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                                <label style="font-size:.82rem;">Phần IV cả phần<br><input id="mp-te" style="width:90px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                            </div>
+                                            <label style="font-size:.82rem; display:block; margin-top:4px;">Điểm từng câu tự luận (không bắt buộc, ví dụ 1,5; 1; 0,5)<br><input id="mp-pel" style="width:100%; max-width:320px; padding:6px; border:1px solid #cbd5e1; border-radius:6px;"></label>
+                                            <div id="mp-tot" style="margin-top:6px; font-size:.88rem; background:#f1f5f9; border-radius:6px; padding:5px 8px;"></div>
+                                        </div>
+                                        <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; border-top:1px dashed #c7d2fe; padding-top:6px;">
+                                            <button type="button" class="rv-btn" id="mx-go" onclick="aiMatrixDoc()" title="Lấy từ bảng số câu ở trên">📊 Tạo bảng ma trận &amp; bản đặc tả (Word)</button>
+                                            <label style="font-size:.85rem;"><input type="checkbox" id="mx-ai" checked> Nhờ Gemini viết cột "Yêu cầu cần đạt"</label>
+                                            <button type="button" class="rv-btn" onclick="mxCopy()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Sao chép lời nhắc sang AI khác</button>
+                                        </div>
                                         <textarea id="mx-paste" rows="2" style="width:100%; padding:6px; border:1px solid #e2e8f0; border-radius:6px; box-sizing:border-box; margin-top:4px; font-size:.85rem;" placeholder="Nếu dùng AI khác: dán kết quả AI trả về (mảng JSON) vào đây rồi bấm Tạo bảng ma trận. Để trống thì web dùng Gemini (nếu đã kết nối)."></textarea>
                                         <details id="ai-ext" style="margin-top:8px; border:1px solid #c7d2fe; border-radius:8px; padding:6px 8px; background:#eef2ff;"><summary style="cursor:pointer; font-size:.92rem; font-weight:bold; color:#4338ca;">🔗 Hết lượt Gemini? Dùng AI khác (ChatGPT, Claude, Gemini trên web…), không cần khóa</summary>
                                             <div style="font-size:.86rem; color:#475569; margin-top:4px;">Cách làm: (1) cô điền ma trận phía trên như bình thường, bấm nút sao chép bên dưới; (2) dán vào một cuộc trò chuyện của AI khác rồi gửi; (3) AI trả về một đoạn dữ liệu, cô sao chép đoạn đó dán vào ô "Kết quả" bên dưới và bấm Nhập vào khung dán. Làm theo cách này không dùng lượt của khóa Gemini.</div>
@@ -2419,6 +2428,7 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
             const hint = document.getElementById('m-hint');
             if (hint) { hint.style.display = HINTS[method] ? 'block' : 'none'; hint.textContent = HINTS[method] || ''; }
             // cách B, C cần khung Gemini mở sẵn (có ô nhập khóa)
+            if (method === 'ai' && window.mxPtsInit) { try { window.mxPtsInit(); } catch (er) { } }
             if (method === 'ai' || method === 'img') {
                 const b = document.getElementById('rv-body');
                 if (b && b.style.display === 'none' && typeof window.rvToggle === 'function') window.rvToggle();
@@ -4708,6 +4718,7 @@ window.addEventListener('popstate', function () {
                     sub.textContent = 'Chủ đề này: ' + cnt.MCQ + ' trắc nghiệm, ' + cnt.TF + ' đúng/sai, ' + cnt.SA + ' trả lời ngắn' + (cnt.ES ? ', ' + cnt.ES + ' tự luận' : '') + '.';
                 });
                 if (e) e.textContent = 'Tổng: ' + t + ' câu' + (t > 24 ? ' (nhiều quá, mỗi lần chỉ nên tối đa 24 câu)' : '');
+                if (window.mxTot) { try { window.mxTot(); } catch (er) { } }
             }
             const AI_SCHEMA = 'ĐẦU RA: chỉ một mảng JSON, mỗi phần tử: {"row":số thứ tự dòng ma trận,"type":"MCQ"|"TF"|"SA"|"ES","stem":"nội dung câu hỏi","options":["...","...","...","..."],"answer":"...","solution":"...","figure":(chỉ khi câu cần hình)}.\n'
                 + '"options": 4 phần tử cho MCQ và TF, mảng rỗng cho SA. "answer": MCQ ghi A, B, C hoặc D; TF ghi chuỗi 4 ký tự D hoặc S theo thứ tự a, b, c, d (D là Đúng, S là Sai); SA ghi số. Với ES (tự luận): "options" là mảng rỗng, "answer" ghi đáp số cuối cùng (có thể để trống), "solution" ghi hướng dẫn chấm ngắn gọn có thang điểm từng ý.';
@@ -5508,12 +5519,12 @@ window.addEventListener('popstate', function () {
                 return out;
             }
             function mxPts(rows) {
-    const pm = parseFloat(document.getElementById('mx-pm')?.value?.replace(',', '.')) || 0.25;
-    const pt = parseFloat(document.getElementById('mx-pt')?.value?.replace(',', '.')) || 1.0;
-    const ps = parseFloat(document.getElementById('mx-ps')?.value?.replace(',', '.')) || 0.5;
-    const pe = parseFloat(document.getElementById('mx-pe')?.value?.replace(',', '.')) || 1.0;
-    return { MCQ: pm, TF: pt, SA: ps, ES: pe };
-}
+                const c = { MCQ: 0, TF: 0, SA: 0, ES: 0 };
+                (rows || []).forEach(r => Object.keys(r.c).forEach(k => { c[k.split('|')[0]] += r.c[k]; }));
+                const p = window.paperPts && window.paperPts(c);
+                if (p) return { MCQ: p.pm, TF: p.pt, SA: p.ps, ES: p.pe };
+                return { MCQ: 0.25, TF: 1, SA: 0.5, ES: 1 };
+            }
             const mxF = n => (Math.round(n * 100) / 100).toString().replace('.', ',');
             function mxCellText(c, g) { return MX_P.map(p => (c[p[0] + '|' + g] ? c[p[0] + '|' + g] + ' ' + p[3] : '')).filter(Boolean).join(', '); }
             function mxHtml(rows, spec, pts) {
@@ -5601,8 +5612,36 @@ window.addEventListener('popstate', function () {
                 const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Ma_tran_va_dac_ta.doc'; document.body.appendChild(a); a.click(); a.remove();
                 setTimeout(() => URL.revokeObjectURL(a.href), 10000);
                 const total = Object.keys(rows).length; let allP = 0; rows.forEach(r => Object.keys(r.c).forEach(k => { allP += r.c[k] * pts[k.split('|')[0]]; }));
-                aiMsg('Đã tạo file Word "Ma_tran_va_dac_ta.doc" (' + total + ' nội dung, tổng ' + mxF(allP) + ' điểm' + (Math.abs(allP - 10) > 0.01 ? ', chưa bằng 10, cô kiểm tra điểm mỗi câu ở khung Xuất đề giấy' : '') + ').' + note, note ? '#b45309' : '#16a34a');
+                aiMsg('Đã tạo file Word "Ma_tran_va_dac_ta.doc" (' + total + ' nội dung, tổng ' + mxF(allP) + ' điểm' + (Math.abs(allP - 10) > 0.01 ? ', chưa bằng 10, cô kiểm tra ô "Điểm của đề" ngay phía trên' : '') + ').' + note, note ? '#b45309' : '#16a34a');
             }
+            // ---- Ô điểm ngay trong khung ma trận, dùng chung với hộp In đề giấy ----
+            const MP = ['pmode', 'pm', 'pt', 'ps', 'pe', 'tm', 'tt', 'ts', 'te', 'pel'];
+            function mxCounts() { const c = { MCQ: 0, TF: 0, SA: 0, ES: 0 }; mxData().forEach(r => Object.keys(r.c).forEach(k => { c[k.split('|')[0]] += r.c[k]; })); return c; }
+            function mxPtsShow() { const part = $('mp-pmode').value === 'part'; $('mp-pts-each').style.display = part ? 'none' : 'flex'; $('mp-pts-part').style.display = part ? 'flex' : 'none'; }
+            window.mxPtsRefresh = function () {
+                if (!$('mp-pmode') || !window.paperGetField) return;
+                MP.forEach(k => { const e = $('mp-' + k); if (e && e !== document.activeElement) { const v = window.paperGetField('pp-' + k); if (e.value !== v) e.value = v; } });
+                mxPtsShow(); mxTot();
+            };
+            function mxTot() {
+                const box = $('mp-tot'); if (!box || !window.paperPts) return;
+                const c = mxCounts(), n = c.MCQ + c.TF + c.SA + c.ES;
+                if (!n) { box.textContent = 'Cô nhập số câu vào bảng ma trận ở trên thì web sẽ cộng tổng điểm ở đây.'; return; }
+                const p = window.paperPts(c); if (!p) return;
+                const t = c.MCQ * p.pm + c.TF * p.pt + c.SA * p.ps + p.esList.reduce((a, b) => a + b, 0), ok = Math.abs(t - 10) < 0.005, f = x => String(Math.round(x * 100) / 100).replace('.', ',');
+                box.innerHTML = 'Ma trận: <b>' + c.MCQ + '</b> trắc nghiệm, <b>' + c.TF + '</b> đúng/sai, <b>' + c.SA + '</b> trả lời ngắn, <b>' + c.ES + '</b> tự luận. Tổng điểm: <b style="color:' + (ok ? '#16a34a' : '#b45309') + '">' + f(t) + '</b>' + (ok ? ' ✓' : ' (chưa bằng 10) <button type="button" id="mp-fix" style="margin-left:6px;padding:3px 8px;border:0;border-radius:6px;background:#b45309;color:#fff;font-weight:700;cursor:pointer">Chia lại cho đủ 10</button>') + (p.warn.length ? '<br><span style="color:#b45309">' + p.warn.join('<br>') + '</span>' : '');
+                const fx = $('mp-fix'); if (fx) fx.onclick = () => { window.paperFix10(c); window.mxPtsRefresh(); };
+            }
+            window.mxPtsInit = function () {
+                if (!$('mp-pmode') || !window.paperEnsure) return;
+                window.paperEnsure();
+                if (!$('mp-pmode').dataset.w) {
+                    $('mp-pmode').dataset.w = '1';
+                    MP.forEach(k => { const e = $('mp-' + k); const h = () => { window.paperSetField('pp-' + k, e.value); }; e.addEventListener(k === 'pmode' ? 'change' : 'input', h); });
+                }
+                window.mxPtsRefresh();
+            };
+            window.mxTot = mxTot;
             window.aiMatrixDoc = aiMatrixDoc; window.mxCopy = mxCopy; window.mxHtml = mxHtml; window.mxData = mxData;
             window.aiAddRow = aiAddRow; window.aiDraftRun = aiDraftRun; window.aiReviseRun = aiReviseRun; window.aiUndo = aiUndo;
             window.aiDraftStop = function () { if (aiCtl) aiCtl.abort(); };
@@ -5802,10 +5841,11 @@ window.addEventListener('popstate', function () {
         const box = $('pp-tot'); if (!box) return;
         const c = baseCounts(), p = ptsRead(c), t = ptsTotal(c, p), ok = Math.abs(t - 10) < 0.005;
         box.innerHTML = 'Đề này có <b>' + c.MCQ + '</b> trắc nghiệm, <b>' + c.TF + '</b> đúng/sai, <b>' + c.SA + '</b> trả lời ngắn, <b>' + c.ES + '</b> tự luận. Tổng điểm: <b style="color:' + (ok ? '#16a34a' : '#b45309') + '">' + ptxt(t) + '</b>' + (ok ? ' ✓' : ' (chưa bằng 10) <button type="button" id="pp-fix">Chia lại cho đủ 10</button>') + (p.warn.length ? '<br><span style="color:#b45309">' + p.warn.map(esc).join('<br>') + '</span>' : '');
-        const f = $('pp-fix'); if (f) f.onclick = fixTo10;
+        const f = $('pp-fix'); if (f) f.onclick = () => fixTo10();
+        if (window.mxPtsRefresh) window.mxPtsRefresh();
     }
-    function fixTo10() {
-        const c = baseCounts(), p = ptsRead(c), t = ptsTotal(c, p); if (t <= 0) return;
+    function fixTo10(cc) {
+        const c = (cc && cc.MCQ !== undefined) ? cc : baseCounts(), p = ptsRead(c), t = ptsTotal(c, p); if (t <= 0) return;
         const T = [c.MCQ * p.pm, c.TF * p.pt, c.SA * p.ps, sumL(p.esList)], k = 10 / t, q = T.map(x => Math.round(x * k * 4) / 4);
         const diff = Math.round((10 - sumL(q)) * 100) / 100; if (Math.abs(diff) > 0.001) { let m = 0; q.forEach((x, i) => { if (x > q[m]) m = i; }); q[m] = Math.round((q[m] + diff) * 100) / 100; }
         const hadList = $('pp-pel').value.trim() && p.esList.length;
@@ -5822,6 +5862,10 @@ window.addEventListener('popstate', function () {
         ['pp-pm', 'pp-pt', 'pp-ps', 'pp-pe', 'pp-tm', 'pp-tt', 'pp-ts', 'pp-te', 'pp-pel'].forEach(i => { $(i).oninput = updTot; });
         syncMode();
     }
+    window.paperEnsure = ensureUi;
+    window.paperSetField = (id, v) => { ensureUi(); const e = $(id); if (!e) return; e.value = v; e.dispatchEvent(new Event('input')); e.dispatchEvent(new Event('change')); saveCfg(); };
+    window.paperGetField = id => { ensureUi(); const e = $(id); return e ? e.value : ''; };
+    window.paperFix10 = c => { fixTo10(c); saveCfg(); };
     window.paperPts = counts => { try { return ptsRead(counts || baseCounts()); } catch (e) { return null; } };
 
     window.paperOpen = function () {
