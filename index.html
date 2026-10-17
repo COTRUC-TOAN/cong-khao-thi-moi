@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v58] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v59] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1651,6 +1651,41 @@
             if (window.rvFigReplace && /\[\[\s*H[IÌ]NH\b/i.test(h)) { window.rvFigReplace().then(parseDirectExamCore, parseDirectExamCore); return; }
             return parseDirectExamCore();
         }
+        // (v59) Ghi đáp án AI điền vào ngay trong khung dán, dưới từng câu (để bấm phân tích lại không mất)
+        window.rawWriteAns = function (q) {
+            try {
+                const box = document.getElementById('direct-raw-text');
+                if (!box || typeof directParsedQuestions === 'undefined' || !q || !q.ans) return false;
+                const idx = directParsedQuestions.indexOf(q); if (idx < 0) return false;
+                box.querySelectorAll('[data-ai-ans="' + q.id + '"]').forEach(e => e.remove());
+                let segs, full, marks;
+                const scan = () => {
+                    segs = []; full = '';
+                    const tw = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+                    for (let n = tw.nextNode(); n; n = tw.nextNode()) { if (!n.nodeValue) continue; segs.push({ n, at: full.length + 1 }); full += '\n' + n.nodeValue; }
+                    marks = []; const re = /(^|[^\p{L}\p{N}])(C[âa]u|B[àa]i)\s*\d+[\s:.]/giu; let m;
+                    while ((m = re.exec(full))) marks.push(m.index + m[1].length);
+                };
+                scan();
+                if (marks.length !== directParsedQuestions.length) return false;
+                // xóa dòng vàng cũ còn sót trong phạm vi câu này (id câu đổi sau khi bấm phân tích lại)
+                for (let pass = 0; pass < 2; pass++) {
+                    const st0 = marks[idx], en0 = idx + 1 < marks.length ? marks[idx + 1] : full.length; let removed = false;
+                    box.querySelectorAll('[data-ai-ans]').forEach(e => { const t = e.firstChild; const sg = segs.find(x => x.n === t); if (sg && sg.at >= st0 && sg.at < en0) { e.remove(); removed = true; } });
+                    if (!removed) break; scan(); if (marks.length !== directParsedQuestions.length) return false;
+                }
+                const st = marks[idx], en = idx + 1 < marks.length ? marks[idx + 1] : full.length;
+                const seg0 = full.slice(st, en), sol = /L[ờo]i\s*gi[ảa]i|H[ưướ]ng\s*d[ẫa]n/i.exec(seg0), ph = /\n[ \t]*PH[ẦA]N\s+(?:[IVX]+|\d+)/i.exec(seg0);
+                const at = st + (sol ? sol.index : (ph ? ph.index : seg0.length));
+                let seg = null; for (let i = 0; i < segs.length; i++) { if (segs[i].at <= at) seg = segs[i]; else break; }
+                const rg = document.createRange();
+                if (!seg) { rg.selectNodeContents(box); rg.collapse(false); }
+                else { const off = Math.max(0, Math.min(seg.n.nodeValue.length, at - seg.at)); rg.setStart(seg.n, off); rg.collapse(true); }
+                const d = document.createElement('div'); d.setAttribute('data-ai-ans', q.id); d.style.cssText = 'background:#fef3c7;color:#92400e;font-weight:bold;display:block';
+                d.textContent = 'Đáp án: ' + (q.type === 'TF' ? String(q.ans).replace(/D/g, 'Đ') : q.ans);
+                rg.insertNode(d); return true;
+            } catch (e) { return false; }
+        };
         function parseDirectExamCore() {
             const rawHtml = document.getElementById('direct-raw-text').innerHTML.trim();
             if (!rawHtml) { alert("Vui lòng dán văn bản đề thi!"); return; }
@@ -5521,6 +5556,7 @@ window.addEventListener('popstate', function () {
                 const q = r.q, val = r.v.type === 'TF' ? r.cons.k : (r.v.type === 'SA' ? String(r.cons.k).replace(/\s+/g, '').replace(',', '.') : r.cons.k);
                 q.ans = val; if (r.v.type === 'TF') q.ansOptions = val.split('');
                 if (typeof ANS_GUESSED !== 'undefined') ANS_GUESSED.delete(q.id);
+                if (window.rawWriteAns) window.rawWriteAns(q);
                 r.v.ans = val; r.v.guessed = false; r.hasKey = true; r.mine = val; r.verdict = 'match';
                 const card = cardOf(q.id); if (card) { const a = card.querySelector('.parsed-ans'); if (a) a.textContent = 'Đ/A: ' + q.ans; const w = card.querySelector('.parsed-ans + div'); if (w && /đoán|tạm|kiểm tra/i.test(w.textContent)) w.remove(); }
             }
@@ -5720,7 +5756,7 @@ window.addEventListener('popstate', function () {
                 if (!need.length) { faMsg('Các câu đều đã có đáp án.', '#16a34a'); return; }
                 if (!S.connected) { faMsg('Cô mở mục "Nhờ AI soạn đề…" ở trên, dán khóa Gemini và bấm Kết nối, hoặc dùng nút "Nhờ AI khác".', '#dc2626'); return; }
                 S.model = ($('rv-model') || {}).value || S.model;
-                const imgs = S.imgs; aiBusy(true, faMsg); let done = 0, fail = 0;
+                const imgs = S.imgs; aiBusy(true, faMsg); let done = 0, fail = 0, wrote = 0;
                 try {
                     for (let i = 0; i < need.length; i += 10) {
                         const chunk = need.slice(i, i + 10); faMsg('Gemini đang giải câu ' + (i + 1) + ' đến ' + Math.min(i + 10, need.length) + ' trên ' + need.length + ' câu…');
@@ -5732,10 +5768,11 @@ window.addEventListener('popstate', function () {
                             q.ans = k; if (it.v.type === 'TF') q.ansOptions = k.split('');
                             if (typeof ANS_GUESSED !== 'undefined') ANS_GUESSED.add(q.id);
                             const card = cardOf(q.id); if (card) { const a = card.querySelector('.parsed-ans'); if (a) a.textContent = 'Đ/A: ' + q.ans + ' (AI điền, cô kiểm tra)'; }
+                            if (window.rawWriteAns && window.rawWriteAns(q)) wrote++;
                             done++;
                         });
                     }
-                    faMsg('Đã điền đáp án cho ' + done + ' câu' + (fail ? ', ' + fail + ' câu AI không chắc nên để trống' : '') + '. Đáp án do AI điền chỉ để tham khảo, cô kiểm tra lại trước khi dùng.', done ? '#16a34a' : '#b45309');
+                    faMsg('Đã điền đáp án cho ' + done + ' câu' + (fail ? ', ' + fail + ' câu AI không chắc nên để trống' : '') + '. ' + (wrote ? ' Đáp án đã ghi vào khung dán (dòng vàng dưới từng câu).' : '') + ' Đáp án do AI điền chỉ để tham khảo, cô kiểm tra lại trước khi dùng.', done ? '#16a34a' : '#b45309');
                 } catch (e) { faMsg((e && e.code === 'trunc') ? 'AI bị cắt giữa chừng, cô bấm lại.' : aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
                 finally { aiBusy(false); }
             }
@@ -5830,6 +5867,7 @@ window.addEventListener('popstate', function () {
                 const r = S.res.get(id); if (!r || !r.v.suggest) return; const v = r.v, q = v.q, val = v.suggest.val;
                 q.ans = val; if (v.type === 'TF') q.ansOptions = val.split('');
                 if (typeof ANS_GUESSED !== 'undefined') ANS_GUESSED.delete(q.id);
+                if (window.rawWriteAns) window.rawWriteAns(q);
                 v.ans = str(q.ans); v.guessed = false; v.suggest = null;
                 localCheck(v); v.machine = checkMachine(v);
                 const card = cardOf(id); if (card) { const a = card.querySelector('.parsed-ans'); if (a) a.textContent = 'Đ/A: ' + q.ans; }
