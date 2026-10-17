@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v60] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v61] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1089,12 +1089,21 @@
             urlInput.placeholder = "Dán link https://script.google.com/.../exec dự phòng vào đây";
         }
 
+        // (v61) trình duyệt đôi khi tự điền/khôi phục ô chọn giáo viên chỉ về hình thức: đọc lại theo dòng đang hiển thị
+        function gateTeacherId() {
+            const sel = document.getElementById('gate-select-teacher'); if (!sel) return '';
+            let v = sel.value;
+            if (!v && sel.selectedIndex > 0 && sel.options[sel.selectedIndex]) v = sel.options[sel.selectedIndex].value;
+            return v || '';
+        }
+        window.addEventListener('pageshow', () => { try { if (gateTeacherId()) handleTeacherSelectChange(); } catch (e) { } });
         async function submitTeacherGateLogin() {
-            const tId = document.getElementById('gate-select-teacher').value;
+            try { const sl = document.getElementById('gate-select-teacher'); if (sl && !sl.value && gateTeacherId()) sl.value = gateTeacherId(); if (gateTeacherId() && !document.getElementById('gate-script-url-input').value.trim()) handleTeacherSelectChange(); } catch (e) { }
+            const tId = gateTeacherId();
             const pass = document.getElementById('gate-password-input').value.trim();
             const urlInput = document.getElementById('gate-script-url-input').value.trim();
 
-            if (!tId) { alert("Vui lòng chọn một Giáo viên!"); return; }
+            if (!tId) { alert("Ô \"Chọn Giáo Viên\" đang để trống. Cô bấm vào ô đó, chọn lại tên của cô một lần rồi bấm Đăng Nhập."); return; }
             if (!pass) { alert("Vui lòng nhập Mật khẩu quản trị của file Sheets!"); return; }
 
             let targetUrl = urlInput || getTeacherScriptUrl(tId);
