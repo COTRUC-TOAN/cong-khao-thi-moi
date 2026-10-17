@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v57] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v58] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -514,6 +514,7 @@
                     <button type="button" onclick="document.getElementById('step3-card').scrollIntoView({behavior:'smooth'})"><b>3</b> Xuất bản</button>
                 </div>
                 <div class="creator-container">
+                    <div id="edit-banner" style="display:none; background:#fef3c7; border:2px solid #f59e0b; border-radius:10px; padding:10px 14px; margin-bottom:12px; align-items:center; gap:10px; flex-wrap:wrap;"><div style="flex:1; min-width:200px; color:#92400e; font-weight:700;">✏️ Đang sửa đề: <span id="edit-banner-name"></span><div style="font-weight:400; font-size:.85rem;">Muốn soạn đề khác thì bấm nút bên cạnh để xóa sạch khung.</div></div><button type="button" class="btn-start" style="background:#16a34a; padding:8px 14px;" onclick="newExamReset(true)">➕ Soạn đề mới</button></div>
                     <div class="creator-card">
                         <h3 style="margin-bottom: 14px; color: var(--primary);"><i class="fa-solid fa-file-signature"></i> Bước 1: Thông tin đề thi</h3>
                         <div style="font-size:.9rem; color:#475569; margin-bottom:10px;">Điền tên, khối lớp, thời gian và (nếu cần) mật khẩu phòng thi. Xong bước này cô kéo xuống bước 2.</div>
@@ -2199,6 +2200,7 @@ function removeQuestionFromSelected(qId) {
                 }
                 
                 renderExams();
+                try { newExamReset(false); } catch (e) { }
                 showPortalView();
             } catch (err) {
                 document.body.style.cursor = 'default';
@@ -2544,7 +2546,21 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                 })
                 .catch(err => alert("Lỗi: " + err.message));
         }
-async function loadExamToEdit(examId) {
+let editingExamId = null;
+        function newExamReset(ask) {
+            if (ask && !confirm('Xóa sạch khung soạn để soạn đề mới?\nNhững chỗ cô vừa sửa mà chưa bấm "Lưu & Xuất Bản" sẽ mất (đề cũ trên máy chủ vẫn còn nguyên).')) return;
+            const g = id => document.getElementById(id), sv = (id, v) => { const e = g(id); if (e) e.value = v; };
+            const idi = g('new-exam-id'); if (idi) { idi.value = ''; idi.readOnly = false; idi.style.backgroundColor = '#fff'; }
+            sv('new-exam-title', ''); sv('new-exam-time', 45); sv('new-exam-max-attempts', 0); sv('new-exam-pass', ''); sv('new-exam-start-time', ''); sv('new-exam-deadline', ''); sv('lecture-youtube-url', '');
+            const md = g('new-exam-mode'); if (md) md.selectedIndex = 0; try { toggleExamPasswordField(); } catch (e) { }
+            selectedQuestions = []; try { directParsedQuestions = []; directBatch = []; } catch (e) { } try { updateSelectedItemsDisplay(); } catch (e) { }
+            const raw = g('direct-raw-text'); if (raw) raw.innerHTML = '';
+            try { lecturePdfBase64 = ''; } catch (e) { }
+            editingExamId = null; const bn = g('edit-banner'); if (bn) bn.style.display = 'none';
+            try { switchAddMethod('paste'); } catch (e) { }
+            if (ask) { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { } }
+        }
+        async function loadExamToEdit(examId) {
             const ex = examBank.find(e => String(e.id).trim() === String(examId).trim());
             if (!ex) { alert("Không tìm thấy dữ liệu đề thi này!"); return; }
 
@@ -2583,6 +2599,7 @@ async function loadExamToEdit(examId) {
             }
 
             switchTeacherTab('creator');
+            editingExamId = ex.id; { const bn = document.getElementById('edit-banner'); if (bn) { bn.style.display = 'flex'; document.getElementById('edit-banner-name').textContent = (ex.title || '') + ' (' + ex.id + ')'; } }
 
             document.getElementById('new-exam-grade').value = ex.grade || '12';
             updateNewExamTopicDropdown();
@@ -2630,6 +2647,7 @@ async function loadExamToEdit(examId) {
         }
 
         function showPortalView() {
+            if (editingExamId) { try { newExamReset(false); } catch (e) { } }
             const urlParamsCheck = new URLSearchParams(window.location.search);
             if (urlParamsCheck.get('exam') && !teacherPassAuth) {
                 document.body.innerHTML = `<div style="text-align:center; padding: 50px; font-family: sans-serif; background: #fff; min-height: 100vh;">
@@ -5919,12 +5937,14 @@ window.addEventListener('popstate', function () {
  </div>
  <label class="pp-f">Điểm từng câu tự luận (không bắt buộc)<input id="pp-pel" placeholder="Ví dụ: 1,5; 1; 0,5 (cách nhau bằng dấu chấm phẩy). Để trống thì các câu bằng nhau."></label>
  <div id="pp-tot"></div>
+ <div class="pp-grid" style="margin-top:8px"><label class="pp-f">Cách dàn trang<select id="pp-lay"><option value="A">Phần I chia 2 cột, các phần còn lại 1 cột (đề nghị)</option><option value="B">Cả đề chia 2 cột</option><option value="C">Cả đề 1 cột</option></select></label></div>
  <details class="pp-more"><summary>Tùy chọn thêm (cỡ chữ, in phiếu tô ô, đảo câu, gọn 2 trang)</summary>
   <div class="pp-grid" style="margin-top:6px">
    <label class="pp-f">Cỡ chữ<select id="pp-font"><option value="auto">Tự động (lớn nhất mà vẫn vừa)</option><option value="12">12</option><option value="11.5">11,5</option><option value="11">11</option><option value="10.5">10,5</option><option value="10">10</option><option value="9.5">9,5</option><option value="9">9</option></select></label>
   </div>
   <label class="pp-chk"><input type="checkbox" id="pp-sheet" checked> In phiếu tô đáp án ở đầu trang 1 (để chấm bằng điện thoại)</label>
   <label class="pp-chk"><input type="checkbox" id="pp-shuf" checked> Đảo thứ tự câu và đáp án A, B, C, D giữa các mã (mã đầu giữ nguyên thứ tự gốc của đề cố định)</label>
+  
   <label class="pp-chk"><input type="checkbox" id="pp-limit" checked> Cố gắng gọn trong 2 trang A4 (tự thu nhỏ chữ)</label>
  </details>
  <div class="pp-btns">
@@ -5952,7 +5972,7 @@ window.addEventListener('popstate', function () {
         wirePts();
     }
     function saveCfg() {
-        const c = {}; ['pp-school', 'pp-exam', 'pp-year', 'pp-subj', 'pp-time', 'pp-n', 'pp-code', 'pp-font', 'pp-pm', 'pp-pt', 'pp-ps', 'pp-pe', 'pp-pmode', 'pp-tm', 'pp-tt', 'pp-ts', 'pp-te', 'pp-pel'].forEach(k => { c[k] = $(k).value; });
+        const c = {}; ['pp-school', 'pp-exam', 'pp-year', 'pp-subj', 'pp-time', 'pp-n', 'pp-code', 'pp-font', 'pp-pm', 'pp-pt', 'pp-ps', 'pp-pe', 'pp-pmode', 'pp-tm', 'pp-tt', 'pp-ts', 'pp-te', 'pp-pel', 'pp-lay'].forEach(k => { c[k] = $(k).value; });
         ['pp-sheet', 'pp-shuf', 'pp-limit'].forEach(k => { c[k] = $(k).checked; });
         LS.set('pp_cfg', JSON.stringify(c));
     }
@@ -6174,45 +6194,65 @@ window.addEventListener('popstate', function () {
     }
     const clean = h => String(h == null ? '' : h).replace(/^(\s|<br\s*\/?>)+|(\s|<br\s*\/?>)+$/gi, '');
     function buildItems(set, o) {
-        const out = [], mk = (html, keep) => { const d = document.createElement('div'); d.className = 'pp-it'; d.innerHTML = html; out.push({ el: d, keep: !!keep }); };
+        const out = [], lay = o.lay || 'A', mk = (html, keep, part) => { const d = document.createElement('div'); d.className = 'pp-it'; d.innerHTML = html; out.push({ el: d, keep: !!keep, wide: lay === 'C' || (lay === 'A' && part !== 1) }); };
         if (set.mcq.length) {
-            mk('<div class="pp-sec"><b>PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn.</b> <i>Thí sinh trả lời từ câu 1 đến câu ' + set.mcq.length + '. Mỗi câu hỏi thí sinh chỉ chọn một phương án. (' + fmt(set.mcq.length * o.pm) + ' điểm)</i></div>', 1);
-            set.mcq.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(q.stem) + '</div><div class="' + optLayout(q.opts) + '">' + q.opts.map((t, j) => '<div><b>' + 'ABCD'.charAt(j) + '.</b> ' + clean(t) + '</div>').join('') + '</div>'));
+            mk('<div class="pp-sec"><b>PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn.</b> <i>Thí sinh trả lời từ câu 1 đến câu ' + set.mcq.length + '. Mỗi câu hỏi thí sinh chỉ chọn một phương án. (' + fmt(set.mcq.length * o.pm) + ' điểm)</i></div>', 1, 1);
+            set.mcq.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(q.stem) + '</div><div class="' + optLayout(q.opts) + '">' + q.opts.map((t, j) => '<div><b>' + 'ABCD'.charAt(j) + '.</b> ' + clean(t) + '</div>').join('') + '</div>', 0, 1));
         }
         if (set.tf.length) {
-            mk('<div class="pp-sec"><b>PHẦN II. Câu trắc nghiệm đúng sai.</b> <i>Thí sinh trả lời từ câu 1 đến câu ' + set.tf.length + '. Trong mỗi ý a), b), c), d) ở mỗi câu, thí sinh chọn đúng hoặc sai. (' + fmt(set.tf.length * o.pt) + ' điểm)</i></div>', 1);
-            set.tf.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(q.stem) + '</div>' + q.opts.map((t, j) => '<div style="padding-left:2mm"><b>' + 'abcd'.charAt(j) + ')</b> ' + clean(t) + '</div>').join('')));
+            mk('<div class="pp-sec"><b>PHẦN II. Câu trắc nghiệm đúng sai.</b> <i>Thí sinh trả lời từ câu 1 đến câu ' + set.tf.length + '. Trong mỗi ý a), b), c), d) ở mỗi câu, thí sinh chọn đúng hoặc sai. (' + fmt(set.tf.length * o.pt) + ' điểm)</i></div>', 1, 2);
+            set.tf.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(q.stem) + '</div>' + q.opts.map((t, j) => '<div style="padding-left:2mm"><b>' + 'abcd'.charAt(j) + ')</b> ' + clean(t) + '</div>').join(''), 0, 2));
         }
         if (set.sa.length) {
-            mk('<div class="pp-sec"><b>PHẦN III. Câu trắc nghiệm trả lời ngắn.</b> <i>Thí sinh trả lời từ câu 1 đến câu ' + set.sa.length + '. (' + fmt(set.sa.length * o.ps) + ' điểm)</i></div>', 1);
-            set.sa.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(q.stem) + '</div>'));
+            mk('<div class="pp-sec"><b>PHẦN III. Câu trắc nghiệm trả lời ngắn.</b> <i>Thí sinh trả lời từ câu 1 đến câu ' + set.sa.length + '. (' + fmt(set.sa.length * o.ps) + ' điểm)</i></div>', 1, 3);
+            set.sa.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(q.stem) + '</div>', 0, 3));
         }
         if (set.es.length) {
-            mk('<div class="pp-sec"><b>PHẦN IV. Tự luận.</b> <i>(' + fmt(sumL(o.peList)) + ' điểm)</i></div>', 1);
-            set.es.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> <i>(' + fmt(o.peList[i]) + ' điểm)</i> ' + clean(q.stem) + '</div>'));
+            mk('<div class="pp-sec"><b>PHẦN IV. Tự luận.</b> <i>(' + fmt(sumL(o.peList)) + ' điểm)</i></div>', 1, 4);
+            set.es.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> <i>(' + fmt(o.peList[i]) + ' điểm)</i> ' + clean(q.stem) + '</div>', 0, 4));
         }
-        out.push({ el: (function () { const d = document.createElement('div'); d.className = 'pp-it'; d.style.textAlign = 'center'; d.innerHTML = '<i>--- HẾT ---</i>'; return d; })(), keep: 0 });
+        out.push({ el: (function () { const d = document.createElement('div'); d.className = 'pp-it'; d.style.textAlign = 'center'; d.innerHTML = '<i>--- HẾT ---</i>'; return d; })(), keep: 0, wide: lay !== 'B' });
         return out;
     }
 
     // ---------- Đo và chia trang ----------
     const typeset = el => new Promise(res => { try { if (window.MathJax && MathJax.Hub && MathJax.Hub.Queue) { MathJax.Hub.Queue(['Typeset', MathJax.Hub, el], [res]); setTimeout(res, 15000); } else res(); } catch (e) { res(); } });
     function pxPerMm() { const p = document.createElement('div'); p.style.cssText = 'position:absolute;left:-9999px;width:100mm;height:1px'; document.body.appendChild(p); const v = p.offsetWidth / 100; p.remove(); return v || 3.78; }
-    function paginate(items, hs, caps) {
-        const asg = []; let fi = 0, used = 0;
-        for (let i = 0; i < items.length; i++) {
-            let need = hs[i]; if (items[i].keep && i + 1 < items.length) need += hs[i + 1];
-            if (used > 0 && used + need > caps(fi) + 0.5) { fi++; used = 0; }
-            asg.push(fi); used += hs[i];
-            if (used > caps(fi) + 0.5 && hs[i] <= caps(fi + 1) && false) { }
+    function paginate(items, hs, cap1, capN) {
+        const pages = [], cap = () => (pages.length === 1 ? cap1 : capN);
+        const np = () => { pages.push({ c: [[], []], cu: [0, 0], w: [], y: 0 }); return pages[pages.length - 1]; };
+        let pg = np(), ci = 0;
+        const nar = [], wid = [];
+        items.forEach((it, k) => { (it.wide ? wid : nar).push(k); });
+        nar.forEach((k, n) => {
+            let need = hs[k]; if (items[k].keep && n + 1 < nar.length) need += hs[nar[n + 1]];
+            if (pg.cu[ci] > 0 && pg.cu[ci] + need > cap() + 0.5) { ci++; if (ci > 1) { pg = np(); ci = 0; } }
+            pg.c[ci].push(k); pg.cu[ci] += hs[k];
+        });
+        // nếu khối 2 cột cuối chỉ có cột trái thì chia đều sang cột phải cho cân
+        if (nar.length && pg.c[1].length === 0 && pg.c[0].length > 1) {
+            const R = pg.cu[0]; let acc = 0, s2 = 0;
+            while (s2 < pg.c[0].length - 1 && acc + hs[pg.c[0][s2]] <= R / 2 + 0.5) { acc += hs[pg.c[0][s2]]; s2++; }
+            if (s2 < 1) s2 = 1;
+            while (s2 > 1 && items[pg.c[0][s2 - 1]].keep) s2--;
+            if (s2 < pg.c[0].length) {
+                pg.c[1] = pg.c[0].splice(s2);
+                pg.cu = [pg.c[0].reduce((t, k) => t + hs[k], 0), pg.c[1].reduce((t, k) => t + hs[k], 0)];
+            }
         }
-        return { asg, frames: (asg.length ? asg[asg.length - 1] : 0) + 1 };
+        pg.y = Math.max(pg.cu[0], pg.cu[1]);
+        wid.forEach((k, n) => {
+            let need = hs[k]; if (items[k].keep && n + 1 < wid.length) need += hs[wid[n + 1]];
+            if (pg.y > 0 && pg.y + need > cap() + 0.5) { pg = np(); }
+            pg.w.push(k); pg.y += hs[k];
+        });
+        return { pages, nPages: pages.length };
     }
 
     async function generate() {
         const btn = $('pp-go'); btn.disabled = true; saveCfg();
         try {
-            const o = { n: Math.max(1, Math.min(12, Math.round(num('pp-n', 4)))), code0: Math.max(100, Math.min(997, Math.round(num('pp-code', 101)))), pm: 0, pt: 0, ps: 0, pe: 0, peList: [], sheet: $('pp-sheet').checked, shuf: $('pp-shuf').checked, limit: $('pp-limit').checked, font: $('pp-font').value, school: $('pp-school').value, exam: $('pp-exam').value, year: $('pp-year').value, subj: $('pp-subj').value, time: $('pp-time').value };
+            const o = { n: Math.max(1, Math.min(12, Math.round(num('pp-n', 4)))), code0: Math.max(100, Math.min(997, Math.round(num('pp-code', 101)))), pm: 0, pt: 0, ps: 0, pe: 0, peList: [], sheet: $('pp-sheet').checked, shuf: $('pp-shuf').checked, limit: $('pp-limit').checked, lay: ($('pp-lay') || {}).value || 'A', font: $('pp-font').value, school: $('pp-school').value, exam: $('pp-exam').value, year: $('pp-year').value, subj: $('pp-subj').value, time: $('pp-time').value };
             msg('Đang tạo mã đề, xin cô chờ vài giây...', '#1d4ed8');
             OPT = o; SETS = []; for (let i = 0; i < o.n; i++) SETS.push(makeSet(i, o));
             { const pr = ptsRead({ MCQ: SETS[0].mcq.length, TF: SETS[0].tf.length, SA: SETS[0].sa.length, ES: SETS[0].es.length }); o.pm = pr.pm; o.pt = pr.pt; o.ps = pr.ps; o.pe = pr.pe; o.peList = pr.esList; o.ptWarn = pr.warn; }
@@ -6221,41 +6261,42 @@ window.addEventListener('popstate', function () {
             const out = $('pp-out'); out.innerHTML = '';
             const ratio = pxPerMm();
             // phase 1: dựng khối và dàn chữ công thức một lần
-            const meas = [];
+            const meas = [], measW = [];
             for (const set of SETS) {
                 set.items = buildItems(set, o);
                 const m = document.createElement('div'); m.className = 'pp-txt'; m.style.cssText = 'position:absolute;left:-10000px;top:0;width:91mm;font-size:11pt';
-                set.items.forEach(it => m.appendChild(it.el)); document.body.appendChild(m); meas.push(m);
+                const mw = document.createElement('div'); mw.className = 'pp-txt'; mw.style.cssText = 'position:absolute;left:-10000px;top:0;width:190mm;font-size:11pt'; set.items.forEach(it => (it.wide ? mw : m).appendChild(it.el)); document.body.appendChild(m); document.body.appendChild(mw); meas.push(m); measW.push(mw);
                 set.sheet = o.sheet ? buildSheet(set, o) : null;
             }
-            await Promise.all(meas.map(typeset));
+            await Promise.all(meas.concat(measW).map(typeset));
             // chiều cao phần đầu trang 1 (tiêu đề + phiếu)
             const headHtml = set => '<div class="pp-hd pp-txt"><div class="l"><b>' + esc(o.school) + '</b><br>TỔ TOÁN</div><div class="m"><b>' + esc(o.exam || 'ĐỀ KIỂM TRA') + '</b><br>' + (o.year ? 'Năm học ' + esc(o.year) + '<br>' : '') + 'Môn: ' + esc(o.subj) + ' &nbsp;-&nbsp; Thời gian: ' + esc(o.time) + ' phút<br><i style="font-size:9.5pt">(Không kể thời gian phát đề)</i></div><div class="r"><span style="font-size:9pt">Mã đề</span><b>' + set.code + '</b></div></div><div class="pp-info pp-txt"><span>Họ và tên: ......................................................</span><span>Lớp: ...........</span><span>SBD: ............</span></div>' + (set.sheet ? set.sheet.html : '');
             const probe = document.createElement('div'); probe.style.cssText = 'position:absolute;left:-10000px;top:0;width:190mm'; probe.innerHTML = headHtml(SETS[0]); document.body.appendChild(probe);
             const headMax = Math.max.apply(null, SETS.map(s => { probe.innerHTML = headHtml(s); return probe.offsetHeight; })) / ratio + 2; probe.remove();
             const usable = 275, cap1 = usable - headMax - 2.5, capN = usable;
-            const capsFn = fi => (fi < 2 ? cap1 : capN) * ratio;
-            const gap = 2.2 * ratio;
-            const fitAt = (set, m, f) => { m.style.fontSize = f + 'pt'; const hs = set.items.map(it => it.el.offsetHeight + gap); const r = paginate(set.items, hs, capsFn); return { r, hs }; };
+                        const gap = 2.2 * ratio;
+            const fitAt = (set, m, f, mw) => { m.style.fontSize = f + 'pt'; mw.style.fontSize = f + 'pt'; const hs = set.items.map(it => it.el.offsetHeight + gap); const r = paginate(set.items, hs, cap1 * ratio, capN * ratio); r.hs = hs; return { r, hs }; };
             const FONTS = o.font === 'auto' ? [12, 11.5, 11, 10.5, 10, 9.5, 9, 8.5] : [parseFloat(o.font)];
             let chosen = FONTS[FONTS.length - 1];
             for (const f of FONTS) {
-                const ok = SETS.every((s, i) => { const x = fitAt(s, meas[i], f); return !o.limit || x.r.frames <= 4; });
+                const ok = SETS.every((s, i) => { const x = fitAt(s, meas[i], f, measW[i]); return !o.limit || x.r.nPages <= 2; });
                 if (ok) { chosen = f; break; }
             }
             // phase 3: dựng trang
             let maxPages = 0, miss = 0;
             SETS.forEach((set, i) => {
-                const { r } = fitAt(set, meas[i], chosen);
-                const pages = Math.ceil(r.frames / 2); set.pages = pages; maxPages = Math.max(maxPages, pages);
+                const { r } = fitAt(set, meas[i], chosen, measW[i]);
+                const pages = r.nPages; set.pages = pages; maxPages = Math.max(maxPages, pages);
                 for (let p = 0; p < pages; p++) {
                     const pg = document.createElement('div'); pg.className = 'pp-page pp-exampage'; pg.style.fontSize = chosen + 'pt';
-                    pg.innerHTML = (p === 0 ? headHtml(set) : '') + '<div class="pp-cols pp-txt" style="height:' + ((p === 0 ? cap1 : capN)).toFixed(1) + 'mm;' + (p === 0 ? '' : 'margin-top:0') + '"><div class="pp-col"></div><div class="pp-col"></div></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (p + 1) + '/' + pages + '</div>';
+                    const P = r.pages[p], hasCols = P.c[0].length + P.c[1].length > 0;
+                    pg.innerHTML = (p === 0 ? headHtml(set) : '') + (hasCols ? '<div class="pp-cols pp-txt" style="height:' + (Math.max(P.cu[0], P.cu[1]) / ratio + 0.5).toFixed(1) + 'mm;' + (p === 0 ? '' : 'margin-top:0') + '"><div class="pp-col"></div><div class="pp-col"></div></div>' : '') + '<div class="pp-wide pp-txt" style="width:190mm;' + (p === 0 && !hasCols ? 'margin-top:2.5mm' : '') + '"></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (p + 1) + '/' + pages + '</div>';
                     out.appendChild(pg);
-                    const cols = pg.querySelectorAll('.pp-col');
-                    set.items.forEach((it, k) => { const fi = r.asg[k]; if (Math.floor(fi / 2) === p) cols[fi % 2].appendChild(it.el); });
+                    const cols = pg.querySelectorAll('.pp-col'), wd = pg.querySelector('.pp-wide');
+                    P.c[0].forEach(k => cols[0].appendChild(set.items[k].el)); P.c[1].forEach(k => cols[1].appendChild(set.items[k].el));
+                    P.w.forEach(k => wd.appendChild(set.items[k].el));
                 }
-                meas[i].remove();
+                meas[i].remove(); measW[i].remove();
                 set.noAns = set.mcq.filter(q => !q.ans).length + set.tf.filter(q => q.ans.indexOf('-') >= 0).length + set.sa.filter(q => !q.ans).length;
                 miss = Math.max(miss, set.noAns);
             });
