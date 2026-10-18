@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v64] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v65] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2256,7 +2256,7 @@ function removeQuestionFromSelected(qId) {
             } catch (err) {
                 document.body.style.cursor = 'default';
                 if (pubOk) { alert("✅ Đề ĐÃ được xuất bản lên Google Sheet. Nhưng màn hình cập nhật danh sách bị lỗi nhỏ: " + (err && err.message ? err.message : err) + "\nCô tải lại trang để thấy đề trong danh sách."); return; }
-                alert("❌ CHƯA XUẤT BẢN ĐƯỢC: không kết nối được máy chủ (có thể do mạng yếu). Học sinh CHƯA thấy đề này.\nCô kiểm tra mạng rồi bấm Lưu & Xuất Bản Đề lần nữa. Nội dung đề cô vừa soạn vẫn còn trên màn hình.\n\n(Chi tiết kỹ thuật: " + (err && err.message ? err.message : err) + ")");
+                alert("❌ CHƯA XUẤT BẢN ĐƯỢC: không kết nối được máy chủ (có thể do mạng yếu). Học sinh CHƯA thấy đề này.\nCô kiểm tra mạng rồi bấm Lưu & Xuất Bản Đề lần nữa. Nội dung đề cô vừa soạn vẫn còn trên màn hình.\n\n(Chi tiết kỹ thuật: " + (err && err.message ? err.message : err) + "; kích thước đề: " + (typeof qJsonStr === "string" ? qJsonStr.length.toLocaleString("vi-VN") : "?") + " ký tự; số câu: " + (Array.isArray(questionsToSave) ? questionsToSave.length : "?") + ")");
             }
         }
 
