@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v65] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v66] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6813,13 +6813,54 @@ window.addEventListener('popstate', function () {
         const hh = solveH(mk, P.map(p => [p.cx, p.cy]));
         const scale = (Math.hypot(P[1].cx - P[0].cx, P[1].cy - P[0].cy) / (L.w - 7) + Math.hypot(P[2].cx - P[0].cx, P[2].cy - P[0].cy) / (L.h - 7)) / 2;
         const rr = BD * 0.3 * scale, bub = {}, marks = [];
+        // (v66) Ô tô xám (bút chì, mực nhạt): ngoài cách đo cũ (điểm ảnh đen), máy còn so độ xám của ô với giấy quanh ô
+        // và với các ô trống CÙNG LOẠI (cùng chữ/số in sẵn) trên tờ. Ô nào tối hơn hẳn các ô trống cùng loại thì tính là có tô.
+        let GD = null, relDif = null; const relCut = {};
+        try {
+            const g0 = new Float32Array(W * H), dd0 = im.data; for (let i = 0, j = 0; i < W * H; i++, j += 4) g0[i] = (dd0[j] * 299 + dd0[j + 1] * 587 + dd0[j + 2] * 114) / 1000;
+            const g1 = new Float32Array(W * H); // làm mịn nhẹ 3x3 (giảm nhiễu hạt)
+            for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let sm = 0, n = 0; for (let dy = -1; dy <= 1; dy++) { const yy = y + dy; if (yy < 0 || yy >= H) continue; for (let dx = -1; dx <= 1; dx++) { const xx = x + dx; if (xx < 0 || xx >= W) continue; sm += g0[yy * W + xx]; n++; } } g1[y * W + x] = sm / n; }
+            GD = g1;
+        } catch (e) { GD = null; }
+        const rA = BD * 0.62 * scale, rB = BD * 0.98 * scale, relv = {}, clsOf = {};
         L.b.forEach(b => {
             const [px, py] = applyH(hh, b[1], b[2]); let n = 0, d = 0;
             for (let y = Math.floor(py - rr); y <= Math.ceil(py + rr); y++) for (let x = Math.floor(px - rr); x <= Math.ceil(px + rr); x++) {
                 if (x < 0 || y < 0 || x >= W || y >= H) continue; if ((x - px) * (x - px) + (y - py) * (y - py) > rr * rr) continue; n++; d += bin[y * W + x];
             }
             const r = n ? d / n : 0; bub[b[0]] = r; marks.push([px, py, r, b[0]]);
+            if (GD && !/^MA:/.test(b[0])) {
+                try {
+                    const ring = [];
+                    for (let y = Math.floor(py - rB); y <= Math.ceil(py + rB); y++) for (let x = Math.floor(px - rB); x <= Math.ceil(px + rB); x++) {
+                        if (x < 0 || y < 0 || x >= W || y >= H) continue; const q = (x - px) * (x - px) + (y - py) * (y - py); if (q < rA * rA || q > rB * rB) continue; ring.push(GD[y * W + x]);
+                    }
+                    if (ring.length >= 30) {
+                        ring.sort((u, v) => u - v); const paper = ring[Math.floor(ring.length * 0.7)], cv = [];
+                        for (let y = Math.floor(py - rr); y <= Math.ceil(py + rr); y++) for (let x = Math.floor(px - rr); x <= Math.ceil(px + rr); x++) {
+                            if (x < 0 || y < 0 || x >= W || y >= H) continue; if ((x - px) * (x - px) + (y - py) * (y - py) > rr * rr) continue; cv.push(GD[y * W + x]);
+                        }
+                        if (cv.length >= 8 && paper > 25) { cv.sort((u, v) => u - v); relv[b[0]] = cv[Math.floor(cv.length * 0.6)] / paper; const pp = b[0].split(':'); clsOf[b[0]] = pp[0] + ':' + (pp[0] === 'I' ? pp[2] : (pp[0] === 'II' ? '' : (pp[0] === 'III' ? pp[3] : pp[2]))); }
+                    }
+                } catch (e) { }
+            }
         });
+        try {
+            const grp = {}, sec = {};
+            Object.keys(relv).forEach(k => { (grp[clsOf[k]] = grp[clsOf[k]] || []).push(relv[k]); const s0 = k.split(':')[0]; (sec[s0] = sec[s0] || []).push(relv[k]); });
+            const p70 = a => { const t = a.slice().sort((u, v) => u - v); return t[Math.min(t.length - 1, Math.floor(t.length * 0.85))]; };
+            const gb = {}, sb = {}; Object.keys(grp).forEach(k => { gb[k] = p70(grp[k]); }); Object.keys(sec).forEach(k => { sb[k] = p70(sec[k]); });
+            const dif = {}; Object.keys(relv).forEach(k => { const c = clsOf[k], s0 = k.split(':')[0], base = grp[c].length >= 5 ? gb[c] : sb[s0]; dif[k] = base - relv[k]; });
+            const bySec = {}; Object.keys(dif).forEach(k => { const s0 = k.split(':')[0]; (bySec[s0] = bySec[s0] || []).push(k); });
+            const med = a => { const t = a.slice().sort((u, v) => u - v); return t[Math.floor(t.length / 2)]; };
+            Object.keys(bySec).forEach(s0 => { // mỗi phần (I, II, III, SBD) có mức nhiễu riêng nên tự đặt ngưỡng riêng
+                const ks = bySec[s0]; if (ks.length < 12) return;
+                const vs = ks.map(k => dif[k]).sort((u, v) => u - v), low = vs.slice(0, Math.max(6, Math.floor(vs.length * 0.5)));
+                const m = med(low), mad = 1.4826 * med(low.map(x => Math.abs(x - m)));
+                relCut[s0] = Math.max(0.07, m + 4 * mad);
+            });
+            relDif = dif;
+        } catch (e) { }
         let THR = 0.55, LOW = 0.42;
         try { // (v62) ngưỡng tô tự chỉnh theo từng tờ (ảnh tối/nhiễu thì ô trống cũng đậm hơn)
             const v = Object.keys(bub).filter(k => !/^MA:/.test(k)).map(k => bub[k]).sort((x, y) => x - y);
@@ -6827,6 +6868,18 @@ window.addEventListener('popstate', function () {
                 const base = v[v.length >> 1]; let best = -1, bt = 0, bm1 = 0, bm0 = 0;
                 for (let t = 0.25; t <= 0.75; t += 0.01) { let n0 = 0, s0 = 0, n1 = 0, s1 = 0; for (const x of v) { if (x < t) { n0++; s0 += x; } else { n1++; s1 += x; } } if (n1 < 3 || n0 < 3) continue; const m0 = s0 / n0, m1 = s1 / n1, bv = n0 * n1 * (m1 - m0) * (m1 - m0); if (bv > best) { best = bv; bt = t; bm1 = m1; bm0 = m0; } }
                 if (best > 0 && bm1 >= 0.5 && bm1 - bm0 >= 0.25) { THR = Math.min(0.55, Math.max(base + 0.12, bt)); LOW = Math.max(base + 0.07, THR - 0.12); }
+            }
+        } catch (e) { }
+        try { // (v66) Hàng (câu) mà cách đo cũ không thấy ô nào tô: xem có đúng MỘT ô tối hơn hẳn các ô trống cùng loại không (tô xám)
+            if (relDif) {
+                const rows = {};
+                Object.keys(relDif).forEach(k => { const p = k.split(':'); const rk = p[0] === 'I' ? 'I:' + p[1] : (p[0] === 'II' ? 'II:' + p[1] + ':' + p[2] : (p[0] === 'III' ? 'III:' + p[1] + ':' + p[2] : p[0] + ':' + p[1])); (rows[rk] = rows[rk] || []).push(k); });
+                Object.keys(rows).forEach(rk => {
+                    const ks = rows[rk], s0 = ks[0].split(':')[0], cut = relCut[s0]; if (!cut) return;
+                    if (ks.some(k => bub[k] >= THR)) return; // đã thấy ô tô: giữ nguyên kết quả cũ
+                    const sorted = ks.slice().sort((u, v) => relDif[v] - relDif[u]), top = sorted[0], sec = sorted[1];
+                    if (relDif[top] >= cut && (!sec || relDif[top] - relDif[sec] >= 0.05)) { bub[top] = Math.max(bub[top], THR + 0.1); const mk2 = marks.find(mm => mm[3] === top); if (mk2) mk2[2] = bub[top]; }
+                });
             }
         } catch (e) { }
         const flags = { m: {}, t: {}, s: {}, code: false, sbd: false };
@@ -6857,7 +6910,7 @@ window.addEventListener('popstate', function () {
             }
             sa.push(s.replace(',', '.'));
         }
-        return { code, sbd, mcq, tf, sa, flags, marks, corners: P, W, H };
+        return { code, sbd, mcq, tf, sa, flags, marks, corners: P, W, H, thr: THR };
     }
     async function scanFile(file) {
         const msg = t => { LASTMSG = t; const e = $('cg-scanmsg'); if (e) e.textContent = t; };
@@ -6872,11 +6925,11 @@ window.addEventListener('popstate', function () {
             const nm = ($('cg-name') || {}).value || '', cl = ($('cg-class') || {}).value || '';
             setCode(found[0]);
             ANS.mcq = res.mcq.slice(0, CUR.mcq.length); ANS.tf = res.tf.slice(0, CUR.tf.length); ANS.sa = res.sa.slice(0, CUR.sa.length);
-            FLAG = { m: res.flags.m, t: res.flags.t, s: res.flags.s, sbd: !!res.flags.sbd }; if (res.sbd) SBD = res.sbd; window.chamLast = res; LASTIMG = { cv: im.cv, W: res.W, H: res.H, marks: res.marks.filter(m => m[2] >= 0.55 && !/^MA/.test(m[3])).map(m => [Math.round(m[0]), Math.round(m[1])]) };
+            FLAG = { m: res.flags.m, t: res.flags.t, s: res.flags.s, sbd: !!res.flags.sbd }; if (res.sbd) SBD = res.sbd; window.chamLast = res; LASTIMG = { cv: im.cv, W: res.W, H: res.H, marks: res.marks.filter(m => m[2] >= (res.thr || 0.55) && !/^MA/.test(m[3])).map(m => [Math.round(m[0]), Math.round(m[1])]) };
             const nflag = Object.keys(FLAG.m).length + Object.keys(FLAG.t).length + Object.keys(FLAG.s).length;
             // ảnh xem lại: vẽ vòng đã đọc
             const cv = document.createElement('canvas'), W = res.W, Hh = res.H; cv.width = W; cv.height = Hh; const cx = cv.getContext('2d'); cx.drawImage(im.cv, 0, 0);
-            res.marks.forEach(m => { if (m[2] >= 0.55 && !/^MA/.test(m[3])) { cx.beginPath(); cx.arc(m[0], m[1], 7, 0, 7); cx.lineWidth = 3; cx.strokeStyle = '#16a34a'; cx.stroke(); } });
+            res.marks.forEach(m => { if (m[2] >= (res.thr || 0.55) && !/^MA/.test(m[3])) { cx.beginPath(); cx.arc(m[0], m[1], 7, 0, 7); cx.lineWidth = 3; cx.strokeStyle = '#16a34a'; cx.stroke(); } });
             cx.strokeStyle = '#2563eb'; cx.lineWidth = 3; cx.beginPath(); res.corners.forEach((p, i) => { const q = res.corners[[0, 1, 3, 2][i]]; cx.lineTo(q.cx, q.cy); }); cx.closePath(); cx.stroke();
             LASTCV = cv;
             LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + ' Vòng xanh trên ảnh là ô máy thấy được tô.';
