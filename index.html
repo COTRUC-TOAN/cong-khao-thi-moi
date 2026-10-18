@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v63] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v64] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2200,7 +2200,7 @@ function removeQuestionFromSelected(qId) {
                 questionsJson: qJsonStr
             };
 
-            document.body.style.cursor = 'wait';
+            document.body.style.cursor = 'wait'; let pubOk = false;
             try {
                 const res = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -2210,7 +2210,13 @@ function removeQuestionFromSelected(qId) {
                         exam: newExamObj
                     })
                 });
-                const data = await res.json();
+                const rawTxt = await res.text(); let data = null;
+                try { data = JSON.parse(rawTxt); } catch (je) {
+                    document.body.style.cursor = 'default';
+                    const pg = String(rawTxt).replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 350);
+                    alert("❌ CHƯA XUẤT BẢN ĐƯỢC. Máy chủ (Google Apps Script) có kết nối được nhưng trả về lỗi, không phải do mạng. Học sinh CHƯA thấy đề này.\nNội dung máy chủ báo: " + (pg || '(trống)') + "\n\nCô chụp màn hình thông báo này gửi em để em sửa đúng chỗ.");
+                    return;
+                }
                 document.body.style.cursor = 'default';
                 if (!data || data.status !== 'success') {
                     const why = data && (data.message || data.error) ? String(data.message || data.error).slice(0, 200) : 'không rõ nguyên nhân';
@@ -2218,6 +2224,7 @@ function removeQuestionFromSelected(qId) {
                     return;
                 }
 
+             pubOk = true;
              alert(mode === 'KIEMTRA' 
                     ? "🎉 Xuất bản ĐỀ KIỂM TRA thành công! Đề đã được mã hóa bảo mật chống F12." 
                     : "🎉 Xuất bản đề thành công!");
@@ -2248,7 +2255,8 @@ function removeQuestionFromSelected(qId) {
                 showPortalView();
             } catch (err) {
                 document.body.style.cursor = 'default';
-                alert("❌ CHƯA XUẤT BẢN ĐƯỢC: không kết nối được máy chủ (có thể do mạng yếu). Học sinh CHƯA thấy đề này.\nCô kiểm tra mạng rồi bấm Lưu & Xuất Bản Đề lần nữa. Nội dung đề cô vừa soạn vẫn còn trên màn hình.");
+                if (pubOk) { alert("✅ Đề ĐÃ được xuất bản lên Google Sheet. Nhưng màn hình cập nhật danh sách bị lỗi nhỏ: " + (err && err.message ? err.message : err) + "\nCô tải lại trang để thấy đề trong danh sách."); return; }
+                alert("❌ CHƯA XUẤT BẢN ĐƯỢC: không kết nối được máy chủ (có thể do mạng yếu). Học sinh CHƯA thấy đề này.\nCô kiểm tra mạng rồi bấm Lưu & Xuất Bản Đề lần nữa. Nội dung đề cô vừa soạn vẫn còn trên màn hình.\n\n(Chi tiết kỹ thuật: " + (err && err.message ? err.message : err) + ")");
             }
         }
 
