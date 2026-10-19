@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v68] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v70] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1809,16 +1809,20 @@
                     questionBank = rawQs.map(q => {
                         let optRaw = q.options || "[]";
                         let aOptRaw = q.ansOptions || "[]";
+                        let bad = false, optP = [], aOptP = [];
+                        try { optP = (typeof optRaw === 'string') ? JSON.parse(optRaw) : optRaw; if (!Array.isArray(optP)) optP = []; } catch (e) { bad = true; optP = []; }
+                        try { aOptP = (typeof aOptRaw === 'string') ? JSON.parse(aOptRaw) : aOptRaw; if (!Array.isArray(aOptP)) aOptP = []; } catch (e) { bad = true; aOptP = []; }
                         return {
+                            bad: bad,
                             id: q.id || '',
                             grade: String(q.grade || '12').trim(),
                             topic: String(q.topic || '').trim(),
                             level: String(q.level || 'TH').trim(),
                             type: String(q.type || 'MCQ').trim(),
                             q: q.q || '',
-                            options: (typeof optRaw === 'string') ? JSON.parse(optRaw) : optRaw,
+                            options: optP,
                             ans: q.ans || '',
-                            ansOptions: (typeof aOptRaw === 'string') ? JSON.parse(aOptRaw) : aOptRaw,
+                            ansOptions: aOptP,
                             explanation: q.explanation || ''
                         };
                     }).filter(q => q.id && q.id !== "");
@@ -1832,6 +1836,38 @@
                 console.error("Lỗi tải ngân hàng:", e);
                 if (container) container.innerHTML = `<p style="color:#dc2626; text-align:center; padding: 20px;">Lỗi kết nối tải dữ liệu.</p>`;
             }
+        }
+
+        const bankDelSel = new Set();
+        function bankDelTick(cb) { const id = cb.getAttribute('data-id'); if (cb.checked) bankDelSel.add(id); else bankDelSel.delete(id); const n = document.getElementById('bank-del-n'); if (n) n.textContent = bankDelSel.size; }
+        function bankDelAll(on) { (window.__bankFiltered || []).forEach(id => { if (on) bankDelSel.add(String(id)); else bankDelSel.delete(String(id)); }); document.querySelectorAll('.bank-del-cb').forEach(cb => { cb.checked = on; }); const n = document.getElementById('bank-del-n'); if (n) n.textContent = bankDelSel.size; }
+        function bankDeleteOne(id) { bankDelSel.clear(); bankDelSel.add(String(id)); bankDeleteSelected(); }
+        async function bankDeleteSelected() {
+            const ids = Array.from(bankDelSel);
+            if (!ids.length) { alert('Cô chưa tick câu nào để xóa.'); return; }
+            if (!confirm('Xóa ' + ids.length + ' câu khỏi Ngân hàng?\n\n• Không khôi phục được.\n• Đề đã xuất bản không bị ảnh hưởng (câu đã chép vào đề).\n• Đề ma trận động sẽ không còn bốc các câu này.\n\nBấm OK để xóa.')) return;
+            document.body.style.cursor = 'wait';
+            try {
+                const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_question', password: teacherPassAuth, ids: ids }) });
+                const txt = await r.text(); let d = null; try { d = JSON.parse(txt); } catch (e) { }
+                if (d && d.status === 'success') {
+                    const gone = new Set((d.deleted || []).map(String));
+                    questionBank = questionBank.filter(q => !gone.has(String(q.id)));
+                    if (typeof selectedQuestions !== 'undefined' && Array.isArray(selectedQuestions)) { for (let i = selectedQuestions.length - 1; i >= 0; i--) if (gone.has(String(selectedQuestions[i].id))) selectedQuestions.splice(i, 1); }
+                    ids.forEach(i => bankDelSel.delete(String(i)));
+                    const miss = ids.filter(i => !gone.has(String(i)));
+                    filterQuestionBankList(); try { renderMatrixTable(); } catch (e) { }
+                    alert('🗑 Đã xóa ' + gone.size + ' câu khỏi Ngân hàng.' + (miss.length ? '\n⚠️ ' + miss.length + ' câu không thấy trong Sheet (có thể đã xóa trước đó), cô bấm tải lại ngân hàng nếu cần.' : ''));
+                    if (miss.length) loadQuestionBank();
+                } else if (d && d.status === 'unknown_action') {
+                    alert('❌ Chưa xóa được: Apps Script của cô chưa có chức năng xóa câu. Cô dán mã Apps Script mới (Code_buoc4_ghi_de_dong_dung) và chọn "Phiên bản mới" rồi thử lại. Chưa có câu nào bị xóa.');
+                } else {
+                    alert('❌ Chưa xóa được (máy chủ báo: ' + ((d && d.message) || txt.slice(0, 160) || r.status) + '). Chưa có câu nào bị xóa trên màn hình.');
+                }
+            } catch (e) {
+                alert('❌ Chưa xóa được vì không kết nối được máy chủ (' + (e && e.message || e) + '). Chưa có câu nào bị xóa.');
+            }
+            document.body.style.cursor = 'default';
         }
 
         function filterQuestionBankList() {
@@ -1861,12 +1897,20 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(q => `
+            const nBad = questionBank.filter(q => q.bad).length;
+            const tb = `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px;margin-bottom:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:.92rem">
+                <label style="cursor:pointer"><input type="checkbox" onchange="bankDelAll(this.checked)"> Tick xóa tất cả câu đang hiện (${filtered.length})</label>
+                <button type="button" onclick="bankDeleteSelected()" style="background:#dc2626;color:#fff;border:0;border-radius:6px;padding:6px 10px;font-weight:bold;cursor:pointer"><i class="fa-solid fa-trash"></i> Xóa các câu đã tick (<span id="bank-del-n">${bankDelSel.size}</span>)</button>
+                ${nBad ? `<span style="color:#b91c1c;font-weight:bold">⚠️ ${nBad} câu bị lỗi dữ liệu (có nhãn đỏ), cô xóa hoặc sửa lại câu đó.</span>` : ''}</div>`;
+            window.__bankFiltered = filtered.map(q => q.id);
+            container.innerHTML = tb + filtered.map(q => `
                 <div class="bank-q-select-card">
                     <input type="checkbox" style="margin-top: 4px; transform: scale(1.3);" onchange="toggleSelectQ('${q.id}', this)" ${selectedQuestions.some(sq => sq.id === q.id) ? 'checked' : ''}>
                     <div style="flex-grow: 1;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-    <div><span class="badge-score badge-pass">[${q.level}] [${q.type}]</span> <span style="font-size: 0.95rem; color:#64748b;">Mã: ${q.id}</span></div>
+    <div><span class="badge-score badge-pass">[${q.level}] [${q.type}]</span> <span style="font-size: 0.95rem; color:#64748b;">Mã: ${q.id}</span>${q.bad ? ' <span style="background:#fee2e2;color:#b91c1c;font-weight:bold;padding:1px 6px;border-radius:6px">câu lỗi dữ liệu</span>' : ''}</div>
+    <label style="font-size:.85rem;color:#b91c1c;cursor:pointer;margin-right:6px"><input type="checkbox" class="bank-del-cb" data-id="${String(q.id).replace(/"/g, '&quot;')}" onchange="bankDelTick(this)" ${bankDelSel.has(String(q.id)) ? 'checked' : ''}> xóa</label>
+    <button type="button" onclick="bankDeleteOne('${q.id}')" style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:3px 8px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:0.85rem;margin-right:4px"><i class="fa-solid fa-trash"></i> Xóa</button>
     <button type="button" onclick="openEditQuestionModal('${q.id}')" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 3px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fa-solid fa-pen"></i> Sửa</button>
 </div>
                         <div style="font-weight: bold; margin-bottom: 8px;">${q.q}</div>
@@ -6548,7 +6592,7 @@ window.addEventListener('popstate', function () {
         if (pend.length) h += '<div class="cg-pend">Có <b id="cg-pcount">' + pend.length + '</b> bài chưa gửi được lên Google Sheet (mất mạng?). <button type="button" id="cg-retry" style="padding:6px 10px;border:0;border-radius:6px;background:#d97706;color:#fff;font-weight:700">Gửi lại</button></div>';
         h += '<div class="cg-card"><b>Mã đề trên tờ bài làm</b><div class="cg-codes">' + DATA.s.map(r => '<button type="button" data-code="' + esc(r[0]) + '" class="' + (CUR && CUR.code === r[0] ? 'on' : '') + '">' + esc(r[0]) + '</button>').join('') + '</div></div>';
         h += '<div class="cg-card"><details' + (LS.get('cham_roster') ? '' : '') + '><summary style="cursor:pointer"><b>Danh sách lớp (không bắt buộc)</b></summary><div class="cg-small">Dán mỗi dòng một em: số báo danh, dấu cách, họ tên. Ví dụ: 0101 Nguyễn Văn A. Có danh sách thì nhập hay chụp ra số báo danh, máy tự điền họ tên.</div><textarea id="cg-roster" rows="4" style="width:100%;box-sizing:border-box;margin-top:4px">' + esc(LS.get('cham_roster') || '') + '</textarea></details></div>';
-        if (DATA.L) h += '<div class="cg-card"><b>📷 Chụp phiếu tô ô để máy chấm</b><div class="cg-small">Đặt tờ giấy phẳng, đủ sáng, chụp thấy rõ 4 ô vuông đen ở 4 góc phiếu. Không cần chọn mã đề, máy tự đọc. Nếu phiếu tô không đọc được thì cô nhập tay ở bên dưới.</div><button type="button" id="cg-livebtn" class="cg-camb" style="border:0;background:#16a34a;color:#fff;margin-right:6px">🎥 Camera chấm trực tiếp</button><label class="cg-camb">Chụp / chọn ảnh phiếu<input type="file" id="cg-file" accept="image/*" style="display:none"></label><label style="display:block;margin-top:6px;font-size:.92rem"><input type="checkbox" id="cg-auto" checked> Camera trực tiếp: <b>tự lưu và quét tờ tiếp</b> khi báo xanh (chưa có tên thì lưu "Chưa rõ tên 1, 2…", cô sửa tên sau trong Sheet; ảnh phiếu vẫn giữ để đối chiếu)</label><div id="cg-scanmsg" class="cg-small" style="margin-top:4px">' + esc(LASTMSG) + '</div><canvas id="cg-cv" style="width:100%;display:none;margin-top:6px;border-radius:8px"></canvas></div>';
+        if (DATA.L) h += '<div class="cg-card"><b>📷 Chụp phiếu tô ô để máy chấm</b><div class="cg-small">Đặt tờ giấy phẳng, đủ sáng, chụp thấy rõ 4 ô vuông đen ở 4 góc phiếu. Không cần chọn mã đề, máy tự đọc. Nếu phiếu tô không đọc được thì cô nhập tay ở bên dưới.</div><button type="button" id="cg-livebtn" class="cg-camb" style="border:0;background:#16a34a;color:#fff;margin-right:6px">🎥 Camera chấm trực tiếp</button><button type="button" id="cg-filebtn" class="cg-camb" style="border:0;background:#2563eb;color:#fff">Chụp / chọn ảnh phiếu</button><input type="file" id="cg-file" accept="image/*" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"><label style="display:block;margin-top:6px;font-size:.92rem"><input type="checkbox" id="cg-auto" checked> Camera trực tiếp: <b>tự lưu và quét tờ tiếp</b> khi báo xanh (chưa có tên thì lưu "Chưa rõ tên 1, 2…", cô sửa tên sau trong Sheet; ảnh phiếu vẫn giữ để đối chiếu)</label><div id="cg-scanmsg" class="cg-small" style="margin-top:4px">' + esc(LASTMSG) + '</div><canvas id="cg-cv" style="width:100%;display:none;margin-top:6px;border-radius:8px"></canvas></div>';
         if (!CUR) { h += '<div class="cg-card cg-small">' + (DATA.L ? 'Chụp phiếu, hoặc chọn mã đề để nhập tay.' : 'Chọn mã đề trước, rồi nhập từng em.') + '</div>'; }
         else {
             const nm = ($('cg-name') || {}).value || '', cl = ($('cg-class') || {}).value || LS.get('cham_class') || '';
@@ -6645,7 +6689,7 @@ window.addEventListener('popstate', function () {
             const sc = $('cg-sc'); if (sc) sc.textContent = fmt(c.s10); 
             const rw = $('cg-raw'); if (rw) rw.textContent = fmt(c.raw) + '/' + fmt(c.max) + ' điểm gốc'; 
         });
-        const fi = $('cg-file'); if (fi) fi.onchange = () => { if (fi.files && fi.files[0]) scanFile(fi.files[0]); }; const lbtn = $('cg-livebtn'); if (lbtn) lbtn.onclick = liveStart;
+        const fi = $('cg-file'), fb = $('cg-filebtn'); if (fb && fi) fb.onclick = () => { try { fi.value = ''; } catch (e) { } fi.click(); }; if (fi) fi.onchange = () => { const f0 = fi.files && fi.files[0]; if (f0) { const m0 = $('cg-scanmsg'); if (m0) m0.textContent = 'Đã nhận ảnh, đang đọc…'; scanFile(f0); } }; const lbtn = $('cg-livebtn'); if (lbtn) lbtn.onclick = liveStart;
         const cl = $('cg-close'); if (cl) cl.onclick = close;
         const sv = $('cg-save'); if (sv) sv.onclick = () => save(false); const au = $('cg-auto'); if (au) { au.checked = LS.get('cham_auto') !== '0'; au.onchange = () => LS.set('cham_auto', au.checked ? '1' : '0'); }
         const rt = $('cg-retry'); if (rt) rt.onclick = retry;
@@ -6764,7 +6808,9 @@ window.addEventListener('popstate', function () {
     const applyH = (h, x, y) => { const w = h[6] * x + h[7] * y + 1; return [(h[0] * x + h[1] * y + h[2]) / w, (h[3] * x + h[4] * y + h[5]) / w]; };
 
     async function loadImg(file) {
-        const bmp = await createImageBitmap(file);
+        let bmp;
+        try { bmp = await createImageBitmap(file); }
+        catch (e0) { bmp = await new Promise((ok, no) => { const u = URL.createObjectURL(file), im = new Image(); im.onload = () => { im.width0 = im.naturalWidth; ok(Object.assign(im, { width: im.naturalWidth, height: im.naturalHeight })); }; im.onerror = () => no(new Error('điện thoại không mở được định dạng ảnh này')); im.src = u; }); }
         const sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), W = Math.round(bmp.width * sc), Hh = Math.round(bmp.height * sc);
         const cv = document.createElement('canvas'); cv.width = W; cv.height = Hh; const cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(bmp, 0, 0, W, Hh);
         return { cv, cx, W, H: Hh, data: cx.getImageData(0, 0, W, Hh).data };
