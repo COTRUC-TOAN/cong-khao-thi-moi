@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v67] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v68] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6961,7 +6961,7 @@ window.addEventListener('popstate', function () {
             if (!found) { found = CUR ? DATA.s.find(x => x[0] === CUR.code) : null; LASTMSG = '⚠️ Máy không đọc được mã đề trên phiếu' + (found ? ', đang dùng mã ' + found[0] + ' cô đã chọn.' : '. Cô chọn mã đề rồi chụp lại.'); if (!found) { LASTCV = null; render(); return; } }
             if (found[1].length !== res.mcq.length || found[2].length !== res.tf.length || found[3].length !== res.sa.length) { /* số câu giữa các mã giống nhau */ }
             if (DIRTY && CUR) { const okp = await save(true); if (!okp) { DIRTY = false; toast('Bài trước chưa lưu được nên không giữ lại.', true); } }
-            const nm = ($('cg-name') || {}).value || '', cl = ($('cg-class') || {}).value || '';
+            const nmEl0 = $('cg-name'); const nm = (nmEl0 && nmEl0.dataset.auto !== '1' ? nmEl0.value : '') || '', cl = ($('cg-class') || {}).value || '';
             setCode(found[0]);
             ANS.mcq = res.mcq.slice(0, CUR.mcq.length); ANS.tf = res.tf.slice(0, CUR.tf.length); ANS.sa = res.sa.slice(0, CUR.sa.length);
             FLAG = { m: res.flags.m, t: res.flags.t, s: res.flags.s, sbd: !!res.flags.sbd }; if (res.sbd) SBD = res.sbd; window.chamLast = res; LASTIMG = { cv: im.cv, W: res.W, H: res.H, marks: res.marks.filter(m => m[2] >= (res.thr || 0.55) && !/^MA/.test(m[3])).map(m => [Math.round(m[0]), Math.round(m[1])]) };
@@ -6975,13 +6975,14 @@ window.addEventListener('popstate', function () {
             LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + (res.glare ? ' ⚠️ Ảnh bị LÓA ở ' + res.glare + ' ô (các câu tô vàng): cô nghiêng phiếu hoặc che bớt đèn rồi chụp lại.' : '') + (blanks ? ' Có ' + blanks + ' câu để trống (cô xem lại nếu học sinh có làm).' : '') + ' Vòng xanh trên ảnh là ô máy thấy được tô.';
             DIRTY = true;
             render(); const a = $('cg-name'); if (a) { a.value = nm; if (!nm.trim() && SBD && SBD.indexOf('?') < 0) { const rn = rosterName(SBD); if (rn) { a.value = rn; a.dataset.auto = '1'; } } } const b = $('cg-class'); if (b && cl) b.value = cl;
-            if (mode === 'auto' && LS.get('cham_auto') !== '0' && nflag === 0 && !res.glare) { const okA = await save(true); if (okA) setTimeout(() => { if (!LIVE) liveStart(); }, 700); }
+            if (mode === 'auto' && LS.get('cham_auto') !== '0' && nflag === 0 && !res.glare) { LIVE_IGN = { sbd: res.sbd || '', sig: sigOf(res), gone: 0 }; const okA = await save(true); if (okA) setTimeout(() => { if (!LIVE) liveStart(); }, 700); }
         } catch (e) { LASTCV = null; LASTMSG = '⚠️ Không đọc được ảnh (' + (e && e.message || e) + '). Cô chụp lại hoặc nhập tay bên dưới.'; render(); }
     }
 
 
     // ---------- (v63) Camera chấm trực tiếp: tự đọc, báo đỏ / vàng / xanh, xanh thì tự chốt ----------
-    let LIVE = null;
+    let LIVE = null, LIVE_IGN = null;
+    const sigOf = res => res.code + '|' + res.mcq.join('') + '|' + res.tf.map(r => r.join('')).join(',') + '|' + res.sa.join(',') + '|' + (res.sbd || '');
     function liveStop() { if (!LIVE) return; LIVE.on = false; try { clearTimeout(LIVE.tm); } catch (e) { } try { LIVE.stream.getTracks().forEach(t => t.stop()); } catch (e) { } try { LIVE.ov.remove(); } catch (e) { } LIVE = null; }
     async function liveStart() {
         if (LIVE) return;
@@ -7015,7 +7016,8 @@ window.addEventListener('popstate', function () {
                 const im = grab();
                 if (im) {
                     const res = readSheet(im, DATA.L, s0[1].length, s0[2].length, s0[3].length);
-                    if (res.err) { LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', /tối/.test(res.err) ? 'Ảnh tối: ra chỗ sáng hơn, tránh bóng tay đổ lên phiếu' : 'Chưa thấy đủ 4 ô vuông đen ở góc: lùi ra, giữ phiếu phẳng'); }
+                    if (res.err) { if (LIVE_IGN && ++LIVE_IGN.gone >= 3) LIVE_IGN = null; LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', /tối/.test(res.err) ? 'Ảnh tối: ra chỗ sáng hơn, tránh bóng tay đổ lên phiếu' : 'Chưa thấy đủ 4 ô vuông đen ở góc: lùi ra, giữ phiếu phẳng'); }
+                    else if (LIVE_IGN && ((LIVE_IGN.sbd && res.sbd === LIVE_IGN.sbd) || sigOf(res) === LIVE_IGN.sig)) { LIVE_IGN.gone = 0; LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('g', '✅ Đã lưu. Rút phiếu này ra, đưa phiếu tiếp theo vào'); }
                     else if (res.glare) { LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', 'Ảnh bị LÓA đèn ở ' + res.glare + ' ô: nghiêng phiếu một chút hoặc che bớt đèn'); }
                     else {
                         const nflag = Object.keys(res.flags.m).length + Object.keys(res.flags.t).length + Object.keys(res.flags.s).length + (res.flags.code ? 1 : 0) + (res.flags.sbd ? 1 : 0);
