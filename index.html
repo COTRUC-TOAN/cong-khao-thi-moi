@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v70] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v73] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -180,7 +180,7 @@
         #review-lookup-screen { display: none; max-width: 500px; margin: 80px auto; background: #fff; padding: 40px; border-radius: var(--radius-lg); border: 2px solid #16a34a; text-align: center; box-shadow: 0 10px 30px rgba(22, 163, 74, 0.15); }
 
         #quiz-view { display: none; max-width: 920px; margin: 0 auto; background: #fff; padding: 25px 30px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); }
-        .quiz-topbar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 20px; }
+        .quiz-topbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid #f1f5f9; padding: 10px 0 12px; margin-bottom: 20px; position: sticky; top: 0; z-index: 50; background: #fff; box-shadow: 0 2px 6px rgba(15,23,42,.08); }
         .timer-box { font-size: 1.3rem; font-weight: bold; color: #dc2626; background: #fee2e2; padding: 6px 16px; border-radius: var(--radius-pill); display: flex; align-items: center; gap: 6px; }
         .timer-box.practice { color: #16a34a; background: #dcfce7; }
         .anti-cheat-alert { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; margin-bottom: 15px; display: none; }
@@ -6743,17 +6743,29 @@ window.addEventListener('popstate', function () {
     window.addEventListener('online', () => { try { bgSend(); } catch (e) { } });
     async function save(auto) {
         let name = ($('cg-name').value || '').trim(), cl = ($('cg-class').value || '').trim().toUpperCase();
-        if (auto) { if (!cl) cl = String(LS.get('cham_class') || '').toUpperCase() || 'CHƯA RÕ LỚP'; if (!name) { const n = (parseInt(LS.get('cham_tempn') || '0', 10) || 0) + 1; LS.set('cham_tempn', String(n)); name = 'Chưa rõ tên ' + n; } }
+        let rescan = null; LASTDUP = false;
+        if (auto) {
+            if (!cl) cl = String(LS.get('cham_class') || '').toUpperCase() || 'CHƯA RÕ LỚP';
+            if (SBD && SBD.indexOf('?') < 0 && CUR) { // (v72) đã lưu em này rồi: giống điểm thì bỏ qua, khác điểm thì hỏi cô
+                const c0 = calc(), prior = SAVED.filter(x => x.sbd === SBD && (x.cls === cl || x.cls === 'CHƯA RÕ LỚP' || cl === 'CHƯA RÕ LỚP'));
+                if (prior.length) {
+                    if (prior.some(x => Math.abs((+x.s) - c0.s10) < 0.005)) { toast('Em SBD ' + SBD + ' đã lưu rồi (cùng điểm ' + fmt(c0.s10) + '), bỏ qua tờ này.', true); DIRTY = false; LASTDUP = true; return false; }
+                    if (!confirm('Em SBD ' + SBD + ' đã lưu điểm ' + prior.map(x => fmt(+x.s)).join(', ') + ' rồi.\nLần chụp này ra ' + fmt(c0.s10) + ' điểm (khác lần trước).\n\nBấm OK để THAY điểm cũ bằng ' + fmt(c0.s10) + ' (dòng cũ trong Sheet được thay, không thêm dòng).\nBấm Hủy để giữ điểm cũ.')) { toast('Đã bỏ qua lần chụp lại của SBD ' + SBD + '.', true); DIRTY = false; LASTDUP = true; return false; }
+                    rescan = prior[prior.length - 1];
+                }
+            }
+            if (!name) { const n = (parseInt(LS.get('cham_tempn') || '0', 10) || 0) + 1; LS.set('cham_tempn', String(n)); name = 'Chưa rõ tên ' + n; }
+            if (rescan && /^Chưa rõ tên/.test(name)) name = rescan.name;
+        }
         else if (!name || !cl) { alert('Cô nhập họ tên và lớp của học sinh trước khi lưu.'); return false; }
         if (!DATA.u) { if (!auto) alert('Link này thiếu địa chỉ Google Sheet. Cô tạo lại link từ máy tính.'); return false; }
         if (!auto && SAVED.some(x => x.name.toLowerCase() === name.toLowerCase() && x.cls === cl) && !confirm('Em ' + name + ' (' + cl + ') đã được lưu điểm rồi. Lưu thêm một dòng nữa?')) return false;
-        if (auto && SBD && SBD.indexOf('?') < 0 && SAVED.some(x => x.sbd === SBD && x.cls === cl)) { toast('Em SBD ' + SBD + ' đã lưu rồi, bỏ qua tờ này.', true); DIRTY = false; return false; }
         const c = calc(), btn = $('cg-save'); if (btn) btn.disabled = true;
         if (cl !== 'CHƯA RÕ LỚP') LS.set('cham_class', cl);
-        const b = body(name + (SBD ? ' (SBD ' + SBD + ')' : ''), cl, CUR.code, c.s10); if (SBD) b.sbd = SBD;
+        const b = body(name + (SBD ? ' (SBD ' + SBD + ')' : ''), cl, CUR.code, c.s10); if (SBD) b.sbd = SBD; if (rescan) b.replace = true;
         let kept = false; if (LASTIMG) { try { kept = await keepPhoto(name, cl, SBD, CUR.code, c.s10); } catch (er) { kept = false; } }
         const p = JSON.parse(LS.get('cham_pending') || '[]'); p.push(b); LS.set('cham_pending', JSON.stringify(p)); // lưu trong máy trước, gửi lên Sheet chạy ngầm
-        SAVED.push({ name: name, cls: cl, code: CUR.code, s: c.s10, sbd: SBD }); LS.set('cham_saved_' + DATA.id, JSON.stringify(SAVED));
+        if (rescan) Object.assign(rescan, { name: name, cls: cl, code: CUR.code, s: c.s10, sbd: SBD }); else SAVED.push({ name: name, cls: cl, code: CUR.code, s: c.s10, sbd: SBD }); LS.set('cham_saved_' + DATA.id, JSON.stringify(SAVED));
         toast('✅ Đã lưu: ' + name + ' - ' + fmt(c.s10) + ' điểm' + (kept ? '' : (LASTIMG ? ' (chưa giữ được ảnh)' : '')) + '. Đang gửi lên Google Sheet…');
         DIRTY = false; LASTCV = null; LASTMSG = ''; FLAG = { m: {}, t: {}, s: {}, sbd: false }; SBD = ''; LASTIMG = null; const code = CUR.code; $('cg-name').value = ''; CUR = null; setCode(code); const ci = $('cg-class'); if (ci) ci.value = cl === 'CHƯA RÕ LỚP' ? '' : cl;
         const ovs = $('cg-ov'); if (ovs) ovs.scrollTop = 0;
@@ -6966,10 +6978,11 @@ window.addEventListener('popstate', function () {
         };
         // mã đề
         let code = '', cols = 0; L.b.forEach(b => { const m = /^MA:(\d+):/.exec(b[0]); if (m) cols = Math.max(cols, +m[1] + 1); });
-        for (let c = 0; c < cols; c++) { const keys = []; for (let d = 0; d < 10; d++) keys.push('MA:' + c + ':' + d); const i = pick(keys, () => { flags.code = true; }); code += i >= 0 ? String(i) : '?'; }
-        let sbd = null, scols = 0; L.b.forEach(b => { const m = /^SBD:(\d+):/.exec(b[0]); if (m) scols = Math.max(scols, +m[1] + 1); });
+        const codeArr = []; for (let c = 0; c < cols; c++) { const keys = []; for (let d = 0; d < 10; d++) keys.push('MA:' + c + ':' + d); const i = pick(keys, () => { flags.code = true; }); code += i >= 0 ? String(i) : '?'; codeArr.push(i >= 0 ? String(i) : '?'); }
+        let sbd = null, scols = 0, sbdArr = []; L.b.forEach(b => { const m = /^SBD:(\d+):/.exec(b[0]); if (m) scols = Math.max(scols, +m[1] + 1); });
         if (scols) {
             const arr = []; for (let c = 0; c < scols; c++) { const keys = []; for (let d = 0; d < 10; d++) keys.push('SBD:' + c + ':' + d); const i = pick(keys, () => { flags.sbd = true; }); arr.push(i >= 0 ? String(i) : ''); }
+            sbdArr = arr.slice();
             while (arr.length && arr[0] === '') arr.shift();
             sbd = arr.map(x => x === '' ? '?' : x).join(''); if (sbd.indexOf('?') >= 0) flags.sbd = true;
         }
@@ -6986,22 +6999,45 @@ window.addEventListener('popstate', function () {
             sa.push(s.replace(',', '.'));
         }
         // (v67) Phát hiện LÓA: nhiều ô nằm trong mảng giấy trắng bệch hẳn so với phần còn lại của tờ
-        let glare = 0;
+        let glare = 0, hotRows = [];
         try {
             const pk = Object.keys(papv); if (pk.length > 60) {
                 const pv = pk.map(k => papv[k]).sort((u, v) => u - v), md = pv[pv.length >> 1];
                 const hot = pk.filter(k => papv[k] >= 247 && papv[k] >= md + 25);
-                if (hot.length >= 6) { glare = hot.length; hot.forEach(k => { const q = k.split(':'); const n = (+q[1]) - 1; if (q[0] === 'I') flags.m[n] = 1; else if (q[0] === 'II') flags.t[n] = 1; else if (q[0] === 'III') flags.s[n] = 1; else if (q[0] === 'SBD') flags.sbd = true; }); }
+                if (hot.length >= 6) { const hs = {}; hot.forEach(k => { const q = k.split(':'); const n = (+q[1]) - 1; hs[q[0] + ':' + q[1]] = 1; if (q[0] === 'I') flags.m[n] = 1; else if (q[0] === 'II') flags.t[n] = 1; else if (q[0] === 'III') flags.s[n] = 1; else if (q[0] === 'SBD') flags.sbd = true; else if (q[0] === 'MA') flags.code = true; }); hotRows = Object.keys(hs); glare = hotRows.length; }
             }
         } catch (e) { }
-        return { code, sbd, mcq, tf, sa, flags, marks, corners: P, W, H, thr: THR, glare };
+        return { code, sbd, mcq, tf, sa, flags, marks, corners: P, W, H, thr: THR, glare, hotRows, sbdArr, codeArr };
     }
-    async function scanFile(file, mode) {
+    // (v73) Ghép nhiều lần nhìn để tránh LÓA: câu nào bị lóa ở khung này thì lấy kết quả sạch của khung trước (khi cô nghiêng phiếu, chỗ lóa dời đi)
+    function rowKeys(r) { const k = []; r.mcq.forEach((_, i) => k.push('I:' + (i + 1))); r.tf.forEach((_, i) => k.push('II:' + (i + 1))); r.sa.forEach((_, i) => k.push('III:' + (i + 1))); (r.sbdArr || []).forEach((_, c) => k.push('SBD:' + c)); (r.codeArr || []).forEach((_, c) => k.push('MA:' + c)); return k; }
+    function rowVal(r, k) { const p = k.split(':'), n = +p[1]; if (p[0] === 'I') return r.mcq[n - 1]; if (p[0] === 'II') return r.tf[n - 1].join(''); if (p[0] === 'III') return r.sa[n - 1]; if (p[0] === 'SBD') return r.sbdArr[n]; return r.codeArr[n]; }
+    function rowClean(r, k) { const p = k.split(':'), n = +p[1]; if ((r.hotRows || []).indexOf(k) >= 0) return false; if (p[0] === 'I') return !r.flags.m[n - 1]; if (p[0] === 'II') return !r.flags.t[n - 1]; if (p[0] === 'III') return !r.flags.s[n - 1]; if (p[0] === 'SBD') return !r.flags.sbd; return !r.flags.code; }
+    function accUpdate(acc, r) {
+        const ks = rowKeys(r); let cmp = 0, mis = 0;
+        ks.forEach(k => { if (rowClean(r, k) && acc.rows[k] !== undefined) { cmp++; if (rowVal(r, k) !== acc.rows[k]) mis++; } });
+        if (cmp >= 10 && mis / cmp > 0.3) acc.rows = {}; // khác tờ: bỏ ghi nhớ cũ
+        ks.forEach(k => { if (rowClean(r, k)) acc.rows[k] = rowVal(r, k); });
+    }
+    function accApply(r, acc) {
+        if (!acc || !r.hotRows || !r.hotRows.length) return r;
+        const left = [];
+        r.hotRows.forEach(k => {
+            const v = acc.rows[k]; if (v === undefined) { left.push(k); return; }
+            const p = k.split(':'), n = +p[1];
+            if (p[0] === 'I') { r.mcq[n - 1] = v; delete r.flags.m[n - 1]; } else if (p[0] === 'II') { r.tf[n - 1] = v.split(''); delete r.flags.t[n - 1]; } else if (p[0] === 'III') { r.sa[n - 1] = v; delete r.flags.s[n - 1]; }
+            else if (p[0] === 'SBD') { r.sbdArr[n] = v; } else { r.codeArr[n] = v; }
+        });
+        if (r.hotRows.some(k => /^SBD:/.test(k)) && !left.some(k => /^SBD:/.test(k))) { const a = r.sbdArr.slice(); while (a.length && a[0] === '') a.shift(); r.sbd = a.map(x => x === '' ? '?' : x).join(''); r.flags.sbd = r.sbd.indexOf('?') >= 0; }
+        if (r.hotRows.some(k => /^MA:/.test(k)) && !left.some(k => /^MA:/.test(k))) { r.code = r.codeArr.join(''); r.flags.code = r.code.indexOf('?') >= 0; }
+        r.hotRows = left; r.glare = left.length; return r;
+    }
+    async function scanFile(file, mode, acc) {
         const msg = t => { LASTMSG = t; const e = $('cg-scanmsg'); if (e) e.textContent = t; };
         try {
             msg('Đang đọc phiếu…');
             const sets = DATA.s, s0 = CUR ? DATA.s.find(x => x[0] === CUR.code) : DATA.s[0];
-            const im = await loadImg(file), res = readSheet(im, DATA.L, s0[1].length, s0[2].length, s0[3].length);
+            const im = await loadImg(file), res = readSheet(im, DATA.L, s0[1].length, s0[2].length, s0[3].length); if (acc && !res.err) accApply(res, acc);
             if (res.err) { msg('⚠️ ' + res.err); LASTCV = null; LASTIMG = null; render(); return; }
             let code = res.code, found = DATA.s.find(x => x[0] === code);
             if (!found) { found = CUR ? DATA.s.find(x => x[0] === CUR.code) : null; LASTMSG = '⚠️ Máy không đọc được mã đề trên phiếu' + (found ? ', đang dùng mã ' + found[0] + ' cô đã chọn.' : '. Cô chọn mã đề rồi chụp lại.'); if (!found) { LASTCV = null; render(); return; } }
@@ -7018,16 +7054,16 @@ window.addEventListener('popstate', function () {
             res.marks.forEach(m => { if (m[2] >= (res.thr || 0.55) && !/^MA/.test(m[3])) { cx.beginPath(); cx.arc(m[0], m[1], 7, 0, 7); cx.lineWidth = 3; cx.strokeStyle = '#16a34a'; cx.stroke(); } });
             cx.strokeStyle = '#2563eb'; cx.lineWidth = 3; cx.beginPath(); res.corners.forEach((p, i) => { const q = res.corners[[0, 1, 3, 2][i]]; cx.lineTo(q.cx, q.cy); }); cx.closePath(); cx.stroke();
             LASTCV = cv;
-            LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + (res.glare ? ' ⚠️ Ảnh bị LÓA ở ' + res.glare + ' ô (các câu tô vàng): cô nghiêng phiếu hoặc che bớt đèn rồi chụp lại.' : '') + (blanks ? ' Có ' + blanks + ' câu để trống (cô xem lại nếu học sinh có làm).' : '') + ' Vòng xanh trên ảnh là ô máy thấy được tô.';
+            LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + (res.glare ? ' ⚠️ Ảnh còn LÓA ở ' + res.glare + ' câu (các câu tô vàng, cô kiểm tra bằng tay hoặc nghiêng phiếu chụp lại).' : '') + (blanks ? ' Có ' + blanks + ' câu để trống (cô xem lại nếu học sinh có làm).' : '') + ' Vòng xanh trên ảnh là ô máy thấy được tô.';
             DIRTY = true;
             render(); const a = $('cg-name'); if (a) { a.value = nm; if (!nm.trim() && SBD && SBD.indexOf('?') < 0) { const rn = rosterName(SBD); if (rn) { a.value = rn; a.dataset.auto = '1'; } } } const b = $('cg-class'); if (b && cl) b.value = cl;
-            if (mode === 'auto' && LS.get('cham_auto') !== '0' && nflag === 0 && !res.glare) { LIVE_IGN = { sbd: res.sbd || '', sig: sigOf(res), gone: 0 }; const okA = await save(true); if (okA) setTimeout(() => { if (!LIVE) liveStart(); }, 700); }
+            if (mode === 'auto' && LS.get('cham_auto') !== '0' && nflag === 0 && !res.glare) { LIVE_IGN = { sbd: res.sbd || '', sig: sigOf(res), gone: 0 }; const okA = await save(true); if (okA || LASTDUP) setTimeout(() => { if (!LIVE) liveStart(); }, 700); }
         } catch (e) { LASTCV = null; LASTMSG = '⚠️ Không đọc được ảnh (' + (e && e.message || e) + '). Cô chụp lại hoặc nhập tay bên dưới.'; render(); }
     }
 
 
     // ---------- (v63) Camera chấm trực tiếp: tự đọc, báo đỏ / vàng / xanh, xanh thì tự chốt ----------
-    let LIVE = null, LIVE_IGN = null;
+    let LIVE = null, LIVE_IGN = null, LASTDUP = false, LIVE_ACC = { rows: {} };
     const sigOf = res => res.code + '|' + res.mcq.join('') + '|' + res.tf.map(r => r.join('')).join(',') + '|' + res.sa.join(',') + '|' + (res.sbd || '');
     function liveStop() { if (!LIVE) return; LIVE.on = false; try { clearTimeout(LIVE.tm); } catch (e) { } try { LIVE.stream.getTracks().forEach(t => t.stop()); } catch (e) { } try { LIVE.ov.remove(); } catch (e) { } LIVE = null; }
     async function liveStart() {
@@ -7040,7 +7076,7 @@ window.addEventListener('popstate', function () {
         ov.innerHTML = '<div id="cg-livest" style="padding:10px 12px;font:700 1rem Arial,sans-serif;color:#fff;background:#b91c1c;text-align:center">Đưa phiếu vào khung, thấy đủ 4 ô vuông đen ở góc</div><div style="position:relative;flex:1;min-height:0"><video id="cg-livev-v" playsinline muted autoplay style="width:100%;height:100%;object-fit:contain;background:#000"></video><div id="cg-livefr" style="position:absolute;inset:6px;border:6px solid #dc2626;border-radius:10px;pointer-events:none"></div></div><div style="display:flex;gap:8px;padding:10px"><button type="button" id="cg-liveok" style="flex:1;padding:12px;border:0;border-radius:8px;font-weight:700;background:#f59e0b;color:#fff;display:none">Chụp luôn (có câu vàng)</button><button type="button" id="cg-liveno" style="flex:1;padding:12px;border:0;border-radius:8px;font-weight:700;background:#475569;color:#fff">Đóng camera</button></div>';
         document.body.appendChild(ov);
         const v = ov.querySelector('video'); v.srcObject = stream; try { await v.play(); } catch (e) { }
-        LIVE = { on: true, stream, ov, v, tm: null, last: '', same: 0, busy: false, frame: null, res: null, yellowSame: 0 };
+        LIVE = { on: true, stream, ov, v, tm: null, last: '', same: 0, busy: false, frame: null, res: null, yellowSame: 0, errN: 0 }; LIVE_ACC = { rows: {} };
         const st = ov.querySelector('#cg-livest'), fr = ov.querySelector('#cg-livefr'), okb = ov.querySelector('#cg-liveok');
         const paint = (col, txt) => { st.style.background = col === 'g' ? '#15803d' : (col === 'y' ? '#b45309' : '#b91c1c'); fr.style.borderColor = col === 'g' ? '#22c55e' : (col === 'y' ? '#f59e0b' : '#dc2626'); st.textContent = txt; okb.style.display = col === 'y' ? 'block' : 'none'; };
         const grab = () => {
@@ -7051,7 +7087,7 @@ window.addEventListener('popstate', function () {
         const finish = async (auto) => {
             if (!LIVE) return; const cv = LIVE.frame && LIVE.frame.cv; if (!cv) return; try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) { }
             const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.92)); liveStop();
-            if (blob) scanFile(new File([blob], 'live.jpg', { type: 'image/jpeg' }), auto === true ? 'auto' : '');
+            if (blob) scanFile(new File([blob], 'live.jpg', { type: 'image/jpeg' }), auto === true ? 'auto' : '', { rows: Object.assign({}, LIVE_ACC.rows) });
         };
         ov.querySelector('#cg-liveno').onclick = liveStop; okb.onclick = () => finish(false);
         const s0 = CUR ? DATA.s.find(x => x[0] === CUR.code) : DATA.s[0];
@@ -7062,9 +7098,10 @@ window.addEventListener('popstate', function () {
                 const im = grab();
                 if (im) {
                     const res = readSheet(im, DATA.L, s0[1].length, s0[2].length, s0[3].length);
-                    if (res.err) { if (LIVE_IGN && ++LIVE_IGN.gone >= 3) LIVE_IGN = null; LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', /tối/.test(res.err) ? 'Ảnh tối: ra chỗ sáng hơn, tránh bóng tay đổ lên phiếu' : 'Chưa thấy đủ 4 ô vuông đen ở góc: lùi ra, giữ phiếu phẳng'); }
+                    if (res.err) { if (++LIVE.errN >= 3) LIVE_ACC = { rows: {} }; if (LIVE_IGN && ++LIVE_IGN.gone >= 3) LIVE_IGN = null; LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', /tối/.test(res.err) ? 'Ảnh tối: ra chỗ sáng hơn, tránh bóng tay đổ lên phiếu' : 'Chưa thấy đủ 4 ô vuông đen ở góc: lùi ra, giữ phiếu phẳng'); }
+                    else if ((LIVE.errN = 0, accUpdate(LIVE_ACC, res), accApply(res, LIVE_ACC), false)) { }
                     else if (LIVE_IGN && ((LIVE_IGN.sbd && res.sbd === LIVE_IGN.sbd) || sigOf(res) === LIVE_IGN.sig)) { LIVE_IGN.gone = 0; LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('g', '✅ Đã lưu. Rút phiếu này ra, đưa phiếu tiếp theo vào'); }
-                    else if (res.glare) { LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', 'Ảnh bị LÓA đèn ở ' + res.glare + ' ô: nghiêng phiếu một chút hoặc che bớt đèn'); }
+                    else if (res.glare) { LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('y', 'Còn ' + res.glare + ' câu bị LÓA đèn: nghiêng phiếu từ từ để máy ghép các lần nhìn, hoặc bấm "Chụp luôn" rồi cô kiểm tra câu vàng'); }
                     else {
                         const nflag = Object.keys(res.flags.m).length + Object.keys(res.flags.t).length + Object.keys(res.flags.s).length + (res.flags.code ? 1 : 0) + (res.flags.sbd ? 1 : 0);
                         const sig = res.code + '|' + res.mcq.join('') + '|' + res.tf.map(r => r.join('')).join(',') + '|' + res.sa.join(',') + '|' + (res.sbd || '');
