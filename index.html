@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v66] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v67] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6513,7 +6513,7 @@ window.addEventListener('popstate', function () {
     // ---------- màn hình chấm ----------
     function open(p) {
         init(); DATA = p; LS.set('cham_last', JSON.stringify(p));
-        try { const sv = JSON.parse(LS.get('cham_saved_' + p.id) || '[]'); SAVED = Array.isArray(sv) ? sv : []; } catch (e) { SAVED = []; }
+        try { const sv = JSON.parse(LS.get('cham_saved_' + p.id) || '[]'); SAVED = Array.isArray(sv) ? sv : []; } catch (e) { SAVED = []; } setTimeout(() => { try { bgSend(); } catch (e) { } }, 2500);
         CUR = null; SHOWKEY = false;
         $('cg-ov').style.display = 'block'; document.body.style.overflow = 'hidden';
         render();
@@ -6545,10 +6545,10 @@ window.addEventListener('popstate', function () {
         const ov = $('cg-ov'); let h = '<div class="cg-w">';
         h += '<h2>Chấm bài giấy: ' + esc(DATA.t) + '</h2>';
         const pend = JSON.parse(LS.get('cham_pending') || '[]');
-        if (pend.length) h += '<div class="cg-pend">Có <b>' + pend.length + '</b> bài chưa gửi được lên Google Sheet (mất mạng?). <button type="button" id="cg-retry" style="padding:6px 10px;border:0;border-radius:6px;background:#d97706;color:#fff;font-weight:700">Gửi lại</button></div>';
+        if (pend.length) h += '<div class="cg-pend">Có <b id="cg-pcount">' + pend.length + '</b> bài chưa gửi được lên Google Sheet (mất mạng?). <button type="button" id="cg-retry" style="padding:6px 10px;border:0;border-radius:6px;background:#d97706;color:#fff;font-weight:700">Gửi lại</button></div>';
         h += '<div class="cg-card"><b>Mã đề trên tờ bài làm</b><div class="cg-codes">' + DATA.s.map(r => '<button type="button" data-code="' + esc(r[0]) + '" class="' + (CUR && CUR.code === r[0] ? 'on' : '') + '">' + esc(r[0]) + '</button>').join('') + '</div></div>';
         h += '<div class="cg-card"><details' + (LS.get('cham_roster') ? '' : '') + '><summary style="cursor:pointer"><b>Danh sách lớp (không bắt buộc)</b></summary><div class="cg-small">Dán mỗi dòng một em: số báo danh, dấu cách, họ tên. Ví dụ: 0101 Nguyễn Văn A. Có danh sách thì nhập hay chụp ra số báo danh, máy tự điền họ tên.</div><textarea id="cg-roster" rows="4" style="width:100%;box-sizing:border-box;margin-top:4px">' + esc(LS.get('cham_roster') || '') + '</textarea></details></div>';
-        if (DATA.L) h += '<div class="cg-card"><b>📷 Chụp phiếu tô ô để máy chấm</b><div class="cg-small">Đặt tờ giấy phẳng, đủ sáng, chụp thấy rõ 4 ô vuông đen ở 4 góc phiếu. Không cần chọn mã đề, máy tự đọc. Nếu phiếu tô không đọc được thì cô nhập tay ở bên dưới.</div><button type="button" id="cg-livebtn" class="cg-camb" style="border:0;background:#16a34a;color:#fff;margin-right:6px">🎥 Camera chấm trực tiếp</button><label class="cg-camb">Chụp / chọn ảnh phiếu<input type="file" id="cg-file" accept="image/*" capture="environment" style="display:none"></label><div id="cg-scanmsg" class="cg-small" style="margin-top:4px">' + esc(LASTMSG) + '</div><canvas id="cg-cv" style="width:100%;display:none;margin-top:6px;border-radius:8px"></canvas></div>';
+        if (DATA.L) h += '<div class="cg-card"><b>📷 Chụp phiếu tô ô để máy chấm</b><div class="cg-small">Đặt tờ giấy phẳng, đủ sáng, chụp thấy rõ 4 ô vuông đen ở 4 góc phiếu. Không cần chọn mã đề, máy tự đọc. Nếu phiếu tô không đọc được thì cô nhập tay ở bên dưới.</div><button type="button" id="cg-livebtn" class="cg-camb" style="border:0;background:#16a34a;color:#fff;margin-right:6px">🎥 Camera chấm trực tiếp</button><label class="cg-camb">Chụp / chọn ảnh phiếu<input type="file" id="cg-file" accept="image/*" style="display:none"></label><label style="display:block;margin-top:6px;font-size:.92rem"><input type="checkbox" id="cg-auto" checked> Camera trực tiếp: <b>tự lưu và quét tờ tiếp</b> khi báo xanh (chưa có tên thì lưu "Chưa rõ tên 1, 2…", cô sửa tên sau trong Sheet; ảnh phiếu vẫn giữ để đối chiếu)</label><div id="cg-scanmsg" class="cg-small" style="margin-top:4px">' + esc(LASTMSG) + '</div><canvas id="cg-cv" style="width:100%;display:none;margin-top:6px;border-radius:8px"></canvas></div>';
         if (!CUR) { h += '<div class="cg-card cg-small">' + (DATA.L ? 'Chụp phiếu, hoặc chọn mã đề để nhập tay.' : 'Chọn mã đề trước, rồi nhập từng em.') + '</div>'; }
         else {
             const nm = ($('cg-name') || {}).value || '', cl = ($('cg-class') || {}).value || LS.get('cham_class') || '';
@@ -6647,7 +6647,7 @@ window.addEventListener('popstate', function () {
         });
         const fi = $('cg-file'); if (fi) fi.onchange = () => { if (fi.files && fi.files[0]) scanFile(fi.files[0]); }; const lbtn = $('cg-livebtn'); if (lbtn) lbtn.onclick = liveStart;
         const cl = $('cg-close'); if (cl) cl.onclick = close;
-        const sv = $('cg-save'); if (sv) sv.onclick = save;
+        const sv = $('cg-save'); if (sv) sv.onclick = () => save(false); const au = $('cg-auto'); if (au) { au.checked = LS.get('cham_auto') !== '0'; au.onchange = () => LS.set('cham_auto', au.checked ? '1' : '0'); }
         const rt = $('cg-retry'); if (rt) rt.onclick = retry;
         wireSbd(); const hb = $('cg-hist-btn'); if (hb) hb.onclick = histOpen;
     }
@@ -6677,27 +6677,48 @@ window.addEventListener('popstate', function () {
         const g = /^1[012]/.test(cls) ? cls.slice(0, 2) : '12';
         return { action: 'submit_quiz', time: new Date().toLocaleString('vi-VN'), examId: '', examTitle: '[Giấy] ' + DATA.t, name: name, class: cls, grade: g, mode: 'GIAY', totalScore: s10.toFixed(2), answers: null, leaveCount: 0, drawnIds: [], paperCode: code };
     }
-    async function save() {
-        const name = ($('cg-name').value || '').trim(), cl = ($('cg-class').value || '').trim().toUpperCase();
-        if (!name || !cl) { alert('Cô nhập họ tên và lớp của học sinh trước khi lưu.'); return; }
-        if (!DATA.u) { alert('Link này thiếu địa chỉ Google Sheet. Cô tạo lại link từ máy tính.'); return; }
-        if (SAVED.some(x => x.name.toLowerCase() === name.toLowerCase() && x.cls === cl) && !confirm('Em ' + name + ' (' + cl + ') đã được lưu điểm rồi. Lưu thêm một dòng nữa?')) return;
-        const c = calc(), btn = $('cg-save'); btn.disabled = true; btn.textContent = 'Đang lưu...';
-        LS.set('cham_class', cl);
+    let DIRTY = false, SENDING = false;
+    function toast(msg, warn) {
+        let t = $('cg-toast'); if (!t) { t = document.createElement('div'); t.id = 'cg-toast'; t.style.cssText = 'position:fixed;left:50%;bottom:76px;transform:translateX(-50%);max-width:92%;padding:10px 14px;border-radius:10px;color:#fff;font:700 .95rem Arial,sans-serif;z-index:2147483100;box-shadow:0 4px 14px #0006;text-align:center'; document.body.appendChild(t); }
+        t.style.background = warn ? '#b45309' : '#15803d'; t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, warn ? 6000 : 3200);
+    }
+    async function bgSend() { // gửi các bài đã lưu trong máy lên Google Sheet, chạy ngầm; lỗi thì giữ lại gửi sau
+        if (SENDING || !DATA || !DATA.u) return 0; SENDING = true; let left = 0;
+        try {
+            for (let guard = 0; guard < 500; guard++) {
+                let p = JSON.parse(LS.get('cham_pending') || '[]'); left = p.length; if (!p.length) break;
+                const ok = await post(p[0]); if (!ok) break;
+                p = JSON.parse(LS.get('cham_pending') || '[]'); p.shift(); LS.set('cham_pending', JSON.stringify(p)); left = p.length;
+            }
+        } catch (e) { }
+        SENDING = false;
+        const c0 = $('cg-pcount'); if (c0) c0.textContent = left;
+        if (left > 0) toast('⚠️ ' + left + ' bài đã lưu trong điện thoại nhưng chưa gửi được lên Google Sheet (mất mạng?). Máy sẽ tự gửi lại.', true);
+        return left;
+    }
+    window.addEventListener('online', () => { try { bgSend(); } catch (e) { } });
+    async function save(auto) {
+        let name = ($('cg-name').value || '').trim(), cl = ($('cg-class').value || '').trim().toUpperCase();
+        if (auto) { if (!cl) cl = String(LS.get('cham_class') || '').toUpperCase() || 'CHƯA RÕ LỚP'; if (!name) { const n = (parseInt(LS.get('cham_tempn') || '0', 10) || 0) + 1; LS.set('cham_tempn', String(n)); name = 'Chưa rõ tên ' + n; } }
+        else if (!name || !cl) { alert('Cô nhập họ tên và lớp của học sinh trước khi lưu.'); return false; }
+        if (!DATA.u) { if (!auto) alert('Link này thiếu địa chỉ Google Sheet. Cô tạo lại link từ máy tính.'); return false; }
+        if (!auto && SAVED.some(x => x.name.toLowerCase() === name.toLowerCase() && x.cls === cl) && !confirm('Em ' + name + ' (' + cl + ') đã được lưu điểm rồi. Lưu thêm một dòng nữa?')) return false;
+        if (auto && SBD && SBD.indexOf('?') < 0 && SAVED.some(x => x.sbd === SBD && x.cls === cl)) { toast('Em SBD ' + SBD + ' đã lưu rồi, bỏ qua tờ này.', true); DIRTY = false; return false; }
+        const c = calc(), btn = $('cg-save'); if (btn) btn.disabled = true;
+        if (cl !== 'CHƯA RÕ LỚP') LS.set('cham_class', cl);
         const b = body(name + (SBD ? ' (SBD ' + SBD + ')' : ''), cl, CUR.code, c.s10); if (SBD) b.sbd = SBD;
-        const ok = await post(b);
-        if (!ok) { const p = JSON.parse(LS.get('cham_pending') || '[]'); p.push(b); LS.set('cham_pending', JSON.stringify(p)); }
         let kept = false; if (LASTIMG) { try { kept = await keepPhoto(name, cl, SBD, CUR.code, c.s10); } catch (er) { kept = false; } }
+        const p = JSON.parse(LS.get('cham_pending') || '[]'); p.push(b); LS.set('cham_pending', JSON.stringify(p)); // lưu trong máy trước, gửi lên Sheet chạy ngầm
         SAVED.push({ name: name, cls: cl, code: CUR.code, s: c.s10, sbd: SBD }); LS.set('cham_saved_' + DATA.id, JSON.stringify(SAVED));
-        alert((ok ? '✅ Đã lưu: ' + name + ' - ' + fmt(c.s10) + ' điểm.' : '⚠️ Chưa gửi được lên Google Sheet (mất mạng?). Bài đã được giữ trong điện thoại, cô bấm "Gửi lại" khi có mạng.') + (kept ? '\n📷 Đã giữ ảnh phiếu làm bằng chứng (mục "Bài đã chấm & ảnh").' : (LASTIMG ? '\n⚠️ Chưa giữ được ảnh phiếu trong điện thoại, cô tự lưu ảnh chụp.' : '')));
-        LASTCV = null; LASTMSG = ''; FLAG = { m: {}, t: {}, s: {}, sbd: false }; SBD = ''; LASTIMG = null; const code = CUR.code; $('cg-name').value = ''; CUR = null; setCode(code); const ci = $('cg-class'); if (ci) ci.value = cl;
-        const ovs = $('cg-ov'); ovs.scrollTop = 0;
+        toast('✅ Đã lưu: ' + name + ' - ' + fmt(c.s10) + ' điểm' + (kept ? '' : (LASTIMG ? ' (chưa giữ được ảnh)' : '')) + '. Đang gửi lên Google Sheet…');
+        DIRTY = false; LASTCV = null; LASTMSG = ''; FLAG = { m: {}, t: {}, s: {}, sbd: false }; SBD = ''; LASTIMG = null; const code = CUR.code; $('cg-name').value = ''; CUR = null; setCode(code); const ci = $('cg-class'); if (ci) ci.value = cl === 'CHƯA RÕ LỚP' ? '' : cl;
+        const ovs = $('cg-ov'); if (ovs) ovs.scrollTop = 0;
+        bgSend().then(left => { if (!left) toast('✅ Đã gửi hết lên Google Sheet.'); });
+        return true;
     }
     async function retry() {
-        let p = JSON.parse(LS.get('cham_pending') || '[]'), left = [];
-        for (const b of p) { if (!(await post(b))) left.push(b); }
-        LS.set('cham_pending', JSON.stringify(left));
-        alert(left.length ? 'Còn ' + left.length + ' bài chưa gửi được.' : '✅ Đã gửi hết.'); render();
+        const left = await bgSend();
+        alert(left ? 'Còn ' + left + ' bài chưa gửi được.' : '✅ Đã gửi hết.'); render();
     }
 
     // ---------- (v46) Chụp phiếu tô ô: máy đọc đáp án ----------
@@ -6815,7 +6836,7 @@ window.addEventListener('popstate', function () {
         const rr = BD * 0.3 * scale, bub = {}, marks = [];
         // (v66) Ô tô xám (bút chì, mực nhạt): ngoài cách đo cũ (điểm ảnh đen), máy còn so độ xám của ô với giấy quanh ô
         // và với các ô trống CÙNG LOẠI (cùng chữ/số in sẵn) trên tờ. Ô nào tối hơn hẳn các ô trống cùng loại thì tính là có tô.
-        let GD = null, relDif = null; const relCut = {};
+        let GD = null, relDif = null; const relCut = {}, papv = {};
         try {
             const g0 = new Float32Array(W * H), dd0 = im.data; for (let i = 0, j = 0; i < W * H; i++, j += 4) g0[i] = (dd0[j] * 299 + dd0[j + 1] * 587 + dd0[j + 2] * 114) / 1000;
             const g1 = new Float32Array(W * H); // làm mịn nhẹ 3x3 (giảm nhiễu hạt)
@@ -6840,7 +6861,7 @@ window.addEventListener('popstate', function () {
                         for (let y = Math.floor(py - rr); y <= Math.ceil(py + rr); y++) for (let x = Math.floor(px - rr); x <= Math.ceil(px + rr); x++) {
                             if (x < 0 || y < 0 || x >= W || y >= H) continue; if ((x - px) * (x - px) + (y - py) * (y - py) > rr * rr) continue; cv.push(GD[y * W + x]);
                         }
-                        if (cv.length >= 8 && paper > 25) { cv.sort((u, v) => u - v); relv[b[0]] = cv[Math.floor(cv.length * 0.6)] / paper; const pp = b[0].split(':'); clsOf[b[0]] = pp[0] + ':' + (pp[0] === 'I' ? pp[2] : (pp[0] === 'II' ? '' : (pp[0] === 'III' ? pp[3] : pp[2]))); }
+                        if (cv.length >= 8 && paper > 25) { cv.sort((u, v) => u - v); relv[b[0]] = cv[Math.floor(cv.length * 0.6)] / paper; papv[b[0]] = paper; const pp = b[0].split(':'); clsOf[b[0]] = pp[0] + ':' + (pp[0] === 'I' ? pp[2] : (pp[0] === 'II' ? '' : (pp[0] === 'III' ? pp[3] : pp[2]))); }
                     }
                 } catch (e) { }
             }
@@ -6883,11 +6904,19 @@ window.addEventListener('popstate', function () {
             }
         } catch (e) { }
         const flags = { m: {}, t: {}, s: {}, code: false, sbd: false };
+        // (v67) Ô trống có chữ in đậm (Đ, S, 8...) nhìn "hơi tối": chỉ coi là đáng ngờ khi ô nổi hẳn lên so với các ô trống cùng loại
+        const cbase = {}; const clsKey = k => { const q = k.split(':'); return q[0] + ':' + (q[0] === 'I' ? q[2] : (q[0] === 'II' ? q[3] : (q[0] === 'III' ? q[3] : q[2]))); };
+        try {
+            const grpv = {}, secv = {}; Object.keys(bub).forEach(k => { if (/^MA:/.test(k)) return; const c = clsKey(k), s0 = k.split(':')[0]; (grpv[c] = grpv[c] || []).push(bub[k]); (secv[s0] = secv[s0] || []).push(bub[k]); });
+            const p25 = a => { const t = a.slice().sort((u, v) => u - v); return t[Math.floor(t.length * 0.25)]; };
+            Object.keys(bub).forEach(k => { if (/^MA:/.test(k)) { cbase[k] = 0; return; } const c = clsKey(k), s0 = k.split(':')[0]; cbase[k] = grpv[c].length >= 5 ? p25(grpv[c]) : p25(secv[s0]); });
+        } catch (e) { }
         const pick = (keys, qf) => { // trả về chỉ số được tô (hoặc -1), đặt cờ nếu mơ hồ
-            const rs = keys.map(k => bub[k] || 0), mx = Math.max(...rs), on = rs.map((r, i) => r >= THR ? i : -1).filter(i => i >= 0);
-            if (on.length === 1) { const sec = rs.filter((r, i) => i !== on[0]).reduce((a, b) => Math.max(a, b), 0); if (sec > 0.5) qf(); return on[0]; }
+            const rs = keys.map(k => bub[k] || 0), ex = keys.map((k, i) => rs[i] - (cbase[k] || 0)), mx = Math.max(...rs), on = rs.map((r, i) => r >= THR ? i : -1).filter(i => i >= 0);
+            if (on.length === 1) { let sec = 0; rs.forEach((r, i) => { if (i !== on[0] && r > 0.5 && ex[i] >= 0.25 && r > sec) sec = r; }); if (sec > 0.5) qf(); return on[0]; }
             if (on.length > 1) { qf(); return -1; }
-            if (mx >= LOW) qf(); return -1;
+            if (mx >= LOW) { let e2 = 0; rs.forEach((r, i) => { if (r >= LOW && ex[i] > e2) e2 = ex[i]; }); if (e2 >= 0.2) qf(); }
+            return -1;
         };
         // mã đề
         let code = '', cols = 0; L.b.forEach(b => { const m = /^MA:(\d+):/.exec(b[0]); if (m) cols = Math.max(cols, +m[1] + 1); });
@@ -6910,9 +6939,18 @@ window.addEventListener('popstate', function () {
             }
             sa.push(s.replace(',', '.'));
         }
-        return { code, sbd, mcq, tf, sa, flags, marks, corners: P, W, H, thr: THR };
+        // (v67) Phát hiện LÓA: nhiều ô nằm trong mảng giấy trắng bệch hẳn so với phần còn lại của tờ
+        let glare = 0;
+        try {
+            const pk = Object.keys(papv); if (pk.length > 60) {
+                const pv = pk.map(k => papv[k]).sort((u, v) => u - v), md = pv[pv.length >> 1];
+                const hot = pk.filter(k => papv[k] >= 247 && papv[k] >= md + 25);
+                if (hot.length >= 6) { glare = hot.length; hot.forEach(k => { const q = k.split(':'); const n = (+q[1]) - 1; if (q[0] === 'I') flags.m[n] = 1; else if (q[0] === 'II') flags.t[n] = 1; else if (q[0] === 'III') flags.s[n] = 1; else if (q[0] === 'SBD') flags.sbd = true; }); }
+            }
+        } catch (e) { }
+        return { code, sbd, mcq, tf, sa, flags, marks, corners: P, W, H, thr: THR, glare };
     }
-    async function scanFile(file) {
+    async function scanFile(file, mode) {
         const msg = t => { LASTMSG = t; const e = $('cg-scanmsg'); if (e) e.textContent = t; };
         try {
             msg('Đang đọc phiếu…');
@@ -6922,18 +6960,22 @@ window.addEventListener('popstate', function () {
             let code = res.code, found = DATA.s.find(x => x[0] === code);
             if (!found) { found = CUR ? DATA.s.find(x => x[0] === CUR.code) : null; LASTMSG = '⚠️ Máy không đọc được mã đề trên phiếu' + (found ? ', đang dùng mã ' + found[0] + ' cô đã chọn.' : '. Cô chọn mã đề rồi chụp lại.'); if (!found) { LASTCV = null; render(); return; } }
             if (found[1].length !== res.mcq.length || found[2].length !== res.tf.length || found[3].length !== res.sa.length) { /* số câu giữa các mã giống nhau */ }
+            if (DIRTY && CUR) { const okp = await save(true); if (!okp) { DIRTY = false; toast('Bài trước chưa lưu được nên không giữ lại.', true); } }
             const nm = ($('cg-name') || {}).value || '', cl = ($('cg-class') || {}).value || '';
             setCode(found[0]);
             ANS.mcq = res.mcq.slice(0, CUR.mcq.length); ANS.tf = res.tf.slice(0, CUR.tf.length); ANS.sa = res.sa.slice(0, CUR.sa.length);
             FLAG = { m: res.flags.m, t: res.flags.t, s: res.flags.s, sbd: !!res.flags.sbd }; if (res.sbd) SBD = res.sbd; window.chamLast = res; LASTIMG = { cv: im.cv, W: res.W, H: res.H, marks: res.marks.filter(m => m[2] >= (res.thr || 0.55) && !/^MA/.test(m[3])).map(m => [Math.round(m[0]), Math.round(m[1])]) };
             const nflag = Object.keys(FLAG.m).length + Object.keys(FLAG.t).length + Object.keys(FLAG.s).length;
+            const blanks = res.mcq.filter(x => !x).length + res.tf.filter(r => r.every(x => x === '-')).length + res.sa.filter(x => x === '').length;
             // ảnh xem lại: vẽ vòng đã đọc
             const cv = document.createElement('canvas'), W = res.W, Hh = res.H; cv.width = W; cv.height = Hh; const cx = cv.getContext('2d'); cx.drawImage(im.cv, 0, 0);
             res.marks.forEach(m => { if (m[2] >= (res.thr || 0.55) && !/^MA/.test(m[3])) { cx.beginPath(); cx.arc(m[0], m[1], 7, 0, 7); cx.lineWidth = 3; cx.strokeStyle = '#16a34a'; cx.stroke(); } });
             cx.strokeStyle = '#2563eb'; cx.lineWidth = 3; cx.beginPath(); res.corners.forEach((p, i) => { const q = res.corners[[0, 1, 3, 2][i]]; cx.lineTo(q.cx, q.cy); }); cx.closePath(); cx.stroke();
             LASTCV = cv;
-            LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + ' Vòng xanh trên ảnh là ô máy thấy được tô.';
+            LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + (res.glare ? ' ⚠️ Ảnh bị LÓA ở ' + res.glare + ' ô (các câu tô vàng): cô nghiêng phiếu hoặc che bớt đèn rồi chụp lại.' : '') + (blanks ? ' Có ' + blanks + ' câu để trống (cô xem lại nếu học sinh có làm).' : '') + ' Vòng xanh trên ảnh là ô máy thấy được tô.';
+            DIRTY = true;
             render(); const a = $('cg-name'); if (a) { a.value = nm; if (!nm.trim() && SBD && SBD.indexOf('?') < 0) { const rn = rosterName(SBD); if (rn) { a.value = rn; a.dataset.auto = '1'; } } } const b = $('cg-class'); if (b && cl) b.value = cl;
+            if (mode === 'auto' && LS.get('cham_auto') !== '0' && nflag === 0 && !res.glare) { const okA = await save(true); if (okA) setTimeout(() => { if (!LIVE) liveStart(); }, 700); }
         } catch (e) { LASTCV = null; LASTMSG = '⚠️ Không đọc được ảnh (' + (e && e.message || e) + '). Cô chụp lại hoặc nhập tay bên dưới.'; render(); }
     }
 
@@ -6959,12 +7001,12 @@ window.addEventListener('popstate', function () {
             const sc = Math.min(1, 1600 / Math.max(vw, vh)), W = Math.round(vw * sc), H = Math.round(vh * sc), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
             const cx = cv.getContext('2d', { willReadFrequently: true }); cx.drawImage(v, 0, 0, W, H); return { cv, cx, W, H, data: cx.getImageData(0, 0, W, H).data };
         };
-        const finish = async () => {
+        const finish = async (auto) => {
             if (!LIVE) return; const cv = LIVE.frame && LIVE.frame.cv; if (!cv) return; try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) { }
             const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.92)); liveStop();
-            if (blob) scanFile(new File([blob], 'live.jpg', { type: 'image/jpeg' }));
+            if (blob) scanFile(new File([blob], 'live.jpg', { type: 'image/jpeg' }), auto === true ? 'auto' : '');
         };
-        ov.querySelector('#cg-liveno').onclick = liveStop; okb.onclick = finish;
+        ov.querySelector('#cg-liveno').onclick = liveStop; okb.onclick = () => finish(false);
         const s0 = CUR ? DATA.s.find(x => x[0] === CUR.code) : DATA.s[0];
         const tick = () => {
             if (!LIVE || !LIVE.on) return;
@@ -6974,12 +7016,13 @@ window.addEventListener('popstate', function () {
                 if (im) {
                     const res = readSheet(im, DATA.L, s0[1].length, s0[2].length, s0[3].length);
                     if (res.err) { LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', /tối/.test(res.err) ? 'Ảnh tối: ra chỗ sáng hơn, tránh bóng tay đổ lên phiếu' : 'Chưa thấy đủ 4 ô vuông đen ở góc: lùi ra, giữ phiếu phẳng'); }
+                    else if (res.glare) { LIVE.last = ''; LIVE.same = 0; LIVE.yellowSame = 0; paint('r', 'Ảnh bị LÓA đèn ở ' + res.glare + ' ô: nghiêng phiếu một chút hoặc che bớt đèn'); }
                     else {
                         const nflag = Object.keys(res.flags.m).length + Object.keys(res.flags.t).length + Object.keys(res.flags.s).length + (res.flags.code ? 1 : 0) + (res.flags.sbd ? 1 : 0);
                         const sig = res.code + '|' + res.mcq.join('') + '|' + res.tf.map(r => r.join('')).join(',') + '|' + res.sa.join(',') + '|' + (res.sbd || '');
                         if (sig === LIVE.last) LIVE.same++; else { LIVE.same = 0; LIVE.last = sig; }
                         LIVE.frame = im; LIVE.res = res;
-                        if (nflag === 0) { paint('g', LIVE.same >= 1 ? 'Đọc xong, đang lưu…' : 'Đọc được, giữ yên một chút…'); if (LIVE.same >= 1) { finish(); return; } }
+                        if (nflag === 0) { paint('g', LIVE.same >= 1 ? 'Đọc xong, đang lưu…' : 'Đọc được, giữ yên một chút…'); if (LIVE.same >= 1) { finish(true); return; } }
                         else { paint('y', 'Đọc được nhưng ' + nflag + ' chỗ chưa chắc: giữ yên, thêm sáng, hoặc bấm "Chụp luôn"'); LIVE.yellowSame = LIVE.same; }
                     }
                 }
@@ -7018,6 +7061,10 @@ window.addEventListener('popstate', function () {
         const en = new DataView(new ArrayBuffer(22)); en.setUint32(0, 0x06054b50, true); en.setUint16(8, files.length, true); en.setUint16(10, files.length, true); en.setUint32(12, cdl, true); en.setUint32(16, off, true);
         return new Blob(parts.concat(cd, [new Uint8Array(en.buffer)]), { type: 'application/zip' });
     }
+    async function outBlob(bl, name) { // ưu tiên khung chia sẻ của điện thoại (lưu vào Thư viện, Zalo, Drive); không được thì tải xuống
+        try { if (navigator.canShare) { const f = new File([bl], name, { type: bl.type || 'application/octet-stream' }); if (navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: name }); return; } } } catch (e) { if (e && e.name === 'AbortError') return; }
+        saveBlob(bl, name);
+    }
     function saveBlob(bl, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(bl); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 1500); }
     const fdt = t => { const d = new Date(t); return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN'); };
     async function histOpen() {
@@ -7044,23 +7091,23 @@ window.addEventListener('popstate', function () {
                 const used = {}, files = [], csv = ['Họ tên,Lớp,Số báo danh,Mã đề,Điểm,Giờ chấm,Tên ảnh'];
                 for (const r of list) { let n = fileOf(r); if (used[n]) { used[n]++; n = n.replace(/\.jpg$/, '_' + used[n] + '.jpg'); } else used[n] = 1; files.push({ name: n, data: new Uint8Array(await r.blob.arrayBuffer()) }); csv.push([r.name, r.cls, r.sbd, r.code, String(r.s10.toFixed(2)).replace('.', ','), fdt(r.at), n].map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',')); }
                 files.push({ name: 'bang-diem.csv', data: new TextEncoder().encode('﻿' + csv.join('\r\n')) });
-                saveBlob(makeZip(files), 'anh-cham-bai-' + slug(st.ex === '__all' ? 'tat-ca' : (exams[st.ex] || 'de')).replace(/[^A-Za-z0-9]+/g, '-').slice(0, 30) + '.zip');
+                outBlob(makeZip(files), 'anh-cham-bai-' + slug(st.ex === '__all' ? 'tat-ca' : (exams[st.ex] || 'de')).replace(/[^A-Za-z0-9]+/g, '-').slice(0, 30) + '.zip');
                 zb.disabled = false; zb.textContent = 'Tải tất cả (1 tệp .zip)';
             };
             o.querySelectorAll('button[data-a]').forEach(b => b.onclick = async () => {
                 const r = rows.find(x => x.id === +b.dataset.i); if (!r) return;
-                if (b.dataset.a === 'd') saveBlob(r.blob, fileOf(r));
+                if (b.dataset.a === 'd') outBlob(r.blob, fileOf(r));
                 else if (b.dataset.a === 'x') { if (confirm('Xóa ảnh và dòng này khỏi điện thoại? (Điểm đã gửi lên Google Sheet vẫn còn.)')) { await pDel(r.id); rows = rows.filter(x => x.id !== r.id); draw(); } }
                 else view(r);
             });
         };
         const view = async r => {
             const v = document.createElement('div'); v.style.cssText = 'position:fixed;inset:0;z-index:100002;background:#0f172a;overflow:auto;padding:10px';
-            v.innerHTML = '<div style="color:#fff;font-size:.95rem;max-width:700px;margin:0 auto"><b>' + esc(r.name) + '</b> - ' + esc(r.cls) + (r.sbd ? ' - SBD ' + esc(r.sbd) : '') + ' - mã ' + esc(r.code) + ' - <b>' + fmt(r.s10) + ' điểm</b> - ' + fdt(r.at) + '<br><label><input type="checkbox" id="gv-ring"> Hiện vòng xanh các ô máy đọc được</label> <button id="gv-x" style="margin-left:8px;padding:6px 10px;border:0;border-radius:8px;background:#e2e8f0;font-weight:700">Đóng</button><br><canvas id="gv-cv" style="width:100%;margin-top:6px;background:#fff"></canvas></div>';
+            v.innerHTML = '<div style="color:#fff;font-size:.95rem;max-width:700px;margin:0 auto"><b>' + esc(r.name) + '</b> - ' + esc(r.cls) + (r.sbd ? ' - SBD ' + esc(r.sbd) : '') + ' - mã ' + esc(r.code) + ' - <b>' + fmt(r.s10) + ' điểm</b> - ' + fdt(r.at) + '<br><label><input type="checkbox" id="gv-ring"> Hiện vòng xanh các ô máy đọc được</label> <button id="gv-x" style="margin-left:8px;padding:6px 10px;border:0;border-radius:8px;background:#e2e8f0;font-weight:700">Đóng</button> <button id="gv-sv" style="margin-left:8px;padding:6px 10px;border:0;border-radius:8px;background:#22c55e;font-weight:700">Lưu / Gửi ảnh</button><br><canvas id="gv-cv" style="width:100%;margin-top:6px;background:#fff"></canvas><div style="margin-top:8px;font-size:.85rem">Nút Lưu / Gửi ảnh không chạy? Cô nhấn giữ vào ảnh gốc bên dưới rồi chọn \"Tải ảnh xuống\" (hoặc \"Lưu ảnh\").</div><img id="gv-img" style="width:100%;margin-top:4px;background:#fff"></div>';
             document.body.appendChild(v);
             const bmp = await createImageBitmap(r.blob), cv = $('gv-cv'); cv.width = bmp.width; cv.height = bmp.height;
             const paint = () => { const cx = cv.getContext('2d'); cx.drawImage(bmp, 0, 0); if ($('gv-ring').checked) { const k = bmp.width / (r.W || bmp.width); cx.lineWidth = 3; cx.strokeStyle = '#16a34a'; (r.marks || []).forEach(m => { cx.beginPath(); cx.arc(m[0] * k, m[1] * k, 8 * k, 0, 7); cx.stroke(); }); } };
-            paint(); $('gv-ring').onchange = paint; $('gv-x').onclick = () => v.remove();
+            paint(); $('gv-ring').onchange = paint; $('gv-x').onclick = () => v.remove(); $('gv-sv').onclick = () => outBlob(r.blob, fileOf(r)); try { $('gv-img').src = URL.createObjectURL(r.blob); } catch (e) { }
         };
         draw();
     }
