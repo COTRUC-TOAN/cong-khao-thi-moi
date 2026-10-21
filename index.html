@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v80] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v81] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7476,7 +7476,7 @@ window.addEventListener('popstate', function () {
         S = { pages: [newPage()], pi: 0, tool: 'pen', color: COLORS[0], size: 4, tsize: 36, dash: false, palm: true, penSeen: false, drawing: null, drag: null, ids: [], marq: null, dpr: 1, W: 0, H: 0, labels: true, cat: 'phang' };
         Object.defineProperty(S, 'sel', { configurable: true, get: function () { if (S.ids.length !== 1) return null; var it = byUid(S.ids[0]); return it && isObj(it) ? S.ids[0] : null; }, set: function (v) { S.ids = v == null ? [] : [v]; } });
         ov = el('div', 'position:fixed;inset:0;z-index:2147482000;background:#e5e7eb;display:none;flex-direction:column;font-family:system-ui,Arial,sans-serif;'); ov.id = 'wb-ov';
-        S.bar = el('div', 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;background:#f8fafc;border-bottom:1px solid #cbd5e1;'); ov.appendChild(S.bar);
+        S.bar = el('div', 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;background:#f8fafc;border-bottom:1px solid #cbd5e1;'); ov.appendChild(S.bar); ov.addEventListener('pointerdown', function (e) { if (S.menu && !S.menu.contains(e.target) && !(S.menuFor && S.menuFor.contains(e.target))) closeMenu(); }, true);
         var mid = el('div', 'position:relative;flex:1;min-height:0;display:flex;'); ov.appendChild(mid);
         S.stage = el('div', 'position:relative;flex:1;min-width:0;overflow:hidden;background:#fff;touch-action:none;'); mid.appendChild(S.stage);
         S.base = el('canvas', 'position:absolute;left:0;top:0;'); S.ink = el('canvas', 'position:absolute;left:0;top:0;touch-action:none;'); S.tmp = el('canvas', 'position:absolute;left:0;top:0;pointer-events:none;');
@@ -7519,32 +7519,66 @@ window.addEventListener('popstate', function () {
         if (t === 'select' && !S.hintSel) { S.hintSel = 1; note('Kéo khung quanh các nét, hình, chữ để chọn nhiều thứ, rồi kéo để di chuyển hoặc bấm Delete để xóa'); }
         refreshBar(); drawSel();
     }
+    // ---- menu xổ xuống (cho thanh công cụ gọn) ----
+    function closeMenu() { if (S.menu) { try { S.menu.remove(); } catch (e) { } } S.menu = null; S.menuFor = null; }
+    function dropdown(b, build) {
+        b.onclick = function (e) {
+            e.stopPropagation(); if (S.menu && S.menuFor === b) { closeMenu(); return; } closeMenu();
+            var m = el('div', 'position:fixed;z-index:2147483000;background:#fff;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:190px;max-width:92vw;max-height:80vh;overflow:auto;');
+            m.addEventListener('pointerdown', function (ev) { ev.stopPropagation(); }); build(m); ov.appendChild(m);
+            var r = b.getBoundingClientRect(); m.style.left = Math.max(4, Math.min(r.left, window.innerWidth - m.offsetWidth - 8)) + 'px'; m.style.top = (r.bottom + 4) + 'px'; S.menu = m; S.menuFor = b;
+        };
+    }
+    function mItem(m, label, title, fn, extra) { var b = btn(label, title, function () { closeMenu(); fn(); }, 'text-align:left;' + (extra || '')); m.appendChild(b); return b; }
+    var PENS = { pen: '✏️ Bút thường', cal: '✒️ Bút thanh đậm', hl: '🖍 Bút dạ', line: '📏 Nét thẳng' }, BASIC3 = ['#111827', '#dc2626', '#2563eb'];
     function buildBar() {
-        var bar = S.bar; bar.innerHTML = '';
+        var bar = S.bar; bar.innerHTML = ''; closeMenu(); colorBtns.length = 0; sizeBtns.length = 0;
         function sep() { bar.appendChild(el('div', 'width:1px;height:28px;background:#cbd5e1;margin:0 1px;')); }
-        [['select', '⬚ Chọn'], ['pen', '✏️ Bút'], ['cal', '✒️ Thanh đậm'], ['hl', '🖍 Bút dạ'], ['line', '📏 Thẳng'], ['text', 'A Chữ'], ['erase', '🧽 Tẩy']].forEach(function (t) { var b = btn(t[1], '', function () { setTool(t[0]); }); toolBtns[t[0]] = b; bar.appendChild(b); });
-        bar.appendChild(btn('📈 Đồ thị hàm', 'Gõ hàm số → ra đồ thị đẹp', function () { openGraphDialog(null); }));
-        bar.appendChild(btn('📊 Bảng biến thiên', 'Lập bảng biến thiên (có máy điền thử)', function () { openBbtDialog(null); }));
-        var dashb = btn('┄ Nét đứt', 'Dùng cho nét thẳng', function () { S.dash = !S.dash; refreshBar(); }); toolBtns.dash = dashb; bar.appendChild(dashb);
-        sep();
-        COLORS.forEach(function (c) {
-            var b = el('button', 'width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #94a3b8;background:' + c + ';cursor:pointer;touch-action:manipulation;padding:0;'); b.type = 'button'; b.title = 'Màu';
-            b.onclick = function () { pickColor(c); }; colorBtns.push([c, b]); bar.appendChild(b);
+        [['select', '⬚ Chọn']].forEach(function (t) { var b = btn(t[1], '', function () { setTool(t[0]); }); toolBtns[t[0]] = b; bar.appendChild(b); });
+        // Bút (xổ xuống)
+        S.penBtn = btn('✏️ Bút ▾', 'Chọn loại bút, cỡ nét', null);
+        dropdown(S.penBtn, function (m) {
+            Object.keys(PENS).forEach(function (k) { var b = mItem(m, PENS[k], '', function () { setTool(k); }); if (S.tool === k) { b.style.background = '#2563eb'; b.style.color = '#fff'; } });
+            var d = mItem(m, S.dash ? '┄ Nét đứt: bật' : '┄ Nét đứt: tắt', 'Dùng cho nét thẳng', function () { S.dash = !S.dash; refreshBar(); }); if (S.dash) d.style.background = '#dbeafe';
+            var row = el('div', 'display:flex;gap:6px;margin-top:2px;');
+            [[2, 'Mảnh'], [4, 'Vừa'], [9, 'Dày']].forEach(function (z) {
+                var b = btn('<span style="display:inline-block;vertical-align:middle;width:20px;height:' + Math.min(z[0], 9) + 'px;background:#111;border-radius:6px"></span>', z[1], function () { S.size = z[0]; if (S.tool === 'select' && S.ids.length) modSelMany(function (o) { return o.kind === 'shape' ? { lw: LWMAP[z[0]] } : (o.kind === 'stroke' && (o.tool === 'pen' || o.tool === 'line' || o.tool === 'cal') ? { w: z[0] } : null); }); refreshBar(); }, 'min-width:42px;flex:1');
+                sizeBtns.push([z[0], b]); row.appendChild(b);
+            }); m.appendChild(row); refreshBar();
         });
-        var ci = el('input', 'width:34px;height:34px;border:1px solid #94a3b8;border-radius:50%;padding:0;background:none;cursor:pointer;'); ci.type = 'color'; ci.value = '#2563eb'; ci.title = 'Chọn màu khác'; ci.oninput = function () { pickColor(ci.value); }; bar.appendChild(ci);
-        sep();
-        [[2, 'Mảnh'], [4, 'Vừa'], [9, 'Dày']].forEach(function (z) { var b = btn('<span style="display:inline-block;vertical-align:middle;width:20px;height:' + Math.min(z[0], 9) + 'px;background:#111;border-radius:6px"></span>', z[1], function () { S.size = z[0]; if (S.tool === 'select' && S.ids.length) modSelMany(function (o) { return o.kind === 'shape' ? { lw: LWMAP[z[0]] } : (o.kind === 'stroke' && (o.tool === 'pen' || o.tool === 'line' || o.tool === 'cal') ? { w: z[0] } : null); }); refreshBar(); }, 'min-width:42px'); sizeBtns.push([z[0], b]); bar.appendChild(b); });
+        bar.appendChild(S.penBtn);
+        [['erase', '🧽 Tẩy'], ['text', 'A Chữ']].forEach(function (t) { var b = btn(t[1], '', function () { setTool(t[0]); }); toolBtns[t[0]] = b; bar.appendChild(b); });
         var tsel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 4px;'); tsel.title = 'Cỡ chữ';
         [[22, 'Chữ 22'], [30, 'Chữ 30'], [36, 'Chữ 36'], [48, 'Chữ 48'], [64, 'Chữ 64'], [90, 'Chữ 90']].forEach(function (z) { var op = el('option', '', z[1]); op.value = z[0]; tsel.appendChild(op); }); tsel.value = 36;
         tsel.onchange = function () { S.tsize = +tsel.value; var o = findSel(); if (o && o.kind === 'text') { var n = Object.assign({}, o, { size: S.tsize }); measureText(n); replaceItem(n); commitNow(); } }; S.tsel = tsel; bar.appendChild(tsel);
         sep();
+        // 3 màu cơ bản + màu khác (xổ xuống)
+        BASIC3.forEach(function (c) {
+            var b = el('button', 'width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #94a3b8;background:' + c + ';cursor:pointer;touch-action:manipulation;padding:0;'); b.type = 'button'; b.title = c === '#111827' ? 'Đen' : (c === '#dc2626' ? 'Đỏ' : 'Xanh');
+            b.onclick = function () { pickColor(c); }; colorBtns.push([c, b]); bar.appendChild(b);
+        });
+        S.colorBtn = el('button', 'width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #94a3b8;cursor:pointer;touch-action:manipulation;padding:0;font:700 11px system-ui;color:#fff;text-shadow:0 0 2px #000;'); S.colorBtn.type = 'button'; S.colorBtn.title = 'Thêm màu khác';
+        dropdown(S.colorBtn, function (m) {
+            var grid = el('div', 'display:grid;grid-template-columns:repeat(6,34px);gap:6px;padding:2px;');
+            COLORS.forEach(function (c) { var b = el('button', 'width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 ' + (c === S.color ? '3px #2563eb' : '1px #94a3b8') + ';background:' + c + ';cursor:pointer;padding:0;'); b.type = 'button'; b.onclick = function () { closeMenu(); pickColor(c); }; grid.appendChild(b); });
+            m.appendChild(grid);
+            var ci = el('input', 'width:100%;height:36px;border:1px solid #94a3b8;border-radius:8px;padding:0;background:none;cursor:pointer;'); ci.type = 'color'; ci.value = /^#[0-9a-f]{6}$/i.test(S.color) ? S.color : '#2563eb'; ci.title = 'Chọn màu tự do'; ci.oninput = function () { pickColor(ci.value); }; m.appendChild(el('div', 'font:12.5px system-ui;color:#64748b;', 'Màu tự do:')); m.appendChild(ci);
+        });
+        bar.appendChild(S.colorBtn);
+        sep();
         bar.appendChild(btn('↶', 'Hoàn tác (Ctrl+Z)', undo)); bar.appendChild(btn('↷', 'Làm lại (Ctrl+Y)', redo));
-        bar.appendChild(btn('🧹 Xóa hết nét', 'Xóa sạch mọi nét, chữ, hình trên trang này; trang vẫn còn (hoàn tác được)', function () { S.ids = []; commit([]); }));
-        var br = el('div', 'flex-basis:100%;height:0;'); bar.appendChild(br);
-        bar.appendChild(btn('📚 Kho hình', 'Hình mẫu cấp 2, 3', toggleLib, 'background:#ecfdf5;border-color:#86efac;'));
-        bar.appendChild(btn('🖼 Chèn ảnh', 'Chọn ảnh hoặc dán ảnh bằng Ctrl+V', function () { S.file.click(); }));
-        bar.appendChild(btn('📄 Chèn PDF', 'Mỗi trang PDF thành một trang của bảng (cần có mạng)', function () { S.pdfIn.click(); }));
-        var sel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 6px;');
+        sep();
+        // Chèn (xổ xuống)
+        var insB = btn('➕ Chèn ▾', 'Hình mẫu, ảnh, PDF, đồ thị, bảng biến thiên', null, 'background:#ecfdf5;border-color:#86efac;');
+        dropdown(insB, function (m) {
+            mItem(m, '📚 Kho hình (hình mẫu)', 'Hình mẫu cấp 2, 3', toggleLib);
+            mItem(m, '🖼 Ảnh', 'Chọn ảnh hoặc dán bằng Ctrl+V', function () { S.file.click(); });
+            mItem(m, '📄 PDF', 'Mỗi trang PDF thành một trang của bảng (cần có mạng)', function () { S.pdfIn.click(); });
+            mItem(m, '📈 Đồ thị hàm số', 'Gõ hàm số → ra đồ thị', function () { openGraphDialog(null); });
+            mItem(m, '📊 Bảng biến thiên', 'Lập bảng biến thiên (có máy điền thử)', function () { openBbtDialog(null); });
+        });
+        bar.appendChild(insB);
+        var sel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 6px;'); sel.title = 'Nền trang';
         [['trang', 'Nền trắng'], ['oli', 'Ô li'], ['ke', 'Dòng kẻ'], ['oxy', 'Trục Oxy']].forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; sel.appendChild(op); });
         sel.onchange = function () { S.pages[S.pi].bg = sel.value; drawBase(); }; S.bgSel = sel; bar.appendChild(sel);
         // nút cho đối tượng đang chọn
@@ -7557,23 +7591,72 @@ window.addEventListener('popstate', function () {
         S.pgLabel = el('span', 'font:700 14.5px system-ui;min-width:46px;text-align:center;color:#0f172a;'); bar.appendChild(S.pgLabel);
         bar.appendChild(btn('›', 'Trang sau', function () { gotoPage(S.pi + 1); }));
         bar.appendChild(btn('＋ Trang', 'Thêm trang mới', function () { S.pages.splice(S.pi + 1, 0, newPage()); gotoPage(S.pi + 1); }));
-        bar.appendChild(btn('✖ Bỏ trang này', 'Bỏ hẳn trang đang xem khỏi bảng (khác với Xóa hết nét)', function () {
-            if (S.pages.length === 1) { S.sel = null; commit([]); S.pages[S.pi].bg = 'trang'; drawBase(); return; }
-            if (S.pages[S.pi].items.length && !confirm('Bỏ trang này? Nội dung trên trang sẽ mất.')) return;
-            S.pages.splice(S.pi, 1); gotoPage(Math.min(S.pi, S.pages.length - 1));
-        }));
         sep();
-        bar.appendChild(btn('💾 Lưu ảnh', 'Lưu trang đang xem thành ảnh PNG', savePng));
+        // Lưu (xổ xuống)
+        var saveB = btn('💾 Lưu ▾', 'Lưu thành ảnh hoặc PDF', null);
+        dropdown(saveB, function (m) {
+            mItem(m, '📑 PDF cả bảng (' + S.pages.length + ' trang)', 'Mọi trang gộp thành một file PDF', function () { exportPdf(true); });
+            mItem(m, '📄 PDF trang đang xem', '', function () { exportPdf(false); });
+            mItem(m, '🖼 Ảnh PNG trang đang xem', '', savePng);
+        });
+        bar.appendChild(saveB);
+        // Khác (xổ xuống)
+        var moreB = btn('⋯ Khác ▾', 'Xóa hết nét, bỏ trang, chống chạm nhầm', null);
+        dropdown(moreB, function (m) {
+            mItem(m, '🧹 Xóa hết nét', 'Xóa sạch mọi nét, chữ, hình trên trang này; trang vẫn còn (hoàn tác được)', function () { S.ids = []; commit([]); });
+            mItem(m, '✖ Bỏ trang này', 'Bỏ hẳn trang đang xem khỏi bảng (khác với Xóa hết nét)', function () {
+                if (S.pages.length === 1) { S.sel = null; commit([]); S.pages[S.pi].bg = 'trang'; drawBase(); return; }
+                if (S.pages[S.pi].items.length && !confirm('Bỏ trang này? Nội dung trên trang sẽ mất.')) return;
+                S.pages.splice(S.pi, 1); gotoPage(Math.min(S.pi, S.pages.length - 1));
+            });
+            mItem(m, '✋ Chống chạm nhầm: ' + (S.palm ? 'bật' : 'tắt'), 'Khi dùng bút thì bỏ qua lòng bàn tay', function () { S.palm = !S.palm; refreshBar(); });
+        });
+        bar.appendChild(moreB);
         S.recBox = el('span', 'display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap;');
         S.recStart = btn('⏺ Quay màn hình', 'Quay video bài giảng (có tiếng micro). Chỉ chạy trên máy tính', recStart, 'background:#fef2f2;border-color:#fca5a5;color:#991b1b;');
         S.recPause = btn('⏸ Tạm dừng', 'Tạm dừng / tiếp tục quay', recPause); S.recStop = btn('⏹ Dừng & lưu', 'Dừng quay và tải video về máy', recStop, 'background:#dc2626;border-color:#b91c1c;color:#fff;');
         S.recClock = el('span', 'font:700 14px system-ui;color:#b91c1c;min-width:62px;', '');
         [S.recStart, S.recPause, S.recStop, S.recClock].forEach(function (x) { S.recBox.appendChild(x); }); bar.appendChild(S.recBox); recUI();
         S.fsBtn = btn('⛶ Toàn màn hình', '', toggleFs); bar.appendChild(S.fsBtn);
-        S.palmBtn = btn('✋ Chống chạm nhầm: bật', 'Khi dùng bút thì bỏ qua lòng bàn tay', function () { S.palm = !S.palm; refreshBar(); }); bar.appendChild(S.palmBtn);
         bar.appendChild(btn('▲ Thu gọn', 'Ẩn thanh công cụ để có nhiều chỗ viết hơn', function () { barShow(false); }, 'margin-left:auto;'));
         bar.appendChild(btn('✕ Đóng', 'Đóng bảng (nội dung được giữ cho đến khi tải lại trang)', close, 'background:#fee2e2;border-color:#fecaca;color:#991b1b;'));
         refreshBar();
+    }
+    // ---- xuất PDF (tự viết, không cần mạng): mỗi trang bảng = một trang PDF ----
+    function b64bytes(b64) { var bin = atob(b64), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+    function makePdf(pg) {
+        var enc = new TextEncoder(), parts = [], offs = [], len = 0, N = 2 + 3 * pg.length;
+        function push(x) { var b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; }
+        function obj(n, s) { offs[n] = len; push(n + ' 0 obj\n' + s + '\nendobj\n'); }
+        push('%PDF-1.4\n'); obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+        obj(2, '<< /Type /Pages /Kids [' + pg.map(function (p, i) { return (3 + 3 * i) + ' 0 R'; }).join(' ') + '] /Count ' + pg.length + ' >>');
+        pg.forEach(function (p, i) {
+            var a = 3 + 3 * i, c = a + 1, im = a + 2, cs = 'q ' + p.pw + ' 0 0 ' + p.ph + ' 0 0 cm /Im0 Do Q';
+            obj(a, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + p.pw + ' ' + p.ph + '] /Resources << /XObject << /Im0 ' + im + ' 0 R >> >> /Contents ' + c + ' 0 R >>');
+            obj(c, '<< /Length ' + cs.length + ' >>\nstream\n' + cs + '\nendstream');
+            offs[im] = len; push(im + ' 0 obj\n<< /Type /XObject /Subtype /Image /Width ' + p.w + ' /Height ' + p.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + p.data.length + ' >>\nstream\n'); push(p.data); push('\nendstream\nendobj\n');
+        });
+        var xr = len; push('xref\n0 ' + (N + 1) + '\n0000000000 65535 f \n');
+        for (var n = 1; n <= N; n++) push(('0000000000' + offs[n]).slice(-10) + ' 00000 n \n');
+        push('trailer\n<< /Size ' + (N + 1) + ' /Root 1 0 R >>\nstartxref\n' + xr + '\n%%EOF');
+        return new Blob(parts, { type: 'application/pdf' });
+    }
+    function exportPdf(all) {
+        closeEditor(false); var keep = S.pi, keepIds = S.ids.slice(), idx = [], pgs = [], i;
+        if (all) for (i = 0; i < S.pages.length; i++) idx.push(i); else idx.push(S.pi);
+        try {
+            idx.forEach(function (k) {
+                S.pi = k; S.ids = []; drawBase(); drawInk();
+                var c = document.createElement('canvas'); c.width = S.base.width; c.height = S.base.height; var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(S.base, 0, 0); g.drawImage(S.ink, 0, 0);
+                var url = c.toDataURL('image/jpeg', 0.92), pw = 842, ph = Math.round(842 * c.height / c.width);
+                pgs.push({ data: b64bytes(url.split(',')[1]), w: c.width, h: c.height, pw: pw, ph: ph });
+            });
+        } catch (e) { alert('Không xuất được PDF: ' + (e.message || e)); }
+        S.pi = keep; S.ids = keepIds; drawBase(); drawInk(); drawSel(); refreshBar();
+        if (!pgs.length) return;
+        var blob = makePdf(pgs), d = new Date(), pad = function (n) { return ('0' + n).slice(-2); }, name = 'bang-viet-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes()) + (all ? '' : '-trang' + (keep + 1)) + '.pdf';
+        var a = document.createElement('a'), u = URL.createObjectURL(blob); a.href = u; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); URL.revokeObjectURL(u); }, 4000);
+        note('Đã lưu PDF ' + pgs.length + ' trang: ' + name);
     }
     function barShow(on) { S.bar.style.display = on ? 'flex' : 'none'; if (S.mini) S.mini.style.display = on ? 'none' : 'block'; setTimeout(fit, 30); }
     function pickColor(c) {
@@ -7588,16 +7671,18 @@ window.addEventListener('popstate', function () {
         if (ch) { commitNow(); drawInk(); }
     }
     function refreshBar() {
+        if (S.penBtn) { var onp = !!PENS[S.tool]; S.penLast = onp ? S.tool : (S.penLast || 'pen'); S.penBtn.textContent = PENS[S.penLast].split(' ')[0] + ' ' + PENS[S.penLast].split(' ').slice(1).join(' ') + ' ▾'; S.penBtn.style.background = onp ? '#2563eb' : '#fff'; S.penBtn.style.color = onp ? '#fff' : '#0f172a'; S.penBtn.style.borderColor = onp ? '#1d4ed8' : '#cbd5e1'; }
+        if (S.colorBtn) { var inB = BASIC3.indexOf(S.color) >= 0; S.colorBtn.style.background = inB ? 'conic-gradient(#ef4444,#f59e0b,#22c55e,#06b6d4,#6366f1,#ec4899,#ef4444)' : S.color; S.colorBtn.style.boxShadow = inB ? '0 0 0 1px #94a3b8' : '0 0 0 3px #2563eb'; }
         Object.keys(toolBtns).forEach(function (k) { var on = (k === S.tool) || (k === 'dash' && S.dash); var b = toolBtns[k]; b.style.background = on ? '#2563eb' : '#fff'; b.style.color = on ? '#fff' : '#0f172a'; b.style.borderColor = on ? '#1d4ed8' : '#cbd5e1'; });
         colorBtns.forEach(function (p) { p[1].style.boxShadow = p[0] === S.color ? '0 0 0 3px #2563eb' : '0 0 0 1px #94a3b8'; });
         sizeBtns.forEach(function (p) { p[1].style.background = p[0] === S.size ? '#dbeafe' : '#fff'; p[1].style.borderColor = p[0] === S.size ? '#2563eb' : '#cbd5e1'; });
         if (S.pgLabel) S.pgLabel.textContent = (S.pi + 1) + ' / ' + S.pages.length;
         if (S.bgSel) S.bgSel.value = S.pages[S.pi].bg;
-        if (S.palmBtn) S.palmBtn.textContent = '✋ Chống chạm nhầm: ' + (S.palm ? 'bật' : 'tắt');
         if (S.fsBtn) S.fsBtn.textContent = document.fullscreenElement ? '⛶ Thu nhỏ' : '⛶ Toàn màn hình';
         if (S.selGroup) S.selGroup.style.display = S.ids.length ? 'inline-flex' : 'none';
         if (S.saveKho) { var so = findSel(); S.saveKho.style.display = so && so.kind === 'img' ? '' : 'none'; }
         if (S.tsel) S.tsel.value = String(S.tsize);
+        if (S.tsel) { var fo = findSel(); S.tsel.style.display = (S.tool === 'text' || (fo && fo.kind === 'text')) ? '' : 'none'; }
     }
 
     // ---------- kho hình (bảng bên phải) ----------
