@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v82] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v83] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -779,6 +779,11 @@
                             <b style="color:#0f766e;">B. In đề giấy</b>
                             <div style="font-size:.85rem; color:#475569; margin:2px 0 6px;">Nhiều mã đề, phiếu tô đáp án ở trên, đề ở dưới, vừa 2 trang A4. Chấm bằng điện thoại.</div>
                             <button class="btn-start" id="btn-paper" style="width: 100%; padding: 12px; background:#0f766e;" onclick="paperOpen()"><i class="fa-solid fa-print"></i> In đề giấy (nhiều mã đề)</button>
+                        </div>
+                        <div style="margin-top:10px; border:2px solid #fde68a; border-radius:10px; padding:10px; background:#fffbeb;">
+                            <b style="color:#b45309;">C. Chiếu sửa bài trên bảng viết</b>
+                            <div style="font-size:.85rem; color:#475569; margin:2px 0 6px;">Mỗi câu (hoặc vài câu trắc nghiệm) thành một trang bảng, chữ to, cô viết lời giải lên trên. Cần có mạng.</div>
+                            <button class="btn-start" style="width: 100%; padding: 12px; background:#d97706;" onclick="wbOpenExam()"><i class="fa-solid fa-chalkboard"></i> Đưa đề lên bảng viết</button>
                         </div>
                     </div>
                 </div>
@@ -7576,6 +7581,7 @@ window.addEventListener('popstate', function () {
             mItem(m, '📄 PDF', 'Mỗi trang PDF thành một trang của bảng (cần có mạng)', function () { S.pdfIn.click(); });
             mItem(m, '📈 Đồ thị hàm số', 'Gõ hàm số → ra đồ thị', function () { openGraphDialog(null); });
             mItem(m, '📊 Bảng biến thiên', 'Lập bảng biến thiên (có máy điền thử)', function () { openBbtDialog(null); });
+            mItem(m, '📝 Đề đang soạn (chiếu sửa bài)', 'Đưa các câu của đề đang soạn lên bảng, mỗi trang một hoặc vài câu', openExamDialog);
         });
         bar.appendChild(insB);
         var sel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 6px;'); sel.title = 'Nền trang';
@@ -8540,6 +8546,7 @@ window.addEventListener('popstate', function () {
     var PILL = null, PIP = null, PILLMIN = false;
     function pillMsg(t) { if (!PILL) return; PILL.msg.textContent = t; PILL.msg.style.display = 'block'; clearTimeout(PILL.msg._h); PILL.msg._h = setTimeout(function () { PILL.msg.style.display = 'none'; }, 7000); }
     function pillShouldShow() {
+        if (ov && ov.style.display !== 'none' && S && S.bar && S.bar.style.display !== 'none') return false;
         if (REC.mr) return true; if (/[?&]quay(=|&|$)/.test(location.search)) return true;
         var tv = document.getElementById('teacher-view'); return !!(tv && tv.style.display !== 'none' && tv.offsetParent !== null);
     }
@@ -8580,6 +8587,147 @@ window.addEventListener('popstate', function () {
         document.body.appendChild(box); setInterval(function () { recUI(); }, 1500); recUI();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildPill); else buildPill();
+
+    // =====================================================================
+    //  ĐƯA ĐỀ ĐANG SOẠN LÊN BẢNG VIẾT: mỗi trang bảng là một ảnh chụp câu hỏi (có công thức)
+    //  Công thức vẽ bằng MathJax 3 (dạng SVG) chạy trong khung ẩn riêng, không đụng MathJax của trang.
+    // =====================================================================
+    var MJF = null, MJURL = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js';
+    var EX_FONT = 'Arial,"Segoe UI","Noto Sans",sans-serif';
+    var EX_PT = { MCQ: 'PHẦN I · TRẮC NGHIỆM', TF: 'PHẦN II · ĐÚNG / SAI', SA: 'PHẦN III · TRẢ LỜI NGẮN', ES: 'PHẦN IV · TỰ LUẬN' };
+    function mjFrame() {
+        if (MJF) return MJF;
+        MJF = new Promise(function (res, rej) {
+            var f = document.createElement('iframe'); f.style.cssText = 'position:fixed;left:-20000px;top:0;width:1300px;height:900px;border:0;visibility:hidden;';
+            f.onload = function () {
+                var w = f.contentWindow;
+                try { w.eval('window.MathJax=' + JSON.stringify({ tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true, macros: { frac: ['\\dfrac{#1}{#2}', 2] } }, svg: { fontCache: 'none', scale: 1.05 }, options: { enableAssistiveMml: false }, startup: { typeset: false } })); } catch (e) { rej(e); return; }
+                var s = w.document.createElement('script'); s.src = MJURL;
+                s.onload = function () { try { w.MathJax.startup.promise.then(function () { res(f); }, rej); } catch (e) { rej(e); } };
+                s.onerror = function () { rej(new Error('Không tải được thư viện công thức (cần có mạng).')); };
+                w.document.head.appendChild(s);
+            };
+            f.srcdoc = '<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0"></body></html>'; document.body.appendChild(f);
+        });
+        MJF.catch(function () { MJF = null; });
+        return MJF;
+    }
+    function exClean(h) { return String(h == null ? '' : h).replace(/<script[\s\S]*?<\/script>/gi, '').replace(/ on\w+\s*=\s*("[^"]*"|'[^']*')/gi, '').replace(/^(\s|<br\s*\/?>)+|(\s|<br\s*\/?>)+$/gi, ''); }
+    function exPlain(h) { return String(h == null ? '' : h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim(); }
+    function exEsc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function exTF(q) {
+        var arr = (q.ansOptions && q.ansOptions.length ? q.ansOptions : String(q.ans || '').replace(/\s/g, '').split('')).map(function (x) { x = String(x || '').trim(); return /^[DdĐđ]/.test(x) ? 'Đ' : (/^[Ss]/.test(x) ? 'S' : '-'); });
+        while (arr.length < 4) arr.push('-'); return arr.slice(0, 4);
+    }
+    function exWait(imgs) { return Promise.all(imgs.map(function (im) { return im.complete ? Promise.resolve() : new Promise(function (r) { im.onload = im.onerror = r; setTimeout(r, 6000); }); })); }
+    function exBlockHtml(it, o) {
+        var q = it.q, t = it.type, G = '#16a34a', s = '<div style="margin:0 0 26px;"><div><b style="color:#1d4ed8;">Câu ' + it.n + '.</b> ' + exClean(q.q) + '</div>', sol = '';
+        var opts = (q.options || []).slice(0, 4);
+        if (t === 'MCQ') {
+            var a0 = 'ABCD'.indexOf(String(q.ans || '').trim().toUpperCase().charAt(0)), long = opts.some(function (x) { return exPlain(x).length > 40; });
+            s += '<div style="display:grid;grid-template-columns:' + (long ? '1fr' : '1fr 1fr') + ';gap:6px 28px;margin:10px 0 0 30px;">';
+            opts.forEach(function (x, j) { var hit = o.ans === 'inline' && j === a0; s += '<div style="' + (hit ? 'background:#dcfce7;border-radius:8px;padding:0 8px;margin-left:-8px;' : '') + '"><b>' + 'ABCD'.charAt(j) + '.</b> ' + exClean(x) + '</div>'; });
+            s += '</div>';
+            if (o.ans === 'inline' && a0 >= 0) s += '<div style="margin:8px 0 0 30px;color:' + G + ';font-weight:700;">Đáp án: ' + 'ABCD'.charAt(a0) + '</div>';
+        } else if (t === 'TF') {
+            var tf = exTF(q); s += '<div style="margin:10px 0 0 30px;">';
+            opts.forEach(function (x, j) { s += '<div style="margin:4px 0;"><b>' + 'abcd'.charAt(j) + ')</b> ' + exClean(x) + (o.ans === 'inline' ? ' <span style="color:' + (tf[j] === 'Đ' ? G : '#dc2626') + ';font-weight:700;">[' + tf[j] + ']</span>' : '') + '</div>'; });
+            s += '</div>';
+        } else if (t === 'SA') {
+            if (o.ans === 'inline' && String(q.ans || '').trim()) s += '<div style="margin:12px 0 0 30px;color:' + G + ';font-weight:700;">Đáp án: ' + exClean(q.ans) + '</div>';
+        }
+        if (o.ans === 'inline' && o.sol && exPlain(q.explanation)) s += '<div style="margin:12px 0 0 30px;padding:8px 12px;border-left:4px solid ' + G + ';background:#f0fdf4;font-size:26px;"><b>Lời giải.</b> ' + exClean(q.explanation) + '</div>';
+        return s + '</div>';
+    }
+    function exLoadImg(src) { return new Promise(function (res, rej) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { rej(new Error('Không tạo được ảnh trang.')); }; im.src = src; }); }
+    async function exBuild(list, o, onProg) {
+        var f = await mjFrame(), w = f.contentWindow, d = f.contentDocument, W = 1100, H = Math.round(W * S.H / S.W), PX = 36, PY = 26, HEAD = 46, inner = W - 2 * PX, Hmax = H - 2 * PY - HEAD;
+        var css = ''; try { css = w.MathJax.svgStylesheet().textContent; } catch (e) { }
+        d.body.innerHTML = '';
+        var meas = d.createElement('div'); meas.style.cssText = 'position:absolute;left:0;top:0;width:' + inner + 'px;font:30px/1.55 ' + EX_FONT + ';color:#0f172a;'; d.body.appendChild(meas);
+        var units = [];
+        list.forEach(function (it) { units.push({ k: it.type === 'MCQ' ? 'mcq' : 'solo', title: EX_PT[it.type], html: exBlockHtml(it, o) }); });
+        if (o.ans === 'end') {
+            var M = [], T = [], A = [];
+            list.forEach(function (it) {
+                if (it.type === 'MCQ') { var a0 = 'ABCD'.indexOf(String(it.q.ans || '').trim().toUpperCase().charAt(0)); M.push('<div><b>' + it.n + '.</b> ' + (a0 >= 0 ? 'ABCD'.charAt(a0) : '?') + '</div>'); }
+                else if (it.type === 'TF') { var tf = exTF(it.q); T.push('<div style="margin:3px 0;"><b>Câu ' + it.n + ':</b> ' + tf.map(function (x, j) { return 'abcd'.charAt(j) + ') <b style="color:' + (x === 'Đ' ? '#16a34a' : '#dc2626') + ';">' + x + '</b>'; }).join(' &nbsp; ') + '</div>'); }
+                else if (it.type === 'SA') A.push('<div style="margin:3px 0;"><b>Câu ' + it.n + ':</b> ' + exClean(it.q.ans) + '</div>');
+            });
+            var h = '';
+            if (M.length) h += '<div style="margin-bottom:18px;"><div style="color:#64748b;font-weight:700;">Trắc nghiệm</div><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px 12px;margin-top:6px;">' + M.join('') + '</div></div>';
+            if (T.length) h += '<div style="margin-bottom:18px;"><div style="color:#64748b;font-weight:700;">Đúng / sai</div>' + T.join('') + '</div>';
+            if (A.length) h += '<div style="margin-bottom:18px;"><div style="color:#64748b;font-weight:700;">Trả lời ngắn</div>' + A.join('') + '</div>';
+            if (h) units.push({ k: 'solo', title: 'ĐÁP ÁN', html: '<div>' + h + '</div>' });
+            if (o.sol) list.forEach(function (it) { if (exPlain(it.q.explanation)) units.push({ k: 'solo', title: 'LỜI GIẢI · ' + EX_PT[it.type].split('·')[1].trim(), html: '<div><b style="color:#16a34a;">Lời giải Câu ' + it.n + '.</b> ' + exClean(it.q.explanation) + '</div>' }); });
+        }
+        units.forEach(function (u) { var b = d.createElement('div'); b.innerHTML = u.html; u.el = b.firstChild; meas.appendChild(u.el); });
+        await exWait([].slice.call(meas.querySelectorAll('img')));
+        onProg && onProg('Đang vẽ công thức…');
+        await w.MathJax.typesetPromise([meas]);
+        await exWait([].slice.call(meas.querySelectorAll('img')));
+        units.forEach(function (u) { u.h = u.el.offsetHeight + 26; });
+        var pages = [], cur = null;
+        units.forEach(function (u) {
+            if (u.k === 'mcq') { if (cur && cur.k === 'mcq' && cur.n < o.per && cur.used + u.h <= Hmax * 1.3) { cur.us.push(u); cur.used += u.h; cur.n++; } else { cur = { k: 'mcq', title: u.title, us: [u], used: u.h, n: 1 }; pages.push(cur); } }
+            else { cur = { k: 'solo', title: u.title, us: [u], used: u.h, n: 1 }; pages.push(cur); }
+        });
+        var out = [];
+        for (var pi = 0; pi < pages.length; pi++) {
+            onProg && onProg('Đang chụp trang ' + (pi + 1) + '/' + pages.length + '…');
+            var pg = pages[pi], c = d.createElement('div'), body = d.createElement('div'), st = d.createElement('style'); st.textContent = css;
+            c.style.cssText = 'position:absolute;left:0;top:0;width:' + W + 'px;height:' + H + 'px;box-sizing:border-box;padding:' + PY + 'px ' + PX + 'px;background:#fff;overflow:hidden;font:30px/1.55 ' + EX_FONT + ';color:#0f172a;';
+            var hd = d.createElement('div'); hd.style.cssText = 'height:' + HEAD + 'px;font:700 22px ' + EX_FONT + ';color:#64748b;letter-spacing:.04em;'; hd.textContent = pg.title; c.appendChild(st); c.appendChild(hd);
+            body.style.cssText = 'width:' + inner + 'px;transform-origin:0 0;'; pg.us.forEach(function (u) { body.appendChild(u.el); }); c.appendChild(body); d.body.appendChild(c);
+            var bh = body.offsetHeight; if (bh > Hmax) { var k = Math.max(pg.k === 'mcq' ? 0.76 : 0.55, Hmax / bh); body.style.transform = 'scale(' + k + ')'; }
+            var xml = new XMLSerializer().serializeToString(c); d.body.removeChild(c);
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '"><foreignObject x="0" y="0" width="' + W + '" height="' + H + '">' + xml + '</foreignObject></svg>';
+            var im = await exLoadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+            var cv = document.createElement('canvas'); cv.width = W * 2; cv.height = H * 2; var g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(im, 0, 0, cv.width, cv.height);
+            var blob = await new Promise(function (r) { try { cv.toBlob(r, 'image/png'); } catch (e) { r(null); } });
+            if (!blob) throw new Error('Trình duyệt này không cho lưu ảnh trang (hãy dùng Chrome hoặc Edge).');
+            out.push(await exLoadImg(URL.createObjectURL(blob)));
+        }
+        d.body.innerHTML = '';
+        return out;
+    }
+    function exInsert(imgs) {
+        var onlyEmpty = S.pages.length === 1 && !S.pages[0].items.length, at = S.pi + 1;
+        var np = imgs.map(function (im) { var p = newPage(), it = { uid: uid(), kind: 'img', img: im, x: S.W / 2, y: S.H / 2, w: S.W, h: S.H, rot: 0 }; p.items = [it]; p.hist = [[it]]; p.hi = 0; return p; });
+        if (onlyEmpty) S.pages = np; else Array.prototype.splice.apply(S.pages, [at, 0].concat(np));
+        gotoPage(onlyEmpty ? 0 : at);
+    }
+    function openExamDialog() {
+        var base = (typeof selectedQuestions !== 'undefined') ? selectedQuestions : [];
+        if (!base || !base.length) { alert('Cô chưa có câu hỏi nào trong đề. Hãy dán đề, chọn từ ngân hàng hoặc lập ma trận ở Bước 2 trước, rồi quay lại đây.'); return; }
+        if (base.length === 1 && base[0].isDynamicConfig) { alert('Đây là đề ma trận động (mỗi học sinh bốc câu khác nhau) nên chưa có sẵn từng câu để đưa lên bảng. Cô chọn đề cố định hoặc bốc sẵn câu hỏi rồi thử lại.'); return; }
+        var cnt = { MCQ: 0, TF: 0, SA: 0, ES: 0 }, list = [];
+        ['MCQ', 'TF', 'SA', 'ES'].forEach(function (t) { base.forEach(function (q) { if (q && q.type === t) { cnt[t]++; list.push({ q: q, type: t, n: cnt[t] }); } }); });
+        if (!list.length) { alert('Đề chưa có câu hợp lệ.'); return; }
+        var M = modal('🖥 Đưa đề lên bảng viết để chiếu sửa bài', 640), card = M.card, ck = [];
+        card.appendChild(el('div', 'font-size:13px;color:#475569;margin-bottom:6px;', 'Đề có <b>' + cnt.MCQ + '</b> trắc nghiệm, <b>' + cnt.TF + '</b> đúng/sai, <b>' + cnt.SA + '</b> trả lời ngắn, <b>' + cnt.ES + '</b> tự luận. Trắc nghiệm vài câu chung một trang; đúng/sai, trả lời ngắn, tự luận mỗi câu một trang, chừa chỗ để cô viết lời giải.'));
+        var top = el('div', 'display:flex;gap:6px;margin-bottom:4px;');
+        top.appendChild(btn('Chọn hết', '', function () { ck.forEach(function (c) { c.checked = true; }); })); top.appendChild(btn('Bỏ hết', '', function () { ck.forEach(function (c) { c.checked = false; }); })); card.appendChild(top);
+        var box = el('div', 'max-height:220px;overflow:auto;border:1px solid #e2e8f0;border-radius:8px;padding:6px 8px;margin-bottom:8px;');
+        var TN = { MCQ: 'TN', TF: 'Đ/S', SA: 'TLN', ES: 'TL' };
+        list.forEach(function (it) { var lb = el('label', 'display:block;cursor:pointer;margin:2px 0;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'), c = el('input'); c.type = 'checkbox'; c.checked = true; ck.push(c); lb.appendChild(c); lb.appendChild(document.createTextNode(' ' + TN[it.type] + ' · Câu ' + it.n + ': ' + exPlain(it.q.q).slice(0, 80))); box.appendChild(lb); }); card.appendChild(box);
+        var r1 = el('div', 'display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px;');
+        r1.appendChild(el('span', '', 'Đáp án:')); var sa = el('select', 'padding:5px;border:1px solid #cbd5e1;border-radius:6px;font:14px system-ui;');
+        [['end', 'Ẩn, thêm trang đáp án ở cuối'], ['none', 'Ẩn hẳn'], ['inline', 'Hiện luôn trong từng câu']].forEach(function (z) { var op = el('option', '', z[1]); op.value = z[0]; sa.appendChild(op); }); r1.appendChild(sa);
+        r1.appendChild(el('span', 'margin-left:8px;', 'Trắc nghiệm tối đa mỗi trang:')); var sp = el('select', 'padding:5px;border:1px solid #cbd5e1;border-radius:6px;font:14px system-ui;');
+        [1, 2, 3, 4].forEach(function (n) { var op = el('option', '', n + ' câu'); op.value = n; sp.appendChild(op); }); sp.value = '3'; r1.appendChild(sp); card.appendChild(r1);
+        var lbs = el('label', 'cursor:pointer;display:block;margin-bottom:6px;'), cs = el('input'); cs.type = 'checkbox'; cs.checked = true; lbs.appendChild(cs); lbs.appendChild(document.createTextNode(' Kèm lời giải nếu đề có (khi chọn "ẩn" thì lời giải nằm ở trang cuối)')); card.appendChild(lbs);
+        card.appendChild(el('div', 'font-size:12.5px;color:#64748b;margin-bottom:6px;', 'Cần có mạng khi bấm (web tải thư viện vẽ công thức). Các trang sẽ chèn ngay sau trang đang xem.'));
+        var st = el('div', 'font-size:13px;color:#b45309;min-height:18px;margin-bottom:4px;'); card.appendChild(st);
+        var foot = el('div', 'display:flex;gap:8px;justify-content:flex-end;'); card.appendChild(foot);
+        foot.appendChild(btn('Hủy', '', M.close));
+        var go = btn('Đưa lên bảng', '', function () {
+            var sel = list.filter(function (it, i) { return ck[i].checked; }); if (!sel.length) { st.textContent = 'Cô tick ít nhất một câu.'; return; }
+            go.disabled = true; go.style.opacity = '.6'; st.textContent = 'Đang chuẩn bị…';
+            exBuild(sel, { ans: sa.value, per: +sp.value, sol: cs.checked }, function (t) { st.textContent = t; }).then(function (imgs) { M.close(); exInsert(imgs); note('Đã đưa ' + imgs.length + ' trang lên bảng'); }, function (e) { go.disabled = false; go.style.opacity = ''; st.textContent = 'Không làm được: ' + (e && e.message || e); });
+        }, 'background:#2563eb;color:#fff;border-color:#1d4ed8;'); foot.appendChild(go);
+    }
+    window.wbOpenExam = function () { open(); openExamDialog(); };
 
     // ---------- ảnh, lưu, toàn màn hình ----------
     function savePng() {
