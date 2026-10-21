@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v81] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v82] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8499,15 +8499,18 @@ window.addEventListener('popstate', function () {
     function recFmt() { var l = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']; for (var i = 0; i < l.length; i++) { try { if (MediaRecorder.isTypeSupported(l[i])) return l[i]; } catch (e) { } } return ''; }
     function recTime() { var t = REC.acc + (REC.paused ? 0 : Date.now() - REC.t0); t = Math.floor(t / 1000); return ('0' + Math.floor(t / 60)).slice(-2) + ':' + ('0' + t % 60).slice(-2); }
     function recUI() {
-        if (!S.recBox) return; var on = !!REC.mr;
-        S.recStart.style.display = on ? 'none' : ''; S.recPause.style.display = on ? '' : 'none'; S.recStop.style.display = on ? '' : 'none'; S.recClock.style.display = on ? '' : 'none';
-        S.recPause.textContent = REC.paused ? '▶ Tiếp tục' : '⏸ Tạm dừng'; S.recClock.textContent = (REC.paused ? '⏸ ' : '🔴 ') + recTime();
+        var on = !!REC.mr, clk = (REC.paused ? '⏸ ' : '🔴 ') + recTime();
+        if (S && S.recBox) {
+            S.recStart.style.display = on ? 'none' : ''; S.recPause.style.display = on ? '' : 'none'; S.recStop.style.display = on ? '' : 'none'; S.recClock.style.display = on ? '' : 'none';
+            S.recPause.textContent = REC.paused ? '▶ Tiếp tục' : '⏸ Tạm dừng'; S.recClock.textContent = clk;
+        }
+        pillUI(on, clk);
     }
     function recCleanup() { REC.streams.forEach(function (st) { try { st.getTracks().forEach(function (t) { t.stop(); }); } catch (e) { } }); REC.streams = []; try { if (REC.ctx) REC.ctx.close(); } catch (e) { } REC.ctx = null; clearInterval(REC.timer); REC.mr = null; REC.paused = false; REC.acc = 0; recUI(); }
-    function recStart() {
+    function recStart(opts) {
         if (!recSupported()) { alert('Trình duyệt này không cho trang web tự quay màn hình (điện thoại, máy tính bảng Samsung/Android thường vậy).\n\nCô dùng nút "Ghi màn hình" có sẵn của máy Samsung (vuốt từ trên xuống), hoặc mở trang bằng Chrome/Edge trên máy tính để quay.'); return; }
-        navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: true, preferCurrentTab: true, selfBrowserSurface: 'include' }).then(function (disp) {
-            REC.streams.push(disp);
+        navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: true, preferCurrentTab: !(opts && opts.any), selfBrowserSurface: 'include' }).then(function (disp) {
+            REC.streams.push(disp); try { REC.surface = disp.getVideoTracks()[0].getSettings().displaySurface || ''; } catch (e) { REC.surface = ''; }
             var finish = function (mic) {
                 var tracks = disp.getVideoTracks().slice(), at = [];
                 disp.getAudioTracks().forEach(function (t) { at.push(t); });
@@ -8524,7 +8527,7 @@ window.addEventListener('popstate', function () {
                     recCleanup(); note('Đã lưu video: ' + name);
                 };
                 disp.getVideoTracks()[0].addEventListener('ended', function () { if (REC.mr && REC.mr.state !== 'inactive') REC.mr.stop(); });
-                mr.start(1000); REC.timer = setInterval(recUI, 500); recUI(); note('Đang quay. Bấm "Dừng & lưu" khi xong.');
+                mr.start(1000); REC.timer = setInterval(recUI, 500); recUI(); note('Đang quay. Lưu ý: đừng để lộ mật khẩu, khóa Gemini hay link Apps Script thật trong video.' + (REC.surface && REC.surface !== 'browser' ? ' Cô đang quay ngoài trang này: bấm 🪟 để có bảng điều khiển nổi.' : ''));
             };
             if (navigator.mediaDevices.getUserMedia) navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then(finish, function () { note('Không có micro: video sẽ không có tiếng cô giảng'); finish(null); });
             else finish(null);
@@ -8532,6 +8535,51 @@ window.addEventListener('popstate', function () {
     }
     function recPause() { if (!REC.mr) return; if (REC.paused) { REC.mr.resume(); REC.t0 = Date.now(); REC.paused = false; } else { REC.mr.pause(); REC.acc += Date.now() - REC.t0; REC.paused = true; } recUI(); }
     function recStop() { if (REC.mr && REC.mr.state !== 'inactive') { if (REC.paused) { REC.paused = false; } REC.mr.stop(); } }
+
+    // ---- nút quay nổi trên mọi màn hình của web (cho giáo viên, hoặc mở web với ?quay=1) ----
+    var PILL = null, PIP = null, PILLMIN = false;
+    function pillMsg(t) { if (!PILL) return; PILL.msg.textContent = t; PILL.msg.style.display = 'block'; clearTimeout(PILL.msg._h); PILL.msg._h = setTimeout(function () { PILL.msg.style.display = 'none'; }, 7000); }
+    function pillShouldShow() {
+        if (REC.mr) return true; if (/[?&]quay(=|&|$)/.test(location.search)) return true;
+        var tv = document.getElementById('teacher-view'); return !!(tv && tv.style.display !== 'none' && tv.offsetParent !== null);
+    }
+    function pillUI(on, clk) {
+        if (PILL) {
+            PILL.start.style.display = on || PILLMIN ? 'none' : ''; PILL.any.style.display = on || PILLMIN ? 'none' : ''; PILL.pause.style.display = on && !PILLMIN ? '' : 'none'; PILL.stop.style.display = on && !PILLMIN ? '' : 'none';
+            PILL.clock.style.display = on ? '' : 'none'; PILL.clock.textContent = PILLMIN && on ? '🔴' : clk; PILL.pause.textContent = REC.paused ? '▶' : '⏸'; PILL.pause.title = REC.paused ? 'Tiếp tục quay' : 'Tạm dừng';
+            PILL.pip.style.display = on && !PILLMIN && window.documentPictureInPicture ? '' : 'none'; PILL.min.textContent = PILLMIN ? '⏺' : '–'; PILL.min.style.display = (on || PILLMIN) ? '' : 'none';
+            PILL.box.style.display = (pillShouldShow() || PILLMIN) ? 'flex' : 'none';
+        }
+        if (PIP && PIP.clk) { PIP.clk.textContent = clk; PIP.pause.textContent = REC.paused ? '▶ Tiếp tục' : '⏸ Tạm dừng'; }
+    }
+    function pipOpen() {
+        if (!window.documentPictureInPicture || !REC.mr) return;
+        if (PIP && PIP.win) { try { PIP.win.focus(); } catch (e) { } return; }
+        documentPictureInPicture.requestWindow({ width: 300, height: 86 }).then(function (w) {
+            var d = w.document, st = 'font:700 14px system-ui,Arial;padding:7px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;';
+            d.body.style.cssText = 'margin:0;padding:10px;display:flex;gap:8px;align-items:center;background:#0f172a;font-family:system-ui,Arial;';
+            var clk = d.createElement('span'); clk.style.cssText = 'color:#fff;font:700 16px system-ui;min-width:70px;';
+            var ps = d.createElement('button'); ps.style.cssText = st; ps.onclick = recPause;
+            var sp = d.createElement('button'); sp.style.cssText = st + 'background:#dc2626;color:#fff;border-color:#b91c1c;'; sp.textContent = '⏹ Dừng & lưu'; sp.onclick = recStop;
+            [clk, ps, sp].forEach(function (x) { d.body.appendChild(x); }); PIP = { win: w, clk: clk, pause: ps }; recUI();
+            w.addEventListener('pagehide', function () { PIP = null; });
+        }, function (e) { pillMsg('Không mở được bảng nổi: ' + (e && e.message || e)); });
+    }
+    function buildPill() {
+        if (PILL || !document.body) return;
+        var box = document.createElement('div'); box.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:2147483100;display:none;flex-wrap:wrap;gap:6px;align-items:center;max-width:92vw;background:rgba(15,23,42,.92);padding:6px 8px;border-radius:999px;font-family:system-ui,Arial;box-shadow:0 4px 14px rgba(0,0,0,.35);';
+        function pb(label, title, fn, bg) { var b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.title = title; b.onclick = fn; b.style.cssText = 'min-height:34px;padding:4px 10px;border:0;border-radius:999px;background:' + (bg || '#fff') + ';color:' + (bg ? '#fff' : '#0f172a') + ';font:700 13px system-ui;cursor:pointer;white-space:nowrap;'; box.appendChild(b); return b; }
+        PILL = { box: box };
+        PILL.start = pb('⏺ Quay trang này', 'Quay chính trang web này (kể cả khi cô chuyển qua lại giữa các màn hình của web)', function () { recStart({}); });
+        PILL.any = pb('🖥 Quay màn hình / cửa sổ khác', 'Chọn quay cả màn hình hoặc một cửa sổ, tab khác', function () { recStart({ any: true }); });
+        PILL.clock = pb('', '', function () { }, '#b91c1c'); PILL.clock.style.cursor = 'default';
+        PILL.pause = pb('⏸', 'Tạm dừng', recPause, '#334155'); PILL.stop = pb('⏹ Dừng & lưu', 'Dừng quay và tải video về máy', recStop, '#dc2626');
+        PILL.pip = pb('🪟', 'Bảng điều khiển nổi, vẫn thấy khi cô sang cửa sổ khác (Chrome/Edge máy tính)', pipOpen, '#334155');
+        PILL.min = pb('–', 'Thu nhỏ / mở rộng', function () { PILLMIN = !PILLMIN; recUI(); }, '#334155');
+        PILL.msg = document.createElement('div'); PILL.msg.style.cssText = 'display:none;flex-basis:100%;color:#fde68a;font:12.5px/1.35 system-ui;padding:2px 8px 4px;'; box.appendChild(PILL.msg);
+        document.body.appendChild(box); setInterval(function () { recUI(); }, 1500); recUI();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildPill); else buildPill();
 
     // ---------- ảnh, lưu, toàn màn hình ----------
     function savePng() {
@@ -8543,7 +8591,7 @@ window.addEventListener('popstate', function () {
             note('Đã lưu ảnh trang ' + (S.pi + 1));
         }, 'image/png');
     }
-    function note(t) { S.status.textContent = t; S.status.style.display = 'block'; clearTimeout(S.status._h); S.status._h = setTimeout(function () { S.status.style.display = 'none'; }, 2200); }
+    function note(t) { if (!S || !S.status) { pillMsg(t); return; } S.status.textContent = t; S.status.style.display = 'block'; clearTimeout(S.status._h); S.status._h = setTimeout(function () { S.status.style.display = 'none'; }, 2200); }
     function toggleFs() { try { if (document.fullscreenElement) document.exitFullscreen(); else if (ov.requestFullscreen) ov.requestFullscreen(); else note('Trình duyệt này không hỗ trợ toàn màn hình'); } catch (e) { } }
     function open() { if (!ov) build(); ov.style.display = 'flex'; fit(); refreshBar(); }
     function close() { try { if (REC.mr) recStop(); } catch (e) { } closeEditor(false); try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) { } ov.style.display = 'none'; }
