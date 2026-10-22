@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v85] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v87] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7416,10 +7416,11 @@ window.addEventListener('popstate', function () {
         else if (o.kind === 'shape') drawShapeObj(g, o);
         else if (o.kind === 'fgraph') drawFGraph(g, o);
         else if (o.kind === 'bbt') drawBBT(g, o);
+        else if (o.kind === 'solid') drawSolid(g, o);
         g.restore();
     }
     function toLocal(o, x, y) { var dx = x - o.x, dy = y - o.y, c = Math.cos(o.rot || 0), s = Math.sin(o.rot || 0); return [dx * c + dy * s, -dx * s + dy * c]; }
-    function isObj(it) { return it.kind === 'img' || it.kind === 'text' || it.kind === 'shape' || it.kind === 'fgraph' || it.kind === 'bbt'; }
+    function isObj(it) { return it.kind === 'img' || it.kind === 'text' || it.kind === 'shape' || it.kind === 'fgraph' || it.kind === 'bbt' || it.kind === 'solid'; }
     // ---- chọn nhiều (nét + hình + chữ + ảnh) ----
     function byUid(u) { var p = S.pages[S.pi]; for (var i = 0; i < p.items.length; i++) if (p.items[i].uid === u) return p.items[i]; return null; }
     function selItems() { var p = S.pages[S.pi], set = {}; S.ids.forEach(function (u) { set[u] = 1; }); return p.items.filter(function (x) { return set[x.uid]; }); }
@@ -7586,15 +7587,18 @@ window.addEventListener('popstate', function () {
             mItem(m, '🖼 Ảnh', 'Chọn ảnh hoặc dán bằng Ctrl+V', function () { S.file.click(); });
             mItem(m, '📄 PDF', 'Mỗi trang PDF thành một trang của bảng (cần có mạng)', function () { S.pdfIn.click(); });
             mItem(m, '📈 Đồ thị hàm số', 'Gõ hàm số → ra đồ thị', function () { openGraphDialog(null); });
+            mItem(m, '🧊 Hình học không gian (xoay được)', 'Chóp, lăng trụ, hộp, chóp cụt, trụ, nón, cầu: kéo để xoay', function () { openSolidDialog(null); });
             mItem(m, '📊 Bảng biến thiên', 'Lập bảng biến thiên (có máy điền thử)', function () { openBbtDialog(null); });
             mItem(m, '📝 Đề đang soạn (chiếu sửa bài)', 'Đưa các câu của đề đang soạn lên bảng, mỗi trang một hoặc vài câu', openExamDialog);
         });
         bar.appendChild(insB);
+        bar.appendChild(btn('🧮 Máy tính', 'Máy tính bấm tay kiểu fx-580 (nổi trên bảng, kéo được)', toggleCalc, 'background:#fff7ed;border-color:#fdba74;'));
         var sel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 6px;'); sel.title = 'Nền trang';
         [['trang', 'Nền trắng'], ['oli', 'Ô li'], ['ke', 'Dòng kẻ'], ['oxy', 'Trục Oxy']].forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; sel.appendChild(op); });
         sel.onchange = function () { S.pages[S.pi].bg = sel.value; drawBase(); }; S.bgSel = sel; bar.appendChild(sel);
         // nút cho đối tượng đang chọn
         var g1 = el('span', 'display:none;gap:6px;align-items:center;'); S.selGroup = g1;
+        S.editSel = btn('🔄 Xoay / sửa', 'Mở lại hộp chỉnh hình, đồ thị hoặc bảng biến thiên đang chọn', function () { var so = findSel(); if (!so) return; if (so.kind === 'solid') openSolidDialog(so); else if (so.kind === 'fgraph') openGraphDialog(so); else if (so.kind === 'bbt') openBbtDialog(so); }, 'display:none;background:#eff6ff;border-color:#93c5fd;'); g1.appendChild(S.editSel);
         g1.appendChild(btn('⧉ Nhân đôi', 'Ctrl+D', dupSel)); g1.appendChild(btn('⬆ Lên trên', 'Đưa các thứ đã chọn lên trên', function () { var its = selItems(); if (!its.length) return; var set = {}; its.forEach(function (x) { set[x.uid] = 1; }); commit(S.pages[S.pi].items.filter(function (x) { return !set[x.uid]; }).concat(its)); }));
         S.saveKho = btn('⭐ Lưu vào kho', 'Lưu ảnh này vào Kho của tôi để dùng lại', saveSelToKho, 'display:none;'); g1.appendChild(S.saveKho);
         g1.appendChild(btn('🗑 Xóa đã chọn', 'Phím Delete', delSel, 'background:#fee2e2;border-color:#fecaca;color:#991b1b;')); bar.appendChild(g1);
@@ -7693,6 +7697,7 @@ window.addEventListener('popstate', function () {
         if (S.bgSel) S.bgSel.value = S.pages[S.pi].bg;
         if (S.fsBtn) S.fsBtn.textContent = document.fullscreenElement ? '⛶ Thu nhỏ' : '⛶ Toàn màn hình';
         if (S.selGroup) S.selGroup.style.display = S.ids.length ? 'inline-flex' : 'none';
+        if (S.editSel) { var se = findSel(); S.editSel.style.display = se && (se.kind === 'solid' || se.kind === 'fgraph' || se.kind === 'bbt') ? '' : 'none'; if (se && se.kind === 'solid') S.editSel.textContent = '🔄 Xoay hình'; else S.editSel.textContent = '✏️ Sửa'; }
         if (S.saveKho) { var so = findSel(); S.saveKho.style.display = so && so.kind === 'img' ? '' : 'none'; }
         if (S.tsel) S.tsel.value = String(S.tsize);
         if (S.tsel) { var fo = findSel(); S.tsel.style.display = (S.tool === 'text' || (fo && fo.kind === 'text')) ? '' : 'none'; }
@@ -7919,7 +7924,7 @@ window.addEventListener('popstate', function () {
         }
         ['pointermove', 'pointerdown', 'pointerenter', 'pointerleave', 'pointerup', 'pointercancel'].forEach(function (nm) { c.addEventListener(nm, updDot); });
         c.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-        c.addEventListener('dblclick', function (e) { if (S.tool !== 'select') return; var p0 = pos(e), o = hitObj(p0.x, p0.y); if (o && o.kind === 'text') { S.sel = o.uid; openEditor(o.x - o.w / 2, o.y - o.h / 2, o); drawSel(); } else if (o && o.kind === 'fgraph') { S.sel = o.uid; openGraphDialog(o); } else if (o && o.kind === 'bbt') { S.sel = o.uid; openBbtDialog(o); } });
+        c.addEventListener('dblclick', function (e) { if (S.tool !== 'select') return; var p0 = pos(e), o = hitObj(p0.x, p0.y); if (o && o.kind === 'text') { S.sel = o.uid; openEditor(o.x - o.w / 2, o.y - o.h / 2, o); drawSel(); } else if (o && o.kind === 'fgraph') { S.sel = o.uid; openGraphDialog(o); } else if (o && o.kind === 'bbt') { S.sel = o.uid; openBbtDialog(o); } else if (o && o.kind === 'solid') { S.sel = o.uid; openSolidDialog(o); } });
     }
     function selectDown(e, p0) {
         var cur = findSel(), add = e.shiftKey || e.ctrlKey || e.metaKey;
@@ -8425,6 +8430,1098 @@ window.addEventListener('popstate', function () {
     function numInp(val, ph, wd) { var i = el('input', 'width:' + (wd || 70) + 'px;padding:5px 6px;border:1px solid #cbd5e1;border-radius:6px;font:14px system-ui;'); i.type = 'text'; i.value = val == null ? '' : String(val).replace('.', ','); i.placeholder = ph || ''; i.inputMode = 'decimal'; return i; }
     function toNum(t) { var v = parseFloat(String(t).trim().replace(',', '.').replace('π', '*' + Math.PI)); if (/π|pi/i.test(t)) { var m = String(t).trim().replace(/\s/g, '').replace(',', '.').match(/^(-?[\d.]*)\*?(?:π|pi)(?:\/(\d+))?$/i); if (m) { var k = m[1] === '' ? 1 : (m[1] === '-' ? -1 : parseFloat(m[1])); return k * Math.PI / (m[2] ? parseFloat(m[2]) : 1); } } return isFinite(v) ? v : NaN; }
     function placeCenter(o, wMax, hMax) { o.x = S.W / 2; o.y = S.H / 2; }
+
+    // =====================================================================
+    //  HÌNH KHỐI (hình học không gian): chóp, lăng trụ, hộp, chóp cụt, trụ, nón, cầu — xoay được
+    // =====================================================================
+    var SOL_DEF = { t: 'pyr', base: 'tg', vt: 0, a: 4, b: 4, al: 60, c: 2, foot: 'O', h: 5, k: 0.5, r1: 2, r2: 0, az: -0.62, el: 0.42, opt: { lab: true, hgt: true, hid: true, fill: true } };
+    function solSpec(p) { var s = Object.assign({}, SOL_DEF, p || {}); s.opt = Object.assign({}, SOL_DEF.opt, (p && p.opt) || {}); return s; }
+    var SOL_PRESETS = [
+        ['Chóp', [
+            ['Tứ diện đều', { t: 'pyr', base: 'tg', a: 4, b: 4, al: 60, foot: 'O', h: 3.266 }],
+            ['Chóp tam giác đều', { t: 'pyr', base: 'tg', a: 4, b: 4, al: 60, foot: 'O', h: 5 }],
+            ['Chóp tứ giác đều', { t: 'pyr', base: 'bh', a: 4, b: 4, al: 90, foot: 'O', h: 5 }],
+            ['Chóp lục giác đều', { t: 'pyr', base: 'luc', a: 3, foot: 'O', h: 5 }],
+            ['SA ⊥ đáy, ABC vuông tại B', { t: 'pyr', base: 'tg', vt: 1, a: 3, b: 4, al: 90, foot: 'v0', h: 4 }],
+            ['SA ⊥ đáy, ABC đều', { t: 'pyr', base: 'tg', a: 4, b: 4, al: 60, foot: 'v0', h: 5 }],
+            ['SA ⊥ đáy, ABCD hình vuông', { t: 'pyr', base: 'bh', a: 4, b: 4, al: 90, foot: 'v0', h: 5 }],
+            ['SA ⊥ đáy, ABCD chữ nhật', { t: 'pyr', base: 'bh', a: 4, b: 3, al: 90, foot: 'v0', h: 5 }],
+            ['SA ⊥ đáy, ABCD hình thang vuông', { t: 'pyr', base: 'tv', a: 4, b: 3, c: 2, foot: 'v0', h: 4 }],
+            ['Đáy hình thoi, SO ⊥ đáy', { t: 'pyr', base: 'bh', a: 4, b: 4, al: 60, foot: 'O', h: 4 }],
+            ['Đáy bình hành, H trung điểm AB', { t: 'pyr', base: 'bh', a: 4, b: 3, al: 70, foot: 'm0', h: 4 }]]],
+        ['Lăng trụ, hộp', [
+            ['Hình lập phương', { t: 'pri', base: 'bh', a: 4, b: 4, al: 90, foot: 'v0', h: 4 }],
+            ['Hộp chữ nhật', { t: 'pri', base: 'bh', a: 4, b: 3, al: 90, foot: 'v0', h: 2.5 }],
+            ['Hộp đứng (đáy bình hành)', { t: 'pri', base: 'bh', a: 4, b: 3, al: 60, foot: 'v0', h: 4 }],
+            ['Hộp xiên (A\' chiếu lên tâm)', { t: 'pri', base: 'bh', a: 4, b: 3, al: 70, foot: 'O', h: 4 }],
+            ['Lăng trụ tam giác đều', { t: 'pri', base: 'tg', a: 4, b: 4, al: 60, foot: 'v0', h: 5 }],
+            ['Lăng trụ đứng, đáy vuông tại B', { t: 'pri', base: 'tg', vt: 1, a: 3, b: 4, al: 90, foot: 'v0', h: 5 }],
+            ['Lăng trụ xiên (A\' chiếu lên trung điểm BC)', { t: 'pri', base: 'tg', a: 4, b: 4, al: 60, foot: 'm1', h: 4 }],
+            ['Lăng trụ lục giác đều', { t: 'pri', base: 'luc', a: 2.5, foot: 'v0', h: 4 }]]],
+        ['Chóp cụt', [
+            ['Chóp cụt tam giác đều', { t: 'fru', base: 'tg', a: 5, b: 5, al: 60, foot: 'O', k: 0.5, h: 4 }],
+            ['Chóp cụt tứ giác đều', { t: 'fru', base: 'bh', a: 5, b: 5, al: 90, foot: 'O', k: 0.5, h: 4 }]]],
+        ['Tròn xoay', [
+            ['Hình trụ', { t: 'rev', r1: 2, r2: 2, h: 5 }],
+            ['Hình nón', { t: 'rev', r1: 2, r2: 0, h: 5 }],
+            ['Hình nón cụt', { t: 'rev', r1: 3, r2: 1.5, h: 4 }],
+            ['Hình cầu', { t: 'sph', r1: 3 }]]]
+    ];
+    var SOL_LET = 'ABCDEF';
+    function solBase(sp) {
+        var a = sp.a, b = sp.b, al = sp.al * Math.PI / 180, c = sp.c, P, nm = [];
+        if (sp.base === 'tg') {
+            var k = sp.vt | 0; P = [null, null, null]; P[k] = [0, 0]; P[(k + 1) % 3] = [a, 0]; P[(k + 2) % 3] = [b * Math.cos(al), b * Math.sin(al)]; nm = ['A', 'B', 'C'];
+        } else if (sp.base === 'bh') { P = [[0, 0], [a, 0], [a + b * Math.cos(al), b * Math.sin(al)], [b * Math.cos(al), b * Math.sin(al)]]; nm = ['A', 'B', 'C', 'D']; }
+        else if (sp.base === 'tv') { P = [[0, 0], [a, 0], [c, b], [0, b]]; nm = ['A', 'B', 'C', 'D']; }
+        else { P = []; for (var i = 0; i < 6; i++) { P.push([a * Math.cos(i * Math.PI / 3), a * Math.sin(i * Math.PI / 3)]); nm.push(SOL_LET[i]); } }
+        var cx = 0, cy = 0; P.forEach(function (p) { cx += p[0]; cy += p[1]; }); return { P: P, names: nm, O: [cx / P.length, cy / P.length] };
+    }
+    function solAutoAz(sp) {
+        if (sp.t === 'rev' || sp.t === 'sph') return -0.62;
+        var B = solBase(sp), d = [B.P[1][0] - B.P[0][0], B.P[1][1] - B.P[0][1]]; return -Math.atan2(d[1], d[0]) - 0.62;
+    }
+    function solFootOpts(sp) {
+        var B = solBase(sp), n = B.P.length, o = [['O', sp.base === 'tg' ? 'Trọng tâm đáy' : 'Tâm đáy']];
+        for (var i = 0; i < n; i++) o.push(['v' + i, 'Đỉnh ' + B.names[i] + (i === 0 ? '  (cạnh bên ⊥ đáy)' : '')]);
+        for (var j = 0; j < n; j++) o.push(['m' + j, 'Trung điểm ' + B.names[j] + B.names[(j + 1) % n]]);
+        return o;
+    }
+    function solFoot(B, key) {
+        if (key === 'O' || !key) return B.O.slice();
+        var i = parseInt(key.slice(1), 10), n = B.P.length; if (!(i >= 0 && i < n)) return B.O.slice();
+        if (key[0] === 'v') return B.P[i].slice();
+        var q = B.P[(i + 1) % n]; return [(B.P[i][0] + q[0]) / 2, (B.P[i][1] + q[1]) / 2];
+    }
+    function solModel(sp) {
+        if (sp.t === 'sph') { var R = Math.max(0.1, sp.r1); return { kind: 'sph', R: R, c: [0, 0, 0], rad: R }; }
+        if (sp.t === 'rev') { var h0 = Math.max(0.1, sp.h), r1 = Math.max(0.05, sp.r1), r2 = Math.max(0, sp.r2); return { kind: 'rev', r1: r1, r2: r2, h: h0, c: [0, 0, h0 / 2], rad: Math.sqrt(Math.max(r1, r2) * Math.max(r1, r2) + h0 * h0 / 4) }; }
+        var B = solBase(sp), P = B.P, n = P.length, H = solFoot(B, sp.foot), A0 = P[0], h = Math.max(0.1, sp.h), V = [], nm = [], F = [], i;
+        for (i = 0; i < n; i++) { V.push([P[i][0], P[i][1], 0]); nm.push(B.names[i]); }
+        var baseF = []; for (i = 0; i < n; i++) baseF.push(i); F.push(baseF);
+        if (sp.t === 'pyr') {
+            V.push([H[0], H[1], h]); nm.push('S');
+            for (i = 0; i < n; i++) F.push([i, (i + 1) % n, n]);
+        } else {
+            var topF = [];
+            for (i = 0; i < n; i++) {
+                var T = sp.t === 'pri' ? [P[i][0] + H[0] - A0[0], P[i][1] + H[1] - A0[1]] : [H[0] + sp.k * (P[i][0] - H[0]), H[1] + sp.k * (P[i][1] - H[1])];
+                V.push([T[0], T[1], h]); nm.push(B.names[i] + "'"); topF.push(n + i);
+            }
+            F.push(topF);
+            for (i = 0; i < n; i++) F.push([i, (i + 1) % n, n + (i + 1) % n, n + i]);
+        }
+        var c = [0, 0, 0]; V.forEach(function (v) { c[0] += v[0]; c[1] += v[1]; c[2] += v[2]; }); c = c.map(function (x) { return x / V.length; });
+        var rad = 0.1; V.forEach(function (v) { rad = Math.max(rad, Math.hypot(v[0] - c[0], v[1] - c[1], v[2] - c[2])); });
+        F = F.map(function (idx) {
+            var p0 = V[idx[0]], p1 = V[idx[1]], p2 = V[idx[2]], u = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]], w = [p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]];
+            var nn = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]], fc = [0, 0, 0];
+            idx.forEach(function (j) { fc[0] += V[j][0]; fc[1] += V[j][1]; fc[2] += V[j][2]; }); fc = fc.map(function (x) { return x / idx.length; });
+            if (nn[0] * (fc[0] - c[0]) + nn[1] * (fc[1] - c[1]) + nn[2] * (fc[2] - c[2]) < 0) nn = [-nn[0], -nn[1], -nn[2]];
+            return { i: idx, n: nn };
+        });
+        var footIsV = /^v/.test(sp.foot || ''), hseg = footIsV && sp.t !== 'fru' ? null : [[H[0], H[1], h], [H[0], H[1], 0]];
+        return { kind: 'poly', V: V, nm: nm, F: F, c: c, rad: rad, hseg: hseg, H: [H[0], H[1], 0], hname: (sp.foot === 'O' || !sp.foot) ? 'O' : 'H', hasH: !footIsV || sp.t === 'fru' };
+    }
+    function solRot(az, el) {
+        var ca = Math.cos(az), sa = Math.sin(az), ce = Math.cos(el), se = Math.sin(el);
+        return function (p) { var x1 = p[0] * ca - p[1] * sa, y1 = p[0] * sa + p[1] * ca, z1 = p[2]; return [x1, z1 * ce + y1 * se, y1 * ce - z1 * se]; };
+    }
+    function solDrawRuns(g, pts, vis, dashOn) {
+        // vẽ đường gấp khúc kín, đoạn thấy = nét liền, đoạn khuất = nét đứt
+        var n = pts.length, lw = g.lineWidth, col = g.strokeStyle;
+        for (var pass = 0; pass < 2; pass++) {
+            if (pass === 0 && !dashOn) continue;
+            g.beginPath();
+            for (var i = 0; i < n; i++) { if (!!vis[i] === (pass === 1)) { g.moveTo(pts[i][0], pts[i][1]); var q = pts[(i + 1) % n]; g.lineTo(q[0], q[1]); } }
+            if (pass === 0) { g.save(); g.setLineDash([lw * 2.6, lw * 2.4]); g.lineWidth = lw * 0.78; g.strokeStyle = '#64748b'; g.stroke(); g.restore(); } else { g.setLineDash([]); g.stroke(); }
+        }
+    }
+    function drawSolid(g, o) {
+        var sp = o.sp, M = solModel(sp), rot = solRot(sp.az, sp.el), opt = sp.opt || {}, lw = o.lw || 2.2, col = o.color || '#111827';
+        var sc = Math.min(o.w, o.h) * 0.5 * 0.74 / M.rad, fs = Math.max(13, Math.min(o.w, o.h) * 0.05);
+        function Pj(p) { var r = rot([p[0] - M.c[0], p[1] - M.c[1], p[2] - M.c[2]]); return [r[0] * sc, -r[1] * sc, r[2]]; }
+        function lab(txt, q, dx, dy) {
+            var L = Math.hypot(dx, dy) || 1; g.save(); g.fillStyle = col; g.font = 'italic 600 ' + fs + 'px "Times New Roman",serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+            g.fillText(txt, q[0] + dx / L * fs * 0.95, q[1] + dy / L * fs * 0.95); g.restore();
+        }
+        g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = lw; g.strokeStyle = col; g.setLineDash([]);
+        var hidOn = opt.hid !== false;
+        if (M.kind === 'poly') {
+            var Q = M.V.map(Pj), faceVis = M.F.map(function (f) { return rot(f.n)[2] < -1e-7; });
+            if (opt.fill) { g.fillStyle = 'rgba(59,130,246,0.07)'; M.F.forEach(function (f, k) { if (!faceVis[k]) return; g.beginPath(); f.i.forEach(function (j, t) { if (t) g.lineTo(Q[j][0], Q[j][1]); else g.moveTo(Q[j][0], Q[j][1]); }); g.closePath(); g.fill(); }); }
+            var E = {}; M.F.forEach(function (f, k) { var m = f.i.length; for (var t = 0; t < m; t++) { var a = f.i[t], b = f.i[(t + 1) % m], key = Math.min(a, b) + '_' + Math.max(a, b); if (!E[key]) E[key] = { a: a, b: b, v: false }; if (faceVis[k]) E[key].v = true; } });
+            var keys = Object.keys(E);
+            if (hidOn) { g.save(); g.setLineDash([lw * 2.6, lw * 2.4]); g.lineWidth = lw * 0.78; g.strokeStyle = '#64748b'; g.beginPath(); keys.forEach(function (k) { var e = E[k]; if (!e.v) { g.moveTo(Q[e.a][0], Q[e.a][1]); g.lineTo(Q[e.b][0], Q[e.b][1]); } }); g.stroke(); g.restore(); }
+            g.beginPath(); keys.forEach(function (k) { var e = E[k]; if (e.v) { g.moveTo(Q[e.a][0], Q[e.a][1]); g.lineTo(Q[e.b][0], Q[e.b][1]); } }); g.stroke();
+            if (opt.hgt && M.hseg) { var h1 = Pj(M.hseg[0]), h2 = Pj(M.hseg[1]); g.save(); g.setLineDash([lw * 2.6, lw * 2.4]); g.lineWidth = lw * 0.85; g.strokeStyle = '#2563eb'; g.beginPath(); g.moveTo(h1[0], h1[1]); g.lineTo(h2[0], h2[1]); g.stroke(); g.restore(); g.fillStyle = '#2563eb'; g.beginPath(); g.arc(h2[0], h2[1], lw * 1.2, 0, 7); g.fill(); if (opt.lab) lab(M.hname, h2, 0.5, 1); }
+            if (opt.lab) { var cx = 0, cy = 0; Q.forEach(function (q) { cx += q[0]; cy += q[1]; }); cx /= Q.length; cy /= Q.length; Q.forEach(function (q, j) { var dx = q[0] - cx, dy = q[1] - cy; if (Math.hypot(dx, dy) < 2) { dx = 0; dy = -1; } lab(M.nm[j], q, dx, dy); }); }
+        } else if (M.kind === 'sph') {
+            var Rr = M.R * sc; g.beginPath(); g.arc(0, 0, Rr, 0, 7); g.stroke();
+            if (opt.fill) { g.fillStyle = 'rgba(59,130,246,0.06)'; g.fill(); }
+            var N = 96, pts = [], vis = [], t; for (t = 0; t < N; t++) { var ang = t / N * 2 * Math.PI, p3 = [M.R * Math.cos(ang), M.R * Math.sin(ang), 0], rr = rot(p3); pts.push([rr[0] * sc, -rr[1] * sc]); vis.push(rr[2] < 0); }
+            solDrawRuns(g, pts, vis, hidOn);
+            g.fillStyle = col; g.beginPath(); g.arc(0, 0, lw * 1.3, 0, 7); g.fill();
+            if (opt.hgt) { var rp = rot([M.R * Math.cos(-sp.az), M.R * Math.sin(-sp.az), 0]), rq = [rp[0] * sc, -rp[1] * sc]; g.save(); g.setLineDash([lw * 2.6, lw * 2.4]); g.lineWidth = lw * 0.85; g.strokeStyle = '#2563eb'; g.beginPath(); g.moveTo(0, 0); g.lineTo(rq[0], rq[1]); g.stroke(); g.restore(); }
+            if (opt.lab) lab('O', [0, 0], -0.6, 1);
+        } else {
+            var r1 = M.r1, r2 = M.r2, h = M.h, N2 = 120, bot = [], top = [], bv = [], tv = [], lat = [], th, i;
+            function latf(a) { var nn = rot([h * Math.cos(a), h * Math.sin(a), r1 - r2]); return nn[2]; }
+            var botVis = rot([0, 0, -1])[2] < 0, topVis = rot([0, 0, 1])[2] < 0;
+            for (i = 0; i < N2; i++) { th = i / N2 * 2 * Math.PI; var lv = latf(th + Math.PI / N2) < 0; lat.push(lv); var b3 = Pj([r1 * Math.cos(th), r1 * Math.sin(th), 0]), t3 = Pj([r2 * Math.cos(th), r2 * Math.sin(th), h]); bot.push(b3); top.push(t3); bv.push(lv || botVis); tv.push(lv || topVis); }
+            if (opt.fill) {
+                var sil = []; for (i = 0; i < N2; i++) { var a1 = latf(i / N2 * 2 * Math.PI), a2 = latf(((i + 1) % N2) / N2 * 2 * Math.PI); if ((a1 < 0) !== (a2 < 0)) sil.push(i); }
+                g.fillStyle = 'rgba(59,130,246,0.06)'; g.beginPath(); bot.forEach(function (q, k) { if (k) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.closePath();
+                g.moveTo(top[0][0], top[0][1]); top.forEach(function (q) { g.lineTo(q[0], q[1]); }); g.closePath(); g.fill('nonzero');
+                if (sil.length >= 2) { g.beginPath(); var s1 = sil[0], s2 = sil[1]; g.moveTo(bot[s1][0], bot[s1][1]); g.lineTo(top[s1][0], top[s1][1]); g.lineTo(top[s2][0], top[s2][1]); g.lineTo(bot[s2][0], bot[s2][1]); g.closePath(); g.fill(); }
+            }
+            solDrawRuns(g, bot, bv, hidOn); if (r2 > 0.001) solDrawRuns(g, top, tv, hidOn);
+            // đường sinh biên
+            var roots = []; for (i = 0; i < N2; i++) { var f1 = latf(i / N2 * 2 * Math.PI), f2 = latf(((i + 1) % N2) / N2 * 2 * Math.PI); if ((f1 < 0) !== (f2 < 0)) { var tt = f1 / (f1 - f2); roots.push((i + tt) / N2 * 2 * Math.PI); } }
+            g.beginPath(); roots.forEach(function (a) { var b3 = Pj([r1 * Math.cos(a), r1 * Math.sin(a), 0]), t3 = Pj([r2 * Math.cos(a), r2 * Math.sin(a), h]); g.moveTo(b3[0], b3[1]); g.lineTo(t3[0], t3[1]); }); g.stroke();
+            var O1 = Pj([0, 0, 0]), O2 = Pj([0, 0, h]);
+            if (opt.hgt) { g.save(); g.setLineDash([lw * 2.6, lw * 2.4]); g.lineWidth = lw * 0.85; g.strokeStyle = '#2563eb'; g.beginPath(); g.moveTo(O1[0], O1[1]); g.lineTo(O2[0], O2[1]); var ra = Pj([r1 * Math.cos(-sp.az), r1 * Math.sin(-sp.az), 0]); g.moveTo(O1[0], O1[1]); g.lineTo(ra[0], ra[1]); g.stroke(); g.restore(); }
+            g.fillStyle = col; [O1, O2].forEach(function (q, k) { if (k === 1 && r2 < 0.001 && !opt.lab) return; g.beginPath(); g.arc(q[0], q[1], lw * 1.2, 0, 7); g.fill(); });
+            if (opt.lab) { lab('O', O1, 0.6, 1); lab(r2 < 0.001 ? 'S' : "O'", O2, 0.4, -1); }
+        }
+        g.restore();
+    }
+    function solLoadRes() { }
+    function openSolidDialog(ex) {
+        var sp = solSpec(ex ? JSON.parse(JSON.stringify(ex.sp)) : { t: 'pyr', base: 'bh', a: 4, b: 4, al: 90, foot: 'O', h: 5 }); if (!ex) sp.az = solAutoAz(sp);
+        var M = modal(ex ? '🧊 Xoay / sửa hình khối' : '🧊 Hình học không gian', 760), card = M.card;
+        var pr = el('div', 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;'); pr.appendChild(el('span', 'font:700 13px system-ui;color:#475569;', 'Mẫu nhanh:'));
+        SOL_PRESETS.forEach(function (grp) {
+            var s0 = el('select', 'padding:6px 8px;border:1px solid #93c5fd;border-radius:8px;font:600 13.5px system-ui;background:#eff6ff;max-width:250px;'); var o0 = el('option', '', grp[0] + ' ▾'); o0.value = ''; s0.appendChild(o0);
+            grp[1].forEach(function (p, k) { var op = el('option', '', p[0]); op.value = k; s0.appendChild(op); });
+            s0.onchange = function () { if (s0.value === '') return; var p = grp[1][parseInt(s0.value, 10)]; var keepView = { el: sp.el, opt: sp.opt }; sp = solSpec(Object.assign({}, p[1], keepView)); sp.az = solAutoAz(sp); s0.value = ''; buildForm(); preview(); };
+            pr.appendChild(s0);
+        });
+        card.appendChild(pr);
+        var form = el('div', 'display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:6px 0;padding:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;'); card.appendChild(form);
+        var pv = document.createElement('canvas'); pv.width = 1200; pv.height = 700; pv.style.cssText = 'width:100%;aspect-ratio:12/7;border:1px solid #e2e8f0;border-radius:8px;background:#fff;touch-action:none;cursor:grab;'; card.appendChild(pv);
+        var hint = el('div', 'font-size:12.5px;color:#64748b;margin:4px 0;', '👆 <b>Kéo trên hình để xoay</b> (bằng chuột, bút hoặc ngón tay). Nét đứt là cạnh bị che khuất.'); card.appendChild(hint);
+        var rb = el('div', 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;');
+        function rv(txt, tip, f) { rb.appendChild(btn(txt, tip, function () { f(); preview(); }, 'min-height:34px;')); }
+        rv('◀', 'Xoay trái', function () { sp.az -= 0.2; }); rv('▶', 'Xoay phải', function () { sp.az += 0.2; }); rv('▲', 'Nhìn từ cao xuống', function () { sp.el = Math.min(1.35, sp.el + 0.12); }); rv('▼', 'Nhìn từ thấp lên', function () { sp.el = Math.max(-1.35, sp.el - 0.12); });
+        rv('↺ Góc nhìn sách giáo khoa', 'Về góc nhìn quen thuộc', function () { sp.az = solAutoAz(sp); sp.el = SOL_DEF.el; }); rv('⬆ Nhìn từ trên', 'Nhìn thẳng xuống đáy', function () { sp.el = 1.35; }); rv('➡ Nhìn ngang', 'Nhìn ngang, mặt bên', function () { sp.el = 0.02; });
+        card.appendChild(rb);
+        var oc = el('div', 'display:flex;flex-wrap:wrap;gap:4px 14px;margin-bottom:8px;');
+        [['lab', 'Ghi tên đỉnh'], ['hgt', 'Vẽ đường cao / trục'], ['hid', 'Nét đứt cạnh khuất'], ['fill', 'Tô mờ các mặt']].forEach(function (z) {
+            var lb = el('label', 'cursor:pointer;display:flex;align-items:center;gap:4px;'), ck = el('input'); ck.type = 'checkbox'; ck.checked = sp.opt[z[0]] !== false && !!sp.opt[z[0]]; ck.onchange = function () { sp.opt[z[0]] = ck.checked; preview(); }; lb.appendChild(ck); lb.appendChild(document.createTextNode(z[1])); oc.appendChild(lb);
+        });
+        card.appendChild(oc);
+        var foot = el('div', 'display:flex;gap:8px;justify-content:flex-end;'); card.appendChild(foot);
+        function nf(label, key, wd) {
+            var wrap = el('label', 'display:flex;align-items:center;gap:4px;'); wrap.appendChild(document.createTextNode(label)); var i = el('input', 'width:' + (wd || 58) + 'px;padding:5px 6px;border:1px solid #cbd5e1;border-radius:6px;font:14px system-ui;'); i.type = 'text'; i.setAttribute('inputmode', 'decimal'); i.value = String(Math.round(sp[key] * 1000) / 1000);
+            i.oninput = function () { var v = parseFloat(String(i.value).replace(',', '.')); if (isFinite(v) && v >= (key === 'r2' ? 0 : 0.01) && (key !== 'k' || v < 1) && (key !== 'al' || v < 180)) { sp[key] = v; i.style.background = ''; preview(); } else i.style.background = '#fee2e2'; };
+            wrap.appendChild(i); form.appendChild(wrap);
+        }
+        function sl(label, opts, val, f, wd) {
+            var wrap = el('label', 'display:flex;align-items:center;gap:4px;'); wrap.appendChild(document.createTextNode(label)); var s = el('select', 'padding:5px 6px;border:1px solid #cbd5e1;border-radius:6px;font:14px system-ui;background:#fff;' + (wd ? 'max-width:' + wd + 'px;' : ''));
+            opts.forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; if (String(o[0]) === String(val)) op.selected = true; s.appendChild(op); }); s.onchange = function () { f(s.value); }; wrap.appendChild(s); form.appendChild(wrap);
+        }
+        function buildForm() {
+            form.innerHTML = '';
+            sl('Khối', [['pyr', 'Hình chóp'], ['pri', 'Lăng trụ / hình hộp'], ['fru', 'Chóp cụt'], ['rev', 'Trụ / nón / nón cụt'], ['sph', 'Hình cầu']], sp.t, function (v) {
+                var o0 = sp.t; sp.t = v; if (v === 'rev') { sp.r1 = sp.r1 || 2; if (o0 !== 'rev') { sp.r1 = 2; sp.r2 = 0; sp.h = 5; } } if (v === 'sph') sp.r1 = 3; if ((v === 'pyr' || v === 'pri' || v === 'fru') && (o0 === 'rev' || o0 === 'sph')) { sp.base = 'bh'; sp.a = 4; sp.b = 4; sp.al = 90; sp.foot = v === 'pri' ? 'v0' : 'O'; sp.h = 5; } if (v === 'pri' && sp.foot === 'O' && o0 === 'pyr') sp.foot = 'v0'; sp.az = solAutoAz(sp); buildForm(); preview();
+            });
+            if (sp.t === 'sph') { nf('Bán kính R', 'r1'); return; }
+            if (sp.t === 'rev') { nf('Bán kính đáy dưới', 'r1'); nf('đáy trên (0 = nón)', 'r2', 52); nf('Chiều cao', 'h'); return; }
+            sl('Đáy', [['tg', 'Tam giác'], ['bh', 'Tứ giác (hình bình hành, thoi, chữ nhật, vuông)'], ['tv', 'Hình thang vuông'], ['luc', 'Lục giác đều']], sp.base, function (v) { sp.base = v; if (v === 'tg' && sp.al >= 180) sp.al = 60; sp.foot = sp.foot[0] === 'O' ? 'O' : (/^v/.test(sp.foot) ? 'v0' : 'm0'); sp.az = solAutoAz(sp); buildForm(); preview(); }, 230);
+            var B = solBase(sp), L = B.names;
+            if (sp.base === 'tg') {
+                sl('Biết góc tại đỉnh', [[0, 'A'], [1, 'B'], [2, 'C']], sp.vt, function (v) { sp.vt = parseInt(v, 10); buildForm(); preview(); });
+                var k = sp.vt | 0; nf(L[k] + L[(k + 1) % 3] + ' =', 'a'); nf(L[k] + L[(k + 2) % 3] + ' =', 'b'); nf('góc ' + L[k] + ' (°) =', 'al');
+            } else if (sp.base === 'bh') { nf('AB =', 'a'); nf('AD =', 'b'); nf('góc A (°) =', 'al'); }
+            else if (sp.base === 'tv') { nf('AB =', 'a'); nf('AD =', 'b'); nf('DC =', 'c'); }
+            else nf('Cạnh đáy =', 'a');
+            if (sp.t === 'fru') nf('Tỉ lệ đáy trên / đáy dưới =', 'k', 52);
+            nf('Chiều cao =', 'h');
+            sl(sp.t === 'pri' ? "A' chiếu xuống đáy tại" : 'Chân đường cao H là', solFootOpts(sp), sp.foot, function (v) { sp.foot = v; preview(); }, 230);
+        }
+        function preview() {
+            var g = pv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, pv.width, pv.height); g.setTransform(2, 0, 0, 2, 0, 0); g.translate(pv.width / 4, pv.height / 4);
+            try { drawSolid(g, { sp: sp, w: pv.width / 2, h: pv.height / 2, lw: 2.3 }); } catch (e) { }
+        }
+        var dr = null;
+        pv.addEventListener('pointerdown', function (e) { dr = { x: e.clientX, y: e.clientY, az: sp.az, el: sp.el, id: e.pointerId }; try { pv.setPointerCapture(e.pointerId); } catch (er) { } pv.style.cursor = 'grabbing'; });
+        pv.addEventListener('pointermove', function (e) { if (!dr || dr.id !== e.pointerId) return; sp.az = dr.az + (e.clientX - dr.x) * 0.012; sp.el = Math.max(-1.35, Math.min(1.35, dr.el + (e.clientY - dr.y) * 0.012)); preview(); });
+        function up() { dr = null; pv.style.cursor = 'grab'; } pv.addEventListener('pointerup', up); pv.addEventListener('pointercancel', up);
+        function finish() {
+            if (ex) { replaceItem(Object.assign({}, ex, { sp: JSON.parse(JSON.stringify(sp)) })); commitNow(); M.close(); S.sel = ex.uid; refreshBar(); drawSel(); return; }
+            var sz = Math.min(S.W, S.H) * 0.62, it = { uid: uid(), kind: 'solid', sp: JSON.parse(JSON.stringify(sp)), x: S.W / 2, y: S.H / 2, w: sz, h: sz, rot: 0, color: '#111827', lw: 2.2 };
+            M.close(); commit(S.pages[S.pi].items.concat([it])); setTool('select'); S.ids = [it.uid]; refreshBar(); drawSel();
+        }
+        foot.appendChild(btn('Hủy', '', M.close)); foot.appendChild(btn(ex ? 'Cập nhật' : 'Chèn vào bảng', 'Hình nằm trên bảng, cô có thể viết, kéo, phóng to; bấm đúp để xoay lại', finish, 'background:#2563eb;color:#fff;border-color:#1d4ed8;'));
+        buildForm(); preview();
+    }
+
+// ===== Động cơ tính của máy tính bấm tay (mô phỏng): số học chính xác (phân số, căn, π) + số thực =====
+var CAS = (function () {
+    'use strict';
+    var PI = Math.PI;
+    function Err(m) { this.msg = m; }
+    function fail(m) { throw new Err(m || 'Math ERROR'); }
+    // ---------- phân số (số nguyên an toàn) ----------
+    function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a; }
+    function fr(n, d) { if (d === undefined) d = 1; if (d === 0) return null; if (d < 0) { n = -n; d = -d; } var g = gcd(n, d) || 1; n /= g; d /= g; if (!Number.isSafeInteger(n) || !Number.isSafeInteger(d)) return null; return { n: n, d: d }; }
+    function fadd(a, b) { return fr(a.n * b.d + b.n * a.d, a.d * b.d); }
+    function fmul(a, b) { return fr(a.n * b.n, a.d * b.d); }
+    function fdiv(a, b) { return b.n === 0 ? null : fr(a.n * b.d, a.d * b.n); }
+    function fval(f) { return f.n / f.d; }
+    // ---------- giá trị chính xác: tổng các số hạng c·khóa; khóa '1', 'p' (π), 'rN' (√N, N không chính phương) ----------
+    var NOEX = false;
+    function mk(d, e) { if (NOEX || !isFinite(d)) return { d: d, e: null }; return { d: e ? evalE(e) : d, e: e || null }; }
+    function evalE(e) { var s = 0; for (var k in e) { var c = e[k], v = k === '1' ? 1 : (k === 'p' ? PI : Math.sqrt(+k.slice(1))); s += c.n / c.d * v; } return s; }
+    function eNorm(e) { var o = {}, any = false; for (var k in e) { if (e[k] === null) return null; if (e[k].n !== 0) { o[k] = e[k]; any = true; } } if (!any) o['1'] = { n: 0, d: 1 }; return o; }
+    function rat(n, d) { var f = fr(n, d === undefined ? 1 : d); if (!f) return { d: n / (d || 1), e: null }; return mk(fval(f), { '1': f }); }
+    function num(x) { return { d: x, e: null }; }
+    function ratOf(v) { if (!v.e) return null; var ks = Object.keys(v.e); if (ks.length === 1 && ks[0] === '1') return v.e['1']; return null; }
+    function isZero(v) { if (v.e) { for (var k in v.e) if (v.e[k].n !== 0) return false; return true; } return Math.abs(v.d) < 1e-13; }
+    function eadd(a, b, sub) {
+        var o = {}, k; for (k in a) o[k] = a[k];
+        for (k in b) { var c = sub ? { n: -b[k].n, d: b[k].d } : b[k]; if (o[k]) { o[k] = fadd(o[k], c); if (!o[k]) return null; } else o[k] = c; }
+        return eNorm(o);
+    }
+    function sqfree(m) { var s = 1, i; for (i = 2; i * i <= m; i++) { while (m % (i * i) === 0) { s *= i; m /= i * i; } } return [s, m]; }
+    function keymul(ka, kb) {
+        if (ka === '1') return [kb, { n: 1, d: 1 }]; if (kb === '1') return [ka, { n: 1, d: 1 }];
+        if (ka === 'p' || kb === 'p') return null;
+        var m = (+ka.slice(1)) * (+kb.slice(1)); if (!Number.isSafeInteger(m)) return null; var r = sqfree(m); return [r[1] === 1 ? '1' : 'r' + r[1], { n: r[0], d: 1 }];
+    }
+    function emul(a, b) {
+        var o = {}, ka, kb; for (ka in a) for (kb in b) {
+            var km = keymul(ka, kb); if (!km) return null; var c1 = fmul(a[ka], b[kb]); if (!c1) return null; var c = fmul(c1, km[1]); if (!c) return null;
+            if (o[km[0]]) { o[km[0]] = fadd(o[km[0]], c); if (!o[km[0]]) return null; } else o[km[0]] = c;
+        } return eNorm(o);
+    }
+    function eterms(e) { var r = []; for (var k in e) if (e[k].n !== 0) r.push(k); return r; }
+    function ediv(a, b) {
+        var ts = eterms(b), k, c;
+        if (ts.length === 0) return null;
+        if (ts.length === 1) {
+            k = ts[0]; c = b[k];
+            if (k === '1') { var inv = fdiv({ n: 1, d: 1 }, c); return inv ? emul(a, { '1': inv }) : null; }
+            if (k === 'p') { var ta = eterms(a); if (ta.length === 0) return { '1': { n: 0, d: 1 } }; if (ta.length === 1 && ta[0] === 'p') { var q = fdiv(a.p, c); return q ? { '1': q } : null; } return null; }
+            var N = +k.slice(1), inv2 = fr(c.d, c.n * N); if (!inv2) return null; var o = {}; o[k] = inv2; return emul(a, o);
+        }
+        if (ts.length === 2 && ts.indexOf('p') < 0) {
+            var k1 = ts[0], k2 = ts[1], c1 = b[k1], c2 = b[k2], conj = {}; conj[k1] = c1; conj[k2] = { n: -c2.n, d: c2.d };
+            var den = emul(b, conj); if (!den) return null; var dt = eterms(den); if (dt.length !== 1 || dt[0] !== '1') return null;
+            var num2 = emul(a, conj); if (!num2) return null; return ediv(num2, den);
+        }
+        return null;
+    }
+    function esqrtF(f) { // căn của phân số không âm
+        if (f.n < 0) return null; if (f.n === 0) return { '1': { n: 0, d: 1 } };
+        var m = f.n * f.d; if (!Number.isSafeInteger(m)) return null; var r = sqfree(m), o = {}, c = fr(r[0], f.d); if (!c) return null; o[r[1] === 1 ? '1' : 'r' + r[1]] = c; return o;
+    }
+    // ---------- phép toán trên V ----------
+    function add(a, b) { return mk(a.d + b.d, a.e && b.e ? eadd(a.e, b.e) : null); }
+    function sub(a, b) { return mk(a.d - b.d, a.e && b.e ? eadd(a.e, b.e, true) : null); }
+    function mul(a, b) { return mk(a.d * b.d, a.e && b.e ? emul(a.e, b.e) : null); }
+    function div(a, b) { if (isZero(b)) fail('Math ERROR'); return mk(a.d / b.d, a.e && b.e ? ediv(a.e, b.e) : null); }
+    function neg(a) { return mk(-a.d, a.e ? emul(a.e, { '1': { n: -1, d: 1 } }) : null); }
+    function epowInt(e, n) {
+        var neg2 = n < 0; n = Math.abs(n); var r = { '1': { n: 1, d: 1 } }, b = e;
+        while (n > 0) { if (n & 1) { r = emul(r, b); if (!r) return null; } n >>= 1; if (n) { b = emul(b, b); if (!b) return null; } }
+        return neg2 ? ediv({ '1': { n: 1, d: 1 } }, r) : r;
+    }
+    function snapRat(x, maxD) {
+        if (!isFinite(x)) return null; maxD = maxD || 12;
+        for (var d = 1; d <= maxD; d++) { var n = Math.round(x * d); if (Math.abs(x - n / d) < 1e-12 * Math.max(1, Math.abs(x))) return fr(n, d); } return null;
+    }
+    function ratApprox(x, maxD, tol) {
+        if (!isFinite(x)) return null; if (Math.abs(x - Math.round(x)) < tol * Math.max(1, Math.abs(x))) return fr(Math.round(x), 1);
+        var h1 = 1, h0 = 0, k1 = 0, k0 = 1, b = x, i;
+        for (i = 0; i < 30; i++) { var a = Math.floor(b), h2 = a * h1 + h0, k2 = a * k1 + k0; if (k2 > maxD) break; h0 = h1; h1 = h2; k0 = k1; k1 = k2; if (Math.abs(x - h1 / k1) < tol * Math.max(1, Math.abs(x))) return fr(h1, k1); var fr0 = b - a; if (fr0 < 1e-15) break; b = 1 / fr0; }
+        return null;
+    }
+    function sqrtV(a) {
+        if (a.d < 0) fail('Math ERROR');
+        if (a.e) { var r = ratOf(a); if (r) { var es = esqrtF(r); if (es) return mk(Math.sqrt(a.d), es); } }
+        return mk(Math.sqrt(a.d), null);
+    }
+    function intRoot(n, q) { if (n < 0) return null; var r = Math.round(Math.pow(n, 1 / q)); for (var t = r - 1; t <= r + 1; t++) if (t >= 0 && Math.pow(t, q) === n) return t; return null; }
+    function powV(a, b) {
+        var rb = ratOf(b), ra = ratOf(a);
+        if (a.d === 0 && b.d <= 0) fail('Math ERROR');
+        if (rb && rb.d === 1 && a.e && Math.abs(rb.n) <= 80) { var ex = epowInt(a.e, rb.n); if (ex) return mk(Math.pow(a.d, rb.n), ex); return num(Math.pow(a.d, rb.n)); }
+        if (rb && ra && rb.d > 1 && rb.d <= 6) {
+            var q = rb.d, p = rb.n, sgn = 1, an = ra.n, ad = ra.d;
+            if (an < 0) { if (q % 2 === 1) { sgn = (Math.abs(p) % 2 === 1) ? -1 : 1; an = -an; } else fail('Math ERROR'); }
+            var rn = intRoot(an, q), rd = intRoot(ad, q);
+            if (rn !== null && rd !== null && Math.abs(p) <= 30) { var base = fr(rn, rd), pw = base ? epowInt({ '1': base }, p) : null; if (pw) { if (sgn < 0) pw = emul(pw, { '1': { n: -1, d: 1 } }); if (pw) return mk(0, pw); } }
+            if (q === 2 && an > 0) { var es = esqrtF(fr(an, ad)); if (es) { var pw2 = epowInt(es, p); if (pw2) return mk(0, pw2); } }
+        }
+        var x = a.d, y = b.d, r;
+        if (x < 0) { if (rb && rb.d % 2 === 1) r = (rb.n % 2 === 0 ? 1 : -1) * Math.pow(-x, y); else if (Number.isInteger(y)) r = Math.pow(x, y); else fail('Math ERROR'); }
+        else r = Math.pow(x, y);
+        if (!isFinite(r)) fail('Math ERROR'); return num(r);
+    }
+    // ---------- lượng giác ----------
+    var S0 = [{ '1': { n: 0, d: 1 } }, { r6: { n: 1, d: 4 }, r2: { n: -1, d: 4 } }, { '1': { n: 1, d: 2 } }, { r2: { n: 1, d: 2 } }, { r3: { n: 1, d: 2 } }, { r6: { n: 1, d: 4 }, r2: { n: 1, d: 4 } }, { '1': { n: 1, d: 1 } }];
+    function sinEx(i) { var s = 1, j; i = ((i % 24) + 24) % 24; if (i <= 6) j = i; else if (i <= 12) j = 12 - i; else if (i <= 18) { j = i - 12; s = -1; } else { j = 24 - i; s = -1; } var e = {}; for (var k in S0[j]) e[k] = { n: S0[j][k].n * s, d: S0[j][k].d }; return eNorm(e); }
+    function degExact(v, ang) {
+        if (!v.e) return null; var r = ratOf(v);
+        if (ang === 'deg') return r; if (ang === 'gra') return r ? fr(r.n * 9, r.d * 10) : null;
+        var ks = eterms(v.e); if (ks.length === 0) return { n: 0, d: 1 }; if (ks.length === 1 && ks[0] === 'p') return fr(v.e.p.n * 180, v.e.p.d); return null;
+    }
+    function toRad(v, ang) { return ang === 'deg' ? v.d * PI / 180 : (ang === 'gra' ? v.d * PI / 200 : v.d); }
+    function trig(fn, v, ang) {
+        var dg = degExact(v, ang);
+        if (dg && dg.d === 1 && dg.n % 15 === 0) {
+            var i = dg.n / 15, s = sinEx(i), c = sinEx(i + 6);
+            var vs = mk(0, s), vc = mk(0, c);
+            if (fn === 'sin') return vs; if (fn === 'cos') return vc;
+            if (isZero(vc)) fail('Math ERROR'); return div(vs, vc);
+        }
+        var x = toRad(v, ang), r = fn === 'sin' ? Math.sin(x) : (fn === 'cos' ? Math.cos(x) : Math.tan(x));
+        if (fn === 'tan' && Math.abs(Math.cos(x)) < 1e-14) fail('Math ERROR');
+        return num(r);
+    }
+    function fromRadResult(r, ang) {
+        var deg = r * 180 / PI, k = Math.round(deg / 15);
+        if (Math.abs(deg - k * 15) < 1e-9 && !NOEX) {
+            var dd = k * 15;
+            if (ang === 'deg') return rat(dd); if (ang === 'gra') return rat(dd * 10, 9);
+            var f = fr(dd, 180); return f ? mk(0, f.n === 0 ? { '1': { n: 0, d: 1 } } : { p: f }) : num(r);
+        }
+        return num(ang === 'deg' ? deg : (ang === 'gra' ? r * 200 / PI : r));
+    }
+    function inv(fn, v, ang) {
+        var x = v.d, r;
+        if (fn === 'asin') { if (Math.abs(x) > 1 + 1e-12) fail('Math ERROR'); r = Math.asin(Math.max(-1, Math.min(1, x))); }
+        else if (fn === 'acos') { if (Math.abs(x) > 1 + 1e-12) fail('Math ERROR'); r = Math.acos(Math.max(-1, Math.min(1, x))); }
+        else r = Math.atan(x);
+        return fromRadResult(r, ang);
+    }
+    function degToUnit(v, ang) { return ang === 'deg' ? v : (ang === 'rad' ? mul(v, mk(0, { p: { n: 1, d: 180 } })) : mul(v, rat(10, 9))); }
+    // ---------- giai thừa, tổ hợp ----------
+    function factN(n) { var r = 1; for (var i = 2; i <= n; i++) r *= i; return r; }
+    function fact(v) { var r = ratOf(v); if (!r || r.d !== 1 || r.n < 0 || r.n > 69) fail('Math ERROR'); var f = factN(r.n); return Number.isSafeInteger(f) ? rat(f) : num(f); }
+    function nPr(n, k) { if (!(n >= 0 && k >= 0 && k <= n && Number.isInteger(n) && Number.isInteger(k))) fail('Math ERROR'); var r = 1; for (var i = 0; i < k; i++) r *= (n - i); return r; }
+    function nCr(n, k) { if (!(n >= 0 && k >= 0 && k <= n && Number.isInteger(n) && Number.isInteger(k))) fail('Math ERROR'); k = Math.min(k, n - k); var r = 1; for (var i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); }
+    function intV(x) { return Number.isSafeInteger(x) ? rat(x) : num(x); }
+    // ---------- phân tích (từ mô hình bộ soạn thảo) ----------
+    var FN = { 'sin(': 'sin', 'cos(': 'cos', 'tan(': 'tan', 'sin⁻¹(': 'asin', 'cos⁻¹(': 'acos', 'tan⁻¹(': 'atan', 'sinh(': 'sinh', 'cosh(': 'cosh', 'tanh(': 'tanh', 'sinh⁻¹(': 'asinh', 'cosh⁻¹(': 'acosh', 'tanh⁻¹(': 'atanh', 'ln(': 'ln', 'log(': 'log', 'GCD(': 'gcd', 'LCM(': 'lcm', 'Int(': 'int', 'Intg(': 'intg', 'Rnd(': 'rnd', 'Abs(': 'abs', '√(': 'sqrt', '∛(': 'cbrt' };
+    function tokenize(seq) {
+        var toks = [], i = 0, n = seq.length;
+        while (i < n) {
+            var it = seq[i];
+            if (it.t === 'c') {
+                var v = it.v;
+                if (/^[0-9.]$/.test(v)) { var s = ''; while (i < n && seq[i].t === 'c' && /^[0-9.]$/.test(seq[i].v)) { s += seq[i].v; i++; } toks.push({ k: 'num', v: s }); continue; }
+                if (v === '+' || v === '−' || v === '-' || v === '×' || v === '÷') toks.push({ k: 'op', v: v === '+' ? '+' : (v === '×' ? '*' : (v === '÷' ? '/' : '-')) });
+                else if (v === '(') toks.push({ k: '(' }); else if (v === ')') toks.push({ k: ')' }); else if (v === ',') toks.push({ k: ',' });
+                else if (/^[A-FXYM]$/.test(v)) toks.push({ k: 'var', v: v });
+                else if (v === 'π') toks.push({ k: 'const', v: 'pi' }); else if (v === 'e') toks.push({ k: 'const', v: 'e' });
+                else if (v === 'Ans') toks.push({ k: 'ans' });
+                else if (FN[v]) toks.push({ k: 'fn', v: FN[v] });
+                else if (v === '!') toks.push({ k: 'fact' }); else if (v === '%') toks.push({ k: 'pct' });
+                else if (v === '°') toks.push({ k: 'deg' }); else if (v === '′') toks.push({ k: 'min' }); else if (v === '″') toks.push({ k: 'sec' });
+                else if (v === 'nPr') toks.push({ k: 'nPr' }); else if (v === 'nCr') toks.push({ k: 'nCr' });
+                else if (v === '=') toks.push({ k: 'eq' }); else if (v === 'Ran#') toks.push({ k: 'ran' });
+                else fail('Syntax ERROR');
+                i++; continue;
+            }
+            var sl = it.k.map(function (s) { return tokenSeqAst(s); });
+            if (it.t === 'pow') toks.push({ k: 'pow', a: sl[0] }); else if (it.t === 'e10') toks.push({ k: 'e10', a: sl[0] });
+            else toks.push({ k: 'node', a: { n: it.t, s: sl } });
+            i++;
+        }
+        return toks;
+    }
+    function tokenSeqAst(seq) { if (!seq.length) return { n: 'empty' }; return parseToks(tokenize(seq)); }
+    function parseToks(T) {
+        var p = 0;
+        function peek() { return T[p]; }
+        function startsPrimary(t) { return t && (t.k === 'num' || t.k === '(' || t.k === 'var' || t.k === 'const' || t.k === 'ans' || t.k === 'fn' || t.k === 'node' || t.k === 'ran'); }
+        function parseAdd() { var l = parseMul(); while (peek() && peek().k === 'op' && (peek().v === '+' || peek().v === '-')) { var o = T[p++].v, r = parseMul(); l = { n: 'bin', o: o, l: l, r: r }; } return l; }
+        function parseMul() { var l = parseImp(); while (peek() && peek().k === 'op' && (peek().v === '*' || peek().v === '/')) { var o = T[p++].v, r = parseImp(); l = { n: 'bin', o: o, l: l, r: r }; } return l; }
+        function parseImp() { var l = parseNpr(); while (startsPrimary(peek())) { var r = parseNpr(); l = { n: 'bin', o: '*', l: l, r: r }; } return l; }
+        function parseNpr() { var l = parseNeg(); while (peek() && (peek().k === 'nPr' || peek().k === 'nCr')) { var o = T[p++].k, r = parseNeg(); l = { n: o, l: l, r: r }; } return l; }
+        function parseNeg() { var t = peek(); if (t && t.k === 'op' && (t.v === '-' || t.v === '+')) { p++; var a = parseNeg(); return t.v === '-' ? { n: 'neg', a: a } : a; } return parsePow(); }
+        function parsePow() {
+            var b = parsePrim();
+            for (;;) { var t = peek(); if (!t) break;
+                if (t.k === 'pow') { p++; b = { n: 'pow', b: b, e: t.a }; } else if (t.k === 'fact') { p++; b = { n: 'fact', a: b }; } else if (t.k === 'pct') { p++; b = { n: 'pct', a: b }; }
+                else if (t.k === 'deg') { p++; b = { n: 'dms', d: b, m: null, s: null }; b = dmsRest(b); } else break; }
+            return b;
+        }
+        function dmsRest(b) {
+            if (peek() && peek().k === 'num' && T[p + 1] && T[p + 1].k === 'min') { b.m = { n: 'num', s: T[p].v }; p += 2; if (peek() && peek().k === 'num' && T[p + 1] && T[p + 1].k === 'sec') { b.s = { n: 'num', s: T[p].v }; p += 2; } }
+            return b;
+        }
+        function parsePrim() {
+            var t = T[p]; if (!t) fail('Syntax ERROR');
+            if (t.k === 'num') {
+                p++; if (!/^(\d+\.?\d*|\.\d+)$/.test(t.v)) fail('Syntax ERROR'); var nd = { n: 'num', s: t.v };
+                if (peek() && peek().k === 'e10') { var e = T[p++]; nd = { n: 'bin', o: '*', l: nd, r: { n: 'pow', b: { n: 'num', s: '10' }, e: e.a } }; }
+                if (peek() && peek().k === 'min') { p++; nd = { n: 'dms', d: { n: 'num', s: '0' }, m: nd, s: null }; }
+                return nd;
+            }
+            if (t.k === 'e10') { p++; return { n: 'pow', b: { n: 'num', s: '10' }, e: t.a }; }
+            if (t.k === 'var') { p++; return { n: 'var', v: t.v }; } if (t.k === 'const') { p++; return { n: 'const', v: t.v }; } if (t.k === 'ans') { p++; return { n: 'ans' }; } if (t.k === 'ran') { p++; return { n: 'ran' }; }
+            if (t.k === 'node') { p++; return t.a; }
+            if (t.k === '(') { p++; var ex = parseAdd(); if (peek() && peek().k === ')') p++; else if (peek()) fail('Syntax ERROR'); return ex; }
+            if (t.k === 'fn') {
+                p++; var args = [parseAdd()]; while (peek() && peek().k === ',') { p++; args.push(parseAdd()); }
+                if (peek() && peek().k === ')') p++; else if (peek()) fail('Syntax ERROR');
+                return { n: 'fn', f: t.v, a: args };
+            }
+            fail('Syntax ERROR');
+        }
+        if (!T.length) return { n: 'empty' };
+        var r = parseAdd(); if (p < T.length) fail('Syntax ERROR'); return r;
+    }
+    function parseModel(seq) { return tokenSeqAst(seq); }
+    // ---------- tính giá trị ----------
+    function parseNum(s) {
+        var m = s.split('.'), ip = m[0] || '0', fp = m[1] || '', n = parseInt(ip + fp, 10), d = Math.pow(10, fp.length);
+        if (fp.length <= 12 && Number.isSafeInteger(n)) return rat(n, d); return num(parseFloat(s));
+    }
+    function ev(a, env) {
+        var f, l, r, x;
+        switch (a.n) {
+            case 'empty': fail('Syntax ERROR'); break;
+            case 'num': { var nv = parseNum(a.s); nv.k = a.s.indexOf('.') >= 0 ? 'D' : 'I'; return nv; }
+            case 'const': return a.v === 'pi' ? mk(PI, { p: { n: 1, d: 1 } }) : num(Math.E);
+            case 'var': return env.vars[a.v] || rat(0);
+            case 'ans': return env.ans || rat(0);
+            case 'ran': return num(Math.floor(Math.random() * 1000) / 1000);
+            case 'neg': { x = ev(a.a, env); r = neg(x); r.k = x.k; return r; }
+            case 'bin': { l = ev(a.l, env); r = ev(a.r, env); var res = a.o === '+' ? add(l, r) : a.o === '-' ? sub(l, r) : a.o === '*' ? mul(l, r) : div(l, r); if (a.o !== '/' && (l.k === 'D' || l.k === 'I') && (r.k === 'D' || r.k === 'I') && (l.k === 'D' || r.k === 'D')) res.k = 'D'; return res; }
+            case 'pow': return powV(ev(a.b, env), ev(a.e, env));
+            case 'fact': return fact(ev(a.a, env));
+            case 'pct': return div(ev(a.a, env), rat(100));
+            case 'nPr': l = ev(a.l, env); r = ev(a.r, env); return intV(nPr(l.d, r.d));
+            case 'nCr': l = ev(a.l, env); r = ev(a.r, env); return intV(nCr(l.d, r.d));
+            case 'dms': { var tot = ev(a.d, env); if (a.m) tot = add(tot, div(ev(a.m, env), rat(60))); if (a.s) tot = add(tot, div(ev(a.s, env), rat(3600))); return degToUnit(tot, env.angle); }
+            case 'frac': l = ev(a.s[0], env); r = ev(a.s[1], env); return div(l, r);
+            case 'mix': return add(ev(a.s[0], env), div(ev(a.s[1], env), ev(a.s[2], env)));
+            case 'sqrt': return sqrtV(ev(a.s[0], env));
+            case 'root': { var nn = ev(a.s[0], env), xx = ev(a.s[1], env); return powV(xx, div(rat(1), nn)); }
+            case 'abs': x = ev(a.s[0], env); return x.d < 0 ? neg(x) : x;
+            case 'logb': { var b = ev(a.s[0], env), ar = ev(a.s[1], env); if (!(b.d > 0) || b.d === 1 || !(ar.d > 0)) fail('Math ERROR'); var lg = Math.log(ar.d) / Math.log(b.d), sn = (ar.e && b.e) ? snapRat(lg) : null; return sn ? rat(sn.n, sn.d) : num(lg); }
+            case 'int': return integral(a, env);
+            case 'ddx': return derivative(a, env);
+            case 'sum': return series(a, env);
+            case 'fn': return callFn(a, env);
+        }
+        fail('Syntax ERROR');
+    }
+    function callFn(a, env) {
+        var f = a.f, x = ev(a.a[0], env), ang = env.angle, r;
+        switch (f) {
+            case 'sin': case 'cos': case 'tan': return trig(f, x, ang);
+            case 'asin': case 'acos': case 'atan': return inv(f, x, ang);
+            case 'sinh': return num(Math.sinh(x.d)); case 'cosh': return num(Math.cosh(x.d)); case 'tanh': return num(Math.tanh(x.d));
+            case 'asinh': return num(Math.asinh(x.d)); case 'acosh': if (x.d < 1) fail('Math ERROR'); return num(Math.acosh(x.d)); case 'atanh': if (Math.abs(x.d) >= 1) fail('Math ERROR'); return num(Math.atanh(x.d));
+            case 'ln': case 'log': {
+                if (!(x.d > 0)) fail('Math ERROR'); r = f === 'ln' ? Math.log(x.d) : Math.log10(x.d);
+                var sn = (x.e || Math.abs(x.d - Math.E) < 1e-12) ? snapRat(r) : null; return sn ? rat(sn.n, sn.d) : num(r);
+            }
+            case 'abs': return x.d < 0 ? neg(x) : x;
+            case 'sqrt': return sqrtV(x);
+            case 'cbrt': return powV(x, rat(1, 3));
+            case 'gcd': case 'lcm': {
+                if (a.a.length < 2) fail('Syntax ERROR'); var y = ev(a.a[1], env), p = x.d, q = y.d; if (!Number.isInteger(p) || !Number.isInteger(q)) fail('Math ERROR'); var g = gcd(p, q); return intV(f === 'gcd' ? g : Math.abs(p * q) / g);
+            }
+            case 'int': return intV(Math.trunc(x.d)); case 'intg': return intV(Math.floor(x.d));
+            case 'rnd': return num(parseFloat(x.d.toPrecision(10)));
+        }
+        fail('Syntax ERROR');
+    }
+    function withX(env, xv) { var e2 = { angle: env.angle, ans: env.ans, vars: Object.assign({}, env.vars) }; e2.vars.X = xv; return e2; }
+    function evNum(ast, env, xval) { var old = NOEX; NOEX = true; try { return ev(ast, withX(env, num(xval))).d; } finally { NOEX = old; } }
+    function gk15(f, a, b) {
+        var xgk = [0.991455371120813, 0.949107912342759, 0.864864423359769, 0.741531185599394, 0.586087235467691, 0.405845151377397, 0.207784955007898, 0];
+        var wgk = [0.022935322010529, 0.063092092629979, 0.104790010322250, 0.140653259715525, 0.169004726639267, 0.190350578064785, 0.204432940075298, 0.209482141084728];
+        var wg = [0.129484966168870, 0.279705391489277, 0.381830050505119, 0.417959183673469];
+        var c = (a + b) / 2, h = (b - a) / 2, fc = f(c), rk = fc * wgk[7], rg = fc * wg[3], j;
+        for (j = 0; j < 7; j++) { var dx = h * xgk[j], f1 = f(c - dx), f2 = f(c + dx); rk += wgk[j] * (f1 + f2); if (j % 2 === 1) rg += wg[(j - 1) / 2] * (f1 + f2); }
+        return { v: rk * h, e: Math.abs((rk - rg) * h) };
+    }
+    function adaptive(f, a, b, tol, depth) { var r = gk15(f, a, b); if (r.e < tol || depth > 14) return r.v; var m = (a + b) / 2; return adaptive(f, a, m, tol / 2, depth + 1) + adaptive(f, m, b, tol / 2, depth + 1); }
+    function integral(a, env) {
+        var lo = ev(a.s[1], env).d, hi = ev(a.s[2], env).d, ast = a.s[0], f = function (x) { var y = evNum(ast, env, x); if (!isFinite(y)) fail('Math ERROR'); return y; };
+        var sg = 1; if (lo > hi) { var t = lo; lo = hi; hi = t; sg = -1; } if (lo === hi) return rat(0);
+        var r = sg * adaptive(f, lo, hi, 1e-11 * Math.max(1, Math.abs(hi - lo)), 0);
+        var ap = ratApprox(r, 2000, 1e-10); if (ap) return rat(ap.n, ap.d); return num(parseFloat(r.toPrecision(10)));
+    }
+    function derivative(a, env) {
+        var x0 = ev(a.s[1], env).d, ast = a.s[0], f = function (x) { return evNum(ast, env, x); }, h = 1e-3 * Math.max(1, Math.abs(x0));
+        function D(h) { return (-f(x0 + 2 * h) + 8 * f(x0 + h) - 8 * f(x0 - h) + f(x0 - 2 * h)) / (12 * h); }
+        var r = (4 * D(h / 2) - D(h)) / 3; if (!isFinite(r)) fail('Math ERROR');
+        var ap = ratApprox(r, 2000, 1e-8); if (ap) return rat(ap.n, ap.d); return num(parseFloat(r.toPrecision(10)));
+    }
+    function series(a, env) {
+        var lo = ev(a.s[1], env), hi = ev(a.s[2], env), l = Math.round(lo.d), h = Math.round(hi.d); if (h - l > 100000) fail('Math ERROR');
+        var tot = rat(0), ast = a.s[0]; for (var k = l; k <= h; k++) tot = add(tot, ev(ast, withX(env, rat(k)))); return tot;
+    }
+    // ---------- hiển thị ----------
+    function sup(t) { return '<sup class="cx-sup">' + t + '</sup>'; }
+    function fracH(n, d) { return '<span class="cx-fr"><span class="cx-n">' + n + '</span><span class="cx-d">' + d + '</span></span>'; }
+    function radH(N) { return '<span class="cx-rad">√<span class="cx-rb">' + N + '</span></span>'; }
+    function fmtDec(x, st) {
+        if (!isFinite(x)) return 'Math ERROR'; if (x === 0) return '0'; st = st || {}; var ax = Math.abs(x), mode = st.fmt || 'norm1', n = st.n || 0, s;
+        function sci(mant, ex) { return mant + '<span class="cx-x">×10' + sup(ex) + '</span>'; }
+        if (mode === 'fix') { s = x.toFixed(Math.min(9, n)); if (parseFloat(s) === 0 && x < 0) s = s.replace('-', ''); return s.replace('-', '−'); }
+        if (mode === 'sci') { var t = x.toExponential(Math.max(0, (n || 10) - 1)), pp = t.split('e'); return sci(pp[0].replace('-', '−'), String(parseInt(pp[1], 10)).replace('-', '−')); }
+        var lim = mode === 'norm2' ? 1e-9 : 1e-2;
+        if (ax >= 1e10 || ax < lim) { var t2 = x.toExponential(9).split('e'), m = t2[0]; if (m.indexOf('.') >= 0) m = m.replace(/0+$/, '').replace(/\.$/, ''); return sci(m.replace('-', '−'), String(parseInt(t2[1], 10)).replace('-', '−')); }
+        s = parseFloat(ax.toPrecision(10)).toString(); return (x < 0 ? '−' : '') + s;
+    }
+    function symH(k) { return k === 'p' ? 'π' : radH(k.slice(1)); }
+    function fmtExact(e, st) {
+        var ts = eterms(e); if (!ts.length) return '0';
+        ts.sort(function (a, b) { var o = function (k) { return k === '1' ? 0 : (k === 'p' ? 2e9 : +k.slice(1)); }; return o(a) - o(b); });
+        if (ts.length === 1) {
+            var k = ts[0], c = e[k], neg1 = c.n < 0, an = Math.abs(c.n), body;
+            if (k === '1') {
+                if (c.d === 1) return (neg1 ? '−' : '') + an;
+                if (st && st.mixed && an > c.d) { var w = Math.floor(an / c.d), rm = an % c.d; return (neg1 ? '−' : '') + '<span class="cx-mix">' + w + fracH(rm, c.d) + '</span>'; }
+                return (neg1 ? '−' : '') + fracH(an, c.d);
+            }
+            body = (an === 1 ? '' : an) + symH(k); return (neg1 ? '−' : '') + (c.d === 1 ? body : fracH(body, c.d));
+        }
+        var D = 1; ts.forEach(function (k) { D = D / gcd(D, e[k].d) * e[k].d; });
+        var out = ''; ts.forEach(function (k, i) {
+            var c = e[k], ci = c.n * (D / c.d), a = Math.abs(ci), s = ci < 0 ? '−' : (i ? '+' : '');
+            out += s + (k === '1' ? a : (a === 1 ? '' : a) + symH(k));
+        });
+        return D === 1 ? out : fracH(out, D);
+    }
+    function fmt(v, st) { st = st || {}; if (v.e && !st.dec) return fmtExact(v.e, st); return fmtDec(v.d, st); }
+    // ---------- phương trình, hệ phương trình ----------
+    function cx(re, im) { return { re: re, im: im || null }; }
+    function polyEval(c, x) { var r = 0; for (var i = 0; i < c.length; i++) r = r * x + c[i]; return r; }
+    function durand(c) { // c: hệ số (số thực), từ cao xuống thấp; trả [{re,im}]
+        var n = c.length - 1, a = c.map(function (x) { return x / c[0]; }), R = 1 + Math.max.apply(null, a.slice(1).map(Math.abs)), z = [], i, j, it;
+        for (i = 0; i < n; i++) { var ang = 2 * PI * i / n + 0.4; z.push([R * 0.5 * Math.cos(ang), R * 0.5 * Math.sin(ang)]); }
+        function cmul(p, q) { return [p[0] * q[0] - p[1] * q[1], p[0] * q[1] + p[1] * q[0]]; }
+        function cdiv(p, q) { var d = q[0] * q[0] + q[1] * q[1]; return [(p[0] * q[0] + p[1] * q[1]) / d, (p[1] * q[0] - p[0] * q[1]) / d]; }
+        for (it = 0; it < 500; it++) {
+            var md = 0;
+            for (i = 0; i < n; i++) {
+                var pv = [a[0], 0]; for (j = 1; j <= n; j++) pv = cmul(pv, z[i]), pv[0] += a[j];
+                var den = [1, 0]; for (j = 0; j < n; j++) if (j !== i) den = cmul(den, [z[i][0] - z[j][0], z[i][1] - z[j][1]]);
+                var dz = cdiv(pv, den); z[i] = [z[i][0] - dz[0], z[i][1] - dz[1]]; md = Math.max(md, Math.hypot(dz[0], dz[1]));
+            }
+            if (md < 1e-14) break;
+        }
+        return z.map(function (q) { var re = q[0], im = q[1]; if (Math.abs(im) < 1e-9 * Math.max(1, Math.abs(re))) im = 0; if (Math.abs(re) < 1e-12) re = 0; return { re: re, im: im }; });
+    }
+    function lcmArr(a) { var L = 1; a.forEach(function (x) { L = L / gcd(L, x) * x; }); return L; }
+    function divisors(n) { n = Math.abs(n); var r = [], i; for (i = 1; i * i <= n; i++) if (n % i === 0) { r.push(i); if (i * i !== n) r.push(n / i); } return r; }
+    function solvePoly(cv) { // cv: mảng V, từ hệ số cao xuống thấp
+        var n = cv.length - 1; while (n > 0 && isZero(cv[0])) { cv = cv.slice(1); n--; } if (n < 1) fail('Math ERROR');
+        var out = [];
+        function quad(a, b, c) {
+            var D = sub(mul(b, b), mul(rat(4), mul(a, c))), twoA = mul(rat(2), a);
+            if (isZero(D)) { var x0 = neg(div(b, twoA)); return [cx(x0), cx(x0)]; }
+            if (D.d > 0) { var s = sqrtV(D); return [cx(div(add(neg(b), s), twoA)), cx(div(sub(neg(b), s), twoA))]; }
+            var s2 = sqrtV(neg(D)), re = neg(div(b, twoA)), im = div(s2, mul(rat(2), a.d < 0 ? neg(a) : a)); return [cx(re, im), cx(re, neg(im))];
+        }
+        if (n === 1) return [cx(neg(div(cv[1], cv[0])))];
+        if (n === 2) return quad(cv[0], cv[1], cv[2]);
+        var rats = cv.map(ratOf), allRat = rats.every(function (r) { return r; });
+        if (allRat) {
+            var L = lcmArr(rats.map(function (r) { return r.d; })), ic = rats.map(function (r) { return r.n * (L / r.d); }), g0 = ic.reduce(function (g, x) { return gcd(g, x); }, 0); ic = ic.map(function (x) { return x / g0; });
+            var roots = [], cur = ic.slice(), guard = 0;
+            while (cur.length > 3 && guard++ < 6) {
+                var lead = cur[0], cst = cur[cur.length - 1], found = null;
+                if (cst === 0) { found = fr(0, 1); } else if (Math.abs(cst) < 1e9 && Math.abs(lead) < 1e9) {
+                    var dn = divisors(cst), dd = divisors(lead);
+                    outer: for (var i = 0; i < dn.length; i++) for (var j = 0; j < dd.length; j++) for (var sg = -1; sg <= 1; sg += 2) { var cand = fr(sg * dn[i], dd[j]); if (!cand) continue; var val = 0; for (var q = 0; q < cur.length; q++) val = val * cand.n / cand.d + cur[q]; if (Math.abs(val) < 1e-9) { var exact = fr(0, 1), acc = { n: 0, d: 1 }, ok = true; for (q = 0; q < cur.length; q++) { acc = fadd(fmul(acc, cand), { n: cur[q], d: 1 }); if (!acc) { ok = false; break; } } if (ok && acc.n === 0) { found = cand; break outer; } } }
+                }
+                if (!found) break;
+                roots.push(cx(rat(found.n, found.d)));
+                var nc = [cur[0]], accf = { n: cur[0], d: 1 }; for (var t = 1; t < cur.length - 1; t++) { accf = fadd(fmul(accf, found), { n: cur[t], d: 1 }); if (!accf || accf.d !== 1) { accf = null; break; } nc.push(accf.n); }
+                if (!accf) break; cur = nc;
+            }
+            if (cur.length <= 3 && roots.length) {
+                var rest = cur.length === 3 ? quad(rat(cur[0]), rat(cur[1]), rat(cur[2])) : (cur.length === 2 ? [cx(rat(-cur[1], cur[0]))] : []);
+                var all = roots.concat(rest); all.sort(function (p, q) { if (!!p.im !== !!q.im) return p.im ? 1 : -1; return p.re.d - q.re.d; }); return all;
+            }
+        }
+        var d = durand(cv.map(function (v) { return v.d; }));
+        d.sort(function (p, q) { if (!!p.im !== !!q.im) return p.im ? 1 : -1; return p.re - q.re; });
+        return d.map(function (z) { return cx(num(z.re), z.im ? num(z.im) : null); });
+    }
+    function solveSimul(M) { // M: n x (n+1) các V
+        var n = M.length, A = M.map(function (r) { return r.slice(); }), i, j, k;
+        for (i = 0; i < n; i++) {
+            var p = -1, best = 0; for (j = i; j < n; j++) { if (!isZero(A[j][i]) && (p < 0 || Math.abs(A[j][i].d) > best)) { p = j; best = Math.abs(A[j][i].d); } }
+            if (p < 0) fail('Math ERROR'); var tmp = A[i]; A[i] = A[p]; A[p] = tmp;
+            for (j = 0; j < n; j++) if (j !== i && !isZero(A[j][i])) { var f = div(A[j][i], A[i][i]); for (k = i; k <= n; k++) A[j][k] = sub(A[j][k], mul(f, A[i][k])); }
+        }
+        return A.map(function (r, i) { return div(r[n], r[i]); });
+    }
+    function solveIneq(cv, rel) { // rel: '>', '<', '>=', '<='; trả về [{lo,hi,loInc,hiInc}] hoặc 'all' / 'none'
+        var rts = solvePoly(cv).filter(function (z) { return !z.im; }).map(function (z) { return z.re; }); rts.sort(function (a, b) { return a.d - b.d; });
+        var uniq = []; rts.forEach(function (r) { if (!uniq.length || Math.abs(uniq[uniq.length - 1].d - r.d) > 1e-9) uniq.push(r); });
+        var coef = cv.map(function (v) { return v.d; }), pts = uniq.map(function (r) { return r.d; }), strict = rel === '>' || rel === '<', pos = rel === '>' || rel === '>=';
+        var samples = []; if (!pts.length) samples.push(0); else { samples.push(pts[0] - 1); for (var i = 0; i + 1 < pts.length; i++) samples.push((pts[i] + pts[i + 1]) / 2); samples.push(pts[pts.length - 1] + 1); }
+        var res = [], cur = null;
+        samples.forEach(function (s, idx) {
+            var val = polyEval(coef, s), ok = pos ? val > 0 : val < 0;
+            if (ok) { var seg = { lo: idx === 0 ? null : uniq[idx - 1], hi: idx === samples.length - 1 ? null : uniq[idx], loInc: !strict, hiInc: !strict }; if (cur && cur.hi && seg.lo && Math.abs(cur.hi.d - seg.lo.d) < 1e-9 && cur.hiInc && seg.loInc) { cur.hi = seg.hi; cur.hiInc = seg.hiInc; } else { cur = seg; res.push(cur); } } else cur = cur && 0;
+        });
+        if (!strict) uniq.forEach(function (r) { var inside = res.some(function (s) { return (s.lo === null || s.lo.d - 1e-9 <= r.d) && (s.hi === null || s.hi.d + 1e-9 >= r.d); }); if (!inside) res.push({ lo: r, hi: r, loInc: true, hiInc: true, point: true }); });
+        res.sort(function (a, b) { return (a.lo ? a.lo.d : -Infinity) - (b.lo ? b.lo.d : -Infinity); });
+        if (res.length === 1 && res[0].lo === null && res[0].hi === null) return 'all'; if (!res.length) return 'none'; return res;
+    }
+    return { Err: Err, parseModel: parseModel, ev: ev, fmt: fmt, fmtDec: fmtDec, rat: rat, num: num, mk: mk, add: add, sub: sub, mul: mul, div: div, neg: neg, isZero: isZero, ratOf: ratOf, solvePoly: solvePoly, solveSimul: solveSimul, solveIneq: solveIneq, evNum: evNum, setNoex: function (b) { NOEX = b; }, polyEval: polyEval, snapRat: snapRat, ratApprox: ratApprox, intV: intV, parseNum: parseNum };
+})();
+
+    // =====================================================================
+    //  MÁY TÍNH BẤM TAY (mô phỏng kiểu fx-580): nổi trên bảng viết, HS bấm như máy thật
+    // =====================================================================
+    var CX = null;
+    var CX_CSS = '.cxp{position:absolute;z-index:60;background:#2b2f36;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);color:#fff;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation;outline:none}' +
+        '.cxp *{box-sizing:border-box}.cxh{display:flex;align-items:center;gap:6px;padding:4px 8px;cursor:move;touch-action:none;font-size:.62em;color:#cbd5e1}.cxh b{flex:1;font-weight:600}.cxh span{cursor:pointer;padding:0 6px;font-size:1.3em}' +
+        '.cxs{margin:0 8px 6px;background:#d9e2c5;color:#111;border-radius:6px;padding:4px 8px 6px;height:10.6em;overflow:hidden;position:relative;font-size:1em;display:flex;flex-direction:column;box-shadow:inset 0 0 6px rgba(0,0,0,.35)}' +
+        '.cxst{font-size:.55em;display:flex;gap:8px;color:#1f2a14;height:1.3em;align-items:center;border-bottom:1px solid rgba(0,0,0,.18);margin-bottom:2px;flex:none}.cxst i{font-style:normal;font-weight:700}' +
+        '.cxe{flex:1;overflow:auto hidden;white-space:nowrap;font-size:1.25em;padding-top:2px;scrollbar-width:none;min-height:0}.cxe::-webkit-scrollbar{display:none}' +
+        '.cxr{text-align:right;font-size:1.5em;min-height:1.6em;padding-bottom:1px;white-space:nowrap;overflow:auto hidden;scrollbar-width:none;flex:none}.cxr::-webkit-scrollbar{display:none}.cxerr{color:#7f1d1d;font-weight:700;font-size:.8em}' +
+        '.cxs .cx-s{display:inline-flex;align-items:center;vertical-align:middle}.cx-ch{padding:0 .5px}.cx-fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;line-height:1.12;font-size:.92em}.cx-fr .cx-n{border-bottom:1.5px solid #111;padding:0 3px;text-align:center}.cx-fr .cx-d{padding:0 3px;text-align:center}' +
+        '.cx-rad{display:inline-flex;align-items:stretch}.cx-rb{border-top:1.5px solid #111;padding:0 2px;margin-left:1px;display:inline-flex;align-items:center}.cx-sup{font-size:.62em;position:relative;top:-.55em;margin-left:1px;line-height:1}.cx-pw{font-size:.62em;position:relative;top:-.55em;margin-left:1px;display:inline-flex}.cx-sb{font-size:.62em;position:relative;top:.45em;display:inline-flex}' +
+        '.cx-box{display:inline-block;min-width:.55em;height:.95em;border:1px dashed #5b6b43;margin:0 1px;vertical-align:middle;position:relative}.cx-cur{display:inline-block;width:2px;height:1.05em;background:#111;vertical-align:middle;margin:0 -1px;animation:cxbl 1s steps(2,start) infinite}@keyframes cxbl{to{visibility:hidden}}' +
+        '.cx-mix{display:inline-flex;align-items:center;gap:2px}.cx-int{display:inline-flex;align-items:center}.cx-ints{display:inline-flex;flex-direction:column;align-items:center;font-size:.8em;line-height:1}.cx-big{font-size:1.5em;line-height:1}.cx-x{white-space:nowrap}' +
+        '.cxl{font-size:.9em;line-height:1.35;overflow:hidden;flex:1}.cxl div{padding:0 3px;border-radius:3px;white-space:nowrap}.cxl .sel{background:#2d3a1a;color:#e8f0d4}.cxl .dim{color:#7a8a62}' +
+        '.cxk{padding:0 8px 8px}.cxg{display:grid;gap:5px;margin-bottom:5px}.cxg6{grid-template-columns:repeat(6,1fr)}.cxg5{grid-template-columns:repeat(5,1fr)}' +
+        '.cxb{position:relative;background:#4b5260;border:none;border-radius:7px;color:#fff;font:600 1em system-ui;height:2.5em;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;box-shadow:0 2px 0 #1b1e24}.cxb:active,.cxb.on{transform:translateY(1px);box-shadow:none;filter:brightness(1.25)}' +
+        '.cxb .sh{position:absolute;top:-.55em;left:2px;font-size:.5em;color:#f6c344;white-space:nowrap;font-weight:700}.cxb .al{position:absolute;top:-.55em;right:3px;font-size:.5em;color:#ff7b7b;font-weight:700}' +
+        '.cxb.num{background:#f1f3f5;color:#111;font-size:1.15em;box-shadow:0 2px 0 #9aa0a8}.cxb.dl{background:#e9822b;box-shadow:0 2px 0 #8a4a10}.cxb.eq{background:#2f6fdc;box-shadow:0 2px 0 #163a78}.cxb.sf{background:#d6a928;color:#111}.cxb.alp{background:#d9534f}.cxb.fn{background:#3a404b}.cxb.op{background:#d8dde3;color:#111;font-size:1.15em;box-shadow:0 2px 0 #8e949c}' +
+        '.cxb.pad{height:1.9em}.cxpad{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:2px;grid-column:3/5;height:3.8em;margin-top:-.2em}.cxpad .cxb{height:auto;border-radius:6px;font-size:.8em}' +
+        '.cxfld{display:flex;align-items:center;gap:4px;padding:1px 2px;border-radius:3px;min-height:1.5em}.cxfld.act{background:#c6d2a9}.cxfld .lb{font-size:.72em;color:#34401f;min-width:2.2em}.cxfld .vl{flex:1;overflow:hidden;white-space:nowrap;font-size:1.05em}' +
+        '.cxmenu{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;font-size:.62em;flex:1;overflow:hidden}.cxmenu div{background:#c3cfa5;border-radius:4px;padding:3px;text-align:center;line-height:1.15;cursor:pointer;display:flex;flex-direction:column;justify-content:center}.cxmenu div b{font-size:1.4em}.cxmenu .nyi{opacity:.45}';
+    function cxH(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined && txt !== null) e.innerHTML = txt; return e; }
+    // ---- bộ soạn thảo kiểu "hiển thị tự nhiên" ----
+    function eNew() { return { root: [], cur: { path: [], pos: 0 } }; }
+    function eSeq(ed) { var s = ed.root; ed.cur.path.forEach(function (p) { s = s[p.i].k[p.j]; }); return s; }
+    function eIns(ed, it) { var s = eSeq(ed); s.splice(ed.cur.pos, 0, it); ed.cur.pos++; }
+    function eEnter(ed, idx, j, atEnd) { ed.cur.path.push({ i: idx, j: j }); ed.cur.pos = atEnd ? eSeq(ed).length : 0; }
+    function eParentSeq(ed, depth) { var q = ed.root; for (var i = 0; i < depth; i++) q = q[ed.cur.path[i].i].k[ed.cur.path[i].j]; return q; }
+    function eRight(ed) {
+        var c = ed.cur, s = eSeq(ed);
+        if (c.pos < s.length) { var it = s[c.pos]; if (it.k) eEnter(ed, c.pos, 0, false); else c.pos++; return true; }
+        if (c.path.length) { var last = c.path[c.path.length - 1], it2 = eParentSeq(ed, c.path.length - 1)[last.i]; if (last.j + 1 < it2.k.length) { last.j++; c.pos = 0; } else { c.path.pop(); c.pos = last.i + 1; } return true; }
+        return false;
+    }
+    function eLeft(ed) {
+        var c = ed.cur, s = eSeq(ed);
+        if (c.pos > 0) { var it = s[c.pos - 1]; if (it.k) eEnter(ed, c.pos - 1, it.k.length - 1, true); else c.pos--; return true; }
+        if (c.path.length) { var last = c.path[c.path.length - 1]; if (last.j > 0) { last.j--; c.pos = eSeq(ed).length; } else { c.path.pop(); c.pos = last.i; } return true; }
+        return false;
+    }
+    function eVert(ed, dir) {
+        var c = ed.cur; if (!c.path.length) return false; var last = c.path[c.path.length - 1], it = eParentSeq(ed, c.path.length - 1)[last.i], nj = last.j;
+        if (it.t === 'frac') nj = dir > 0 ? 1 : 0; else if (it.t === 'int' || it.t === 'sum') { if (dir < 0) nj = last.j === 1 ? 2 : last.j; else nj = last.j === 2 ? 1 : last.j; } else if (it.t === 'mix') { if (last.j === 2 && dir < 0) nj = 1; else if (last.j === 1 && dir > 0) nj = 2; }
+        if (nj === last.j) return false; last.j = nj; c.pos = Math.min(c.pos, eSeq(ed).length); return true;
+    }
+    function eDel(ed) {
+        var c = ed.cur, s = eSeq(ed);
+        if (c.pos > 0) { var it = s[c.pos - 1]; if (it.k && it.k.some(function (q) { return q.length; })) { eEnter(ed, c.pos - 1, it.k.length - 1, true); return; } s.splice(c.pos - 1, 1); c.pos--; return; }
+        if (c.path.length) {
+            var last = c.path[c.path.length - 1]; if (last.j > 0) { last.j--; c.pos = eSeq(ed).length; return; }
+            c.path.pop(); c.pos = last.i; var s2 = eSeq(ed), it2 = s2[last.i]; if (!it2.k.some(function (q) { return q.length; })) s2.splice(last.i, 1);
+        }
+    }
+    var TPL_N = { frac: 2, sqrt: 1, root: 2, pow: 1, e10: 1, logb: 2, abs: 1, int: 3, ddx: 2, sum: 3, mix: 3 };
+    function eTpl(ed, type, pre) {
+        var it = { t: type, k: [] }, i; for (i = 0; i < TPL_N[type]; i++) it.k.push([]);
+        var s = eSeq(ed), c = ed.cur, start = 0;
+        if (pre) pre(it);
+        if ((type === 'frac' || type === 'mix') && !it.k[0].length) { var j = c.pos; while (j > 0 && s[j - 1].t === 'c' && /^[0-9.]$/.test(s[j - 1].v)) j--; if (j < c.pos) { it.k[0] = s.splice(j, c.pos - j); c.pos = j; start = 1; } }
+        if (type === 'root' && it.k[0].length) start = 1;
+        if (it.k[0].length && type === 'frac' && start === 0) start = 1;
+        s.splice(c.pos, 0, it); eEnter(ed, c.pos, start, false);
+    }
+    function chItem(v) { return { t: 'c', v: v }; }
+    function eStr(ed, str) { str.split('').forEach(function (ch) { eIns(ed, chItem(ch === '-' ? '−' : ch)); }); }
+    // ---- vẽ biểu thức ----
+    var CX_DISP = { nPr: 'P', nCr: 'C', '-': '−' };
+    function samePath(a, b) { if (a.length !== b.length) return false; for (var i = 0; i < a.length; i++) if (a[i].i !== b[i].i || a[i].j !== b[i].j) return false; return true; }
+    function rSeq(seq, path, ed, act) {
+        var w = cxH('span', 'cx-s'), here = act && samePath(ed.cur.path, path);
+        if (!seq.length) { if (path.length) { var bx = cxH('span', 'cx-box'); if (here) bx.appendChild(cxH('span', 'cx-cur')); w.appendChild(bx); } else if (here) w.appendChild(cxH('span', 'cx-cur')); return w; }
+        for (var i = 0; i <= seq.length; i++) {
+            if (here && ed.cur.pos === i) w.appendChild(cxH('span', 'cx-cur'));
+            if (i < seq.length) w.appendChild(rItem(seq[i], i, path, ed, act));
+        }
+        return w;
+    }
+    function rItem(it, i, path, ed, act) {
+        function sl(j) { return rSeq(it.k[j], path.concat([{ i: i, j: j }]), ed, act); }
+        var e;
+        switch (it.t) {
+            case 'c': return cxH('span', 'cx-ch', CX_DISP[it.v] || it.v);
+            case 'frac': e = cxH('span', 'cx-fr'); var n = cxH('span', 'cx-n'), d = cxH('span', 'cx-d'); n.appendChild(sl(0)); d.appendChild(sl(1)); e.appendChild(n); e.appendChild(d); return e;
+            case 'sqrt': e = cxH('span', 'cx-rad', '√'); var b = cxH('span', 'cx-rb'); b.appendChild(sl(0)); e.appendChild(b); return e;
+            case 'root': e = cxH('span', 'cx-rad'); var p0 = cxH('span', 'cx-pw'); p0.appendChild(sl(0)); e.appendChild(p0); e.appendChild(document.createTextNode('√')); var b2 = cxH('span', 'cx-rb'); b2.appendChild(sl(1)); e.appendChild(b2); return e;
+            case 'pow': e = cxH('span', 'cx-pw'); e.appendChild(sl(0)); return e;
+            case 'e10': e = cxH('span', 'cx-s', '×10'); var p1 = cxH('span', 'cx-pw'); p1.appendChild(sl(0)); e.appendChild(p1); return e;
+            case 'logb': e = cxH('span', 'cx-s', 'log'); var sb = cxH('span', 'cx-sb'); sb.appendChild(sl(0)); e.appendChild(sb); e.appendChild(document.createTextNode('(')); e.appendChild(sl(1)); e.appendChild(document.createTextNode(')')); return e;
+            case 'abs': e = cxH('span', 'cx-s', '|'); e.appendChild(sl(0)); e.appendChild(document.createTextNode('|')); return e;
+            case 'int': e = cxH('span', 'cx-int'); var st = cxH('span', 'cx-ints'); st.appendChild(sl(2)); st.appendChild(cxH('span', 'cx-big', '∫')); st.appendChild(sl(1)); e.appendChild(st); e.appendChild(sl(0)); e.appendChild(document.createTextNode('dx')); return e;
+            case 'ddx': e = cxH('span', 'cx-s'); e.appendChild(cxH('span', 'cx-fr', '<span class="cx-n">d</span><span class="cx-d">dx</span>')); e.appendChild(document.createTextNode('(')); e.appendChild(sl(0)); e.appendChild(document.createTextNode(')|x=')); e.appendChild(sl(1)); return e;
+            case 'sum': e = cxH('span', 'cx-int'); var s2 = cxH('span', 'cx-ints'); s2.appendChild(sl(2)); s2.appendChild(cxH('span', 'cx-big', 'Σ')); var lo = cxH('span', 'cx-s', 'x='); lo.appendChild(sl(1)); s2.appendChild(lo); e.appendChild(s2); e.appendChild(sl(0)); return e;
+            case 'mix': e = cxH('span', 'cx-mix'); e.appendChild(sl(0)); var f = cxH('span', 'cx-fr'), n2 = cxH('span', 'cx-n'), d2 = cxH('span', 'cx-d'); n2.appendChild(sl(1)); d2.appendChild(sl(2)); f.appendChild(n2); f.appendChild(d2); e.appendChild(f); return e;
+        }
+        return cxH('span', '', '?');
+    }
+    function cxClone(o) { return JSON.parse(JSON.stringify(o)); }
+    function cxEnv() { return { angle: CX.ang, vars: CX.vars, ans: CX.ans }; }
+    function cxFmt(v, dec) { return CAS.fmt(v, { dec: dec, fmt: CX.nf, n: CX.nd, mixed: CX.mixed }); }
+    function cxPlain(d) { var s = String(parseFloat(d.toPrecision(10))); if (/e/i.test(s)) s = d === 0 ? '0' : String(d); return s; }
+    function cxVarsIn(a, out) { if (!a || typeof a !== 'object') return; if (a.n === 'var' && out.indexOf(a.v) < 0) out.push(a.v); for (var k in a) { var v = a[k]; if (Array.isArray(v)) v.forEach(function (x) { cxVarsIn(x, out); }); else if (v && typeof v === 'object') cxVarsIn(v, out); } }
+
+    // ---- bàn phím ----
+    var CX_KEYS = [
+        [['SHIFT', 'SHIFT', '', '', 'a:SHIFT', '', '', 'sf'], ['ALPHA', 'ALPHA', '', '', 'a:ALPHA', '', '', 'alp'], 'PAD', ['MENU', 'MENU', 'SETUP', '', 'a:menu', 'a:setup', '', 'fn'], ['ON', 'ON', '', '', 'a:ON', '', '', 'fn']],
+        [['OPTN', 'OPTN', '', '', 'a:optn', '', '', 'fn'], ['CALC', 'CALC', 'SOLVE', '=', 'a:calc', 'a:solve', 'c:=', 'fn'], ['∫', '∫<small>dx</small>', 'd/dx', '', 't:int', 't:ddx', '', 'fn'], ['x⁻¹', 'x⁻¹', 'x!', '', 'x:inv', 'c:!', '', 'fn'], ['logb', 'log<sub>▫</sub>▫', 'Σ', '', 't:logb', 't:sum', '', 'fn'], ['abs', '|▫|', '', '', 't:abs', '', '', 'fn']],
+        [['frac', '▫<small>/</small>▫', 'a b/c', '', 't:frac', 't:mix', '', 'fn'], ['sqrt', '√▫', '∛▫', '', 't:sqrt', 't:cbrt', '', 'fn'], ['x2', 'x²', 'x³', '', 'x:2', 'x:3', '', 'fn'], ['pow', 'x<sup>▫</sup>', '<sup>▫</sup>√▫', '', 't:pow', 't:root', '', 'fn'], ['log', 'log', '10<sup>x</sup>', '', 'fn:log', 'x:10', '', 'fn'], ['ln', 'ln', 'e<sup>x</sup>', '', 'fn:ln', 'x:e', '', 'fn']],
+        [['neg', '(−)', '', 'A', 'c:−', '', 'c:A', 'fn'], ['dms', '° ′ ″', '′', 'B', 'c:°', 'c:′', 'c:B', 'fn'], ['hyp', 'hyp', '', 'C', 'a:hyp', '', 'c:C', 'fn'], ['sin', 'sin', 'sin⁻¹', 'D', 'fn:sin', 'fn:asin', 'c:D', 'fn'], ['cos', 'cos', 'cos⁻¹', 'E', 'fn:cos', 'fn:acos', 'c:E', 'fn'], ['tan', 'tan', 'tan⁻¹', 'F', 'fn:tan', 'fn:atan', 'c:F', 'fn']],
+        [['rcl', 'RCL', 'STO', '', 'a:rcl', 'a:sto', '', 'fn'], ['eng', 'ENG', '', '', 'a:eng', '', '', 'fn'], ['lp', '(', '', '', 'c:(', '', '', 'fn'], ['rp', ')', ',', 'X', 'c:)', 'c:,', 'c:X', 'fn'], ['sd', 'S⇔D', '', 'Y', 'a:sd', '', 'c:Y', 'fn'], ['mp', 'M+', 'M−', 'M', 'a:mplus', 'a:mminus', 'c:M', 'fn']]
+    ];
+    var CX_NUM = [
+        [['7', '7', '', '', 'c:7', '', '', 'num'], ['8', '8', '', '', 'c:8', '', '', 'num'], ['9', '9', '', '', 'c:9', '', '', 'num'], ['DEL', 'DEL', 'INS', '', 'a:DEL', '', '', 'dl'], ['AC', 'AC', 'OFF', '', 'a:AC', 'a:off', '', 'dl']],
+        [['4', '4', '', '', 'c:4', '', '', 'num'], ['5', '5', '', '', 'c:5', '', '', 'num'], ['6', '6', '', '', 'c:6', '', '', 'num'], ['mul', '×', 'nPr', '', 'c:×', 'c:nPr', '', 'op'], ['div', '÷', 'nCr', '', 'c:÷', 'c:nCr', '', 'op']],
+        [['1', '1', '', '', 'c:1', '', '', 'num'], ['2', '2', '', '', 'c:2', '', '', 'num'], ['3', '3', '', '', 'c:3', '', '', 'num'], ['plus', '+', '', '', 'c:+', '', '', 'op'], ['minus', '−', '', '', 'c:−', '', '', 'op']],
+        [['0', '0', '', '', 'c:0', '', '', 'num'], ['dot', '.', 'Ran#', '', 'c:.', 'c:Ran#', '', 'num'], ['e10', '×10<sup>x</sup>', 'π', 'e', 't:e10', 'c:π', 'c:e', 'num'], ['ans', 'Ans', '', '', 'c:Ans', '', '', 'num'], ['eq', '=', '', '', 'a:EQ', '', '', 'eq']]
+    ];
+    function cxKeyEl(k, size) {
+        var b = cxH('button', 'cxb ' + (k[7] || ''), '<span class="mn">' + k[1] + '</span>'); b.type = 'button';
+        if (k[2]) b.appendChild(cxH('span', 'sh', k[2])); if (k[3]) b.appendChild(cxH('span', 'al', k[3]));
+        b.setAttribute('data-k', k[0]); b.onclick = function (e) { e.preventDefault(); cxPress(k); }; b.onpointerdown = function (e) { e.preventDefault(); }; return b;
+    }
+    // ---- trạng thái hiển thị ----
+    function cxStatus() {
+        var st = CX.stEl; st.innerHTML = '';
+        function f(t, on) { if (on) st.appendChild(cxH('i', '', t)); }
+        f('S', CX.shift); f('A', CX.alpha); f('hyp', CX.hyp); f('STO', CX.pending === 'sto'); f('RCL', CX.pending === 'rcl');
+        st.appendChild(cxH('i', '', CX.ang === 'deg' ? 'D' : (CX.ang === 'rad' ? 'R' : 'G')));
+        st.appendChild(cxH('i', '', 'Math')); if (CX.nf === 'fix') st.appendChild(cxH('i', '', 'Fix')); if (CX.nf === 'sci') st.appendChild(cxH('i', '', 'Sci'));
+        var mt = { calc: 'Tính toán', menu: 'MENU', setup: 'SETUP', list: '', form: '', sol: '', table: '' }[CX.mode]; if (CX.title) mt = CX.title; if (mt) { var m = cxH('span', '', mt); m.style.marginLeft = 'auto'; st.appendChild(m); }
+        if (CX.mem && CX.vars.M && !CX.vars.M.e) { }
+    }
+    function cxRender() {
+        if (!CX) return; cxStatus(); var body = CX.body; body.innerHTML = '';
+        var m = CX.mode;
+        if (m === 'calc') {
+            var ex = cxH('div', 'cxe'); ex.appendChild(rSeq(CX.main.root, [], CX.main, !CX.showRes)); body.appendChild(ex); CX.exEl = ex;
+            var rs = cxH('div', 'cxr'); if (CX.res) { if (CX.res.err) rs.innerHTML = '<span class="cxerr">' + CX.res.err + '</span>'; else rs.innerHTML = CX.res.html || cxFmt(CX.res.v, CX.res.dec); } body.appendChild(rs);
+            if (CX.res && CX.res.extra) { var xt = cxH('div', 'cxr', CX.res.extra); xt.style.fontSize = '.95em'; xt.style.minHeight = '0'; body.appendChild(xt); }
+            cxScroll(ex);
+        } else if (m === 'menu') {
+            var g = cxH('div', 'cxmenu'); CX_MENU.forEach(function (it) { var d = cxH('div', it[2] ? 'nyi' : '', '<b>' + it[0] + '</b>' + it[1]); d.onclick = function () { cxMenuPick(it[0]); }; g.appendChild(d); }); body.appendChild(g);
+        } else if (m === 'list') {
+            if (CX.listTitle) body.appendChild(cxH('div', 'dim', '<small>' + CX.listTitle + '</small>'));
+            var l = cxH('div', 'cxl'); CX.list.forEach(function (it, i) { var d = cxH('div', i === CX.sel ? 'sel' : '', (it.key ? it.key + ': ' : '') + it.label); d.onclick = function () { CX.sel = i; cxListPick(); }; l.appendChild(d); }); body.appendChild(l);
+            var sel = l.querySelector('.sel'); if (sel && sel.offsetTop + sel.offsetHeight > l.clientHeight) l.scrollTop = sel.offsetTop - l.clientHeight + sel.offsetHeight + 2;
+            else l.scrollTop = 0;
+        } else if (m === 'form') {
+            var fm = CX.form; if (fm.title) body.appendChild(cxH('div', '', '<small>' + fm.title + '</small>'));
+            var wrap = cxH('div', 'cxl'); if (fm.grid) { wrap.style.display = 'block'; }
+            fm.fields.forEach(function (f, i) {
+                var row = cxH('div', 'cxfld' + (i === fm.act ? ' act' : '')); row.appendChild(cxH('span', 'lb', f.label)); var vl = cxH('span', 'vl'); vl.appendChild(rSeq(f.ed.root, [], f.ed, i === fm.act)); row.appendChild(vl); row.onclick = function () { fm.act = i; CX.ed = f.ed; cxRender(); }; wrap.appendChild(row);
+            }); body.appendChild(wrap); if (fm.msg) body.appendChild(cxH('div', 'cxerr', fm.msg));
+            var act = wrap.querySelector('.act'); if (act) { var bt = act.offsetTop; if (bt + act.offsetHeight > wrap.clientHeight + wrap.scrollTop) wrap.scrollTop = bt + act.offsetHeight - wrap.clientHeight; else if (bt < wrap.scrollTop) wrap.scrollTop = bt; }
+        } else if (m === 'sol') {
+            var so = CX.sol, lw = cxH('div', 'cxl'); if (so.head) lw.appendChild(cxH('div', 'dim', so.head));
+            so.lines.slice(so.top, so.top + (so.head ? 2 : 3)).forEach(function (ln) { var d = cxH('div', '', ln); d.style.whiteSpace = 'normal'; lw.appendChild(d); }); body.appendChild(lw);
+            if (so.lines.length > (so.head ? 2 : 3)) body.appendChild(cxH('div', 'dim', '<small>▲▼ để xem tiếp · AC: quay lại</small>'));
+        }
+    }
+    function cxScroll(ex) {
+        var c = ex.querySelector('.cx-cur'); if (!c) return; var er = ex.getBoundingClientRect(), cr = c.getBoundingClientRect();
+        if (cr.right > er.right - 6) ex.scrollLeft += cr.right - er.right + 14; else if (cr.left < er.left + 6) ex.scrollLeft -= er.left - cr.left + 14;
+    }
+    // ---- menu / danh sách ----
+    var CX_MENU = [['1', 'Tính toán', 0], ['2', 'Số phức', 1], ['3', 'Cơ số n', 1], ['4', 'Ma trận', 1], ['5', 'Vectơ', 1], ['6', 'Thống kê', 1], ['7', 'Bảng tính', 1], ['8', 'Phân phối', 1], ['9', 'Bảng giá trị', 0], ['A', 'Phương trình / Hàm', 0], ['B', 'Bất phương trình', 0], ['C', 'Tỉ lệ', 1]];
+    function cxMenuPick(k) {
+        var it = CX_MENU.filter(function (x) { return x[0] === k; })[0]; if (!it) return;
+        if (it[2]) { CX.toast = 'Chức năng này sẽ có ở bản sau'; cxShowToast(); return; }
+        CX.title = ''; if (k === '1') { CX.mode = 'calc'; CX.ed = CX.main; CX.showRes = false; CX.res = null; cxRender(); }
+        else if (k === '9') cxTableStart(); else if (k === 'A') cxEquStart(); else if (k === 'B') cxIneqStart();
+    }
+    function cxShowToast() { var t = CX.toast; CX.toast = ''; if (!t) return; var d = cxH('div', '', t); d.style.cssText = 'position:absolute;left:8px;right:8px;bottom:6px;background:#1f2937;color:#fff;font-size:.62em;padding:3px 6px;border-radius:5px;text-align:center'; CX.scr.appendChild(d); setTimeout(function () { d.remove(); }, 1800); }
+    function cxList(title, items, onPick, back, sel) { CX.mode = 'list'; CX.listTitle = title; CX.list = items; CX.sel = sel || 0; CX.onPick = onPick; CX.back = back; cxRender(); }
+    function cxListPick() { var it = CX.list[CX.sel]; if (it) CX.onPick(it, CX.sel); }
+    function cxOpenSetup() {
+        function root() {
+            cxList('SETUP', [{ key: '1', label: 'Đơn vị góc' }, { key: '2', label: 'Dạng số hiển thị' }, { key: '3', label: 'Kết quả phân số' }], function (it) {
+                if (it.key === '1') cxList('Đơn vị góc', [{ key: '1', label: 'Độ (Degree)', v: 'deg' }, { key: '2', label: 'Radian', v: 'rad' }, { key: '3', label: 'Grad', v: 'gra' }], function (x) { CX.ang = x.v; cxLeaveSetup(); }, root);
+                else if (it.key === '2') cxList('Dạng số', [{ key: '1', label: 'Fix (cố định số lẻ)', v: 'fix' }, { key: '2', label: 'Sci (khoa học)', v: 'sci' }, { key: '3', label: 'Norm 1', v: 'norm1' }, { key: '4', label: 'Norm 2', v: 'norm2' }], function (x) {
+                    if (x.v === 'fix' || x.v === 'sci') { CX.pendNf = x.v; CX.mode = 'list'; CX.list = []; CX.listTitle = (x.v === 'fix' ? 'Fix' : 'Sci') + ' 0~9?  Bấm một phím số'; CX.onDigit = function (d) { CX.nf = CX.pendNf; CX.nd = d; CX.onDigit = null; cxLeaveSetup(); }; CX.back = root; cxRender(); }
+                    else { CX.nf = x.v; cxLeaveSetup(); }
+                }, root);
+                else cxList('Kết quả phân số', [{ key: '1', label: 'ab/c (hỗn số)', v: true }, { key: '2', label: 'd/c (phân số thường)', v: false }], function (x) { CX.mixed = x.v; cxLeaveSetup(); }, root);
+            }, function () { cxLeaveSetup(); });
+        }
+        root();
+    }
+    function cxLeaveSetup() { CX.mode = 'calc'; CX.ed = CX.main; CX.title = ''; cxRender(); }
+    function cxOptn() {
+        var items = [['nPr', 'nPr'], ['nCr', 'nCr'], ['GCD(', 'GCD( ƯCLN'], ['LCM(', 'LCM( BCNN'], ['Int(', 'Int( phần nguyên cắt'], ['Intg(', 'Intg( phần nguyên sàn'], ['Rnd(', 'Rnd( làm tròn'], ['Ran#', 'Ran# số ngẫu nhiên'], ['%', '% phần trăm'], ['!', '! giai thừa'], ['″', '″ giây']].map(function (x, i) { return { key: String(i + 1), label: x[1], v: x[0] }; });
+        CX.prevMode = 'calc'; cxList('OPTN', items, function (it) { CX.mode = 'calc'; CX.ed = CX.main; cxBeforeInput(it.v === 'nPr' || it.v === 'nCr' || it.v === '%' || it.v === '!' || it.v === '″' ? 'op' : 'in'); eIns(CX.main, chItem(it.v)); cxRender(); }, function () { CX.mode = 'calc'; CX.ed = CX.main; cxRender(); });
+    }
+    // ---- tính ----
+    function cxBeforeInput(kind) {
+        if (!CX.showRes) return;
+        CX.showRes = false; var ed = CX.main;
+        if (kind === 'op' && CX.res && !CX.res.err) { ed.root = [chItem('Ans')]; ed.cur = { path: [], pos: 1 }; }
+        else { ed.root = []; ed.cur = { path: [], pos: 0 }; }
+        CX.res = null;
+    }
+    function cxExec() {
+        var ed = CX.main;
+        try {
+            var ast = CAS.parseModel(ed.root), v = CAS.ev(ast, cxEnv());
+            if (!isFinite(v.d)) throw new CAS.Err('Math ERROR');
+            CX.ans = v; CX.res = { v: v, dec: v.k === 'D' || !v.e }; CX.hist.push({ root: cxClone(ed.root), res: CX.res }); if (CX.hist.length > 40) CX.hist.shift(); CX.hi = CX.hist.length;
+        } catch (e) { CX.res = { err: e instanceof CAS.Err ? e.msg : 'Syntax ERROR' }; }
+        CX.showRes = true; cxRender();
+    }
+    function cxSolveNum(g, guess) {
+        function f(x) { try { var y = g(x); return isFinite(y) ? y : NaN; } catch (e) { return NaN; } }
+        var x = guess, i, fx = f(x);
+        for (i = 0; i < 80 && isFinite(fx); i++) { if (Math.abs(fx) < 1e-13) return x; var h = 1e-6 * Math.max(1, Math.abs(x)), d = (f(x + h) - f(x - h)) / (2 * h); if (!isFinite(d) || d === 0) break; var nx = x - fx / d; if (Math.abs(nx - x) < 1e-13 * Math.max(1, Math.abs(x))) { x = nx; fx = f(x); break; } x = nx; fx = f(x); }
+        if (isFinite(fx) && Math.abs(fx) < 1e-9) return x;
+        for (var R = 1; R <= 1e6; R *= 4) { var prev = f(guess - R), k, N = 200; for (k = 1; k <= N; k++) { var xx = guess - R + 2 * R * k / N, fv = f(xx); if (isFinite(prev) && isFinite(fv) && prev * fv <= 0) { var a = xx - 2 * R / N, b = xx, fa = prev; for (var t = 0; t < 200; t++) { var m = (a + b) / 2, fm = f(m); if (fa * fm <= 0) b = m; else { a = m; fa = fm; } } return (a + b) / 2; } prev = fv; } }
+        return null;
+    }
+    function cxVarForm(title, names, onOk) {
+        var fields = names.map(function (nm) { var ed = eNew(), v = CX.vars[nm]; if (v && v.d !== 0) eStr(ed, cxPlain(v.d)); else if (v) eStr(ed, '0'); return { label: nm + '?', ed: ed, name: nm }; });
+        CX.form = { title: title, fields: fields, act: 0, kind: 'vars', onDone: onOk, back: function () { CX.mode = 'calc'; CX.ed = CX.main; cxRender(); } }; CX.mode = 'form'; CX.ed = fields[0].ed; cxRender();
+    }
+    function cxCalc(solve) {
+        var ed = CX.main; CX.showRes = false;
+        var eqIdx = -1; ed.root.forEach(function (it, k) { if (it.t === 'c' && it.v === '=') eqIdx = k; });
+        var names = [], L, Rr = null;
+        try {
+            L = CAS.parseModel(solve && eqIdx >= 0 ? ed.root.slice(0, eqIdx) : ed.root); cxVarsIn(L, names);
+            if (solve && eqIdx >= 0) { Rr = CAS.parseModel(ed.root.slice(eqIdx + 1)); cxVarsIn(Rr, names); }
+        } catch (e) { CX.res = { err: e instanceof CAS.Err ? e.msg : 'Syntax ERROR' }; cxRender(); return; }
+        if (solve) {
+            cxVarForm('Giải theo X: nhập giá trị đầu', ['X'], function () {
+                var env = cxEnv(), g0 = CX.vars.X ? CX.vars.X.d : 0;
+                var x = cxSolveNum(function (t) { var a = CAS.evNum(L, env, t); return Rr ? a - CAS.evNum(Rr, env, t) : a; }, g0);
+                CX.mode = 'calc'; CX.ed = CX.main; CX.showRes = true;
+                if (x === null) CX.res = { err: "Can't Solve" };
+                else {
+                    var ap = CAS.ratApprox(x, 2000, 1e-11), v = ap ? CAS.rat(ap.n, ap.d) : CAS.num(parseFloat(x.toPrecision(10))); CX.vars.X = v; CX.ans = v;
+                    var chk = CAS.evNum(L, env, x) - (Rr ? CAS.evNum(Rr, env, x) : 0);
+                    CX.res = { v: v, dec: !ap, html: 'X=' + CAS.fmt(v, { dec: !ap, fmt: CX.nf, n: CX.nd }), extra: 'L−R=' + CAS.fmtDec(Math.abs(chk) < 1e-9 ? 0 : chk, { fmt: CX.nf, n: CX.nd }) };
+                }
+                cxRender();
+            }); return;
+        }
+        if (!names.length) { cxExec(); return; }
+        cxVarForm('CALC: nhập giá trị các biến', names, function () { cxExec(); });
+    }
+    // ---- biểu mẫu nhiều ô ----
+    function cxForm(title, labels, onDone, back, defaults, grid) {
+        var fields = labels.map(function (lb, i) { var ed = eNew(); if (defaults && defaults[i] !== undefined) eStr(ed, defaults[i]); return { label: lb, ed: ed }; });
+        CX.form = { title: title, fields: fields, act: 0, kind: 'data', onDone: onDone, back: back, grid: grid }; CX.mode = 'form'; CX.ed = fields[0].ed; cxRender();
+    }
+    function cxFormEq() {
+        var fm = CX.form, f = fm.fields[fm.act];
+        try {
+            var v = CAS.ev(CAS.parseModel(f.ed.root), cxEnv());
+            if (fm.kind === 'vars') { CX.vars[f.name] = v; } else f.val = v;
+        } catch (e) { fm.msg = e instanceof CAS.Err ? e.msg : 'Syntax ERROR'; cxRender(); return; }
+        fm.msg = '';
+        if (fm.act < fm.fields.length - 1) { fm.act++; CX.ed = fm.fields[fm.act].ed; cxRender(); }
+        else { var ok = true; fm.fields.forEach(function (x) { if (fm.kind === 'data' && !x.val) { try { x.val = CAS.ev(CAS.parseModel(x.ed.root), cxEnv()); } catch (e) { ok = false; } } }); if (!ok) { fm.msg = 'Syntax ERROR'; cxRender(); return; } fm.onDone(fm); }
+    }
+    function cxSol(head, lines, backFn) { CX.sol = { head: head, lines: lines, top: 0 }; CX.solBack = backFn; CX.mode = 'sol'; cxRender(); }
+    function cxCxHtml(z) {
+        var re = z.re, im = z.im; if (!im) return cxFmt(re, !re.e);
+        var s = ''; if (!CAS.isZero(re)) s += cxFmt(re, !re.e); var neg = im.d < 0, imp = neg ? CAS.neg(im) : im; var ih = cxFmt(imp, !imp.e); if (CAS.ratOf(imp) && CAS.ratOf(imp).n === 1 && CAS.ratOf(imp).d === 1) ih = '';
+        return s + (s ? (neg ? '−' : '+') : (neg ? '−' : '')) + ih + 'i';
+    }
+    // --- phương trình ---
+    function cxEquStart() {
+        CX.title = 'Phương trình';
+        function top() {
+            cxList('Phương trình / Hàm', [{ key: '1', label: 'Hệ phương trình' }, { key: '2', label: 'Phương trình bậc cao' }], function (it) {
+                if (it.key === '1') cxList('Số ẩn', [{ key: '2', label: '2 ẩn', n: 2 }, { key: '3', label: '3 ẩn', n: 3 }, { key: '4', label: '4 ẩn', n: 4 }], function (x) { cxSimul(x.n, top); }, top);
+                else cxList('Bậc của phương trình', [{ key: '2', label: 'Bậc 2: ax²+bx+c=0', n: 2 }, { key: '3', label: 'Bậc 3: ax³+bx²+cx+d=0', n: 3 }, { key: '4', label: 'Bậc 4: ax⁴+…+e=0', n: 4 }], function (x) { cxPoly(x.n, top); }, top);
+            }, function () { CX.title = ''; CX.mode = 'calc'; CX.ed = CX.main; cxRender(); });
+        }
+        top();
+    }
+    function cxSimul(n, back) {
+        var V = ['x', 'y', 'z', 't'], labels = [], r, c; for (r = 1; r <= n; r++) for (c = 0; c <= n; c++) labels.push(c < n ? String.fromCharCode(97 + c) + r : 'd' + r);
+        var self = function () { cxSimul(n, back); };
+        cxForm('Hệ ' + n + ' ẩn: a₁x+b₁y+…=d₁', labels, function (fm) {
+            var M = []; for (var i = 0; i < n; i++) { M.push(fm.fields.slice(i * (n + 1), (i + 1) * (n + 1)).map(function (f) { return f.val; })); }
+            try { var sol = CAS.solveSimul(M); cxSol('Nghiệm', sol.map(function (v, i) { return '<b>' + V[i] + '</b> = ' + cxFmt(v, !v.e); }), function () { CX.mode = 'form'; CX.ed = CX.form.fields[CX.form.act].ed; cxRender(); }); }
+            catch (e) { CX.form.msg = e instanceof CAS.Err ? e.msg : 'Math ERROR'; cxRender(); }
+        }, back);
+    }
+    function cxPoly(n, back) {
+        var names = 'abcde'.split('').slice(0, n + 1);
+        cxForm('Bậc ' + n, names.map(function (x) { return x + '='; }), function (fm) {
+            try {
+                var rts = CAS.solvePoly(fm.fields.map(function (f) { return f.val; }));
+                cxSol('Nghiệm', rts.map(function (z, i) { return '<b>x<sub>' + (i + 1) + '</sub></b> = ' + cxCxHtml(z); }), function () { CX.mode = 'form'; CX.ed = CX.form.fields[CX.form.act].ed; cxRender(); });
+            } catch (e) { CX.form.msg = e instanceof CAS.Err ? e.msg : 'Math ERROR'; cxRender(); }
+        }, back);
+    }
+    // --- bất phương trình ---
+    function cxIneqStart() {
+        CX.title = 'Bất phương trình';
+        function top() {
+            cxList('Bậc', [{ key: '1', label: 'aX²+bX+c', n: 2 }, { key: '2', label: 'aX³+bX²+cX+d', n: 3 }, { key: '3', label: 'aX⁴+…+e', n: 4 }], function (it) {
+                cxList('Dấu bất phương trình', [{ key: '1', label: '… > 0', r: '>' }, { key: '2', label: '… < 0', r: '<' }, { key: '3', label: '… ≥ 0', r: '>=' }, { key: '4', label: '… ≤ 0', r: '<=' }], function (rl) {
+                    var n = it.n, names = 'abcde'.split('').slice(0, n + 1);
+                    cxForm('Hệ số (' + rl.label + ')', names.map(function (x) { return x + '='; }), function (fm) {
+                        try {
+                            var res = CAS.solveIneq(fm.fields.map(function (f) { return f.val; }), rl.r), lines = [];
+                            function F(v) { return cxFmt(v, !v.e); }
+                            if (res === 'all') lines.push('Mọi số thực'); else if (res === 'none') lines.push('Vô nghiệm');
+                            else res.forEach(function (s) {
+                                if (s.point) lines.push('x = ' + F(s.lo)); else if (s.lo === null) lines.push('x ' + (s.hiInc ? '≤' : '<') + ' ' + F(s.hi)); else if (s.hi === null) lines.push(F(s.lo) + ' ' + (s.loInc ? '≤' : '<') + ' x'); else lines.push(F(s.lo) + ' ' + (s.loInc ? '≤' : '<') + ' x ' + (s.hiInc ? '≤' : '<') + ' ' + F(s.hi));
+                            });
+                            cxSol('Nghiệm', lines, function () { CX.mode = 'form'; CX.ed = CX.form.fields[CX.form.act].ed; cxRender(); });
+                        } catch (e) { CX.form.msg = e instanceof CAS.Err ? e.msg : 'Math ERROR'; cxRender(); }
+                    }, function () { top(); });
+                }, top);
+            }, function () { CX.title = ''; CX.mode = 'calc'; CX.ed = CX.main; cxRender(); });
+        }
+        top();
+    }
+    // --- bảng giá trị ---
+    function cxTableStart() {
+        CX.title = 'Bảng giá trị';
+        function form() {
+            cxForm('f(X) = ...', ['f(X)=', 'Start', 'End', 'Step'], function (fm) {
+                try {
+                    var a = fm.fields[1].val.d, b = fm.fields[2].val.d, st = fm.fields[3].val.d; if (!(st > 0) || b < a || (b - a) / st > 44.5) throw new CAS.Err('Argument ERROR');
+                    var ast = CAS.parseModel(fm.fields[0].ed.root), env = cxEnv(), lines = [], n = Math.round((b - a) / st);
+                    for (var i = 0; i <= n; i++) {
+                        var x = a + i * st, xv = CAS.ratApprox(x, 1000, 1e-12), xval = xv ? CAS.rat(xv.n, xv.d) : CAS.num(x), e2 = { angle: env.angle, ans: env.ans, vars: Object.assign({}, env.vars) }; e2.vars.X = xval;
+                        var y; try { y = CAS.ev(ast, e2); y = cxFmt(y, !y.e); } catch (er) { y = '<span class="cxerr">ERROR</span>'; }
+                        lines.push('<span style="display:inline-block;min-width:4.2em">' + cxFmt(xval, !xval.e) + '</span>│ ' + y);
+                    }
+                    cxSol('X │ f(X)', lines, function () { CX.mode = 'form'; CX.ed = CX.form.fields[CX.form.act].ed; cxRender(); });
+                } catch (e) { CX.form.msg = e instanceof CAS.Err ? e.msg : 'Syntax ERROR'; cxRender(); }
+            }, function () { CX.title = ''; CX.mode = 'calc'; CX.ed = CX.main; cxRender(); }, ['', '1', '5', '1']);
+        }
+        form();
+    }
+    // ---- xử lý phím ----
+    function cxFn(name, inv) {
+        var hyp = CX.hyp; CX.hyp = false; var base = { sin: 'sin', cos: 'cos', tan: 'tan' }[name];
+        if (name === 'log' || name === 'ln') return name + '(';
+        return (hyp ? base + 'h' : base) + (inv ? '⁻¹' : '') + '(';
+    }
+    function cxPress(k) {
+        if (!CX) return; var mod = CX.shift ? 's' : (CX.alpha ? 'a' : 'n'), act = mod === 's' ? k[5] : (mod === 'a' ? k[6] : k[4]); var isMod = k[0] === 'SHIFT' || k[0] === 'ALPHA';
+        if (!isMod) { CX.shift = false; CX.alpha = false; }
+        if (!act) { cxRender(); return; }
+        if (CX.pending && !isMod) { var p = CX.pending; CX.pending = null; var vn = /^c:([A-FXYM])$/.test(act) ? act[2] : (/^[A-FXYM]$/.test(k[3]) ? k[3] : null); if (vn) { if (p === 'sto') CX.vars[vn] = CX.ans; else { cxBeforeInput('in'); eIns(CX.main, chItem(vn)); } } cxRender(); return; }
+        var m = CX.mode;
+        if (act === 'a:SHIFT') { CX.shift = !CX.shift; CX.alpha = false; cxStatus(); return; } if (act === 'a:ALPHA') { CX.alpha = !CX.alpha; CX.shift = false; cxStatus(); return; }
+        if (act === 'a:ON') { CX.hyp = false; CX.pending = null; act = 'a:AC'; }
+        if (act === 'a:off') { cxClose(); return; }
+        if (act === 'a:menu') { CX.mode = 'menu'; CX.title = ''; cxRender(); return; } if (act === 'a:setup') { cxOpenSetup(); return; }
+        if (m === 'menu') { if (act === 'a:AC') { CX.mode = 'calc'; CX.ed = CX.main; cxRender(); } else { var ch = /^c:(.)$/.exec(act); if (ch) cxMenuPick(ch[1]); } return; }
+        if (m === 'list') {
+            if (act === 'a:AC') { if (CX.back) CX.back(); else { CX.mode = 'calc'; CX.ed = CX.main; cxRender(); } return; }
+            if (act === 'a:up' || act === 'a:down') { var n = CX.list.length; if (n) { CX.sel = (CX.sel + (act === 'a:up' ? -1 : 1) + n) % n; cxRender(); } return; }
+            if (act === 'a:EQ') { cxListPick(); return; }
+            var c2 = /^c:(.)$/.exec(act); if (c2) { if (CX.onDigit && /\d/.test(c2[1])) { CX.onDigit(parseInt(c2[1], 10)); return; } var idx = -1; CX.list.forEach(function (it, i) { if (it.key === c2[1]) idx = i; }); if (idx >= 0) { CX.sel = idx; cxListPick(); } } return;
+        }
+        if (m === 'sol') {
+            if (act === 'a:AC') { if (CX.solBack) CX.solBack(); return; }
+            var so = CX.sol, vis = so.head ? 2 : 3; if (act === 'a:up') { so.top = Math.max(0, so.top - 1); cxRender(); } else if (act === 'a:down') { so.top = Math.min(Math.max(0, so.lines.length - vis), so.top + 1); cxRender(); } return;
+        }
+        if (m === 'form') {
+            var fm = CX.form;
+            if (act === 'a:AC') { if (fm.back) fm.back(); return; }
+            if (act === 'a:EQ') { cxFormEq(); return; }
+            if (act === 'a:up' || act === 'a:down') { if (!eVert(CX.ed, act === 'a:up' ? -1 : 1)) { var na = fm.act + (act === 'a:up' ? -1 : 1); if (na >= 0 && na < fm.fields.length) { fm.act = na; CX.ed = fm.fields[na].ed; } } cxRender(); return; }
+            fm.msg = ''; cxEdit(act, k); cxRender(); return;
+        }
+        // chế độ tính toán
+        if (act === 'a:AC') { CX.main.root = []; CX.main.cur = { path: [], pos: 0 }; CX.res = null; CX.showRes = false; CX.hyp = false; cxRender(); return; }
+        if (act === 'a:EQ') { cxExec(); return; }
+        if (act === 'a:calc') { cxCalc(false); return; } if (act === 'a:solve') { cxCalc(true); return; } if (act === 'a:optn') { cxOptn(); return; }
+        if (act === 'a:sto') { CX.pending = 'sto'; cxStatus(); return; } if (act === 'a:rcl') { CX.pending = 'rcl'; cxStatus(); return; }
+        if (act === 'a:hyp') { CX.hyp = !CX.hyp; cxStatus(); return; }
+        if (act === 'a:sd') { if (CX.res && CX.res.v && CX.res.v.e) { CX.res.dec = !CX.res.dec; cxRender(); } return; }
+        if (act === 'a:eng') { if (CX.res && CX.res.v) { var d = CX.res.v.d, ex = d === 0 ? 0 : Math.floor(Math.log10(Math.abs(d)) / 3) * 3, mt = parseFloat((d / Math.pow(10, ex)).toPrecision(10)); CX.res.html = ex === 0 ? String(mt).replace('-', '−') : String(mt).replace('-', '−') + '<span class="cx-x">×10<sup class="cx-sup">' + String(ex).replace('-', '−') + '</sup></span>'; cxRender(); } return; }
+        if (act === 'a:mplus' || act === 'a:mminus') { if (CX.res && CX.res.v) { var cur = CX.vars.M || CAS.rat(0); CX.vars.M = act === 'a:mplus' ? CAS.add(cur, CX.res.v) : CAS.sub(cur, CX.res.v); } return; }
+        if (act === 'a:up') { if (CX.main.cur.path.length === 0 || CX.showRes) { if (CX.hist.length) { CX.hi = Math.max(0, CX.hi - 1); var h = CX.hist[CX.hi]; if (h) { CX.main.root = cxClone(h.root); CX.main.cur = { path: [], pos: CX.main.root.length }; CX.showRes = false; CX.res = null; } } } else eVert(CX.main, -1); cxRender(); return; }
+        if (act === 'a:down') { if (CX.main.cur.path.length === 0) { if (CX.hi < CX.hist.length - 1) { CX.hi++; var h2 = CX.hist[CX.hi]; CX.main.root = cxClone(h2.root); CX.main.cur = { path: [], pos: CX.main.root.length }; CX.showRes = false; CX.res = null; } } else eVert(CX.main, 1); cxRender(); return; }
+        if (act === 'a:left' || act === 'a:right') { if (CX.showRes) { CX.showRes = false; CX.res = null; var ed = CX.main; ed.cur = { path: [], pos: act === 'a:left' ? ed.root.length : 0 }; } else (act === 'a:left' ? eLeft : eRight)(CX.main); cxRender(); return; }
+        if (act === 'a:DEL') { if (CX.showRes) { CX.showRes = false; CX.res = null; CX.main.cur = { path: [], pos: CX.main.root.length }; } eDel(CX.main); cxRender(); return; }
+        // chèn
+        var kind = 'in'; if (/^c:[+\-−×÷!%°′″]$|^c:nPr$|^c:nCr$|^c:=$/.test(act) || /^x:(2|3|inv)$/.test(act) || act === 't:pow' || act === 't:e10') kind = 'op';
+        if (/^c:[−]$/.test(act) && k[0] === 'neg') kind = 'in';
+        cxBeforeInput(kind); cxEdit(act, k); cxRender();
+    }
+    function cxEdit(act, k) {
+        var ed = CX.ed, m = /^([a-z]+):(.*)$/.exec(act); if (!m) return; var t = m[1], v = m[2];
+        if (t === 'c') { eIns(ed, chItem(v === '-' ? '−' : v)); return; }
+        if (t === 'fn') { var inv = false; if (v === 'asin' || v === 'acos' || v === 'atan') { inv = true; v = v.slice(1); } eIns(ed, chItem(cxFn(v, inv))); return; }
+        if (t === 't') { if (v === 'cbrt') eTpl(ed, 'root', function (it) { it.k[0] = [chItem('3')]; }); else eTpl(ed, v); return; }
+        if (t === 'x') {
+            if (v === '2' || v === '3') { eIns(ed, { t: 'pow', k: [[chItem(v)]] }); return; }
+            if (v === 'inv') { eIns(ed, { t: 'pow', k: [[chItem('−'), chItem('1')]] }); return; }
+            if (v === '10') { eIns(ed, chItem('1')); eIns(ed, chItem('0')); eTpl(ed, 'pow'); return; } if (v === 'e') { eIns(ed, chItem('e')); eTpl(ed, 'pow'); return; }
+        }
+        if (t === 'a') {
+            if (v === 'DEL') eDel(ed); else if (v === 'left') eLeft(ed); else if (v === 'right') eRight(ed);
+        }
+    }
+    function cxClose() { if (CX && CX.root) CX.root.style.display = 'none'; }
+    function cxKeyboard(e) {
+        var k = e.key, map = { Enter: 'a:EQ', '=': 'a:EQ', Backspace: 'a:DEL', Delete: 'a:DEL', Escape: 'a:AC', ArrowLeft: 'a:left', ArrowRight: 'a:right', ArrowUp: 'a:up', ArrowDown: 'a:down', '*': 'c:×', '/': 'c:÷', '+': 'c:+', '-': 'c:−', '(': 'c:(', ')': 'c:)', '.': 'c:.', ',': 'c:,', '^': 't:pow', '!': 'c:!', '%': 'c:%', p: 'c:π', P: 'c:π' }, act = null;
+        if (/^[0-9]$/.test(k)) act = 'c:' + k; else if (map[k]) act = map[k]; else if (/^[A-FXYM]$/.test(k)) act = 'c:' + k; else if (/^[a-fxym]$/.test(k)) act = 'c:' + k.toUpperCase(); else if (k === 's') act = 'fn:sin'; else if (k === 'o') act = 'fn:cos'; else if (k === 't') act = 'fn:tan'; else if (k === 'l') act = 'fn:ln'; else if (k === 'r') act = 't:sqrt';
+        if (!act) return; e.preventDefault(); e.stopPropagation(); cxPress(['kbd', '', '', '', act, act, act, '']);
+    }
+    function buildCalc() {
+        if (!document.getElementById('cx-style')) { var st = document.createElement('style'); st.id = 'cx-style'; st.textContent = CX_CSS; document.head.appendChild(st); }
+        CX = CX && CX.keep ? CX : { vars: {}, ans: CAS.rat(0), hist: [], hi: 0, ang: 'deg', nf: 'norm1', nd: 0, mixed: false };
+        Object.assign(CX, { mode: 'calc', shift: false, alpha: false, hyp: false, pending: null, main: eNew(), res: null, showRes: false, title: '' }); CX.ed = CX.main;
+        var W = 340, root = cxH('div', 'cxp'); root.tabIndex = 0; root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; root.style.left = Math.max(10, S.W - W - 24) + 'px'; root.style.top = '60px';
+        var hd = cxH('div', 'cxh', '<b>🧮 Máy tính bấm tay (mô phỏng)</b>'), small = cxH('span', '', '−'), big = cxH('span', '', '＋'), x = cxH('span', '', '✕'); small.title = 'Thu nhỏ'; big.title = 'Phóng to'; x.title = 'Đóng';
+        function sz(d) { W = Math.max(250, Math.min(560, W + d)); root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; } small.onclick = function () { sz(-40); }; big.onclick = function () { sz(50); }; x.onclick = cxClose; hd.appendChild(small); hd.appendChild(big); hd.appendChild(x); root.appendChild(hd);
+        var scr = cxH('div', 'cxs'), stEl = cxH('div', 'cxst'), body = cxH('div', ''); body.style.cssText = 'display:flex;flex-direction:column;flex:1;min-height:0;'; scr.appendChild(stEl); scr.appendChild(body); root.appendChild(scr);
+        CX.root = root; CX.scr = scr; CX.stEl = stEl; CX.body = body;
+        var kp = cxH('div', 'cxk');
+        CX_KEYS.forEach(function (row, ri) {
+            var g = cxH('div', 'cxg cxg6');
+            row.forEach(function (k) {
+                if (k === 'PAD') {
+                    var pad = cxH('div', 'cxpad'); var spec = [['', ''], ['▲', 'a:up'], ['', ''], ['◀', 'a:left'], ['', ''], ['▶', 'a:right'], ['', ''], ['▼', 'a:down'], ['', '']];
+                    spec.forEach(function (sp) { var b = cxH('button', 'cxb fn', sp[0]); b.type = 'button'; if (!sp[1]) { b.style.visibility = 'hidden'; } else { b.onclick = function (e) { e.preventDefault(); cxPress(['pad', '', '', '', sp[1], sp[1], sp[1], '']); }; b.onpointerdown = function (e) { e.preventDefault(); }; } pad.appendChild(b); }); g.appendChild(pad);
+                } else g.appendChild(cxKeyEl(k));
+            }); kp.appendChild(g);
+        });
+        CX_NUM.forEach(function (row) { var g = cxH('div', 'cxg cxg5'); row.forEach(function (k) { g.appendChild(cxKeyEl(k)); }); kp.appendChild(g); });
+        root.appendChild(kp);
+        // kéo thả
+        var drag = null;
+        hd.addEventListener('pointerdown', function (e) { if (e.target !== hd && e.target.tagName !== 'B') return; drag = { x: e.clientX - root.offsetLeft, y: e.clientY - root.offsetTop, id: e.pointerId }; try { hd.setPointerCapture(e.pointerId); } catch (er) { } });
+        hd.addEventListener('pointermove', function (e) { if (!drag || e.pointerId !== drag.id) return; root.style.left = Math.max(0, Math.min(S.W - 60, e.clientX - drag.x)) + 'px'; root.style.top = Math.max(0, Math.min(S.H - 40, e.clientY - drag.y)) + 'px'; });
+        hd.addEventListener('pointerup', function () { drag = null; }); hd.addEventListener('pointercancel', function () { drag = null; });
+        ['pointerdown', 'pointerup', 'pointermove', 'mousedown', 'touchstart', 'click', 'dblclick', 'wheel'].forEach(function (ev) { root.addEventListener(ev, function (e) { e.stopPropagation(); }); });
+        root.addEventListener('keydown', cxKeyboard); root.addEventListener('pointerdown', function () { try { root.focus({ preventScroll: true }); } catch (er) { } });
+        S.stage.appendChild(root); CX.keep = true; cxRender(); try { root.focus({ preventScroll: true }); } catch (er) { }
+    }
+    function toggleCalc() {
+        if (CX && CX.root && CX.root.parentNode === S.stage) { var vis = CX.root.style.display !== 'none'; CX.root.style.display = vis ? 'none' : 'block'; if (!vis) { try { CX.root.focus({ preventScroll: true }); } catch (er) { } } return; }
+        buildCalc();
+    }
 
     function openGraphDialog(ex) {
         var fns = ex ? ex.fns.map(function (q) { return { e: q.e, c: q.c }; }) : [{ e: 'x^3 - 3x', c: FN_COLORS[0] }, { e: '', c: FN_COLORS[1] }, { e: '', c: FN_COLORS[2] }];
