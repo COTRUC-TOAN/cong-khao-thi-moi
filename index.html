@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v99] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v100] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11309,12 +11309,12 @@ var QGEN = (function () {
     function ensure() {
         if ($('soi-btn')) return;
         var b = document.createElement('button'); b.id = 'soi-btn'; b.textContent = '🔎 Soi chấm điểm'; b.title = 'Kiểm tra vì sao một em bị chấm sai';
-        b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9998;display:none;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font-size:12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)';
+        b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9998;display:none;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font-size:12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)';
         b.onclick = open; document.body.appendChild(b);
         var m = document.createElement('div'); m.id = 'soi-modal'; m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;align-items:flex-start;justify-content:center;overflow:auto;padding:16px';
         m.innerHTML = '<div style="background:#fff;border-radius:12px;max-width:880px;width:100%;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1.05rem">🔎 Soi chấm điểm một học sinh</b><button onclick="document.getElementById(\'soi-modal\').style.display=\'none\'" style="font-size:1.2rem">✕</button></div>' +
             '<div style="font-size:.85rem;color:#64748b;margin:6px 0">Chọn đề, nhập đúng tên và lớp của em đó (như trong sổ điểm). Web đặt đáp án em chọn cạnh đáp án máy chủ đang lưu, từng câu một. Chỉ xem, không sửa gì.</div>' +
-            '<select id="soi-ex" class="form-input" style="width:100%;margin-bottom:6px"></select><div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px"><input id="soi-name" class="form-input" placeholder="Họ và tên em"><input id="soi-cls" class="form-input" placeholder="Lớp (12A10)"><button class="btn-start" style="background:#2563eb" onclick="soiRun()">Soi</button></div><div id="soi-out" style="margin-top:10px"></div>' +
+            '<select id="soi-ex" class="form-input" style="width:100%;margin-bottom:6px"></select><div style="margin-bottom:8px"><button class="btn-start" style="background:#7c3aed" onclick="soiFix()">🧰 Khôi phục đáp án còn thiếu của đề này từ ngân hàng</button><div id="soi-fix" style="margin-top:8px"></div></div><div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px"><input id="soi-name" class="form-input" placeholder="Họ và tên em"><input id="soi-cls" class="form-input" placeholder="Lớp (12A10)"><button class="btn-start" style="background:#2563eb" onclick="soiRun()">Soi</button></div><div id="soi-out" style="margin-top:10px"></div>' +
             '<hr style="margin:14px 0"><b>🛠 Chấm lại cả lớp</b><div style="font-size:.85rem;color:#64748b;margin:4px 0">Dùng đề đã chọn ở trên. Nhập lớp (để trống = mọi lớp). Web đọc bài làm đã lưu của từng em, chấm lại bằng <b>đáp án máy chủ</b> và bằng <b>đáp án trong ngân hàng câu hỏi</b>, rồi so với điểm đã ghi. Chỉ tính toán, không sửa Sheet.</div><div style="display:grid;grid-template-columns:1fr auto;gap:6px"><input id="soi-cls2" class="form-input" placeholder="Lớp (ví dụ 12A10), trống = tất cả"><button class="btn-start" style="background:#d97706" onclick="soiAll()">Chấm lại cả lớp</button></div><div id="soi-all" style="margin-top:10px"></div></div>';
         document.body.appendChild(m);
     }
@@ -11433,6 +11433,51 @@ var QGEN = (function () {
         var t = 'Họ tên\tLớp\tĐiểm đã ghi\tTheo máy chủ\tTheo ngân hàng\n' + (window.__soiRows || []).map(function (r) { return [r.n, r.c, r.old, r.a, r.b].join('\t'); }).join('\n');
         var done = function () { $('soi-cp').textContent = 'Đã sao chép.'; };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { prompt('Sao chép:', t); }); else prompt('Sao chép:', t);
+    };
+
+    var DATEY = /(GMT|\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b|^\d{4}-\d{2}-\d{2}T)/;
+    function validKey(k, t) {
+        if (!k) return false; var a = String(k.ans == null ? '' : k.ans).trim();
+        if (t === 'MCQ') return /^[ABCD]$/i.test(a);
+        if (t === 'TF') { var o = (k.ansOptions && k.ansOptions.length === 4) ? k.ansOptions.join('') : a; return /^[DSĐ]{4}$/i.test(String(o).replace(/Đ/gi, 'D')); }
+        if (t === 'SA') return a !== '' && !DATEY.test(a);
+        return false;
+    }
+    window.soiFix = async function () {
+        var out = $('soi-fix'), id = $('soi-ex').value; if (!id) { out.textContent = 'Cô chọn đề trước.'; return; }
+        out.textContent = 'Đang đọc đáp án máy chủ và ngân hàng...';
+        try {
+            if (typeof questionBank === 'undefined' || !questionBank.length) { try { await loadQuestionBank(); } catch (e) { } }
+            var pw = encodeURIComponent(teacherPassAuth || '');
+            var rk = await (await fetch(SCRIPT_URL + '?action=get_exam_keys&examId=' + encodeURIComponent(id) + '&password=' + pw)).json(); var keys = (rk && rk.keys) || {};
+            var ex = examBank.filter(function (e) { return String(e.id) === String(id); })[0]; var pool = []; collect(ex ? ex.questions : [], pool);
+            var bank = {}; (typeof questionBank !== 'undefined' ? questionBank : []).forEach(function (q) { bank[String(q.id)] = q; });
+            var ok = 0, restore = [], miss = [], newKeys = {};
+            Object.keys(keys).forEach(function (q) { newKeys[q] = keys[q]; });
+            pool.forEach(function (q) {
+                var id2 = String(q.id), t = q.type, sv = keys[id2], bk = bank[id2];
+                if (validKey(sv, t)) { ok++; return; }
+                var bkey = bk ? { ans: bk.ans, ansOptions: bk.ansOptions || [], explanation: bk.explanation || '' } : null;
+                if (validKey(bkey, t)) { restore.push({ id: id2, t: t, sv: sv ? (sv.ans || '(trống)') : '(không có)', bk: (t === 'TF' && bkey.ansOptions.length ? bkey.ansOptions.join('') : bkey.ans) }); newKeys[id2] = bkey; }
+                else miss.push({ id: id2, t: t, sv: sv ? (sv.ans || '(trống)') : '(không có)', bk: bk ? (bk.ans || '(trống)') : 'không còn trong ngân hàng' });
+            });
+            window.__soiNewKeys = { id: id, keys: newKeys, n: restore.length };
+            var h = '<div style="font-size:.9rem">Đề có <b>' + pool.length + '</b> câu trong kho: <b style="color:#16a34a">' + ok + '</b> câu đáp án máy chủ ổn, <b style="color:#7c3aed">' + restore.length + '</b> câu khôi phục được từ ngân hàng, <b style="color:#dc2626">' + miss.length + '</b> câu vẫn thiếu (cả máy chủ lẫn ngân hàng đều không có đáp án hợp lệ).</div>';
+            var row = function (r, c) { return '<tr style="background:' + c + '"><td style="font-size:.72rem">' + esc(r.id) + '</td><td>' + r.t + '</td><td>' + esc(String(r.sv).slice(0, 30)) + '</td><td>' + esc(String(r.bk).slice(0, 30)) + '</td></tr>'; };
+            h += '<div style="overflow:auto;max-height:240px;margin-top:6px"><table style="width:100%;border-collapse:collapse;font-size:.8rem" border="1" cellpadding="3"><tr style="background:#f1f5f9"><th>Mã câu</th><th>Loại</th><th>Máy chủ</th><th>Ngân hàng</th></tr>' + restore.slice(0, 150).map(function (r) { return row(r, '#faf5ff'); }).join('') + miss.slice(0, 150).map(function (r) { return row(r, '#fef2f2'); }).join('') + '</table></div>';
+            if (restore.length) h += '<div style="font-size:.82rem;color:#64748b;margin:6px 0">Dòng tím: sẽ được ghi lại từ đáp án ngân hàng. Dòng đỏ: vẫn thiếu, cô cần sửa đáp án trong ngân hàng hoặc đề. Máy chủ sẽ <b>sao lưu đáp án cũ</b> vào tab DapAn_Cu trước khi ghi.</div><button class="btn-start" style="background:#059669" onclick="soiApplyFix()">✅ Ghi ' + restore.length + ' đáp án khôi phục lên máy chủ</button> <span id="soi-fix-msg" style="font-size:.85rem"></span>';
+            else h += '<div style="margin-top:6px;color:#b45309">Không khôi phục được câu nào từ ngân hàng.</div>';
+            out.innerHTML = h;
+        } catch (e) { out.innerHTML = '<span style="color:#dc2626">Lỗi: ' + esc(e && e.message || e) + '</span>'; }
+    };
+    window.soiApplyFix = async function () {
+        var d = window.__soiNewKeys, msg = $('soi-fix-msg'); if (!d || !d.n) return;
+        if (!confirm('Ghi ' + d.n + ' đáp án khôi phục lên máy chủ cho đề "' + d.id + '"?\n\nĐáp án cũ của đề được sao lưu vào tab DapAn_Cu. Câu hỏi của đề không bị đổi.')) return;
+        msg.textContent = 'Đang ghi...';
+        try {
+            var r = await (await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_keys', password: teacherPassAuth, examId: d.id, keys: d.keys }) })).json();
+            msg.innerHTML = (r && r.status === 'success') ? '<b style="color:#16a34a">Đã ghi ' + r.saved + ' đáp án.</b> Cô bấm "Soi" lại một em để kiểm tra, rồi "Chấm lại cả lớp".' : '<b style="color:#dc2626">Không ghi được: ' + esc((r && (r.message || r.error)) || 'không rõ') + '</b>';
+        } catch (e) { msg.innerHTML = '<b style="color:#dc2626">Lỗi mạng, chưa ghi.</b>'; }
     };
     setInterval(function () { ensure(); var b = $('soi-btn'); if (b) b.style.display = (typeof teacherPassAuth !== 'undefined' && teacherPassAuth) ? 'block' : 'none'; }, 1500);
 })();
