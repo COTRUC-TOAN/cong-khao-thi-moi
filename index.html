@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v104] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v105] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1167,6 +1167,11 @@
         }
 
         let examBank = []; let questionBank = []; let globalScoresData = [];
+        // (v105) Giờ mở/đóng đề: Google Sheet có thể trả về dạng quốc tế (…Z). Đổi về giờ của máy để hiển thị và để nạp lại vào ô chọn giờ.
+        function __dtParse(s) { if (!s) return null; s = String(s).trim(); if (!s) return null; const d = new Date(s.replace(/^(\d{4}-\d\d-\d\d) /, '$1T')); return isNaN(d.getTime()) ? null : d; }
+        function __p2(n) { return String(n).padStart(2, '0'); }
+        function toLocalInput(s) { s = String(s || '').trim(); if (/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(s)) return s; const d = __dtParse(s); return d ? (d.getFullYear() + '-' + __p2(d.getMonth() + 1) + '-' + __p2(d.getDate()) + 'T' + __p2(d.getHours()) + ':' + __p2(d.getMinutes())) : ''; }
+        function fmtDT(s) { const l = toLocalInput(s); if (!l) return String(s || ''); return l.slice(8, 10) + '/' + l.slice(5, 7) + '/' + l.slice(0, 4) + ' ' + l.slice(11, 16); }
         let selectedQuestions = []; let directParsedQuestions = []; let directBatch = []; 
         const ANS_GUESSED = new Set(); // câu mà phần mềm tự điền đáp án mặc định (cần cô kiểm tra)
         let activeExam = null; let teacherPassAuth = ""; let currentGrade = 'all'; let currentTopic = 'all';
@@ -2626,7 +2631,7 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                    // --- ĐOẠN XỬ LÝ TRÍCH XUẤT THỜI GIAN VÀ MẬT KHẨU ---
                     let passDisplay = (isKiemTra && ex.examPass) ? `<span style="color: #dc2626; font-weight: bold;"><i class="fa-solid fa-key"></i> MK: ${ex.examPass}</span>` : `<span style="color: #16a34a;"><i class="fa-solid fa-lock-open"></i> Không MK</span>`;
                     let timeDisplay = `<span style="color: #0284c7;"><i class="fa-regular fa-clock"></i> ${ex.timeLimit || 45} phút</span>`;
-                    let dateDisplay = (ex.startTime || ex.deadline) ? `<span style="color: #ea580c;"><i class="fa-regular fa-calendar-days"></i> ${ex.startTime ? ex.startTime.replace('T', ' ') : 'Mở luôn'} ➔ ${ex.deadline ? ex.deadline.replace('T', ' ') : 'Không hạn'}</span>` : '';
+                    let dateDisplay = (ex.startTime || ex.deadline) ? `<span style="color: #ea580c;"><i class="fa-regular fa-calendar-days"></i> ${ex.startTime ? fmtDT(ex.startTime) : 'Mở luôn'} ➔ ${ex.deadline ? fmtDT(ex.deadline) : 'Không hạn'}</span>` : '';
 
                     return `
                     <div class="exam-manage-row" style="flex-wrap: wrap; gap: 10px; align-items: stretch;">
@@ -2760,8 +2765,8 @@ let editingExamId = null;
             document.getElementById('new-exam-time').value = ex.timeLimit || 45;
             if (document.getElementById('new-exam-max-attempts')) document.getElementById('new-exam-max-attempts').value = ex.maxAttempts || 0;
             if (document.getElementById('new-exam-pass')) document.getElementById('new-exam-pass').value = ex.examPass || '';
-            if (document.getElementById('new-exam-start-time')) document.getElementById('new-exam-start-time').value = ex.startTime || '';
-            if (document.getElementById('new-exam-deadline')) document.getElementById('new-exam-deadline').value = ex.deadline || '';
+            if (document.getElementById('new-exam-start-time')) document.getElementById('new-exam-start-time').value = toLocalInput(ex.startTime);
+            if (document.getElementById('new-exam-deadline')) document.getElementById('new-exam-deadline').value = toLocalInput(ex.deadline);
             if (document.getElementById('lecture-youtube-url')) document.getElementById('lecture-youtube-url').value = ex.youtubeUrl || '';
 
             selectedQuestions = ex.questions ? [...ex.questions] : [];
