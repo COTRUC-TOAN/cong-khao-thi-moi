@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v94] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v98] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2194,6 +2194,10 @@ function removeQuestionFromSelected(qId) {
             const maxAttemptsVal = parseInt(document.getElementById('new-exam-max-attempts')?.value) || 0;
             
             if (!examId || !title) { alert("⚠️ Vui lòng nhập đầy đủ Mã đề và Tên đề thi!"); return; }
+            { const same = examBank.find(e => String(e.id).trim().toLowerCase() === String(examId).trim().toLowerCase());
+              if (same && String(editingExamId || '').trim().toLowerCase() !== String(examId).trim().toLowerCase()) {
+                if (!confirm('⚠️ MÃ ĐỀ "' + examId + '" ĐÃ CÓ ĐỀ KHÁC: "' + (same.title || '') + '".\n\nNếu bấm OK, đề mới sẽ GHI ĐÈ lên đề cũ (cả câu hỏi lẫn đáp án). Các em đã làm đề cũ có thể bị chấm sai.\n\nNếu cô đang tạo đề mới cho lớp khác, bấm Hủy rồi đổi MÃ ĐỀ khác (ví dụ thêm tên lớp).')) return;
+              } }
             if (examId !== typedExamId) {
                 document.getElementById('new-exam-id').value = examId;
                 alert("ℹ️ Mã đề được tự thêm mã giáo viên: " + examId + "\n(để không trùng với đề của giáo viên khác)");
@@ -11008,6 +11012,7 @@ var QGEN = (function () {
         ['^', '=', '<', '>', '|', '\\int', '_'].forEach(function (s) { if (t.indexOf(s) >= 0) out['§' + s] = 1; });
         return out;
     }
+    Q.toks = toks;
     var PROF = null;
     function build() {
         var all = Q.GEN.map(function (g) { return { g: g, list: 'MCQ' }; }).concat(Q.TF.map(function (g) { return { g: g, list: 'TF' }; }));
@@ -11158,6 +11163,30 @@ var QGEN = (function () {
     var Q = window.QGEN, last = null;
     function $(id) { return document.getElementById(id); }
     function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    var LSK = 'gsMem1';
+    function memLoad() { try { var a = JSON.parse(localStorage.getItem(LSK) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+    function memSave(a) { try { localStorage.setItem(LSK, JSON.stringify(a.slice(-300))); return true; } catch (e) { return false; } }
+    function jac(a, b) { var i = 0, u = 0, k; for (k in a) { u++; if (b[k]) i++; } for (k in b) if (!a[k]) u++; return u ? i / u : 0; }
+    function memBest(text, kind) {
+        var T = Q.toks(text), best = null;
+        memLoad().forEach(function (e) { if (e.kind !== kind) return; var j = jac(T, Q.toks(e.t)); if (!best || j > best.j) best = { e: e, j: j }; });
+        return best;
+    }
+    function memRemember(text, kind, gen, ai) {
+        var a = memLoad(), T = Q.toks(text), hit = -1;
+        a.forEach(function (e, i) { if (e.kind === kind && jac(T, Q.toks(e.t)) >= 0.9) hit = i; });
+        var ent = { t: text.slice(0, 600), kind: kind, gen: gen || '', ai: !!ai, at: Date.now() };
+        if (hit >= 0) a[hit] = ent; else a.push(ent);
+        memSave(a); memDraw();
+    }
+    function memDraw() {
+        var box = $('gs-mem'); if (!box) return; var a = memLoad();
+        var byId = {}; Q.GEN.concat(Q.TF).forEach(function (g) { byId[g.id] = g; });
+        box.innerHTML = '<details><summary style="cursor:pointer;color:#6d28d9;font-weight:700">🧠 Câu web đã nhớ (' + a.length + ')</summary><div style="font-size:.82rem;color:#64748b;margin:4px 0">Mỗi câu mẫu cô đưa, web nhớ dạng cô chọn (hoặc đã nhờ AI). Lần sau gặp câu giống, web gợi ý ngay. Bộ nhớ lưu trong trình duyệt này.</div>' +
+            a.slice().reverse().slice(0, 40).map(function (e, i) { var idx = a.length - 1 - i; return '<div style="display:flex;gap:6px;align-items:flex-start;border-bottom:1px solid #f1f5f9;padding:4px 0;font-size:.85rem"><div style="flex:1"><span style="color:#64748b">' + (e.gen && byId[e.gen] ? '✅ ' + esc(byId[e.gen].name) : '🤖 nhờ AI') + ':</span> ' + esc(e.t.replace(/\s+/g, ' ').slice(0, 90)) + '</div><button onclick="gsForget(' + idx + ')" title="Quên câu này">🗑</button></div>'; }).join('') +
+            (a.length ? '<button class="btn-start" style="background:#64748b;margin-top:6px" onclick="gsForget(-1)">Xóa hết bộ nhớ</button>' : '') + '</details>';
+    };
+    window.gsForget = function (i) { if (i < 0) { if (!confirm('Xóa toàn bộ câu web đã nhớ?')) return; memSave([]); } else { var a = memLoad(); a.splice(i, 1); memSave(a); } memDraw(); };
     var KIND_NAME = { MCQ: 'Trắc nghiệm 4 đáp án', TF: 'Đúng/Sai 4 ý', SA: 'Trả lời ngắn' };
     window.gsInit = function () {
         var p = $('add-method-sample'); if (!p || p.dataset.ok) return; p.dataset.ok = 1;
@@ -11165,23 +11194,25 @@ var QGEN = (function () {
             '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;margin-bottom:10px;font-size:.92rem;color:#1e3a8a"><b>Cách làm (3 bước):</b><br>① Cô dán <b>một câu mẫu</b> vào ô dưới (có phương án A, B, C, D thì xuống hàng như đề thường).<br>② Web đoán xem câu thuộc dạng nào. Dạng web biết thì web <b>tự giải</b> ✅. Dạng web chưa biết thì cô bấm <b>nhờ AI</b> ⚠️.<br>③ Cô xem lại các câu mới, rồi thêm vào đề hoặc lưu ngân hàng.</div>' +
             '<div class="form-row" style="margin-bottom:8px"><label style="font-weight:700">① Câu mẫu của cô:</label><textarea id="gs-text" class="form-input" rows="6" style="width:100%" placeholder="Ví dụ:\nCâu 1. Diện tích hình phẳng giới hạn bởi các đường $y=x^2$ và $y=4x-3$ bằng\nA. $\\dfrac{4}{3}$\nB. $2$\nC. $3$\nD. $4$"></textarea></div>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><label style="font-size:.85rem">Khối<select class="form-input" id="gs-grade"><option>12</option><option>11</option><option>10</option></select></label><label style="font-size:.85rem">Số câu cần tạo<input type="number" id="gs-n" class="form-input" value="10" min="1" max="20"></label></div>' +
-            '<button class="btn-start" style="width:100%;background:#2563eb" onclick="gsAnalyze()">🔍 ② Phân tích câu mẫu</button><div id="gs-res" style="margin-top:12px"></div>';
+            '<button class="btn-start" style="width:100%;background:#2563eb" onclick="gsAnalyze()">🔍 ② Phân tích câu mẫu</button><div id="gs-res" style="margin-top:12px"></div><div id="gs-mem" style="margin-top:14px"></div>'; memDraw();
     };
     window.gsAnalyze = function () {
         var t = $('gs-text').value.trim(); if (t.length < 8) { alert('Cô dán câu mẫu vào ô trước nhé.'); return; }
-        var kind = Q.kindOf(t), m = Q.matchSample(t, kind), top = m.slice(0, 3), good = top[0].score >= 0.35;
-        last = { text: t, kind: kind, top: top };
-        var h = '<div style="margin-bottom:8px">Web nhận ra đây là câu <b>' + KIND_NAME[kind] + '</b>. ' + (good ? '<span style="color:#16a34a;font-weight:700">Web có dạng giống câu này:</span>' : '<span style="color:#b45309;font-weight:700">Web chưa có dạng nào giống rõ. Cô thử nhờ AI bên dưới.</span>') + '</div>';
+        var kind = Q.kindOf(t), m = Q.matchSample(t, kind), top = m.slice(0, 3), good = top[0].score >= 0.35, mb = memBest(t, kind), memNote = '';
+        if (mb && mb.j >= 0.5) { if (mb.e.gen) { var gg = Q.GEN.concat(Q.TF).filter(function (x) { return x.id === mb.e.gen; })[0]; if (gg) { top = [{ g: gg, score: Math.max(mb.j, top[0].score) }].concat(top.filter(function (x) { return x.g !== gg; })).slice(0, 3); good = true; memNote = '🧠 Web nhớ: cô từng đưa câu giống câu này (' + Math.round(mb.j * 100) + '%) và chọn dạng bên dưới.'; } } else memNote = '🧠 Web nhớ: câu giống câu này (' + Math.round(mb.j * 100) + '%) trước đây cô đã nhờ AI.'; }
+        
+        var h = (memNote ? '<div style="background:#faf5ff;border:1px solid #c4b5fd;border-radius:8px;padding:6px 8px;margin-bottom:8px;color:#6d28d9">' + memNote + '</div>' : '') + '<div style="margin-bottom:8px">Web nhận ra đây là câu <b>' + KIND_NAME[kind] + '</b>. ' + (good ? '<span style="color:#16a34a;font-weight:700">Web có dạng giống câu này:</span>' : '<span style="color:#b45309;font-weight:700">Web chưa có dạng nào giống rõ. Cô thử nhờ AI bên dưới.</span>') + '</div>';
         top.forEach(function (x, i) {
             if (x.score < 0.2) return;
             h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid ' + (i === 0 && good ? '#16a34a' : '#e2e8f0') + ';border-radius:8px;padding:8px;margin-bottom:6px;background:#fff"><div><b>' + esc(x.g.name) + '</b><div style="font-size:.8rem;color:#64748b">' + esc(x.g.group) + ' · giống ' + Math.round(Math.min(1, x.score) * 100) + '%</div></div><button class="btn-start" style="background:#16a34a;white-space:nowrap" onclick="gsWeb(' + i + ')">✅ Dùng dạng này</button></div>';
         });
+        last = { text: t, kind: kind, top: top };
         h += '<div style="border:1px solid #fde68a;background:#fffbeb;border-radius:8px;padding:8px;margin-top:8px"><b>Không có dạng nào đúng?</b><div style="font-size:.85rem;color:#92400e;margin:4px 0">AI sẽ viết câu mới tương tự câu mẫu rồi giải lại lần nữa để đối chiếu đáp án. Câu AI soạn luôn được đánh dấu ⚠️, cô cần xem kỹ.</div>' +
             '<button class="btn-start" style="background:#d97706" onclick="gsAI()">🤖 Nhờ AI tạo câu tương tự</button> <span id="gs-ai-msg" style="font-size:.85rem;color:#64748b"></span></div>';
         $('gs-res').innerHTML = h;
     };
     window.gsWeb = function (i) {
-        var g = last.top[i].g, kind = last.kind;
+        var g = last.top[i].g, kind = last.kind; memRemember(last.text, kind, g.id, false);
         switchAddMethod('gen'); window.gnInit();
         $('gn-grade').value = String(g.grade); $('gn-grade').onchange();
         $('gn-kind').value = kind; $('gn-kind').onchange();
@@ -11222,7 +11253,7 @@ var QGEN = (function () {
                 return { name: 'AI soạn từ câu mẫu', level: x.level || 'TH', kind: kind, q: String(x.q).replace(/\n/g, '<br>'), options: (x.options || []).map(String).slice(0, 4), ans: kind === 'SA' ? '' : ans, sa: kind === 'SA' ? ans : undefined, exp: String(x.explanation || '').replace(/\n/g, '<br>'), src: ok === false ? 'aibad' : 'ai', okChk: ok };
             }).filter(Boolean);
             if (!items.length) { msg.textContent = 'AI trả về không đúng định dạng, cô bấm lại thử.'; return; }
-            msg.textContent = '';
+            msg.textContent = ''; memRemember(last.text, kind, '', true);
             switchAddMethod('gen'); window.gnInit(); $('gn-grade').value = $('gs-grade').value; $('gn-grade').onchange();
             var good = items.filter(function (x) { return x.src === 'ai'; }).length;
             window.gnLoad(items, 'AI đã soạn <b>' + items.length + '</b> câu từ câu mẫu của cô. <b>' + good + '</b> câu AI giải lại ra cùng đáp án (⚠️ vàng), <b>' + (items.length - good) + '</b> câu hai lượt AI không khớp (❌ đỏ, nên bỏ hoặc sửa). Cô vẫn cần xem lại từng câu.');
@@ -11267,6 +11298,142 @@ var QGEN = (function () {
         if (!toBank) { if (selectedQuestions.length === 1 && selectedQuestions[0].isDynamicConfig) { alert('Đề đang là đề ma trận động.'); return; } selectedQuestions = selectedQuestions.concat([q]); updateSelectedItemsDisplay(); alert('Đã thêm câu tự luận (' + b.tot + ' điểm) vào đề đang soạn.'); return; }
         try { var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) }); var j = await r.json(); if (j && j.status === 'success') { alert('🎉 Đã lưu vào Ngân hàng.'); loadQuestionBank(); } else alert('Chưa lưu được: ' + ((j && (j.message || j.error)) || '')); } catch (e) { alert('Không kết nối được máy chủ.'); }
     };
+})();
+</script>
+
+<script>
+(function () {
+    function $(id) { return document.getElementById(id); }
+    function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    function ensure() {
+        if ($('soi-btn')) return;
+        var b = document.createElement('button'); b.id = 'soi-btn'; b.textContent = '🔎 Soi chấm điểm'; b.title = 'Kiểm tra vì sao một em bị chấm sai';
+        b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9998;display:none;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font-size:12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)';
+        b.onclick = open; document.body.appendChild(b);
+        var m = document.createElement('div'); m.id = 'soi-modal'; m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;align-items:flex-start;justify-content:center;overflow:auto;padding:16px';
+        m.innerHTML = '<div style="background:#fff;border-radius:12px;max-width:880px;width:100%;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1.05rem">🔎 Soi chấm điểm một học sinh</b><button onclick="document.getElementById(\'soi-modal\').style.display=\'none\'" style="font-size:1.2rem">✕</button></div>' +
+            '<div style="font-size:.85rem;color:#64748b;margin:6px 0">Chọn đề, nhập đúng tên và lớp của em đó (như trong sổ điểm). Web đặt đáp án em chọn cạnh đáp án máy chủ đang lưu, từng câu một. Chỉ xem, không sửa gì.</div>' +
+            '<select id="soi-ex" class="form-input" style="width:100%;margin-bottom:6px"></select><div style="display:grid;grid-template-columns:2fr 1fr auto;gap:6px"><input id="soi-name" class="form-input" placeholder="Họ và tên em"><input id="soi-cls" class="form-input" placeholder="Lớp (12A10)"><button class="btn-start" style="background:#2563eb" onclick="soiRun()">Soi</button></div><div id="soi-out" style="margin-top:10px"></div>' +
+            '<hr style="margin:14px 0"><b>🛠 Chấm lại cả lớp</b><div style="font-size:.85rem;color:#64748b;margin:4px 0">Dùng đề đã chọn ở trên. Nhập lớp (để trống = mọi lớp). Web đọc bài làm đã lưu của từng em, chấm lại bằng <b>đáp án máy chủ</b> và bằng <b>đáp án trong ngân hàng câu hỏi</b>, rồi so với điểm đã ghi. Chỉ tính toán, không sửa Sheet.</div><div style="display:grid;grid-template-columns:1fr auto;gap:6px"><input id="soi-cls2" class="form-input" placeholder="Lớp (ví dụ 12A10), trống = tất cả"><button class="btn-start" style="background:#d97706" onclick="soiAll()">Chấm lại cả lớp</button></div><div id="soi-all" style="margin-top:10px"></div></div>';
+        document.body.appendChild(m);
+    }
+    function open() {
+        ensure(); var sel = $('soi-ex'); var L = (typeof examBank !== 'undefined' ? examBank : []).filter(function (e) { return e.mode === 'KIEMTRA'; });
+        sel.innerHTML = L.map(function (e) { return '<option value="' + esc(e.id) + '">' + esc(e.title) + ' (' + esc(e.id) + ')</option>'; }).join('') || '<option value="">(chưa có đề kiểm tra)</option>';
+        $('soi-modal').style.display = 'flex';
+    }
+    window.soiOpen = open;
+    function collect(node, out) { if (Array.isArray(node)) { node.forEach(function (n) { collect(n, out); }); return; } if (node && typeof node === 'object') { if (node.id !== undefined && node.type && node.type !== 'CONFIG') out.push(node); Object.keys(node).forEach(function (k) { if (node[k] && typeof node[k] === 'object') collect(node[k], out); }); } }
+    function norm(v) { return String(v == null ? '' : v).trim().replace(/\s+/g, '').replace(/,/g, '.').toLowerCase(); }
+    function sameSA(a, b) { var x = norm(a), y = norm(b); if (!x || !y) return false; if (x === y) return true; var n = /^[-+]?(\d+\.?\d*|\.\d+)$/; return n.test(x) && n.test(y) && Math.abs(parseFloat(x) - parseFloat(y)) < 1e-9; }
+    window.soiRun = async function () {
+        var out = $('soi-out'), id = $('soi-ex').value, name = $('soi-name').value.trim(), cls = $('soi-cls').value.trim();
+        if (!id || !name || !cls) { out.innerHTML = '<span style="color:#dc2626">Cô chọn đề và nhập tên, lớp của em.</span>'; return; }
+        out.textContent = 'Đang tải...';
+        try {
+            var pw = encodeURIComponent(teacherPassAuth || ''), base = SCRIPT_URL + '?';
+            var rk = await (await fetch(base + 'action=get_exam_keys&examId=' + encodeURIComponent(id) + '&password=' + pw)).json();
+            var rd = await (await fetch(base + 'action=get_detail&examId=' + encodeURIComponent(id) + '&name=' + encodeURIComponent(name) + '&class=' + encodeURIComponent(cls) + '&password=' + pw)).json();
+            var keys = (rk && rk.keys) || {}, nk = Object.keys(keys).length;
+            var ex = examBank.filter(function (e) { return String(e.id) === String(id); })[0], pool = []; if (ex) collect(ex.questions, pool);
+            var poolIds = pool.map(function (q) { return String(q.id); }), dup = poolIds.filter(function (x, i) { return poolIds.indexOf(x) !== i; });
+            var warn = [];
+            if (rk && rk.status !== 'success') warn.push('Không lấy được đáp án máy chủ (sai mật khẩu quản trị?).');
+            if (!nk) warn.push('Máy chủ KHÔNG có đáp án nào cho mã đề này.');
+            if (dup.length) warn.push('Trong đề có ' + dup.length + ' mã câu bị TRÙNG: ' + esc(dup.slice(0, 5).join(', ')));
+            var noKey = poolIds.filter(function (x) { return !keys[x]; }); if (noKey.length) warn.push(noKey.length + '/' + poolIds.length + ' câu trong đề KHÔNG có đáp án ở máy chủ.');
+            var extra = Object.keys(keys).filter(function (x) { return poolIds.indexOf(x) < 0; }); if (extra.length) warn.push(extra.length + ' đáp án ở máy chủ không thuộc câu nào trong đề (đề và đáp án lệch nhau).');
+            var mc = pool.filter(function (q) { return q.type === 'MCQ' && keys[String(q.id)]; }).map(function (q) { return String(keys[String(q.id)].ans).trim().toUpperCase(); });
+            var dist = { A: 0, B: 0, C: 0, D: 0, '': 0 }; mc.forEach(function (a) { dist[dist[a] === undefined ? '' : a]++; });
+            var blank = Object.keys(keys).filter(function (q) { var k = keys[q]; return !String(k.ans || '').trim() && !(k.ansOptions || []).some(function (x) { return String(x || '').trim(); }); }).length;
+            if (blank) warn.push(blank + ' câu có đáp án máy chủ để TRỐNG.');
+            if (mc.length >= 8 && Math.max(dist.A, dist.B, dist.C, dist.D) >= mc.length * 0.8) warn.push('Hơn 80% câu trắc nghiệm cùng một đáp án (' + JSON.stringify(dist) + '): nghi đáp án tạm do web tự điền.');
+            var h = '<div style="font-size:.85rem;margin-bottom:6px">Đề có <b>' + pool.length + '</b> câu trong kho (đề động: cả kho), máy chủ giữ <b>' + nk + '</b> đáp án. Phân bố đáp án trắc nghiệm: A ' + dist.A + ', B ' + dist.B + ', C ' + dist.C + ', D ' + dist.D + '.</div>';
+            h += warn.length ? '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px;margin-bottom:8px;color:#991b1b">' + warn.map(function (w) { return '⚠️ ' + w; }).join('<br>') + '</div>' : '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px;margin-bottom:8px;color:#166534">✅ Đề và bảng đáp án khớp nhau, không thấy trùng hay trống.</div>';
+            var rec = rd && rd.found && rd.record;
+            if (!rec) { h += '<div style="color:#b45309">Không tìm thấy bài làm của em này trong tab ChiTietBai (kiểm tra lại cách gõ tên và lớp).</div>'; out.innerHTML = h; return; }
+            var byId = {}; pool.forEach(function (q) { byId[String(q.id)] = q; });
+            var ids = (rec.drawnIds && rec.drawnIds.length) ? rec.drawnIds.map(String) : Object.keys(rec.answers || {});
+            var total = 0, mx = 0, rows = '';
+            ids.forEach(function (qid, i) {
+                var q = byId[qid], t = q ? q.type : (rec.answers && String(rec.answers[qid] || '').length === 4 ? 'TF' : '?'), k = keys[qid], ans = rec.answers ? rec.answers[qid] : undefined;
+                var w = t === 'TF' ? 1 : t === 'SA' ? 0.5 : t === 'MCQ' ? 0.25 : 0, got = 0, note = '';
+                if (!q) note = 'câu này không có trong đề đã lưu'; else if (!k) note = 'KHÔNG có đáp án ở máy chủ';
+                mx += w; var kv = k ? (t === 'TF' ? ((k.ansOptions && k.ansOptions.length) ? k.ansOptions.join('') : k.ans) : k.ans) : '';
+                if (k && ans != null) {
+                    if (t === 'MCQ') { if (String(ans).trim().toUpperCase() === String(k.ans).trim().toUpperCase() && String(k.ans).trim()) got = w; }
+                    else if (t === 'SA') { if (sameSA(ans, k.ans)) got = w; }
+                    else if (t === 'TF') { var c = 0; for (var j = 0; j < 4; j++) { var s = String(ans).charAt(j) || '-', ck = (k.ansOptions && k.ansOptions.length) ? k.ansOptions[j] : String(k.ans).charAt(j); if (s !== '-' && ck && s === ck) c++; } got = [0, 0.1, 0.25, 0.5, 1][c]; }
+                }
+                total += got;
+                rows += '<tr style="background:' + (got >= w && w ? '#f0fdf4' : (note ? '#fef2f2' : '#fff')) + '"><td>' + (i + 1) + '</td><td style="font-size:.75rem">' + esc(qid) + '</td><td>' + t + '</td><td><b>' + esc(ans == null ? '(bỏ trống)' : ans) + '</b></td><td><b>' + esc(kv) + '</b></td><td>' + (got ? (got >= w ? '✔' : '½') : '✘') + ' ' + esc(note) + '</td></tr>';
+            });
+            var calc = mx ? (total / mx * 10).toFixed(2) : '0.00';
+            h += '<div style="margin:6px 0"><b>' + esc(rec.name) + '</b> – ' + esc(rec.class) + ' – điểm ĐÃ GHI: <b>' + esc(rec.score) + '</b>. Web tính lại từ bài làm và đáp án máy chủ hiện tại: <b>' + calc + '</b>' + (Math.abs(parseFloat(calc) - parseFloat(rec.score)) > 0.01 ? ' <span style="color:#dc2626">← LỆCH, đáp án máy chủ lúc chấm khác bây giờ hoặc câu bị sót</span>' : ' (khớp)') + '</div>';
+            h += '<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:.85rem" border="1" cellpadding="4"><tr style="background:#f1f5f9"><th>#</th><th>Mã câu</th><th>Loại</th><th>Em chọn</th><th>Đáp án máy chủ</th><th>Kết quả</th></tr>' + rows + '</table></div>';
+            out.innerHTML = h;
+        } catch (e) { out.innerHTML = '<span style="color:#dc2626">Lỗi: ' + esc(e && e.message || e) + '</span>'; }
+    };
+
+    function gradeOne(ids, answers, typeOf, keyOf) {
+        var total = 0, mx = 0;
+        ids.forEach(function (qid) {
+            var t = typeOf(qid), k = keyOf(qid), ans = answers ? answers[qid] : undefined;
+            var w = t === 'TF' ? 1 : t === 'SA' ? 0.5 : t === 'MCQ' ? 0.25 : 0; mx += w;
+            if (!k || ans == null) return;
+            if (t === 'MCQ') { if (String(k.ans).trim() && String(ans).trim().toUpperCase() === String(k.ans).trim().toUpperCase()) total += w; }
+            else if (t === 'SA') { if (sameSA(ans, k.ans)) total += w; }
+            else if (t === 'TF') { var c = 0; for (var j = 0; j < 4; j++) { var s = String(ans).charAt(j) || '-', ck = (k.ansOptions && k.ansOptions.length) ? k.ansOptions[j] : String(k.ans).charAt(j); if (s !== '-' && ck && s === ck) c++; } total += [0, 0.1, 0.25, 0.5, 1][c]; }
+        });
+        return mx ? (total / mx * 10).toFixed(2) : '0.00';
+    }
+    window.soiAll = async function () {
+        var out = $('soi-all'), id = $('soi-ex').value, cl = $('soi-cls2').value.trim().toLowerCase();
+        if (!id) { out.innerHTML = 'Cô chọn đề ở trên.'; return; }
+        var ex = examBank.filter(function (e) { return String(e.id) === String(id); })[0]; if (!ex) { out.textContent = 'Không thấy đề.'; return; }
+        out.textContent = 'Đang tải sổ điểm...';
+        try {
+            var pw = encodeURIComponent(teacherPassAuth || '');
+            var rk = await (await fetch(SCRIPT_URL + '?action=get_exam_keys&examId=' + encodeURIComponent(id) + '&password=' + pw)).json(); var keys = (rk && rk.keys) || {};
+            var rr = await (await fetch(SCRIPT_URL + '?action=get_results&password=' + pw)).json();
+            var list = ((rr && rr.results) || []).filter(function (r) { return String(r['Bài thi']).trim() === String(ex.title).trim() && (!cl || String(r['Lớp']).trim().toLowerCase() === cl); });
+            if (!list.length) { out.innerHTML = 'Không có bài nào của đề này' + (cl ? ' ở lớp ' + esc(cl) : '') + ' trong sổ điểm.'; return; }
+            var pool = []; collect(ex.questions, pool); var typeById = {}; pool.forEach(function (q) { typeById[String(q.id)] = q.type; });
+            var bank = {}; (typeof questionBank !== 'undefined' ? questionBank : []).forEach(function (q) { bank[String(q.id)] = q; });
+            var rows = [], i = 0, done = 0, bad = 0;
+            async function work() {
+                while (i < list.length) {
+                    var r = list[i++]; out.textContent = 'Đang chấm lại ' + (++done) + '/' + list.length + '...';
+                    try {
+                        var d = await (await fetch(SCRIPT_URL + '?action=get_detail&examId=' + encodeURIComponent(id) + '&name=' + encodeURIComponent(r['Họ tên']) + '&class=' + encodeURIComponent(r['Lớp']) + '&password=' + pw)).json();
+                        var rec = d && d.found && d.record;
+                        if (!rec) { rows.push({ n: r['Họ tên'], c: r['Lớp'], old: r['Điểm số'], a: '?', b: '?', note: 'không có bài làm chi tiết' }); continue; }
+                        var ids = (rec.drawnIds && rec.drawnIds.length) ? rec.drawnIds.map(String) : Object.keys(rec.answers || {});
+                        var typeOf = function (q) { return typeById[q] || (bank[q] && bank[q].type) || (String((rec.answers || {})[q] || '').length === 4 ? 'TF' : 'MCQ'); };
+                        var a = gradeOne(ids, rec.answers, typeOf, function (q) { return keys[q]; });
+                        var b = gradeOne(ids, rec.answers, typeOf, function (q) { return bank[q] ? { ans: bank[q].ans, ansOptions: bank[q].ansOptions } : null; });
+                        var miss = ids.filter(function (q) { return !bank[q]; }).length;
+                        rows.push({ n: rec.name, c: rec.class, old: rec.score, a: a, b: b, note: miss ? miss + ' câu không còn trong ngân hàng' : '' });
+                    } catch (e) { bad++; rows.push({ n: r['Họ tên'], c: r['Lớp'], old: r['Điểm số'], a: '?', b: '?', note: 'lỗi tải' }); }
+                }
+            }
+            await Promise.all([work(), work(), work()]);
+            rows.sort(function (x, y) { return String(x.c + x.n).localeCompare(String(y.c + y.n)); });
+            var diff = rows.filter(function (r) { return r.b !== '?' && Math.abs(parseFloat(r.b) - parseFloat(r.old)) > 0.01; }).length;
+            window.__soiRows = rows;
+            out.innerHTML = '<div style="margin-bottom:6px"><b>' + rows.length + '</b> bài. <b style="color:#dc2626">' + diff + '</b> bài có điểm theo ngân hàng khác điểm đã ghi.</div>' +
+                '<div style="font-size:.82rem;color:#64748b;margin-bottom:6px"><b>Cột "Theo ngân hàng"</b> là điểm nếu chấm bằng đáp án hiện có trong ngân hàng câu hỏi (đúng khi đáp án ngân hàng đã chuẩn). Cô xem vài em để chắc trước khi sửa điểm.</div>' +
+                '<div style="overflow:auto;max-height:340px"><table style="width:100%;border-collapse:collapse;font-size:.85rem" border="1" cellpadding="4"><tr style="background:#f1f5f9"><th>Họ tên</th><th>Lớp</th><th>Đã ghi</th><th>Theo máy chủ</th><th>Theo ngân hàng</th><th>Ghi chú</th></tr>' +
+                rows.map(function (r) { var d = r.b !== '?' && Math.abs(parseFloat(r.b) - parseFloat(r.old)) > 0.01; return '<tr style="background:' + (d ? '#fffbeb' : '#fff') + '"><td>' + esc(r.n) + '</td><td>' + esc(r.c) + '</td><td>' + esc(r.old) + '</td><td>' + r.a + '</td><td><b>' + r.b + '</b></td><td style="font-size:.75rem">' + esc(r.note) + '</td></tr>'; }).join('') + '</table></div>' +
+                '<button class="btn-start" style="background:#059669;margin-top:8px" onclick="soiCopy()">📋 Sao chép bảng (dán vào Excel)</button> <span id="soi-cp" style="font-size:.85rem"></span>';
+        } catch (e) { out.innerHTML = '<span style="color:#dc2626">Lỗi: ' + esc(e && e.message || e) + '</span>'; }
+    };
+    window.soiCopy = function () {
+        var t = 'Họ tên\tLớp\tĐiểm đã ghi\tTheo máy chủ\tTheo ngân hàng\n' + (window.__soiRows || []).map(function (r) { return [r.n, r.c, r.old, r.a, r.b].join('\t'); }).join('\n');
+        var done = function () { $('soi-cp').textContent = 'Đã sao chép.'; };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { prompt('Sao chép:', t); }); else prompt('Sao chép:', t);
+    };
+    setInterval(function () { ensure(); var b = $('soi-btn'); if (b) b.style.display = (typeof teacherPassAuth !== 'undefined' && teacherPassAuth) ? 'block' : 'none'; }, 1500);
 })();
 </script>
 
