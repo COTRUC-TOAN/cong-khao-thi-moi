@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v93] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v94] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -573,6 +573,7 @@
                             <button class="btn-t-tab" id="tab-add-img" onclick="switchAddMethod('img')">C. Từ ảnh chụp đề</button>
                             <button class="btn-t-tab" id="tab-add-bank" onclick="switchAddMethod('bank')">D. Chọn từ ngân hàng câu hỏi</button>
                             <button class="btn-t-tab" id="tab-add-matrix" onclick="switchAddMethod('matrix')">E. Đề trộn ngẫu nhiên (đề động)</button>
+                            <button class="btn-t-tab" id="tab-add-sample" onclick="switchAddMethod('sample')" style="background:#fff7ed;border-color:#fdba74">G. Từ câu mẫu (web + AI)</button>
                             <button class="btn-t-tab" id="tab-add-gen" onclick="switchAddMethod('gen')">F. Tạo câu tương tự</button>
                         </div>
                         <div id="m-hint" style="display:none; font-size:.86rem; color:#475569; background:#f1f5f9; border-radius:8px; padding:6px 10px; margin-bottom:8px;"></div>
@@ -754,6 +755,7 @@
                         </div>
 
                         <div id="add-method-gen" style="display: none;"></div>
+                        <div id="add-method-sample" style="display: none;"></div>
                         <!-- 3. MA TRẬN TỪNG BÀI -->
                         <div id="add-method-matrix" style="display: none;">
                             <p style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px;">Nhập số lượng câu hỏi cần lấy cho từng bài học cụ thể. <strong style="color: #ea580c;">Hệ thống sẽ bốc ngẫu nhiên cho từng học sinh, mỗi em một đề khác nhau (Đề Động K12)!</strong></p>
@@ -2556,7 +2558,7 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                 ai: 'Cách B: AI soạn đề theo bảng ma trận. Đề AI soạn xong hiện ở khung "Xem Trước Gọn Gàng" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).',
                 img: 'Cách C: chụp ảnh đề cho AI đọc. Đề đọc xong hiện ở khung "Xem Trước Gọn Gàng" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).'
             };
-            ['paste', 'ai', 'img', 'bank', 'matrix', 'gen'].forEach(m => {
+            ['paste', 'ai', 'img', 'bank', 'matrix', 'gen', 'sample'].forEach(m => {
                 const t = document.getElementById(`tab-add-${m}`); if (t) t.classList.toggle('active', m === method);
             });
             const inPaste = (method === 'paste' || method === 'ai' || method === 'img');
@@ -2566,6 +2568,7 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
             document.getElementById('add-method-bank').style.display = method === 'bank' ? 'block' : 'none';
             document.getElementById('add-method-matrix').style.display = method === 'matrix' ? 'block' : 'none';
             { const gp = document.getElementById('add-method-gen'); if (gp) { gp.style.display = method === 'gen' ? 'block' : 'none'; if (method === 'gen' && window.gnInit) window.gnInit(); } }
+            { const sp = document.getElementById('add-method-sample'); if (sp) { sp.style.display = method === 'sample' ? 'block' : 'none'; if (method === 'sample' && window.gsInit) window.gsInit(); } }
             const hint = document.getElementById('m-hint');
             if (hint) { hint.style.display = HINTS[method] ? 'block' : 'none'; hint.textContent = HINTS[method] || ''; }
             // cách B, C cần khung Gemini mở sẵn (có ô nhập khóa)
@@ -4414,6 +4417,8 @@ window.addEventListener('popstate', function () {
                 }
                 throw { code: 'json' };
             }
+            window.__gemReady = function () { return !!S.connected; };
+            window.__gemJson = function (text, temp) { if (!S.connected) return Promise.reject({ code: 'key' }); return genJson([{ text: text }], temp, null); };
             function modelScore(n) {
                 const x = n.replace(/^models\//, '').toLowerCase();
                 if (!/^gemini/.test(x)) return -1;
@@ -10989,9 +10994,65 @@ var QGEN = (function () {
     });
 })(QGEN);
 
+(function (Q) {
+    'use strict';
+    function strip(h) { return String(h || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' '); }
+    function toks(text) {
+        var t = strip(text).toLowerCase().replace(/\d+([.,]\d+)?/g, ' # ');
+        var cmds = (t.match(/\\[a-z]+/g) || []).map(function (c) { return c; });
+        var words = (t.replace(/\\[a-z]+/g, ' ').match(/[\p{L}]+/gu) || []).filter(function (w) { return w.length > 1; });
+        var out = {}; cmds.forEach(function (c) { out[c] = 1; });
+        words.forEach(function (w) { out[w] = 1; });
+        for (var i = 0; i + 1 < words.length; i++) out[words[i] + '_' + words[i + 1]] = 1;
+        // ký hiệu đặc trưng
+        ['^', '=', '<', '>', '|', '\\int', '_'].forEach(function (s) { if (t.indexOf(s) >= 0) out['§' + s] = 1; });
+        return out;
+    }
+    var PROF = null;
+    function build() {
+        var all = Q.GEN.map(function (g) { return { g: g, list: 'MCQ' }; }).concat(Q.TF.map(function (g) { return { g: g, list: 'TF' }; }));
+        var N = 40;
+        all.forEach(function (e) {
+            var cnt = {}, ok = 0;
+            for (var i = 0; i < N * 2 && ok < N; i++) {
+                try {
+                    var r = e.g.make(2), txt = r.q + (r.items ? ' ' + r.items.map(function (x) { return x.t; }).join(' ') : '');
+                    var tk = toks(txt); ok++;
+                    for (var k in tk) cnt[k] = (cnt[k] || 0) + 1;
+                } catch (er) { }
+            }
+            e.S = {}; for (var k2 in cnt) if (cnt[k2] / Math.max(1, ok) >= 0.35) e.S[k2] = 1;
+        });
+        var df = {}; all.forEach(function (e) { for (var k in e.S) df[k] = (df[k] || 0) + 1; });
+        var G = all.length;
+        all.forEach(function (e) { e.W = 0; for (var k in e.S) e.W += w(k); });
+        function w(k) { return Math.log((G + 1) / ((df[k] || 0) + 0.5)); }
+        PROF = { all: all, w: w, G: G };
+    }
+    Q.kindOf = function (text) {
+        var t = String(text || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(div|p)>/gi, '\n');
+        if (/(^|\n)[ \t]*[A-D][\.\)]/.test(t) && /(^|\n)[ \t]*B[\.\)]/.test(t)) return 'MCQ';
+        if (/(^|\n)[ \t]*a\)/.test(t) && /(^|\n)[ \t]*b\)/.test(t)) return 'TF';
+        if (/(^|\s)A[\.\)]\s.*\sB[\.\)]\s.*\sC[\.\)]\s.*\sD[\.\)]\s/.test(t)) return 'MCQ';
+        return 'SA';
+    };
+    Q.matchSample = function (text, kind) {
+        if (!PROF) build();
+        var T = toks(text), sumT = 0, k;
+        for (k in T) sumT += PROF.w(k);
+        var res = PROF.all.filter(function (e) { return kind === 'TF' ? e.list === 'TF' : e.list === 'MCQ'; }).map(function (e) {
+            var inter = 0; for (k in T) if (e.S[k]) inter += PROF.w(k);
+            var sc = inter / Math.sqrt((sumT || 1) * (e.W || 1));
+            return { g: e.g, score: sc };
+        });
+        res.sort(function (a, b) { return b.score - a.score; });
+        return res;
+    };
+})(QGEN);
+
 (function () {
     'use strict';
-    var Q = window.QGEN, cur = [];
+    var Q = window.QGEN, cur = [], banner = '';
     function $(id) { return document.getElementById(id); }
     function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
     function LST() { var k = $('gn-kind'); return (k && k.value === 'TF') ? Q.TF : Q.GEN; }
@@ -11003,7 +11064,7 @@ var QGEN = (function () {
             '<select class="form-input" id="gn-type" style="margin-bottom:8px"></select>' +
             '<div style="display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px;margin-bottom:8px"><label style="font-size:.85rem">Số câu<input type="number" id="gn-n" class="form-input" value="10" min="1" max="30"></label><label style="font-size:.85rem">Kiểu<select class="form-input" id="gn-kind"><option value="MCQ">Trắc nghiệm 4 đáp án</option><option value="TF">Đúng/Sai (4 ý a, b, c, d)</option><option value="SA">Trả lời ngắn</option></select></label><label style="font-size:.85rem">Bài / chương lưu vào<select class="form-input" id="gn-topic"></select></label></div>' +
             '<button class="btn-start" style="width:100%;background:#2563eb" onclick="gnRun()">✨ Tạo câu tương tự</button>' +
-            '<div id="gn-out" style="margin-top:12px"></div>' +
+            '<div id="gn-banner" style="display:none;margin-top:10px;padding:8px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;font-size:.9rem"></div><div id="gn-out" style="margin-top:12px"></div>' +
             '<div id="gn-act" style="display:none;margin-top:10px;gap:8px;flex-wrap:wrap"><button class="btn-start" style="background:#059669" onclick="gnAddExam()">➕ Thêm vào đề đang soạn</button> <button class="btn-start" style="background:#7c3aed" onclick="gnSaveBank()">💾 Lưu vào ngân hàng</button> <button class="btn-start" style="background:#64748b" onclick="gnKey()">📋 Bảng đáp án</button></div>';
         var gs = $('gn-grade'); gs.innerHTML = grades().map(function (g) { return '<option value="' + g + '">Lớp ' + g + '</option>'; }).join('');
         gs.onchange = gnGroups; $('gn-group').onchange = gnTypes; $('gn-kind').onchange = gnGroups; gnGroups();
@@ -11046,16 +11107,20 @@ var QGEN = (function () {
         for (var i = 0; i < n; i++) { var r = one(P, kind, seen); if (r) cur.push(r); }
         gnShow();
     };
+    window.gnBanner = function (h) { banner = h; var b = $('gn-banner'); if (b) { b.innerHTML = h; b.style.display = h ? 'block' : 'none'; } };
+    window.gnLoad = function (list, bn) { cur = list; gnShow(); window.gnBanner(bn || ''); };
+    function badge(r) { return r.src === 'aibad' ? '<b style="color:#dc2626">❌ AI tự giải ra đáp án khác</b>' : r.src === 'ai' ? '<b style="color:#d97706">⚠️ AI soạn, cô xem kỹ</b>' : '<b style="color:#16a34a">✅ web tự giải</b>'; }
     function gnShow() {
         var h = cur.map(function (r, i) {
             var ops = r.kind === 'TF' ? '<div style="margin:4px 0">' + r.options.map(function (o, j) { var ok = r.ans[j] === 'D'; return '<div style="padding:2px 0"><b>' + 'abcd'[j] + ')</b> ' + o + ' <span style="font-weight:700;color:' + (ok ? '#16a34a' : '#dc2626') + '">[' + (ok ? 'Đúng' : 'Sai') + ']</span></div>'; }).join('') + '</div>' : r.kind === 'MCQ' ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;margin:4px 0">' + r.options.map(function (o, j) { return '<div style="' + ('ABCD'[j] === r.ans ? 'font-weight:700;color:#16a34a' : '') + '">' + 'ABCD'[j] + '. ' + o + '</div>'; }).join('') + '</div>' : '';
-            return '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;background:#fff"><div style="display:flex;justify-content:space-between;font-size:.8rem;color:#64748b"><span>Câu ' + (i + 1) + ' · ' + r.level + ' · ' + esc(r.name) + ' <b style="color:#16a34a">✅ web tự giải</b></span><span><button onclick="gnRe(' + i + ')" title="Đổi câu khác">🔄</button> <button onclick="gnDel(' + i + ')" title="Bỏ câu">🗑</button></span></div><div style="margin-top:4px">' + r.q + '</div>' + ops +
+            return '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;background:#fff"><div style="display:flex;justify-content:space-between;font-size:.8rem;color:#64748b"><span>Câu ' + (i + 1) + ' · ' + r.level + ' · ' + esc(r.name) + ' ' + badge(r) + '</span><span><button onclick="gnRe(' + i + ')" title="Đổi câu khác">🔄</button> <button onclick="gnDel(' + i + ')" title="Bỏ câu">🗑</button></span></div><div style="margin-top:4px">' + r.q + '</div>' + ops +
                 (r.kind === 'SA' ? '<div style="font-weight:700;color:#16a34a">Đáp số: ' + esc(r.sa) + '</div>' : '') + '<details><summary style="cursor:pointer;color:#2563eb;font-size:.85rem">Lời giải</summary><div>' + r.exp + '</div></details></div>';
         }).join('');
         $('gn-out').innerHTML = h || '<em>Chưa tạo được câu nào.</em>'; $('gn-act').style.display = cur.length ? 'flex' : 'none';
         try { renderMath($('gn-out')); } catch (e) { }
     }
-    window.gnRe = function (i) { var P = pool(), seen = {}; cur.forEach(function (r) { seen[r.q + '|'] = 1; }); var r = one(P, cur[i].kind, {}); if (r) cur[i] = r; gnShow(); };
+    window.gnRe = function (i) { if (cur[i] && cur[i].src) { alert('Câu do AI soạn không đổi lẻ được. Cô bấm 🗑 để bỏ, hoặc nhờ AI tạo đợt mới.'); return; }
+         var P = pool(), seen = {}; cur.forEach(function (r) { seen[r.q + '|'] = 1; }); var r = one(P, cur[i].kind, {}); if (r) cur[i] = r; gnShow(); };
     window.gnDel = function (i) { cur.splice(i, 1); gnShow(); };
     function toQ(r, i) {
         var grade = $('gn-grade').value, topic = $('gn-topic').value, safe = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
@@ -11085,6 +11150,83 @@ var QGEN = (function () {
     window.gnKey = function () {
         var s = cur.map(function (r, i) { return (i + 1) + ': ' + (r.kind === 'SA' ? r.sa : r.ans); }).join('   ');
         $('gn-out').insertAdjacentHTML('afterbegin', '<div style="background:#f0fdf4;border:1px solid #16a34a;border-radius:8px;padding:8px;margin-bottom:8px;font-weight:700">Đáp án: ' + esc(s) + '</div>');
+    };
+})();
+
+(function () {
+    'use strict';
+    var Q = window.QGEN, last = null;
+    function $(id) { return document.getElementById(id); }
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+    var KIND_NAME = { MCQ: 'Trắc nghiệm 4 đáp án', TF: 'Đúng/Sai 4 ý', SA: 'Trả lời ngắn' };
+    window.gsInit = function () {
+        var p = $('add-method-sample'); if (!p || p.dataset.ok) return; p.dataset.ok = 1;
+        p.innerHTML =
+            '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;margin-bottom:10px;font-size:.92rem;color:#1e3a8a"><b>Cách làm (3 bước):</b><br>① Cô dán <b>một câu mẫu</b> vào ô dưới (có phương án A, B, C, D thì xuống hàng như đề thường).<br>② Web đoán xem câu thuộc dạng nào. Dạng web biết thì web <b>tự giải</b> ✅. Dạng web chưa biết thì cô bấm <b>nhờ AI</b> ⚠️.<br>③ Cô xem lại các câu mới, rồi thêm vào đề hoặc lưu ngân hàng.</div>' +
+            '<div class="form-row" style="margin-bottom:8px"><label style="font-weight:700">① Câu mẫu của cô:</label><textarea id="gs-text" class="form-input" rows="6" style="width:100%" placeholder="Ví dụ:\nCâu 1. Diện tích hình phẳng giới hạn bởi các đường $y=x^2$ và $y=4x-3$ bằng\nA. $\\dfrac{4}{3}$\nB. $2$\nC. $3$\nD. $4$"></textarea></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px"><label style="font-size:.85rem">Khối<select class="form-input" id="gs-grade"><option>12</option><option>11</option><option>10</option></select></label><label style="font-size:.85rem">Số câu cần tạo<input type="number" id="gs-n" class="form-input" value="10" min="1" max="20"></label></div>' +
+            '<button class="btn-start" style="width:100%;background:#2563eb" onclick="gsAnalyze()">🔍 ② Phân tích câu mẫu</button><div id="gs-res" style="margin-top:12px"></div>';
+    };
+    window.gsAnalyze = function () {
+        var t = $('gs-text').value.trim(); if (t.length < 8) { alert('Cô dán câu mẫu vào ô trước nhé.'); return; }
+        var kind = Q.kindOf(t), m = Q.matchSample(t, kind), top = m.slice(0, 3), good = top[0].score >= 0.35;
+        last = { text: t, kind: kind, top: top };
+        var h = '<div style="margin-bottom:8px">Web nhận ra đây là câu <b>' + KIND_NAME[kind] + '</b>. ' + (good ? '<span style="color:#16a34a;font-weight:700">Web có dạng giống câu này:</span>' : '<span style="color:#b45309;font-weight:700">Web chưa có dạng nào giống rõ. Cô thử nhờ AI bên dưới.</span>') + '</div>';
+        top.forEach(function (x, i) {
+            if (x.score < 0.2) return;
+            h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid ' + (i === 0 && good ? '#16a34a' : '#e2e8f0') + ';border-radius:8px;padding:8px;margin-bottom:6px;background:#fff"><div><b>' + esc(x.g.name) + '</b><div style="font-size:.8rem;color:#64748b">' + esc(x.g.group) + ' · giống ' + Math.round(Math.min(1, x.score) * 100) + '%</div></div><button class="btn-start" style="background:#16a34a;white-space:nowrap" onclick="gsWeb(' + i + ')">✅ Dùng dạng này</button></div>';
+        });
+        h += '<div style="border:1px solid #fde68a;background:#fffbeb;border-radius:8px;padding:8px;margin-top:8px"><b>Không có dạng nào đúng?</b><div style="font-size:.85rem;color:#92400e;margin:4px 0">AI sẽ viết câu mới tương tự câu mẫu rồi giải lại lần nữa để đối chiếu đáp án. Câu AI soạn luôn được đánh dấu ⚠️, cô cần xem kỹ.</div>' +
+            '<button class="btn-start" style="background:#d97706" onclick="gsAI()">🤖 Nhờ AI tạo câu tương tự</button> <span id="gs-ai-msg" style="font-size:.85rem;color:#64748b"></span></div>';
+        $('gs-res').innerHTML = h;
+    };
+    window.gsWeb = function (i) {
+        var g = last.top[i].g, kind = last.kind;
+        switchAddMethod('gen'); window.gnInit();
+        $('gn-grade').value = String(g.grade); $('gn-grade').onchange();
+        $('gn-kind').value = kind; $('gn-kind').onchange();
+        $('gn-grade').value = String(g.grade); $('gn-grade').onchange();
+        $('gn-group').value = g.group; $('gn-group').onchange();
+        $('gn-type').value = g.id; $('gn-n').value = $('gs-n').value; window.gnRun();
+        window.gnBanner('Dạng: <b>' + esc(g.name) + '</b> (web tự giải, từ câu mẫu của cô). Chưa ưng thì quay lại tab "G. Từ câu mẫu" chọn dạng khác hoặc nhờ AI.');
+    };
+    function prompt(text, kind, n) {
+        var fmt = kind === 'MCQ' ? '"options": mảng đúng 4 chuỗi (không ghi A., B.), "answer": một chữ A, B, C hoặc D' : kind === 'TF' ? '"options": mảng đúng 4 chuỗi là 4 ý a, b, c, d, "answer": chuỗi 4 ký tự gồm D (đúng) hoặc S (sai) theo thứ tự ý' : '"options": mảng rỗng, "answer": một số hoặc biểu thức ngắn';
+        return 'Bạn là giáo viên Toán THPT Việt Nam. Dưới đây là CÂU MẪU. Hãy viết ' + n + ' câu MỚI cùng dạng, cùng mức độ khó, cùng cách hỏi, nhưng ĐỔI SỐ LIỆU và hàm số/hình cụ thể sao cho mỗi câu khác nhau. Mọi số liệu phải cho đáp án chính xác, đẹp. Công thức viết bằng LaTeX trong dấu $...$.\n' +
+            'Kiểu câu: ' + KIND_NAME[kind] + '.\nTrả về DUY NHẤT một mảng JSON, mỗi phần tử có các khóa: "q" (đề, không chứa phương án), ' + fmt + ', "explanation" (lời giải ngắn gọn từng bước), "level" (NB, TH, VD hoặc VDC).\n' +
+            'Không lặp lại câu mẫu. Không dùng hình vẽ.\n\nCÂU MẪU:\n' + text;
+    }
+    window.gsAI = async function () {
+        var msg = $('gs-ai-msg');
+        if (!window.__gemReady || !window.__gemReady()) {
+            msg.innerHTML = '⚠️ Chưa kết nối Gemini. <a href="#" onclick="switchAddMethod(\'ai\');return false">Bấm vào đây</a>, nhập khóa Gemini một lần ở khung rà soát rồi quay lại tab G.'; return;
+        }
+        var n = Math.max(1, Math.min(10, +$('gs-n').value || 10)), kind = last.kind;
+        msg.textContent = 'AI đang soạn ' + n + ' câu...';
+        try {
+            var arr = await window.__gemJson(prompt(last.text, kind, n), 0.7);
+            if (!Array.isArray(arr)) throw { code: 'json' };
+            arr = arr.filter(function (x) { return x && x.q && x.answer != null; }).slice(0, n);
+            msg.textContent = 'AI đang tự giải lại để đối chiếu...';
+            var chk = [];
+            try {
+                var sp = 'Hãy tự giải độc lập từng câu sau, KHÔNG nhìn đáp án có sẵn. Trả về DUY NHẤT một mảng JSON, mỗi phần tử là đáp án của câu cùng thứ tự: ' + (kind === 'MCQ' ? 'một chữ A, B, C hoặc D' : kind === 'TF' ? 'chuỗi 4 ký tự D (đúng) hoặc S (sai) cho các ý a, b, c, d' : 'một số hoặc biểu thức ngắn') + '.\n\n' +
+                    arr.map(function (x, i) { return 'Câu ' + (i + 1) + ': ' + x.q + (kind === 'MCQ' ? '\n' + (x.options || []).map(function (o, j) { return 'ABCD'[j] + '. ' + o; }).join('\n') : kind === 'TF' ? '\n' + (x.options || []).map(function (o, j) { return 'abcd'[j] + ') ' + o; }).join('\n') : ''); }).join('\n\n');
+                chk = await window.__gemJson(sp, 0);
+            } catch (e) { chk = []; }
+            var norm = function (s) { return String(s == null ? '' : s).replace(/\$/g, '').replace(/\s+/g, '').replace(/,/g, '.').toLowerCase(); };
+            var items = arr.map(function (x, i) {
+                var ans = String(x.answer).trim(), ok = chk[i] != null ? norm(chk[i]) === norm(ans) : null;
+                if (kind === 'MCQ') { ans = ans.toUpperCase().charAt(0); if ('ABCD'.indexOf(ans) < 0 || (x.options || []).length < 4) return null; }
+                if (kind === 'TF') { ans = ans.toUpperCase().replace(/Đ/g, 'D').replace(/[^DS]/g, ''); if (ans.length !== 4 || (x.options || []).length < 4) return null; }
+                return { name: 'AI soạn từ câu mẫu', level: x.level || 'TH', kind: kind, q: String(x.q).replace(/\n/g, '<br>'), options: (x.options || []).map(String).slice(0, 4), ans: kind === 'SA' ? '' : ans, sa: kind === 'SA' ? ans : undefined, exp: String(x.explanation || '').replace(/\n/g, '<br>'), src: ok === false ? 'aibad' : 'ai', okChk: ok };
+            }).filter(Boolean);
+            if (!items.length) { msg.textContent = 'AI trả về không đúng định dạng, cô bấm lại thử.'; return; }
+            msg.textContent = '';
+            switchAddMethod('gen'); window.gnInit(); $('gn-grade').value = $('gs-grade').value; $('gn-grade').onchange();
+            var good = items.filter(function (x) { return x.src === 'ai'; }).length;
+            window.gnLoad(items, 'AI đã soạn <b>' + items.length + '</b> câu từ câu mẫu của cô. <b>' + good + '</b> câu AI giải lại ra cùng đáp án (⚠️ vàng), <b>' + (items.length - good) + '</b> câu hai lượt AI không khớp (❌ đỏ, nên bỏ hoặc sửa). Cô vẫn cần xem lại từng câu.');
+        } catch (e) { msg.textContent = 'Lỗi AI: ' + ((e && (e.message || e.code)) || 'không rõ') + '. Cô thử lại sau.'; }
     };
 })();
 
