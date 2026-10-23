@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v100] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v101] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2213,13 +2213,13 @@ function removeQuestionFromSelected(qId) {
 
             let questionsToSave = selectedQuestions.map(q => ({ ...q }));
             if (mode === 'KIEMTRA') {
-                let secretKeys = {};
+                let secretKeys = {}; let __kt = {};
                 
                 // NẾU LÀ ĐỀ MA TRẬN ĐỘNG
                 if (selectedQuestions.length === 1 && selectedQuestions[0].isDynamicConfig) {
                     let safeConfigs = selectedQuestions[0].configs.map(cfg => {
                         let safePool = cfg.pool.map(q => {
-                            secretKeys[q.id] = { ans: q.ans || '', ansOptions: q.ansOptions || [], explanation: q.explanation || '' };
+                            __kt[q.id] = q.type; secretKeys[q.id] = { ans: q.ans || '', ansOptions: q.ansOptions || [], explanation: q.explanation || '' };
                             return { id: q.id, grade: q.grade, topic: q.topic, level: q.level, type: q.type, q: q.q, options: q.options || [], timeLimit: q.timeLimit || 30 };
                         });
                         return { ...cfg, pool: safePool };
@@ -2229,11 +2229,26 @@ function removeQuestionFromSelected(qId) {
                 // NẾU LÀ ĐỀ TĨNH BÌNH THƯỜNG
                 else {
                     questionsToSave = selectedQuestions.map(q => {
-                        secretKeys[q.id] = { ans: q.ans || '', ansOptions: q.ansOptions || [], explanation: q.explanation || '' };
+                        __kt[q.id] = q.type; secretKeys[q.id] = { ans: q.ans || '', ansOptions: q.ansOptions || [], explanation: q.explanation || '' };
                         return { id: q.id, grade: q.grade, topic: q.topic, level: q.level, type: q.type, q: q.q, options: q.options || [], timeLimit: q.timeLimit || 30 };
                     });
                 }
                 
+                // (v101) Kiểm tra từng câu có đáp án hợp lệ không; thiếu thì tự lấy từ ngân hàng, vẫn thiếu thì hỏi lại
+                {
+                    const okKey = (k, t) => { if (!k) return false; const a = String(k.ans == null ? '' : k.ans).trim(); t = String(t || '').toUpperCase();
+                        if (t === 'MCQ') return /^[ABCD]$/i.test(a);
+                        if (t === 'TF') { const o = (k.ansOptions && k.ansOptions.length === 4) ? k.ansOptions.join('') : a; return /^[DSĐ]{4}$/i.test(String(o).replace(/Đ/gi, 'D')); }
+                        if (t === 'SA') return a !== '' && !/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) /.test(a) && !/^\d{4}-\d\d-\d\d/.test(a);
+                        return true; };
+                    let filled = 0;
+                    Object.keys(secretKeys).forEach(id => { if (okKey(secretKeys[id], __kt[id])) return;
+                        const bq = (typeof questionBank !== 'undefined' ? questionBank : []).find(x => String(x.id) === String(id));
+                        if (bq && okKey({ ans: bq.ans, ansOptions: bq.ansOptions }, __kt[id])) { secretKeys[id] = { ans: bq.ans || '', ansOptions: bq.ansOptions || [], explanation: bq.explanation || secretKeys[id].explanation || '' }; filled++; } });
+                    const stillMissing = Object.keys(secretKeys).filter(id => !okKey(secretKeys[id], __kt[id]));
+                    if (filled > 0) console.log('v101: tự điền ' + filled + ' đáp án từ ngân hàng');
+                    if (stillMissing.length > 0 && !confirm('⚠️ Có ' + stillMissing.length + ' / ' + Object.keys(secretKeys).length + ' câu CHƯA CÓ ĐÁP ÁN HỢP LỆ' + (filled ? ' (đã tự điền thêm ' + filled + ' câu từ ngân hàng)' : '') + '.\nVí dụ mã câu: ' + stillMissing.slice(0, 3).join(', ') + '\n\nEm làm các câu này sẽ không được điểm.\nBấm Hủy để quay lại sửa đáp án. Bấm OK chỉ khi cô chắc chắn muốn lưu.')) return;
+                }
                 const anyAnswer = Object.keys(secretKeys).some(id => { const k = secretKeys[id]; return String(k.ans || '').trim() !== '' || (k.ansOptions || []).some(x => String(x || '').trim() !== ''); });
                 if (!anyAnswer && !confirm('⚠️ Đề kiểm tra này CHƯA CÓ ĐÁP ÁN nào (tất cả đều trống). Nếu xuất bản, em làm bài sẽ bị 0 điểm.\nBấm Hủy để quay lại nhập đáp án. Bấm OK chỉ khi cô chắc chắn.')) return;
                 // Lưu đáp án vào Google Sheet của cô (tab DapAn). Thành công thì KHÔNG ghi đáp án lên Firebase nữa.
@@ -11426,8 +11441,30 @@ var QGEN = (function () {
                 '<div style="font-size:.82rem;color:#64748b;margin-bottom:6px"><b>Cột "Theo ngân hàng"</b> là điểm nếu chấm bằng đáp án hiện có trong ngân hàng câu hỏi (đúng khi đáp án ngân hàng đã chuẩn). Cô xem vài em để chắc trước khi sửa điểm.</div>' +
                 '<div style="overflow:auto;max-height:340px"><table style="width:100%;border-collapse:collapse;font-size:.85rem" border="1" cellpadding="4"><tr style="background:#f1f5f9"><th>Họ tên</th><th>Lớp</th><th>Đã ghi</th><th>Theo máy chủ</th><th>Theo ngân hàng</th><th>Ghi chú</th></tr>' +
                 rows.map(function (r) { var d = r.b !== '?' && Math.abs(parseFloat(r.b) - parseFloat(r.old)) > 0.01; return '<tr style="background:' + (d ? '#fffbeb' : '#fff') + '"><td>' + esc(r.n) + '</td><td>' + esc(r.c) + '</td><td>' + esc(r.old) + '</td><td>' + r.a + '</td><td><b>' + r.b + '</b></td><td style="font-size:.75rem">' + esc(r.note) + '</td></tr>'; }).join('') + '</table></div>' +
-                '<button class="btn-start" style="background:#059669;margin-top:8px" onclick="soiCopy()">📋 Sao chép bảng (dán vào Excel)</button> <span id="soi-cp" style="font-size:.85rem"></span>';
+                '<button class="btn-start" style="background:#059669;margin-top:8px" onclick="soiCopy()">📋 Sao chép bảng (dán vào Excel)</button> <span id="soi-cp" style="font-size:.85rem"></span>' +
+                '<div style="margin-top:10px;padding:10px;border:1px solid #fbbf24;background:#fffbeb;border-radius:8px;font-size:.85rem"><b>✍️ Ghi điểm mới vào sổ điểm</b><br>Chỉ ghi những em mà điểm <b>theo máy chủ</b> và <b>theo ngân hàng</b> trùng nhau và khác điểm đã ghi. Điểm cũ được sao lưu ở tab <code>DiemCu</code> trong Google Sheet. Cần script bản <code>buoc6</code>.<br><button class="btn-start" style="background:#d97706;margin-top:6px" onclick="soiApply()">✍️ Ghi điểm mới vào sổ</button> <span id="soi-ap" style="font-size:.85rem"></span></div>';
+            window.__soiExId = id;
         } catch (e) { out.innerHTML = '<span style="color:#dc2626">Lỗi: ' + esc(e && e.message || e) + '</span>'; }
+    };
+
+    window.soiApply = async function () {
+        var st = $('soi-ap'), rows = window.__soiRows || [], id = window.__soiExId;
+        if (!id || !rows.length) { st.textContent = 'Cô bấm "Chấm lại cả lớp" trước.'; return; }
+        var todo = rows.filter(function (r) { return r.a !== '?' && r.b !== '?' && Math.abs(parseFloat(r.a) - parseFloat(r.b)) < 0.01 && Math.abs(parseFloat(r.a) - parseFloat(r.old)) > 0.01; });
+        var skip = rows.length - todo.length;
+        if (!todo.length) { st.textContent = 'Không có em nào cần ghi.'; return; }
+        if (!confirm('Sẽ ghi điểm mới cho ' + todo.length + ' em vào sổ điểm (bỏ qua ' + skip + ' em).\nĐiểm cũ được sao lưu ở tab DiemCu.\n\nBấm OK để ghi.')) return;
+        st.textContent = 'Đang ghi...';
+        try {
+            var upd = 0, sk = [];
+            for (var i = 0; i < todo.length; i += 60) {
+                var items = todo.slice(i, i + 60).map(function (r) { return { name: r.n, 'class': r.c, oldScore: String(r.old), newScore: String(r.a) }; });
+                var res = await (await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'apply_scores', password: teacherPassAuth, examId: id, items: items }) })).json();
+                if (!res || res.status !== 'success') { st.innerHTML = '<span style="color:#dc2626">Máy chủ báo lỗi: ' + esc((res && res.message) || 'không rõ') + '. Nếu là "Không có quyền" hoặc không có phản hồi, script chưa là bản buoc6.</span>'; return; }
+                upd += res.updated || 0; sk = sk.concat(res.skipped || []);
+            }
+            st.innerHTML = '<span style="color:#059669">✅ Đã ghi ' + upd + ' em.</span>' + (sk.length ? ' <span style="color:#b45309">Bỏ qua ' + sk.length + ': ' + sk.slice(0, 5).map(function (x) { return esc(x.name + ' (' + x.why + ')'); }).join('; ') + '</span>' : '') + ' Cô bấm "Chấm lại cả lớp" lần nữa để kiểm tra: số bài lệch phải về 0.';
+        } catch (e) { st.innerHTML = '<span style="color:#dc2626">Lỗi: ' + esc(e && e.message || e) + '</span>'; }
     };
     window.soiCopy = function () {
         var t = 'Họ tên\tLớp\tĐiểm đã ghi\tTheo máy chủ\tTheo ngân hàng\n' + (window.__soiRows || []).map(function (r) { return [r.n, r.c, r.old, r.a, r.b].join('\t'); }).join('\n');
