@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v101] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v102] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11409,6 +11409,8 @@ var QGEN = (function () {
         var ex = examBank.filter(function (e) { return String(e.id) === String(id); })[0]; if (!ex) { out.textContent = 'Không thấy đề.'; return; }
         out.textContent = 'Đang tải sổ điểm...';
         try {
+            if (typeof questionBank === 'undefined' || !questionBank.length) { out.textContent = 'Đang tải ngân hàng câu hỏi...'; try { await loadQuestionBank(); } catch (e) { } }
+            if (typeof questionBank === 'undefined' || !questionBank.length) { out.innerHTML = '<span style="color:#dc2626">Chưa tải được ngân hàng câu hỏi (kiểm tra mạng rồi bấm lại). Em chưa chấm để tránh ra điểm sai.</span>'; return; }
             var pw = encodeURIComponent(teacherPassAuth || '');
             var rk = await (await fetch(SCRIPT_URL + '?action=get_exam_keys&examId=' + encodeURIComponent(id) + '&password=' + pw)).json(); var keys = (rk && rk.keys) || {};
             var rr = await (await fetch(SCRIPT_URL + '?action=get_results&password=' + pw)).json();
