@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v92] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v93] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10832,46 +10832,204 @@ var QGEN = (function () {
         var ans = kind === 'sum' ? x + y : x - y; return { q: 'Cho $(x;y)$ là nghiệm của hệ phương trình $' + sysS + '$. Giá trị của $' + (kind === 'sum' ? 'x+y' : 'x-y') + '$ bằng', correct: M(String(ans)), wrongs: wrapN([x * y, kind === 'sum' ? x - y : x + y, -ans, ans + 1, ans - 2, x].filter(function (z) { return z !== ans; })), exp: 'Giải hệ được $x=' + x + '$, $y=' + y + '$ nên $' + (kind === 'sum' ? 'x+y' : 'x-y') + '=' + ans + '$.', sa: String(ans), level: 'TH' };
     });
 })(QGEN);
+(function (Q) {
+    'use strict';
+    var ri = Q.ri, pick = Q.pick, shuf = Q.shuf, F = Q.F, tex = Q.tex, poly = Q.poly, need = Q.need, fadd = Q.fadd, fsub = Q.fsub, fmul = Q.fmul, fdiv = Q.fdiv, feq = Q.feq, C = Q.C, A = Q.A, fact = Q.fact;
+    Q.TF = [];
+    function addTF(id, grade, group, name, lv, make) { Q.TF.push({ id: id, grade: grade, group: group, name: name, lv: lv, make: make }); }
+    function $$(s) { return '$' + s + '$'; }
+    function fr(n, d) { return tex(F(n, d === undefined ? 1 : d)); }
+    // dựng câu: builders[i](ok) -> {t, why}; mọi ý được chọn đúng/sai ngẫu nhiên (ít nhất 1 đúng, 1 sai)
+    function mk(stem, builders, lv) {
+        var bits; do { bits = builders.map(function () { return Math.random() < 0.5; }); } while (bits.every(Boolean) || !bits.some(Boolean));
+        var items = builders.map(function (f, i) { var r = f(bits[i]); r.ok = bits[i]; return r; });
+        return { q: stem, items: items, level: lv || 'TH', exp: items.map(function (it, i) { return 'abcd'[i] + ') ' + (it.ok ? 'ĐÚNG' : 'SAI') + '. ' + it.why; }).join('<br>') };
+    }
+    function pm(n) { return n < 0 ? '-' + (-n) : '+' + n; }
+    function sg(n) { return n < 0 ? '(' + n + ')' : String(n); }
+    function wrongNum(v, lo, hi) { var w; var g = 0; do { w = v + pick([-3, -2, -1, 1, 2, 3]); g++; } while (w === v && g < 20); return w; }
+
+    // ---- Lớp 12: hàm số bậc ba
+    addTF('tf_bac3', 12, 'Giải tích 12 › Hàm số', 'Hàm số bậc ba: đơn điệu, cực trị', 'TH', function () {
+        var s = ri(-2, 2), p0 = ri(-3, 1), p = 2 * s - 0, q;
+        // chọn p<q cùng tính chẵn lẻ để hệ số nguyên: p+q=2s
+        p = ri(-4, 1); q = p + 2 * ri(1, 3); var sm = (p + q) / 2, d = ri(-3, 3);
+        var f = function (x) { return x * x * x - 3 * sm * x * x + 3 * p * q * x + d; };
+        // kiểm tra độc lập bằng đạo hàm số
+        var fp = function (x) { return (f(x + 1e-6) - f(x - 1e-6)) / 2e-6; };
+        need(Math.abs(fp(p)) < 1e-3 && Math.abs(fp(q)) < 1e-3 && fp((p + q) / 2) < 0 && fp(q + 1) > 0 && fp(p - 1) > 0);
+        var fx = poly([1, -3 * sm, 3 * p * q, d]), derv = '3(x' + pm(-p) + ')(x' + pm(-q) + ')';
+        return mk('Cho hàm số $f(x)=' + fx + '$. Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: 'Hàm số ' + (ok ? 'đồng biến' : 'nghịch biến') + ' trên khoảng $(-\\infty;' + p + ')$.', why: '$f\'(x)=' + derv + '$, trên $(-\\infty;' + p + ')$ ta có $f\'(x)>0$ nên hàm số đồng biến.' }; },
+            function (ok) { return { t: 'Hàm số ' + (ok ? 'nghịch biến' : 'đồng biến') + ' trên khoảng $(' + p + ';' + q + ')$.', why: 'Trên $(' + p + ';' + q + ')$ ta có $f\'(x)<0$ nên hàm số nghịch biến.' }; },
+            function (ok) { return { t: 'Hàm số đạt cực đại tại $x=' + (ok ? p : q) + '$.', why: '$f\'$ đổi dấu từ dương sang âm tại $x=' + p + '$ nên cực đại tại $x=' + p + '$, cực tiểu tại $x=' + q + '$.' }; },
+            function (ok) { var v = f(q); return { t: 'Giá trị cực tiểu của hàm số bằng $' + (ok ? v : v + pick([-4, -2, 2, 4])) + '$.', why: 'Hàm số đạt cực tiểu tại $x=' + q + '$, $f(' + q + ')=' + v + '$.' }; }
+        ], 'TH');
+    });
+    // ---- Lớp 12: tích phân, nguyên hàm
+    addTF('tf_tichphan', 12, 'Giải tích 12 › Nguyên hàm, tích phân', 'Tính chất và giá trị tích phân', 'TH', function () {
+        var a = ri(1, 3), b = ri(1, 3), m = ri(1, 3), n = ri(2, 4);
+        function wr(v) { var w; do { w = fadd(v, F(pick([-2, -1, 1, 2, 3]), pick([1, 1, 2, 3]))); } while (feq(w, v)); return w; }
+        function item(txt, v, why) { return function (ok) { return { t: txt + (ok ? tex(v) : tex(wr(v))) + '$.', why: why + ' Giá trị là $' + tex(v) + '$.' }; }; }
+        var v1 = F(Math.pow(m, 3), 3), v2 = fadd(F(a * m * m, 2), F(b * m)), v3 = F(Math.pow(m, n + 1), n + 1);
+        var k = ri(2, 5), v4 = fsub(F(k * k, 2), F(0));
+        return mk('Xét tính đúng sai của các mệnh đề sau:', [
+            item('$\\displaystyle\\int_0^{' + m + '}x^2\\,dx=', v1, 'Nguyên hàm của $x^2$ là $\\dfrac{x^3}{3}$.'),
+            item('$\\displaystyle\\int_0^{' + m + '}(' + (a === 1 ? '' : a) + 'x+' + b + ')\\,dx=', v2, 'Nguyên hàm là $' + tex(F(a, 2)) + 'x^2+' + b + 'x$.'),
+            item('$\\displaystyle\\int_0^{' + m + '}x^{' + n + '}\\,dx=', v3, 'Nguyên hàm của $x^{' + n + '}$ là $\\dfrac{x^{' + (n + 1) + '}}{' + (n + 1) + '}$.'),
+            item('$\\displaystyle\\int_0^{' + k + '}x\\,dx=', v4, 'Nguyên hàm của $x$ là $\\dfrac{x^2}{2}$.')
+        ], 'TH');
+    });
+    addTF('tf_nguyenham', 12, 'Giải tích 12 › Nguyên hàm, tích phân', 'Nguyên hàm cơ bản', 'NB', function () {
+        var k = ri(2, 5), a = ri(1, 4);
+        return mk('Xét tính đúng sai của các mệnh đề sau (với $C$ là hằng số):', [
+            function (ok) { return { t: '$\\displaystyle\\int ' + k + 'x\\,dx=' + (ok ? tex(F(k, 2)) : tex(F(k))) + 'x^2+C$.', why: '$\\int x\\,dx=\\dfrac{x^2}{2}+C$ nên $\\int ' + k + 'x\\,dx=' + tex(F(k, 2)) + 'x^2+C$.' }; },
+            function (ok) { return { t: '$\\displaystyle\\int e^{' + k + 'x}\\,dx=' + (ok ? '\\dfrac{1}{' + k + '}e^{' + k + 'x}' : k + 'e^{' + k + 'x}') + '+C$.', why: '$\\int e^{kx}dx=\\dfrac{1}{k}e^{kx}+C$ nên với $k=' + k + '$ ta có $\\dfrac{1}{' + k + '}e^{' + k + 'x}+C$.' }; },
+            function (ok) { return { t: '$\\displaystyle\\int\\cos x\\,dx=' + (ok ? '\\sin x' : '-\\sin x') + '+C$.', why: '$(\\sin x)\'=\\cos x$ nên $\\int\\cos x\\,dx=\\sin x+C$.' }; },
+            function (ok) { return { t: '$\\displaystyle\\int\\dfrac{1}{x}\\,dx=' + (ok ? '\\ln|x|' : '-\\dfrac{1}{x^2}') + '+C$ trên $(0;+\\infty)$.', why: '$(\\ln|x|)\'=\\dfrac{1}{x}$ nên $\\int\\dfrac{dx}{x}=\\ln|x|+C$.' }; }
+        ], 'NB');
+    });
+    // ---- Lớp 12: Oxyz
+    addTF('tf_oxyz', 12, 'Hình học 12 › Phương pháp tọa độ Oxyz', 'Tọa độ điểm, vectơ trong Oxyz', 'TH', function () {
+        var A_ = [ri(-3, 3), ri(-3, 3), ri(-3, 3)], B_ = [ri(-3, 3), ri(-3, 3), ri(-3, 3)], C_ = [ri(-3, 3), ri(-3, 3), ri(-3, 3)];
+        function sub(P, Qp) { return [Qp[0] - P[0], Qp[1] - P[1], Qp[2] - P[2]]; }
+        var AB = sub(A_, B_), AC = sub(A_, C_), n2 = AB[0] * AB[0] + AB[1] * AB[1] + AB[2] * AB[2], dot = AB[0] * AC[0] + AB[1] * AC[1] + AB[2] * AC[2];
+        need(n2 > 0 && n2 !== 0);
+        var mid = [(A_[0] + B_[0]) / 2, (A_[1] + B_[1]) / 2, (A_[2] + B_[2]) / 2];
+        function V(v) { return '(' + v.join(';') + ')'; }
+        function P(n) { return n % 1 === 0 ? String(n) : tex(F(Math.round(n * 2), 2)); }
+        var pt = function (a) { return 'A' + V(a); };
+        return mk('Trong không gian $Oxyz$, cho $A' + V(A_) + '$, $B' + V(B_) + '$, $C' + V(C_) + '$. Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { var v = ok ? AB : [AB[0] + 1, AB[1], AB[2]]; return { t: 'Vectơ $\\overrightarrow{AB}=' + V(v) + '$.', why: '$\\overrightarrow{AB}=(x_B-x_A;y_B-y_A;z_B-z_A)=' + V(AB) + '$.' }; },
+            function (ok) { var v = ok ? mid : [mid[0] + 1, mid[1], mid[2]]; return { t: 'Trung điểm của đoạn $AB$ có tọa độ $(' + v.map(P).join(';') + ')$.', why: 'Trung điểm $I\\left(\\dfrac{x_A+x_B}{2};\\dfrac{y_A+y_B}{2};\\dfrac{z_A+z_B}{2}\\right)=(' + mid.map(P).join(';') + ')$.' }; },
+            function (ok) { var k = ok ? n2 : n2 + pick([-2, -1, 1, 3]); need(k > 0); return { t: 'Độ dài đoạn $AB$ bằng $\\sqrt{' + k + '}$.', why: '$AB^2=' + AB[0] + '^2+' + AB[1] + '^2+' + AB[2] + '^2=' + n2 + '$ nên $AB=\\sqrt{' + n2 + '}$.' }; },
+            function (ok) { var k = ok ? dot : dot + pick([-3, -2, 2, 3]); return { t: '$\\overrightarrow{AB}\\cdot\\overrightarrow{AC}=' + k + '$.', why: '$\\overrightarrow{AB}=' + V(AB) + '$, $\\overrightarrow{AC}=' + V(AC) + '$ nên tích vô hướng bằng $' + dot + '$.' }; }
+        ], 'TH');
+    });
+    // ---- Lớp 12: mũ, logarit
+    addTF('tf_mulog', 12, 'Giải tích 12 › Mũ và Logarit', 'Phương trình, bất phương trình mũ - logarit', 'TH', function () {
+        var a = pick([2, 3, 5]), k = ri(2, 4), b = pick([2, 3]), m = ri(1, 3);
+        var ge = Math.pow(a, k), nb = Math.pow(b, m + 1); need(a * k !== ge);
+        return mk('Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: 'Phương trình $' + a + '^x=' + ge + '$ có nghiệm $x=' + (ok ? k : k + 1) + '$.', why: '$' + a + '^x=' + a + '^{' + k + '}\\Leftrightarrow x=' + k + '$.' }; },
+            function (ok) { return { t: 'Phương trình $\\log_{' + a + '}x=' + k + '$ có nghiệm $x=' + (ok ? ge : a * k) + '$.', why: 'Điều kiện $x>0$, $x=' + a + '^{' + k + '}=' + ge + '$.' }; },
+            function (ok) { return { t: 'Bất phương trình $' + b + '^x>' + nb + '$ có tập nghiệm là $' + (ok ? '(' + (m + 1) + ';+\\infty)' : '(-\\infty;' + (m + 1) + ')') + '$.', why: 'Cơ số $' + b + '>1$ nên $' + b + '^x>' + b + '^{' + (m + 1) + '}\\Leftrightarrow x>' + (m + 1) + '$.' }; },
+            function (ok) { return { t: 'Bất phương trình $\\log_{\\frac{1}{' + b + '}}x>' + m + '$ có tập nghiệm là $' + (ok ? '\\left(0;\\dfrac{1}{' + Math.pow(b, m) + '}\\right)' : '\\left(\\dfrac{1}{' + Math.pow(b, m) + '};+\\infty\\right)') + '$.', why: 'Cơ số $\\dfrac{1}{' + b + '}<1$ nên đổi chiều: $0<x<\\left(\\dfrac{1}{' + b + '}\\right)^{' + m + '}=\\dfrac{1}{' + Math.pow(b, m) + '}$.' }; }
+        ], 'TH');
+    });
+    // ---- Lớp 12: số phức
+    addTF('tf_sophuc', 12, 'Giải tích 12 › Số phức', 'Số phức: phần thực, phần ảo, môđun', 'NB', function () {
+        var a = ri(-5, 5), b = ri(-5, 5), c = ri(-4, 4), d = ri(-4, 4); need(a !== 0 && b !== 0 && c !== 0 && d !== 0 && a !== b);
+        function cx(re, im) { return (re === 0 ? '' : re) + (im === 0 ? '' : (im > 0 && re !== 0 ? '+' : '') + (im === 1 ? '' : (im === -1 ? '-' : im)) + 'i') || '0'; }
+        var m2 = a * a + b * b, sr = a + c, si = b + d;
+        return mk('Cho hai số phức $z=' + cx(a, b) + '$ và $w=' + cx(c, d) + '$. Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: 'Phần ảo của $z$ bằng $' + (ok ? b : a) + '$.', why: 'Với $z=a+bi$ thì phần thực là $a=' + a + '$, phần ảo là $b=' + b + '$.' }; },
+            function (ok) { return { t: 'Số phức liên hợp của $z$ là $' + (ok ? cx(a, -b) : cx(-a, b)) + '$.', why: '$\\bar z=a-bi=' + cx(a, -b) + '$.' }; },
+            function (ok) { var k = ok ? m2 : m2 + pick([-1, 1, 2, 3]); need(k > 0); return { t: 'Môđun của $z$ bằng $\\sqrt{' + k + '}$.', why: '$|z|=\\sqrt{a^2+b^2}=\\sqrt{' + m2 + '}$.' }; },
+            function (ok) { return { t: 'Số phức $z+w$ có phần thực bằng $' + (ok ? sr : sr + pick([-2, -1, 1, 2])) + '$.', why: '$z+w=(' + a + '+' + sg(c) + ')+(' + b + '+' + sg(d) + ')i$ nên phần thực bằng $' + sr + '$.' }; }
+        ], 'NB');
+    });
+    // ---- Lớp 11
+    addTF('tf_xacsuat', 11, 'Đại số và Giải tích 11 › Tổ hợp, xác suất', 'Xác suất: hộp bi', 'TH', function () {
+        var a = ri(3, 6), b = ri(3, 6), n = a + b, tot = C(n, 2), g1 = C(a, 2), g2 = a * b;
+        function pr(x) { return tex(F(x, tot)); }
+        return mk('Một hộp có $' + a + '$ quả cầu đỏ và $' + b + '$ quả cầu xanh (cùng kích thước). Lấy ngẫu nhiên đồng thời $2$ quả cầu. Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: 'Số phần tử của không gian mẫu là $' + (ok ? tot : tot + pick([-1, 1, 2])) + '$.', why: '$n(\\Omega)=C_{' + n + '}^{2}=' + tot + '$.' }; },
+            function (ok) { var x = ok ? g1 : g1 + pick([1, 2]); return { t: 'Xác suất để lấy được $2$ quả cầu đỏ bằng $' + pr(x) + '$.', why: 'Số cách chọn $2$ quả đỏ là $C_{' + a + '}^{2}=' + g1 + '$, xác suất $' + pr(g1) + '$.' }; },
+            function (ok) { var x = ok ? g2 : g2 + pick([1, 2, -1]); need(x > 0); return { t: 'Xác suất để lấy được $2$ quả cầu khác màu bằng $' + pr(x) + '$.', why: 'Số cách chọn $1$ đỏ, $1$ xanh là $' + a + '\\cdot' + b + '=' + g2 + '$, xác suất $' + pr(g2) + '$.' }; },
+            function (ok) { var x = ok ? tot - g2 : tot - g2 + pick([1, 2]); return { t: 'Xác suất để lấy được $2$ quả cầu cùng màu bằng $' + pr(x) + '$.', why: 'Cùng màu là biến cố đối của khác màu: $1-\\dfrac{' + g2 + '}{' + tot + '}=' + pr(tot - g2) + '$.' }; }
+        ], 'TH');
+    });
+    addTF('tf_csc', 11, 'Đại số và Giải tích 11 › Dãy số', 'Cấp số cộng, cấp số nhân', 'TH', function () {
+        var u1 = ri(-4, 6), d = ri(1, 4), n = ri(5, 10), q = pick([2, 3]), v1 = ri(1, 3);
+        var un = u1 + (n - 1) * d, sn = n * (2 * u1 + (n - 1) * d) / 2, gn = v1 * Math.pow(q, n - 1), gs = v1 * (Math.pow(q, n) - 1) / (q - 1);
+        return mk('Cho cấp số cộng $(u_n)$ có $u_1=' + u1 + '$, công sai $d=' + d + '$ và cấp số nhân $(v_n)$ có $v_1=' + v1 + '$, công bội $q=' + q + '$. Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: '$u_{' + n + '}=' + (ok ? un : un + d) + '$.', why: '$u_n=u_1+(n-1)d=' + u1 + '+' + (n - 1) + '\\cdot' + d + '=' + un + '$.' }; },
+            function (ok) { return { t: 'Tổng $' + n + '$ số hạng đầu của $(u_n)$ bằng $' + (ok ? sn : sn + n) + '$.', why: '$S_n=\\dfrac{n[2u_1+(n-1)d]}{2}=' + sn + '$.' }; },
+            function (ok) { return { t: '$v_{' + n + '}=' + (ok ? gn : gn * q) + '$.', why: '$v_n=v_1q^{n-1}=' + v1 + '\\cdot' + q + '^{' + (n - 1) + '}=' + gn + '$.' }; },
+            function (ok) { return { t: 'Tổng $' + n + '$ số hạng đầu của $(v_n)$ bằng $' + (ok ? gs : gs + v1) + '$.', why: '$S_n=v_1\\dfrac{q^n-1}{q-1}=' + gs + '$.' }; }
+        ], 'TH');
+    });
+    addTF('tf_tohop', 11, 'Đại số và Giải tích 11 › Tổ hợp, xác suất', 'Hoán vị, chỉnh hợp, tổ hợp', 'NB', function () {
+        var n = ri(6, 10), k = ri(2, 4), m = ri(4, 7); need(k + 1 !== n - k);
+        return mk('Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: '$C_{' + n + '}^{' + k + '}=' + (ok ? C(n, k) : A(n, k)) + '$.', why: '$C_n^k=\\dfrac{n!}{k!(n-k)!}=' + C(n, k) + '$, còn $A_{' + n + '}^{' + k + '}=' + A(n, k) + '$.' }; },
+            function (ok) { return { t: '$A_{' + n + '}^{' + k + '}=' + (ok ? A(n, k) : C(n, k)) + '$.', why: '$A_n^k=\\dfrac{n!}{(n-k)!}=' + A(n, k) + '$.' }; },
+            function (ok) { return { t: 'Số cách xếp $' + m + '$ bạn thành một hàng dọc là $' + (ok ? fact(m) : m * m) + '$.', why: 'Đó là số hoán vị: $' + m + '!=' + fact(m) + '$.' }; },
+            function (ok) { return { t: '$C_{' + n + '}^{' + k + '}=C_{' + n + '}^{' + (ok ? n - k : k + 1) + '}$.', why: 'Tính chất $C_n^k=C_n^{n-k}$, nên $C_{' + n + '}^{' + k + '}=C_{' + n + '}^{' + (n - k) + '}$.' }; }
+        ], 'NB');
+    });
+    // ---- Lớp 10
+    addTF('tf_parabol', 10, 'Đại số 10 › Hàm số bậc hai', 'Parabol: đỉnh, trục đối xứng, đơn điệu', 'TH', function () {
+        var a = pick([-2, -1, 1, 2]), h = ri(-3, 3), kk = ri(-4, 4), b = -2 * a * h, c = a * h * h + kk; need(b !== 0 || h === 0);
+        var f = poly([a, b, c]);
+        return mk('Cho hàm số $y=' + f + '$ có đồ thị là parabol $(P)$. Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: 'Trục đối xứng của $(P)$ là đường thẳng $x=' + (ok ? h : -h === h ? h + 1 : -h) + '$.', why: '$x=-\\dfrac{b}{2a}=' + h + '$.' }; },
+            function (ok) { return { t: 'Đỉnh của $(P)$ là $I(' + h + ';' + (ok ? kk : kk + 1) + ')$.', why: 'Hoành độ đỉnh $' + h + '$, tung độ đỉnh $y(' + h + ')=' + kk + '$.' }; },
+            function (ok) { return { t: 'Hàm số ' + ((a > 0) === ok ? 'đồng biến' : 'nghịch biến') + ' trên khoảng $(' + h + ';+\\infty)$.', why: 'Vì $a' + (a > 0 ? '>0' : '<0') + '$ nên hàm số ' + (a > 0 ? 'đồng biến' : 'nghịch biến') + ' trên $(' + h + ';+\\infty)$.' }; },
+            function (ok) { return { t: 'Đồ thị $(P)$ cắt trục tung tại điểm có tung độ bằng $' + (ok ? c : c + 1) + '$.', why: 'Cho $x=0$ ta được $y=c=' + c + '$.' }; }
+        ], 'TH');
+    });
+    addTF('tf_ptbac2', 10, 'Đại số 10 › Phương trình, bất phương trình bậc hai', 'Phương trình bậc hai: Vi-ét', 'TH', function () {
+        var p = ri(-4, 4), q = ri(-4, 4); need(p !== q && p * q !== 0);
+        var a = pick([1, 2]), b = -a * (p + q), c = a * p * q, disc = b * b - 4 * a * c, f = poly([a, b, c]);
+        return mk('Cho phương trình $' + f + '=0$ có hai nghiệm $x_1,x_2$. Xét tính đúng sai của các mệnh đề sau:', [
+            function (ok) { return { t: 'Phương trình ' + (ok ? 'có hai nghiệm phân biệt' : pick(['có nghiệm kép', 'vô nghiệm'])) + '.', why: '$\\Delta=' + disc + '>0$ nên phương trình có hai nghiệm phân biệt.' }; },
+            function (ok) { return { t: '$x_1+x_2=' + (ok ? p + q : -(p + q) || 1) + '$.', why: 'Theo Vi-ét $x_1+x_2=-\\dfrac{b}{a}=' + (p + q) + '$.' }; },
+            function (ok) { return { t: '$x_1x_2=' + (ok ? p * q : -p * q) + '$.', why: 'Theo Vi-ét $x_1x_2=\\dfrac{c}{a}=' + p * q + '$.' }; },
+            function (ok) { var v = p * p + q * q; return { t: '$x_1^2+x_2^2=' + (ok ? v : v + pick([-2, -1, 1, 2])) + '$.', why: '$x_1^2+x_2^2=(x_1+x_2)^2-2x_1x_2=' + (p + q) * (p + q) + '-2\\cdot(' + p * q + ')=' + v + '$.' }; }
+        ], 'TH');
+    });
+    addTF('tf_gtlg', 10, 'Hình học 10 › Giá trị lượng giác', 'Giá trị lượng giác của góc đặc biệt', 'NB', function () {
+        var T = [
+            ['\\sin30^\\circ', '\\dfrac{1}{2}'], ['\\cos60^\\circ', '\\dfrac{1}{2}'], ['\\sin60^\\circ', '\\dfrac{\\sqrt3}{2}'], ['\\cos30^\\circ', '\\dfrac{\\sqrt3}{2}'], ['\\tan45^\\circ', '1'], ['\\cos120^\\circ', '-\\dfrac{1}{2}'], ['\\sin120^\\circ', '\\dfrac{\\sqrt3}{2}'], ['\\cos90^\\circ', '0'], ['\\sin150^\\circ', '\\dfrac{1}{2}'], ['\\cos180^\\circ', '-1'], ['\\tan60^\\circ', '\\sqrt3'], ['\\cos45^\\circ', '\\dfrac{\\sqrt2}{2}']];
+        var vals = ['\\dfrac{1}{2}', '\\dfrac{\\sqrt3}{2}', '1', '-\\dfrac{1}{2}', '0', '-1', '\\sqrt3', '\\dfrac{\\sqrt2}{2}'];
+        var four = shuf(T).slice(0, 4);
+        return mk('Xét tính đúng sai của các mệnh đề sau:', four.map(function (t) { return function (ok) { var w = vals.filter(function (v) { return v !== t[1]; }); return { t: '$' + t[0] + '=' + (ok ? t[1] : pick(w)) + '$.', why: 'Giá trị đúng: $' + t[0] + '=' + t[1] + '$.' }; }; }), 'NB');
+    });
+})(QGEN);
 
 (function () {
     'use strict';
     var Q = window.QGEN, cur = [];
     function $(id) { return document.getElementById(id); }
     function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
-    function grades() { var s = {}; Q.GEN.forEach(function (g) { s[g.grade] = 1; }); return Object.keys(s).sort().reverse(); }
+    function LST() { var k = $('gn-kind'); return (k && k.value === 'TF') ? Q.TF : Q.GEN; }
+    function grades() { var s = {}; Q.GEN.concat(Q.TF).forEach(function (g) { s[g.grade] = 1; }); return Object.keys(s).sort().reverse(); }
     window.gnInit = function () {
         var p = $('add-method-gen'); if (!p || p.dataset.ok) return; p.dataset.ok = 1;
         p.innerHTML = '<p style="font-size:.95rem;color:#64748b;margin:0 0 10px">Chọn dạng toán, web tự sinh nhiều câu tương tự (tự tính đáp án, có lời giải). Cô xem lại rồi thêm vào đề hoặc lưu vào ngân hàng. <b style="color:#16a34a">✅ = web tự giải</b>. Dạng nào chưa có, cô cho em biết để bổ sung.</p>' +
             '<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:8px;margin-bottom:8px"><select class="form-input" id="gn-grade"></select><select class="form-input" id="gn-group"></select></div>' +
             '<select class="form-input" id="gn-type" style="margin-bottom:8px"></select>' +
-            '<div style="display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px;margin-bottom:8px"><label style="font-size:.85rem">Số câu<input type="number" id="gn-n" class="form-input" value="10" min="1" max="30"></label><label style="font-size:.85rem">Kiểu<select class="form-input" id="gn-kind"><option value="MCQ">Trắc nghiệm 4 đáp án</option><option value="SA">Trả lời ngắn</option></select></label><label style="font-size:.85rem">Bài / chương lưu vào<select class="form-input" id="gn-topic"></select></label></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:8px;margin-bottom:8px"><label style="font-size:.85rem">Số câu<input type="number" id="gn-n" class="form-input" value="10" min="1" max="30"></label><label style="font-size:.85rem">Kiểu<select class="form-input" id="gn-kind"><option value="MCQ">Trắc nghiệm 4 đáp án</option><option value="TF">Đúng/Sai (4 ý a, b, c, d)</option><option value="SA">Trả lời ngắn</option></select></label><label style="font-size:.85rem">Bài / chương lưu vào<select class="form-input" id="gn-topic"></select></label></div>' +
             '<button class="btn-start" style="width:100%;background:#2563eb" onclick="gnRun()">✨ Tạo câu tương tự</button>' +
             '<div id="gn-out" style="margin-top:12px"></div>' +
             '<div id="gn-act" style="display:none;margin-top:10px;gap:8px;flex-wrap:wrap"><button class="btn-start" style="background:#059669" onclick="gnAddExam()">➕ Thêm vào đề đang soạn</button> <button class="btn-start" style="background:#7c3aed" onclick="gnSaveBank()">💾 Lưu vào ngân hàng</button> <button class="btn-start" style="background:#64748b" onclick="gnKey()">📋 Bảng đáp án</button></div>';
         var gs = $('gn-grade'); gs.innerHTML = grades().map(function (g) { return '<option value="' + g + '">Lớp ' + g + '</option>'; }).join('');
-        gs.onchange = gnGroups; $('gn-group').onchange = gnTypes; gnGroups();
+        gs.onchange = gnGroups; $('gn-group').onchange = gnTypes; $('gn-kind').onchange = gnGroups; gnGroups();
         var tl = []; try { tl = getTopicsForGrade('all'); } catch (e) { }
         $('gn-topic').innerHTML = '<option value="">(chưa chọn)</option>' + tl.map(function (t) { return t.id ? '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>' : ''; }).join('');
     };
     function gnGroups() {
         var g = $('gn-grade').value, s = [];
-        Q.GEN.forEach(function (x) { if (String(x.grade) === g && s.indexOf(x.group) < 0) s.push(x.group); });
+        LST().forEach(function (x) { if (String(x.grade) === g && s.indexOf(x.group) < 0) s.push(x.group); });
         $('gn-group').innerHTML = s.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join(''); gnTypes();
     }
     function gnTypes() {
         var g = $('gn-grade').value, gr = $('gn-group').value;
-        var l = Q.GEN.filter(function (x) { return String(x.grade) === g && x.group === gr; });
+        var l = LST().filter(function (x) { return String(x.grade) === g && x.group === gr; });
         $('gn-type').innerHTML = (l.length > 1 ? '<option value="*">🔀 Trộn tất cả dạng trong nhóm này</option>' : '') + l.map(function (x) { return '<option value="' + x.id + '">' + esc(x.name) + '</option>'; }).join('');
     }
     function pool() {
         var g = $('gn-grade').value, gr = $('gn-group').value, t = $('gn-type').value;
-        return Q.GEN.filter(function (x) { return String(x.grade) === g && x.group === gr && (t === '*' || x.id === t); });
+        return LST().filter(function (x) { return String(x.grade) === g && x.group === gr && (t === '*' || x.id === t); });
     }
     function one(P, kind, seen) {
         for (var k = 0; k < 60; k++) {
             var g = P[Math.floor(Math.random() * P.length)];
             try {
                 var r = g.make(2);
+                if (kind === 'TF') { var ans = r.items.map(function (it) { return it.ok ? 'D' : 'S'; }).join(''), key = r.q + '|' + r.items.map(function (it) { return it.t; }).join('|'); if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'TF', q: r.q, options: r.items.map(function (it) { return it.t; }), ans: ans, exp: r.exp, fig: false }; }
                 if (kind === 'SA' && !r.sa) continue;
                 var b = Q.build4(r.correct, r.wrongs), key = r.q + '|' + r.correct;
                 if (seen[key]) continue; seen[key] = 1;
@@ -10890,7 +11048,7 @@ var QGEN = (function () {
     };
     function gnShow() {
         var h = cur.map(function (r, i) {
-            var ops = r.kind === 'MCQ' ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;margin:4px 0">' + r.options.map(function (o, j) { return '<div style="' + ('ABCD'[j] === r.ans ? 'font-weight:700;color:#16a34a' : '') + '">' + 'ABCD'[j] + '. ' + o + '</div>'; }).join('') + '</div>' : '';
+            var ops = r.kind === 'TF' ? '<div style="margin:4px 0">' + r.options.map(function (o, j) { var ok = r.ans[j] === 'D'; return '<div style="padding:2px 0"><b>' + 'abcd'[j] + ')</b> ' + o + ' <span style="font-weight:700;color:' + (ok ? '#16a34a' : '#dc2626') + '">[' + (ok ? 'Đúng' : 'Sai') + ']</span></div>'; }).join('') + '</div>' : r.kind === 'MCQ' ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;margin:4px 0">' + r.options.map(function (o, j) { return '<div style="' + ('ABCD'[j] === r.ans ? 'font-weight:700;color:#16a34a' : '') + '">' + 'ABCD'[j] + '. ' + o + '</div>'; }).join('') + '</div>' : '';
             return '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;background:#fff"><div style="display:flex;justify-content:space-between;font-size:.8rem;color:#64748b"><span>Câu ' + (i + 1) + ' · ' + r.level + ' · ' + esc(r.name) + ' <b style="color:#16a34a">✅ web tự giải</b></span><span><button onclick="gnRe(' + i + ')" title="Đổi câu khác">🔄</button> <button onclick="gnDel(' + i + ')" title="Bỏ câu">🗑</button></span></div><div style="margin-top:4px">' + r.q + '</div>' + ops +
                 (r.kind === 'SA' ? '<div style="font-weight:700;color:#16a34a">Đáp số: ' + esc(r.sa) + '</div>' : '') + '<details><summary style="cursor:pointer;color:#2563eb;font-size:.85rem">Lời giải</summary><div>' + r.exp + '</div></details></div>';
         }).join('');
@@ -10902,6 +11060,7 @@ var QGEN = (function () {
     function toQ(r, i) {
         var grade = $('gn-grade').value, topic = $('gn-topic').value, safe = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
         var ex = r.exp;
+        if (r.kind === 'TF') return { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'TF', q: r.q, options: r.options.slice(), ans: r.ans, ansOptions: r.ans.split(''), explanation: ex };
         if (r.kind === 'SA') return { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'SA', q: r.q, options: ['', '', '', ''], ans: r.sa, ansOptions: [], explanation: ex };
         return { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'MCQ', q: r.q, options: r.options.slice(), ans: r.ans, ansOptions: [], explanation: ex };
     }
@@ -10924,7 +11083,7 @@ var QGEN = (function () {
         if (ok) loadQuestionBank();
     };
     window.gnKey = function () {
-        var s = cur.map(function (r, i) { return (i + 1) + ': ' + (r.kind === 'MCQ' ? r.ans : r.sa); }).join('   ');
+        var s = cur.map(function (r, i) { return (i + 1) + ': ' + (r.kind === 'SA' ? r.sa : r.ans); }).join('   ');
         $('gn-out').insertAdjacentHTML('afterbegin', '<div style="background:#f0fdf4;border:1px solid #16a34a;border-radius:8px;padding:8px;margin-bottom:8px;font-weight:700">Đáp án: ' + esc(s) + '</div>');
     };
 })();
