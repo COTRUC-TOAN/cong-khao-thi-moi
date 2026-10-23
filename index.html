@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v102] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v104] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1166,7 +1166,7 @@
             }
         }
 
-        let examBank = []; let questionBank = [];
+        let examBank = []; let questionBank = []; let globalScoresData = [];
         let selectedQuestions = []; let directParsedQuestions = []; let directBatch = []; 
         const ANS_GUESSED = new Set(); // câu mà phần mềm tự điền đáp án mặc định (cần cô kiểm tra)
         let activeExam = null; let teacherPassAuth = ""; let currentGrade = 'all'; let currentTopic = 'all';
@@ -2398,7 +2398,8 @@ function removeQuestionFromSelected(qId) {
                     name: r['Họ tên'] || r.name || 'Ẩn danh',
                     sClass: String(r['Lớp'] || r.class || 'Tự do').trim(),
                     examTitle: String(r['Bài thi'] || r.examTitle || '---').trim(),
-                    totalScore: (r['Điểm số'] !== undefined && r['Điểm số'] !== null) ? r['Điểm số'] : (r.score !== undefined ? r.score : '0')
+                    totalScore: (r['Điểm số'] !== undefined && r['Điểm số'] !== null) ? r['Điểm số'] : (r.score !== undefined ? r.score : '0'),
+                    note: String(r['Ghi chú'] || '')
                 })).filter(r => r.name !== 'Ẩn danh');
 
                 const examFilter = document.getElementById('filter-score-exam');
@@ -2461,7 +2462,7 @@ function removeQuestionFromSelected(qId) {
                         <td><strong>${r.name}</strong></td>
                         <td style="text-align: center;">${r.sClass}</td>
                         <td>${r.examTitle}</td>
-                        <td style="text-align: center;"><span class="badge-score ${badgeClass}">${r.totalScore}</span></td>
+                        <td style="text-align: center;"><span class="badge-score ${badgeClass}">${r.totalScore}</span>${r.note ? ' <span title="' + String(r.note).replace(/"/g, '') + ' - điểm có thể sai, cô dùng nút Soi để khôi phục đáp án và chấm lại" style="color:#dc2626;font-weight:700;font-size:.8rem;white-space:nowrap">⚠️ ' + String(r.note).replace(/</g, '') + '</span>' : ''}</td>
                         <td style="text-align: center;">
                             ${examIdParam ? `<button type="button" onclick="viewStudentDetails('${examIdParam}', '${String(r.name).replace(/'/g, "\\'")}', '${r.sClass}')" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:5px 12px; border-radius:6px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-eye"></i> Xem</button>` : `<span style="color:#94a3b8; font-size:0.85rem;">---</span>`}
                         </td>
