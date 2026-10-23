@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v98] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v99] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -436,7 +436,8 @@
                 <button class="btn-t-tab" id="btn-t-exams" onclick="switchTeacherTab('exams')"><i class="fa-solid fa-list-check"></i> Quản Lý Đề Thi</button>
                 <button class="btn-t-tab" id="btn-t-creator" onclick="switchTeacherTab('creator')"><i class="fa-solid fa-wand-magic-sparkles"></i> Tạo & Soạn Đề Mới</button>
                 <button class="btn-t-tab" id="btn-t-room" onclick="switchTeacherTab('room')"><i class="fa-solid fa-chalkboard-user"></i> Phòng Dạy</button>
-                <button type="button" class="btn-t-tab" onclick="openChangePassModal()" style="margin-left: auto; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;"><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</button>
+                <button type="button" class="btn-t-tab" onclick="soiOpen()" style="margin-left: auto; background: #fff7ed; color: #9a3412; border: 1px solid #fdba74;"><i class="fa-solid fa-magnifying-glass"></i> Soi chấm điểm</button>
+                <button type="button" class="btn-t-tab" onclick="openChangePassModal()" style="margin-left: 8px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;"><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</button>
             </div>
 
             <!-- HỘP THOẠI ĐỔI MẬT KHẨU -->
@@ -11308,7 +11309,7 @@ var QGEN = (function () {
     function ensure() {
         if ($('soi-btn')) return;
         var b = document.createElement('button'); b.id = 'soi-btn'; b.textContent = '🔎 Soi chấm điểm'; b.title = 'Kiểm tra vì sao một em bị chấm sai';
-        b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9998;display:none;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font-size:12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)';
+        b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9998;display:none;padding:6px 10px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#334155;font-size:12px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)';
         b.onclick = open; document.body.appendChild(b);
         var m = document.createElement('div'); m.id = 'soi-modal'; m.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99999;align-items:flex-start;justify-content:center;overflow:auto;padding:16px';
         m.innerHTML = '<div style="background:#fff;border-radius:12px;max-width:880px;width:100%;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:1.05rem">🔎 Soi chấm điểm một học sinh</b><button onclick="document.getElementById(\'soi-modal\').style.display=\'none\'" style="font-size:1.2rem">✕</button></div>' +
