@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v105] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v110] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11034,6 +11034,542 @@ var QGEN = (function () {
         ['^', '=', '<', '>', '|', '\\int', '_'].forEach(function (s) { if (t.indexOf(s) >= 0) out['§' + s] = 1; });
         return out;
     }
+    // ===== (v107) Lô 1 – Toán 10 (KNTT): chương Hệ thức lượng trong tam giác + Phương pháp tọa độ trong mặt phẳng =====
+    (function (Q) {
+        var ri = Q.ri, pick = Q.pick, shuf = Q.shuf, F = Q.F, tex = Q.tex, M = Q.M, need = Q.need, fadd = Q.fadd, fsub = Q.fsub, fmul = Q.fmul, fdiv = Q.fdiv, fneg = Q.fneg, feq = Q.feq, gcd = Q.gcd, dec = Q.dec, toF = Q.toF;
+        var H10 = 'Hình học 10', GA = H10 + ' › Hệ thức lượng trong tam giác', GB = H10 + ' › Phương trình đường thẳng', GC = H10 + ' › Đường tròn trong mặt phẳng tọa độ', GD = H10 + ' › Ba đường conic', GV = H10 + ' › Vectơ và tọa độ';
+        function add(id, name, group, lv, make) { Q.GEN.push({ id: id, grade: 10, group: group, name: name, lv: lv, make: make }); }
+        function sqT(n) { var k = 1, m = n; for (var i = 2; i * i <= m; i++) while (m % (i * i) === 0) { m /= i * i; k *= i; } if (m === 1) return String(k); return (k === 1 ? '' : k) + '\\sqrt{' + m + '}'; }
+        function isSq(n) { var r = Math.round(Math.sqrt(n)); return r * r === n; }
+        // đa thức hai biến ax+by+c=0 dạng chuẩn (hệ số nguyên tối giản, hệ số đầu dương)
+        function lineN(a, b, c) { var g = gcd(gcd(a, b), c) || 1; a /= g; b /= g; c /= g; if (a < 0 || (a === 0 && b < 0)) { a = -a; b = -b; c = -c; } return [a, b, c]; }
+        function lineS(l) { var a = l[0], b = l[1], c = l[2], s = ''; if (a) s += (a === 1 ? '' : a === -1 ? '-' : a) + 'x'; if (b) s += (b > 0 && s ? '+' : '') + (b === 1 ? '' : b === -1 ? '-' : b) + 'y'; if (c) s += (c > 0 && s ? '+' : '') + c; return s + '=0'; }
+        function mc(q, cor, wr, ex, lv, sa) { var seen = {}; seen[cor.replace(/\s/g, '')] = 1; var w = []; wr.forEach(function (x) { var k = x.replace(/\s/g, ''); if (!seen[k]) { seen[k] = 1; w.push(x); } }); need(w.length >= 3); var o = { q: q, correct: M(cor), wrongs: w.map(M), exp: ex, level: lv || 'TH' }; if (sa !== undefined) o.sa = sa; return o; }
+        function pos(arr, v) { return arr.filter(function (z) { return !feq(z, v) && z.n > 0; }); }
+        function ptS(x, y) { return '(' + tex(x) + ';' + tex(y) + ')'; }
+        var P = ['A', 'B', 'C'];
+        // ---------- HỆ THỨC LƯỢNG ----------
+        var SPEC = [[0, '0', '1', '0'], [30, '\\dfrac{1}{2}', '\\dfrac{\\sqrt{3}}{2}', '\\dfrac{\\sqrt{3}}{3}'], [45, '\\dfrac{\\sqrt{2}}{2}', '\\dfrac{\\sqrt{2}}{2}', '1'], [60, '\\dfrac{\\sqrt{3}}{2}', '\\dfrac{1}{2}', '\\sqrt{3}'], [90, '1', '0', null]];
+        function neg(s) { return s === '0' ? '0' : '-' + s; }
+        add('l10_gtlg_bu', 'Giá trị lượng giác của góc đặc biệt, hai góc bù nhau', GA, 'NB', function () {
+            var row = pick(SPEC.slice(1, 4)), f = pick(['sin', 'cos', 'tan']), deg = row[0], obtuse = Math.random() < 0.6, ang = obtuse ? 180 - deg : deg, v;
+            var s = row[1], c = row[2], t = row[3];
+            if (f === 'sin') v = s; else if (f === 'cos') v = obtuse ? neg(c) : c; else v = obtuse ? neg(t) : t;
+            var all = [s, c, t, neg(s), neg(c), neg(t), '1', '0'].filter(function (z, i, a) { return a.indexOf(z) === i; });
+            var ex = obtuse ? 'Hai góc bù nhau: $\\sin(180^\\circ-\\alpha)=\\sin\\alpha$, $\\cos(180^\\circ-\\alpha)=-\\cos\\alpha$, $\\tan(180^\\circ-\\alpha)=-\\tan\\alpha$. Do đó $\\' + f + ' ' + ang + '^\\circ=' + (f === 'sin' ? '' : '-') + '\\' + f + ' ' + deg + '^\\circ=' + v + '$.' : 'Theo bảng giá trị lượng giác của góc đặc biệt, $\\' + f + ' ' + ang + '^\\circ=' + v + '$.';
+            return mc('Giá trị của $\\' + f + ' ' + ang + '^\\circ$ bằng', v, all, ex, 'NB');
+        });
+        // triples cho định lí côsin (cạnh nguyên)
+        var COS60 = [], COS120 = [];
+        for (var b0 = 1; b0 <= 15; b0++) for (var c0 = 1; c0 <= 15; c0++) { var t60 = b0 * b0 + c0 * c0 - b0 * c0, t120 = b0 * b0 + c0 * c0 + b0 * c0; if (isSq(t60) && b0 !== c0) COS60.push([b0, c0, Math.round(Math.sqrt(t60))]); if (isSq(t120)) COS120.push([b0, c0, Math.round(Math.sqrt(t120))]); }
+        add('l10_cosin_canh', 'Định lí côsin: tính cạnh khi biết hai cạnh và góc xen giữa', GA, 'TH', function () {
+            var A = pick([60, 120]), tr = pick(A === 60 ? COS60 : COS120), b = tr[0], c = tr[1], a = tr[2], sgn = A === 60 ? '-' : '+';
+            var ex = 'Theo định lí côsin: $a^2=b^2+c^2-2bc\\cos A=' + b + '^2+' + c + '^2-2\\cdot' + b + '\\cdot' + c + '\\cdot\\cos ' + A + '^\\circ=' + (a * a) + '$ nên $a=' + a + '$.';
+            return mc('Cho tam giác $ABC$ có $AB=' + c + '$, $AC=' + b + '$, $\\widehat{A}=' + A + '^\\circ$. Độ dài cạnh $BC$ bằng', String(a), [a * a, a + 1, a - 1, b + c, Math.abs(b - c) + 1, a + 2].map(String).filter(function (z) { return +z > 0; }), ex, 'TH', String(a));
+        });
+        add('l10_cosin_goc', 'Định lí côsin: tính góc (côsin của góc) khi biết ba cạnh', GA, 'TH', function () {
+            var a = ri(3, 12), b = ri(3, 12), c = ri(3, 12); need(a < b + c && b < a + c && c < a + b);
+            var kind = pick(['A', 'B', 'C']), x = kind === 'A' ? a : kind === 'B' ? b : c, y = kind === 'A' ? b : kind === 'B' ? a : a, z = kind === 'A' ? c : kind === 'B' ? c : b;
+            var v = F(y * y + z * z - x * x, 2 * y * z);
+            return mc('Cho tam giác $ABC$ có $BC=' + a + '$, $CA=' + b + '$, $AB=' + c + '$. Giá trị $\\cos ' + kind + '$ bằng', tex(v), [fneg(v), F(y * y + z * z - x * x, y * z), F(x * x + y * y - z * z, 2 * x * y), F(y * y + z * z + x * x, 2 * y * z), fadd(v, 1)].map(tex), 'Áp dụng hệ quả của định lí côsin: $\\cos ' + kind + '=\\dfrac{' + y + '^2+' + z + '^2-' + x + '^2}{2\\cdot' + y + '\\cdot' + z + '}=' + tex(v) + '$.', 'TH');
+        });
+        add('l10_sin_R', 'Định lí sin: bán kính đường tròn ngoại tiếp', GA, 'TH', function () {
+            var a = ri(2, 12), A = pick([30, 45, 60, 90, 120, 135, 150]); var den = { 30: 1, 150: 1, 90: 2, 45: 0, 135: 0, 60: 0, 120: 0 }[A];
+            function rad(k, m, d) { var n = k, dd = d; var g = gcd(n, dd); n /= g; dd /= g; var rt = '\\sqrt{' + m + '}'; var top = (n === 1 ? '' : n) + rt; return dd === 1 ? top : '\\dfrac{' + top + '}{' + dd + '}'; }
+            var Rs; if (A === 30 || A === 150) Rs = String(a); else if (A === 90) Rs = tex(F(a, 2)); else if (A === 45 || A === 135) Rs = rad(a, 2, 2); else Rs = rad(a, 3, 3);
+            var wr = [String(a * 2), tex(F(a, 2)), rad(a, 2, 2), rad(a, 3, 3), rad(a, 3, 2), rad(a, 2, 1), rad(a, 3, 1), String(a)];
+            return mc('Cho tam giác $ABC$ có $BC=' + a + '$, $\\widehat{A}=' + A + '^\\circ$. Bán kính $R$ của đường tròn ngoại tiếp tam giác $ABC$ bằng', Rs, wr, 'Theo định lí sin: $\\dfrac{BC}{\\sin A}=2R$ nên $R=\\dfrac{' + a + '}{2\\sin ' + A + '^\\circ}=' + Rs + '$.', 'TH');
+        });
+        var HER = [];
+        for (var a1 = 3; a1 <= 30; a1++) for (var b1 = a1; b1 <= 30; b1++) for (var c1 = b1; c1 <= 30; c1++) { if (a1 + b1 <= c1) continue; var p2 = (a1 + b1 + c1) * (-a1 + b1 + c1) * (a1 - b1 + c1) * (a1 + b1 - c1); if (p2 % 16 === 0 && isSq(p2 / 16) && !(a1 === b1 && b1 === c1)) HER.push([a1, b1, c1, Math.round(Math.sqrt(p2 / 16))]); }
+        add('l10_dientich', 'Diện tích tam giác, công thức Heron; bán kính nội tiếp, ngoại tiếp, đường cao', GA, 'VD', function () {
+            var t = pick(HER), a = t[0], b = t[1], c = t[2], S = t[3], p = (a + b + c) / 2, kind = pick(['S', 'r', 'R', 'ha']);
+            var q = 'Cho tam giác $ABC$ có $BC=' + a + '$, $CA=' + b + '$, $AB=' + c + '$. ', v, ex;
+            if (kind === 'S') { v = F(S); q += 'Diện tích tam giác $ABC$ bằng'; ex = 'Nửa chu vi $p=' + tex(F(2 * p, 2)) + '$. Công thức Heron: $S=\\sqrt{p(p-a)(p-b)(p-c)}=' + S + '$.'; }
+            else if (kind === 'r') { v = F(S * 2, a + b + c); q += 'Bán kính đường tròn nội tiếp tam giác bằng'; ex = '$p=' + p + '$, $S=' + S + '$ (Heron). Từ $S=pr$ suy ra $r=\\dfrac{S}{p}=' + tex(v) + '$.'; }
+            else if (kind === 'R') { v = F(a * b * c, 4 * S); q += 'Bán kính đường tròn ngoại tiếp tam giác bằng'; ex = '$S=' + S + '$ (Heron). Từ $S=\\dfrac{abc}{4R}$ suy ra $R=\\dfrac{abc}{4S}=' + tex(v) + '$.'; }
+            else { v = F(2 * S, a); q += 'Độ dài đường cao kẻ từ $A$ bằng'; ex = '$S=' + S + '$ (Heron). Từ $S=\\dfrac12 a h_a$ suy ra $h_a=\\dfrac{2S}{a}=' + tex(v) + '$.'; }
+            return { q: q, correct: M(tex(v)), wrongs: pos(Q.numWr(v, [F(S, 2), F(S * 2, 1)]), v).map(function (z) { return M(tex(z)); }), exp: ex, sa: dec(v), level: 'VD' };
+        });
+        add('l10_trungtuyen', 'Độ dài đường trung tuyến', GA, 'VD', function () {
+            var a = ri(3, 14), b = ri(3, 14), c = ri(3, 14); need(a < b + c && b < a + c && c < a + b); var v = F(2 * b * b + 2 * c * c - a * a, 4);
+            return { q: 'Cho tam giác $ABC$ có $BC=' + a + '$, $CA=' + b + '$, $AB=' + c + '$. Gọi $m_a$ là độ dài đường trung tuyến kẻ từ $A$. Giá trị $m_a^2$ bằng', correct: M(tex(v)), wrongs: pos(Q.numWr(v, [F(2 * b * b + 2 * c * c + a * a, 4), F(b * b + c * c - a * a, 4), F(2 * b * b + 2 * c * c - a * a, 2)]), v).map(function (z) { return M(tex(z)); }), exp: '$m_a^2=\\dfrac{2b^2+2c^2-a^2}{4}=\\dfrac{2\\cdot' + b + '^2+2\\cdot' + c + '^2-' + a + '^2}{4}=' + tex(v) + '$.', sa: dec(v), level: 'VD' };
+        });
+        // ---------- VECTƠ & TỌA ĐỘ ----------
+        add('l10_vt_toado', 'Tọa độ vectơ, trung điểm, trọng tâm, đỉnh hình bình hành', GV, 'NB', function () {
+            var x1 = ri(-6, 6), y1 = ri(-6, 6), x2 = ri(-6, 6), y2 = ri(-6, 6), x3 = ri(-6, 6), y3 = ri(-6, 6); need(x1 !== x2 || y1 !== y2); var kind = pick(['vec', 'mid', 'g', 'hbh']);
+            if (kind === 'vec') return mc('Trong mặt phẳng $Oxy$, cho $A(' + x1 + ';' + y1 + ')$, $B(' + x2 + ';' + y2 + ')$. Tọa độ vectơ $\\overrightarrow{AB}$ là', '(' + (x2 - x1) + ';' + (y2 - y1) + ')', ['(' + (x1 - x2) + ';' + (y1 - y2) + ')', '(' + (x1 + x2) + ';' + (y1 + y2) + ')', '(' + (y2 - y1) + ';' + (x2 - x1) + ')', '(' + (x2 + x1 - 0) + ';' + (y2 - y1) + ')'], '$\\overrightarrow{AB}=(x_B-x_A;y_B-y_A)=(' + (x2 - x1) + ';' + (y2 - y1) + ')$.', 'NB');
+            if (kind === 'mid') { var m = [F(x1 + x2, 2), F(y1 + y2, 2)]; return mc('Trong mặt phẳng $Oxy$, cho $A(' + x1 + ';' + y1 + ')$, $B(' + x2 + ';' + y2 + ')$. Tọa độ trung điểm $M$ của đoạn $AB$ là', ptS(m[0], m[1]), [ptS(F(x2 - x1, 2), F(y2 - y1, 2)), ptS(F(x1 + x2, 1), F(y1 + y2, 1)), ptS(F(x1 - x2, 2), F(y1 - y2, 2)), ptS(m[1], m[0]), ptS(fneg(m[0]), fneg(m[1]))], '$M\\left(\\dfrac{x_A+x_B}{2};\\dfrac{y_A+y_B}{2}\\right)=' + ptS(m[0], m[1]) + '$.', 'NB'); }
+            if (kind === 'g') { need((x1 + x2 + x3) % 3 === 0 && (y1 + y2 + y3) % 3 === 0); var gx = (x1 + x2 + x3) / 3, gy = (y1 + y2 + y3) / 3; return mc('Trong mặt phẳng $Oxy$, cho tam giác $ABC$ có $A(' + x1 + ';' + y1 + ')$, $B(' + x2 + ';' + y2 + ')$, $C(' + x3 + ';' + y3 + ')$. Tọa độ trọng tâm $G$ của tam giác $ABC$ là', ptS(F(gx), F(gy)), ['(' + (gx + 1) + ';' + gy + ')', '(' + gx + ';' + (gy - 1) + ')', '(' + (x1 + x2 + x3) + ';' + (y1 + y2 + y3) + ')', '(' + gy + ';' + gx + ')', '(' + (-gx) + ';' + (-gy) + ')'], '$G\\left(\\dfrac{x_A+x_B+x_C}{3};\\dfrac{y_A+y_B+y_C}{3}\\right)=(' + gx + ';' + gy + ')$.', 'NB'); }
+            need(!(x1 === x2 && x2 === x3) && !(y1 === y2 && y2 === y3)); var dx = x1 + x3 - x2, dy = y1 + y3 - y2;
+            return mc('Trong mặt phẳng $Oxy$, cho ba điểm $A(' + x1 + ';' + y1 + ')$, $B(' + x2 + ';' + y2 + ')$, $C(' + x3 + ';' + y3 + ')$. Tìm tọa độ điểm $D$ để $ABCD$ là hình bình hành.', '(' + dx + ';' + dy + ')', ['(' + (x2 + x3 - x1) + ';' + (y2 + y3 - y1) + ')', '(' + (x1 + x2 - x3) + ';' + (y1 + y2 - y3) + ')', '(' + (x2 - x1 + x3) + ';' + (y2 - y1 + y3) + ')', '(' + (-dx) + ';' + (-dy) + ')'], 'Hình bình hành $ABCD$ có $\\overrightarrow{AB}=\\overrightarrow{DC}$ nên $D=A+C-B=(' + dx + ';' + dy + ')$.', 'TH');
+        });
+        add('l10_vt_tichvh', 'Tích vô hướng, điều kiện vuông góc / cùng phương của hai vectơ', GV, 'TH', function () {
+            var a1 = ri(-5, 5), a2 = ri(-5, 5), b1 = ri(-5, 5), b2 = ri(-5, 5); need((a1 || a2) && (b1 || b2)); var kind = pick(['dot', 'perp', 'par']);
+            if (kind === 'dot') { var v = a1 * b1 + a2 * b2; return mc('Trong mặt phẳng $Oxy$, cho $\\vec a=(' + a1 + ';' + a2 + ')$ và $\\vec b=(' + b1 + ';' + b2 + ')$. Tích vô hướng $\\vec a\\cdot\\vec b$ bằng', String(v), [v + 2, v - 2, a1 * b2 + a2 * b1, -v, a1 * b2 - a2 * b1, a1 + b1 + a2 + b2].map(String), '$\\vec a\\cdot\\vec b=a_1b_1+a_2b_2=' + sg0(a1) + '\\cdot' + sg0(b1) + '+' + sg0(a2) + '\\cdot' + sg0(b2) + '=' + v + '$.', 'NB', String(v)); }
+            var m = ri(-5, 5), u = pick([1, 2, 3]);
+            if (kind === 'perp') { need(b2 !== 0 && a1 !== 0); /* a=(m;a2) ⟂ b=(b1;b2): m*b1+a2*b2=0 -> m = -a2*b2/b1 */ need(b1 !== 0 && (a2 * b2) % b1 === 0); var mm = -a2 * b2 / b1; return mc('Trong mặt phẳng $Oxy$, cho $\\vec a=(m;' + a2 + ')$ và $\\vec b=(' + b1 + ';' + b2 + ')$. Giá trị của $m$ để $\\vec a\\perp\\vec b$ là', String(mm), [mm + 1, -mm, mm - 1, a2 * b2 / (b1 || 1) | 0, mm + 2, mm * 2].map(String), '$\\vec a\\perp\\vec b\\Leftrightarrow \\vec a\\cdot\\vec b=0\\Leftrightarrow ' + b1 + 'm+' + sg0(a2 * b2) + '=0\\Leftrightarrow m=' + mm + '$.', 'TH', String(mm)); }
+            need(b1 !== 0 && b2 !== 0 && a2 !== 0 && (a2 * b1) % b2 === 0); var mp = F(a2 * b1, b2); /* a=(m;a2) cùng phương b=(b1;b2): m/b1=a2/b2 */ mp = F(a2 * b1, b2);
+            return { q: 'Trong mặt phẳng $Oxy$, cho $\\vec a=(m;' + a2 + ')$ và $\\vec b=(' + b1 + ';' + b2 + ')$. Giá trị của $m$ để $\\vec a$ cùng phương với $\\vec b$ là', correct: M(tex(mp)), wrongs: Q.numWr(mp, [F(a2 * b2, b1 || 1)]).filter(function (z) { return !feq(z, mp); }).map(function (z) { return M(tex(z)); }), exp: '$\\vec a$ cùng phương $\\vec b\\Leftrightarrow \\dfrac{m}{' + b1 + '}=\\dfrac{' + a2 + '}{' + b2 + '}\\Leftrightarrow m=' + tex(mp) + '$.', sa: dec(mp), level: 'TH' };
+        });
+        function sg0(n) { return n < 0 ? '(' + n + ')' : String(n); }
+        // ---------- ĐƯỜNG THẲNG ----------
+        add('l10_dt_pt', 'Viết phương trình tổng quát của đường thẳng (qua hai điểm; qua điểm và vuông góc/song song)', GB, 'TH', function () {
+            var x0 = ri(-5, 5), y0 = ri(-5, 5), kind = pick(['2pt', 'perp', 'par']), a, b, q, ex;
+            if (kind === '2pt') { var x1 = ri(-5, 5), y1 = ri(-5, 5); need(x1 !== x0 || y1 !== y0); var u = x1 - x0, v = y1 - y0; a = v; b = -u; q = 'Trong mặt phẳng $Oxy$, phương trình tổng quát của đường thẳng đi qua hai điểm $A(' + x0 + ';' + y0 + ')$, $B(' + x1 + ';' + y1 + ')$ là'; ex = '$\\overrightarrow{AB}=(' + u + ';' + v + ')$ nên đường thẳng có vectơ pháp tuyến $\\vec n=(' + v + ';' + (-u) + ')$ và đi qua $A$, do đó có phương trình '; }
+            else { var p = ri(-4, 4), r = ri(-4, 4); need(p || r); var ln = lineN(p, r, ri(-6, 6)); var dd = lineS(ln);
+                if (kind === 'perp') { a = ln[1]; b = -ln[0]; q = 'Trong mặt phẳng $Oxy$, phương trình tổng quát của đường thẳng đi qua $M(' + x0 + ';' + y0 + ')$ và vuông góc với đường thẳng $d: ' + dd + '$ là'; ex = 'Vectơ pháp tuyến của $d$ là $(' + ln[0] + ';' + ln[1] + ')$ nên đường thẳng cần tìm nhận $(' + a + ';' + b + ')$ làm vectơ pháp tuyến và đi qua $M$, do đó có phương trình '; }
+                else { a = ln[0]; b = ln[1]; q = 'Trong mặt phẳng $Oxy$, phương trình tổng quát của đường thẳng đi qua $M(' + x0 + ';' + y0 + ')$ và song song với đường thẳng $d: ' + dd + '$ là'; ex = 'Đường thẳng cần tìm có cùng vectơ pháp tuyến $(' + a + ';' + b + ')$ với $d$ và đi qua $M$, do đó có phương trình '; } }
+            need(a || b); var c = -(a * x0 + b * y0); var cor = lineN(a, b, c);
+            var wr = [lineN(a, b, -c), lineN(b, -a, c), lineN(a, -b, c), lineN(a, b, c + 1), lineN(-b, a, -(-b * x0 + a * y0)), lineN(b, a, -(b * x0 + a * y0))].map(lineS);
+            return mc(q, lineS(cor), wr, ex + M(lineS(cor)) + '.', 'TH');
+        });
+        add('l10_dt_giao', 'Vị trí tương đối của hai đường thẳng; tìm giao điểm', GB, 'TH', function () {
+            var a1 = ri(-4, 4), b1 = ri(-4, 4), c1 = ri(-6, 6), a2 = ri(-4, 4), b2 = ri(-4, 4), c2 = ri(-6, 6); need((a1 || b1) && (a2 || b2)); var D = a1 * b2 - a2 * b1; need(D !== 0);
+            var x = F(b1 * c2 - b2 * c1, D), y = F(c1 * a2 - c2 * a1, D); var l1 = lineS([a1, b1, c1]), l2 = lineS([a2, b2, c2]);
+            return mc('Trong mặt phẳng $Oxy$, tọa độ giao điểm của hai đường thẳng $d_1: ' + l1 + '$ và $d_2: ' + l2 + '$ là', ptS(x, y), [ptS(y, x), ptS(fneg(x), y), ptS(x, fneg(y)), ptS(fadd(x, 1), y), ptS(x, fadd(y, 1)), ptS(fneg(x), fneg(y))], 'Giải hệ $\\begin{cases}' + l1.replace('=0', '') + '=0\\\\' + l2.replace('=0', '') + '=0\\end{cases}$ được $x=' + tex(x) + '$, $y=' + tex(y) + '$.', 'TH');
+        });
+        add('l10_dt_vitri', 'Xét vị trí tương đối (song song, trùng, cắt, vuông góc) của hai đường thẳng với tham số $m$', GB, 'VD', function () {
+            var a = ri(1, 4), b = ri(1, 4), kind = pick(['par', 'perp']); var c1 = ri(-5, 5); var m; if (kind === 'par') need(c1 !== 0);
+            if (kind === 'par') { /* d1: a x + b y + c1=0; d2: m x + 2b' ...: d2: m x + k b y + c2 =0 ; song song khi m = k a, c2 != k c1 */ var k = pick([2, 3, -1, -2]); var c2 = k * c1 + pick([1, 2, -1, -3]); m = k * a; return mc('Trong mặt phẳng $Oxy$, cho $d_1: ' + lineS([a, b, c1]) + '$ và $d_2: mx' + (k * b < 0 ? (k * b === -1 ? '-' : k * b) : '+' + (k * b === 1 ? '' : k * b)) + 'y' + (c2 < 0 ? c2 : '+' + c2) + '=0$. Giá trị của $m$ để $d_1\\parallel d_2$ là', String(m), [m + 1, -m, m - 1, a * b, m * 2, k].map(String), 'Hai đường thẳng song song khi $\\dfrac{m}{' + a + '}=\\dfrac{' + k * b + '}{' + b + '}\\ne\\dfrac{' + c2 + '}{' + c1 + '}$. Từ $\\dfrac{m}{' + a + '}=' + k + '$ ta được $m=' + m + '$ (thỏa điều kiện khác nhau của hệ số tự do).', 'VD', String(m)); }
+            /* vuông góc: n1=(a,b), n2=(m,b2): a m + b b2 = 0 → m = -b b2/a */ var b2 = a * ri(1, 3); m = -b * b2 / a; var c2b = ri(-5, 5);
+            return mc('Trong mặt phẳng $Oxy$, cho $d_1: ' + lineS([a, b, c1]) + '$ và $d_2: mx+' + b2 + 'y' + (c2b < 0 ? c2b : c2b > 0 ? '+' + c2b : '') + '=0$. Giá trị của $m$ để $d_1\\perp d_2$ là', String(m), [-m, m + 1, m - 1, b * b2, a * b2 / (b || 1) | 0, 0].map(String), 'Vectơ pháp tuyến $\\vec n_1=(' + a + ';' + b + ')$, $\\vec n_2=(m;' + b2 + ')$. $d_1\\perp d_2\\Leftrightarrow \\vec n_1\\cdot\\vec n_2=0\\Leftrightarrow ' + (a === 1 ? '' : a) + 'm+' + b * b2 + '=0\\Leftrightarrow m=' + m + '$.', 'VD', String(m));
+        });
+        var PY = [[3, 4, 5], [4, 3, 5], [6, 8, 10], [5, 12, 13], [8, 6, 10], [12, 5, 13]];
+        add('l10_dt_khoangcach', 'Khoảng cách từ một điểm đến đường thẳng; khoảng cách giữa hai đường thẳng song song', GB, 'VD', function () {
+            var py = pick(PY), a = py[0] * pick([1, -1]), b = py[1] * pick([1, -1]), h = py[2], c = ri(-9, 9), x0 = ri(-6, 6), y0 = ri(-6, 6), kind = pick(['pt', 'par']);
+            if (kind === 'pt') { var num = Math.abs(a * x0 + b * y0 + c); need(num > 0); var v = F(num, h); return { q: 'Trong mặt phẳng $Oxy$, khoảng cách từ điểm $M(' + x0 + ';' + y0 + ')$ đến đường thẳng $\\Delta: ' + lineS([a, b, c]) + '$ bằng', correct: M(tex(v)), wrongs: pos(Q.numWr(v, [F(num, 1), F(num, a * a + b * b), F(Math.abs(a * x0 + b * y0 - c), h)]), v).map(function (z) { return M(tex(z)); }), exp: '$d(M,\\Delta)=\\dfrac{|' + a + '\\cdot' + sg0(x0) + '+' + sg0(b) + '\\cdot' + sg0(y0) + '+' + sg0(c) + '|}{\\sqrt{' + a + '^2+' + b + '^2}}=\\dfrac{' + num + '}{' + h + '}=' + tex(v) + '$.', sa: dec(v), level: 'TH' }; }
+            var c2 = c + pick([-10, -7, -5, 5, 7, 10]); var v2 = F(Math.abs(c2 - c), h);
+            return { q: 'Trong mặt phẳng $Oxy$, khoảng cách giữa hai đường thẳng song song $\\Delta_1: ' + lineS([a, b, c]) + '$ và $\\Delta_2: ' + lineS([a, b, c2]) + '$ bằng', correct: M(tex(v2)), wrongs: pos(Q.numWr(v2, [F(Math.abs(c2 - c), 1), F(Math.abs(c2 + c), h)]), v2).map(function (z) { return M(tex(z)); }), exp: 'Lấy một điểm trên $\\Delta_1$ rồi tính khoảng cách đến $\\Delta_2$; kết quả $d=\\dfrac{|c_2-c_1|}{\\sqrt{a^2+b^2}}=\\dfrac{' + Math.abs(c2 - c) + '}{' + h + '}=' + tex(v2) + '$.', sa: dec(v2), level: 'VD' };
+        });
+        // ---------- ĐƯỜNG TRÒN ----------
+        function sub0(v, t) { return t + (v > 0 ? '-' + v : v < 0 ? '+' + (-v) : ''); }
+        function sq1(v, t) { return v === 0 ? t + '^2' : '(' + sub0(v, t) + ')^2'; }
+        function circ(a, b, r2) { return sq1(a, 'x') + '+' + sq1(b, 'y') + '=' + r2; }
+        function circGen(a, b, r2) { var cc = a * a + b * b - r2; var s = 'x^2+y^2'; if (a) s += (-2 * a > 0 ? '+' : '-') + (Math.abs(2 * a) === 1 ? '' : Math.abs(2 * a)) + 'x'; if (b) s += (-2 * b > 0 ? '+' : '-') + (Math.abs(2 * b) === 1 ? '' : Math.abs(2 * b)) + 'y'; if (cc) s += (cc > 0 ? '+' : '-') + Math.abs(cc); return s + '=0'; }
+        add('l10_dtron_tam_bk', 'Tìm tâm và bán kính của đường tròn từ phương trình', GC, 'TH', function () {
+            var a = ri(-5, 5), b = ri(-5, 5), r = ri(1, 7), kind = pick(['std', 'gen']), q;
+            q = 'Trong mặt phẳng $Oxy$, đường tròn $(C): ' + (kind === 'std' ? circ(a, b, r * r) : circGen(a, b, r * r)) + '$ có tâm $I$ và bán kính $R$ lần lượt là';
+            var cor = 'I(' + a + ';' + b + '),\\ R=' + r;
+            return mc(q, cor, ['I(' + (-a) + ';' + (-b) + '),\\ R=' + r, 'I(' + a + ';' + b + '),\\ R=' + r * r, 'I(' + (-a) + ';' + (-b) + '),\\ R=' + r * r, 'I(' + b + ';' + a + '),\\ R=' + r, 'I(' + (2 * a) + ';' + (2 * b) + '),\\ R=' + r], kind === 'std' ? 'Phương trình $(x-a)^2+(y-b)^2=R^2$ có tâm $I(a;b)$, bán kính $R$. Ở đây $I(' + a + ';' + b + ')$, $R=\\sqrt{' + r * r + '}=' + r + '$.' : 'Viết dạng $x^2+y^2-2ax-2by+c=0$: tâm $I(a;b)=(' + a + ';' + b + ')$, $R=\\sqrt{a^2+b^2-c}=' + r + '$.', 'TH');
+        });
+        add('l10_dtron_viet_pt', 'Viết phương trình đường tròn (biết tâm và bán kính / tâm và đi qua một điểm / đường kính)', GC, 'TH', function () {
+            var a = ri(-5, 5), b = ri(-5, 5), kind = pick(['r', 'pt', 'dk']), q, r2, ex;
+            if (kind === 'r') { var r = ri(1, 6); r2 = r * r; q = 'Phương trình đường tròn có tâm $I(' + a + ';' + b + ')$ và bán kính $R=' + r + '$ là'; ex = '$(x-a)^2+(y-b)^2=R^2$ với $a=' + a + '$, $b=' + b + '$, $R^2=' + r2 + '$.'; }
+            else if (kind === 'pt') { var dx = ri(-4, 4), dy = ri(-4, 4); need(dx || dy); r2 = dx * dx + dy * dy; q = 'Phương trình đường tròn có tâm $I(' + a + ';' + b + ')$ và đi qua điểm $A(' + (a + dx) + ';' + (b + dy) + ')$ là'; ex = 'Bán kính $R^2=IA^2=' + dx * dx + '+' + dy * dy + '=' + r2 + '$. Phương trình: ' + M(circ(a, b, r2)) + '.'; }
+            else { var ex1 = ri(-4, 4), ey1 = ri(-4, 4); var x1 = a + ex1, y1 = b + ey1, x2 = a - ex1, y2 = b - ey1; need(ex1 || ey1); r2 = ex1 * ex1 + ey1 * ey1; q = 'Phương trình đường tròn đường kính $AB$ với $A(' + x1 + ';' + y1 + ')$, $B(' + x2 + ';' + y2 + ')$ là'; ex = 'Tâm là trung điểm $AB$: $I(' + a + ';' + b + ')$. Bán kính $R^2=IA^2=' + r2 + '$. Phương trình: ' + M(circ(a, b, r2)) + '.'; }
+            need(r2 > 0); var cor = circ(a, b, r2);
+            return mc(q, cor, [circ(-a, -b, r2), circ(a, b, Math.sqrt(r2) % 1 === 0 ? Math.sqrt(r2) : r2 + 1), circ(b, a, r2), circ(a, -b, r2), circ(-a, b, r2), circ(a, b, r2 + 2)], ex, 'TH');
+        });
+        add('l10_dtron_tieptuyen', 'Phương trình tiếp tuyến của đường tròn tại một điểm thuộc đường tròn', GC, 'VD', function () {
+            var py = pick([[3, 4, 5], [4, 3, 5], [-3, 4, 5], [3, -4, 5], [-4, 3, 5], [0, 5, 5], [5, 0, 5], [6, 8, 10], [8, 6, 10], [-6, 8, 10]]); var a = ri(-4, 4), b = ri(-4, 4), r2 = py[2] * py[2];
+            var u = py[0], v = py[1], x0 = a + u, y0 = b + v; var cor = lineN(u, v, -(u * x0 + v * y0)); var cs = lineS(cor);
+            var wr = [lineN(v, -u, -(v * x0 - u * y0)), lineN(u, v, -(u * a + v * b)), lineN(u, -v, -(u * x0 - v * y0)), lineN(u, v, (u * x0 + v * y0)), lineN(v, u, -(v * x0 + u * y0))].map(lineS);
+            return mc('Trong mặt phẳng $Oxy$, tiếp tuyến của đường tròn $(C): ' + circ(a, b, r2) + '$ tại điểm $M(' + x0 + ';' + y0 + ')$ có phương trình là', cs.replace('=0', '') + '=0', wr, 'Đường tròn có tâm $I(' + a + ';' + b + ')$, $\\overrightarrow{IM}=(' + u + ';' + v + ')$. Tiếp tuyến tại $M$ đi qua $M$ và nhận $\\overrightarrow{IM}$ làm vectơ pháp tuyến: $' + (u === 0 ? '' : u + '(' + sub0(x0, 'x') + ')') + (v === 0 ? '' : (v < 0 ? '-' + (-v) : (u !== 0 ? '+' : '') + v) + '(' + sub0(y0, 'y') + ')') + '=0$, hay ' + M(cs) + '.', 'VD');
+        });
+        // ---------- CONIC ----------
+        var EL = [[5, 3], [5, 4], [10, 6], [10, 8], [13, 5], [13, 12], [17, 8], [15, 9], [25, 7], [20, 16]];
+        add('l10_elip', 'Elip: độ dài trục, tiêu cự, tiêu điểm, tâm sai', GD, 'TH', function () {
+            var e = pick(EL), a = e[0], b = e[1], c = Math.round(Math.sqrt(a * a - b * b)), kind = pick(['truc', 'tc', 'td', 'e']); var eq = '\\dfrac{x^2}{' + a * a + '}+\\dfrac{y^2}{' + b * b + '}=1';
+            var q, cor, wr, ex;
+            if (kind === 'truc') { q = 'Trong mặt phẳng $Oxy$, elip $(E): ' + eq + '$ có độ dài trục lớn bằng'; cor = String(2 * a); wr = [a, 2 * b, b, a * a, 2 * c, 2 * a + 2].map(String); ex = 'Ta có $a^2=' + a * a + '$, nên $a=' + a + '$. Độ dài trục lớn là $2a=' + 2 * a + '$.'; }
+            else if (kind === 'tc') { q = 'Trong mặt phẳng $Oxy$, elip $(E): ' + eq + '$ có tiêu cự bằng'; cor = String(2 * c); wr = [c, 2 * a, 2 * b, c * c, a - b, 2 * c + 2].map(String); ex = '$a^2=' + a * a + '$, $b^2=' + b * b + '$, $c^2=a^2-b^2=' + c * c + '$ nên $c=' + c + '$. Tiêu cự $F_1F_2=2c=' + 2 * c + '$.'; }
+            else if (kind === 'td') { q = 'Trong mặt phẳng $Oxy$, elip $(E): ' + eq + '$ có các tiêu điểm là'; cor = 'F_1(-' + c + ';0),\\ F_2(' + c + ';0)'; wr = ['F_1(0;-' + c + '),\\ F_2(0;' + c + ')', 'F_1(-' + a + ';0),\\ F_2(' + a + ';0)', 'F_1(-' + b + ';0),\\ F_2(' + b + ';0)', 'F_1(-' + c * c + ';0),\\ F_2(' + c * c + ';0)']; ex = '$c^2=a^2-b^2=' + c * c + '$, $c=' + c + '$. Do $a>b$ nên tiêu điểm nằm trên $Ox$: $F_1(-' + c + ';0)$, $F_2(' + c + ';0)$.'; }
+            else { var ev = F(c, a); q = 'Trong mặt phẳng $Oxy$, elip $(E): ' + eq + '$ có tâm sai $e$ bằng'; cor = tex(ev); wr = [tex(F(a, c)), tex(F(b, a)), tex(F(c, b)), tex(F(c * c, a * a)), tex(F(a - b, a))]; ex = '$c^2=a^2-b^2=' + c * c + '$, $c=' + c + '$, tâm sai $e=\\dfrac{c}{a}=' + tex(ev) + '$.'; }
+            return mc(q, cor, wr, ex, 'TH', kind === 'e' ? dec(F(c, a)) : (kind === 'td' ? undefined : cor));
+        });
+        var HY = [[3, 4, 5], [4, 3, 5], [5, 12, 13], [12, 5, 13], [6, 8, 10], [8, 6, 10], [8, 15, 17], [15, 8, 17]];
+        add('l10_hypebol', 'Hypebol: tiêu cự, tâm sai, tiệm cận, độ dài trục', GD, 'TH', function () {
+            var h = pick(HY), a = h[0], b = h[1], c = h[2], kind = pick(['tc', 'tn', 'e', 'tructhuc']); var eq = '\\dfrac{x^2}{' + a * a + '}-\\dfrac{y^2}{' + b * b + '}=1', q, cor, wr, ex;
+            if (kind === 'tc') { q = 'Trong mặt phẳng $Oxy$, hypebol $(H): ' + eq + '$ có tiêu cự bằng'; cor = String(2 * c); wr = [c, 2 * a, 2 * b, c * c, a + b, 2 * c + 2].map(String); ex = '$a^2=' + a * a + '$, $b^2=' + b * b + '$, $c^2=a^2+b^2=' + c * c + '$ nên $c=' + c + '$. Tiêu cự $=2c=' + 2 * c + '$.'; }
+            else if (kind === 'tn') { var s = tex(F(b, a)); q = 'Trong mặt phẳng $Oxy$, hypebol $(H): ' + eq + '$ có các đường tiệm cận là'; cor = 'y=\\pm ' + (s === '1' ? '' : s) + 'x'; wr = ['y=\\pm ' + tex(F(a, b)) + 'x', 'y=\\pm ' + tex(F(b * b, a * a)) + 'x', 'y=\\pm ' + tex(F(c, a)) + 'x', 'y=\\pm ' + tex(F(a, c)) + 'x']; ex = 'Tiệm cận của hypebol $\\dfrac{x^2}{a^2}-\\dfrac{y^2}{b^2}=1$ là $y=\\pm\\dfrac{b}{a}x=\\pm' + s + 'x$ (với $a=' + a + '$, $b=' + b + '$).'; }
+            else if (kind === 'e') { var ev = F(c, a); q = 'Trong mặt phẳng $Oxy$, hypebol $(H): ' + eq + '$ có tâm sai $e$ bằng'; cor = tex(ev); wr = [tex(F(a, c)), tex(F(b, a)), tex(F(c, b)), tex(F(b, c)), tex(F(c * c, a * a))]; ex = '$c^2=a^2+b^2=' + c * c + '$, $c=' + c + '$, $e=\\dfrac{c}{a}=' + tex(ev) + '$.'; }
+            else { q = 'Trong mặt phẳng $Oxy$, hypebol $(H): ' + eq + '$ có độ dài trục thực bằng'; cor = String(2 * a); wr = [a, 2 * b, b, a * a, 2 * c, 2 * a + 2].map(String); ex = 'Trục thực nằm trên $Ox$, $a^2=' + a * a + '$ nên $a=' + a + '$, độ dài trục thực là $2a=' + 2 * a + '$.'; }
+            return mc(q, cor, wr, ex, 'TH', (kind === 'tc' || kind === 'tructhuc') ? cor : (kind === 'e' ? dec(F(c, a)) : undefined));
+        });
+        add('l10_parabol_conic', 'Parabol (conic): tiêu điểm, đường chuẩn, tham số tiêu', GD, 'TH', function () {
+            var p = ri(1, 9), kind = pick(['td', 'dc', 'p']); var eq = 'y^2=' + (2 * p) + 'x', q, cor, wr, ex;
+            if (kind === 'td') { var f = F(p, 2); q = 'Trong mặt phẳng $Oxy$, parabol $(P): ' + eq + '$ có tiêu điểm là'; cor = 'F(' + tex(f) + ';0)'; wr = ['F(' + tex(fneg(f)) + ';0)', 'F(' + p + ';0)', 'F(0;' + tex(f) + ')', 'F(' + 2 * p + ';0)', 'F(' + tex(F(p, 4)) + ';0)']; ex = 'Dạng $y^2=2px$ với $p=' + p + '$, tiêu điểm $F\\left(\\dfrac{p}{2};0\\right)=(' + tex(f) + ';0)$.'; }
+            else if (kind === 'dc') { var f2 = F(p, 2); q = 'Trong mặt phẳng $Oxy$, parabol $(P): ' + eq + '$ có đường chuẩn là'; cor = 'x=' + tex(fneg(f2)); wr = ['x=' + tex(f2), 'x=-' + p, 'y=' + tex(fneg(f2)), 'x=-' + 2 * p, 'y=' + tex(f2)]; ex = 'Dạng $y^2=2px$ với $p=' + p + '$, đường chuẩn $x=-\\dfrac{p}{2}=' + tex(fneg(f2)) + '$.'; }
+            else { q = 'Trong mặt phẳng $Oxy$, parabol $(P): y^2=' + (2 * p) + 'x$ có tham số tiêu $p$ bằng'; cor = String(p); wr = [2 * p, p * p, F(p, 2), p + 1, p * 4].map(function (z) { return typeof z === 'number' ? String(z) : tex(z); }); ex = 'So sánh với $y^2=2px$: $2p=' + 2 * p + '$ nên $p=' + p + '$.'; }
+            return mc(q, cor, wr, ex, 'TH', kind === 'p' ? String(p) : undefined);
+        });
+    })(Q);
+    // ===== (v108) Lô 2 – Toán 10 (thống kê, xác suất, tổ hợp, hàm số, phương trình, tập hợp) + Toán 12 (đạo hàm ứng dụng, thống kê ghép nhóm, xác suất có điều kiện, Oxyz góc) =====
+    (function (Q) {
+        var ri = Q.ri, pick = Q.pick, shuf = Q.shuf, F = Q.F, tex = Q.tex, M = Q.M, need = Q.need, fadd = Q.fadd, fsub = Q.fsub, fmul = Q.fmul, fdiv = Q.fdiv, fneg = Q.fneg, feq = Q.feq, gcd = Q.gcd, dec = Q.dec, toF = Q.toF, C = Q.C, A = Q.A, fact = Q.fact;
+        function add(id, grade, group, name, lv, make) { Q.GEN.push({ id: id, grade: grade, group: group, name: name, lv: lv, make: make }); }
+        function pos(arr, v) { return arr.filter(function (z) { return !feq(z, v) && z.n > 0; }); }
+        function pw(v, extra) { var c = (extra || []).slice(); for (var a = -3; a <= 3; a++) for (var b = -3; b <= 3; b++) { var dd = v.d + b; if (dd > 0 && (a || b)) c.push(F(v.n + a, dd)); } c.push(fsub(F(1, 1), v)); c.push(F(v.d, v.n || 1)); var seen = {}; return c.filter(function (z) { var k = z.n + '/' + z.d; if (seen[k] || !(z.n > 0 && z.n < z.d) || feq(z, v)) return false; seen[k] = 1; return true; }); }
+        function nz(arr, v) { return arr.filter(function (z) { return !feq(z, v); }); }
+        function tx(arr) { return arr.map(function (z) { return M(tex(z)); }); }
+        function mc(q, cor, wr, ex, lv, sa) { var seen = {}; seen[cor.replace(/\s/g, '')] = 1; var w = []; wr.forEach(function (x) { var k = String(x).replace(/\s/g, ''); if (!seen[k]) { seen[k] = 1; w.push(String(x)); } }); need(w.length >= 3); var o = { q: q, correct: M(cor), wrongs: w.map(M), exp: ex, level: lv || 'TH' }; if (sa !== undefined) o.sa = sa; return o; }
+        function fr(v, ex, q, wr, lv, sa) { var seen = {}; seen[tex(v)] = 1; wr = wr.filter(function (z) { var k = tex(z); if (seen[k]) return false; seen[k] = 1; return true; }); need(wr.length >= 3); return { q: q, correct: M(tex(v)), wrongs: tx(wr), exp: ex, sa: sa === undefined ? dec(v) : sa, level: lv || 'TH' }; }
+        function sg(n) { return n < 0 ? '(' + n + ')' : String(n); }
+        function lnS(a, b, t) { t = t || 'x'; var s = ''; if (a) s += (a === 1 ? '' : a === -1 ? '-' : a) + t; if (b) s += (b > 0 && s ? '+' : '') + b; return s || '0'; }
+        function median(arr) { var n = arr.length, m = Math.floor(n / 2); return n % 2 ? F(arr[m]) : F(arr[m - 1] + arr[m], 2); }
+        function quart(sorted) { var n = sorted.length, h = Math.floor(n / 2); return { q1: median(sorted.slice(0, h)), q2: median(sorted), q3: median(sorted.slice(n - h)) }; }
+        var D10 = 'Đại số 10';
+        // ---------- THỐNG KÊ ----------
+        add('l10_tke_so', 10, D10 + ' › Thống kê', 'Số trung bình, trung vị, tứ phân vị, khoảng biến thiên, khoảng tứ phân vị của mẫu số liệu', 'TH', function () {
+            var n = ri(7, 11), data = []; for (var i = 0; i < n; i++) data.push(ri(2, 30)); need(new Set(data).size >= n - 2);
+            var s = data.slice().sort(function (a, b) { return a - b; }), Qs = quart(s), sum = data.reduce(function (a, b) { return a + b; }, 0);
+            var kind = pick(['tb', 'tv', 'q1', 'q3', 'iqr', 'rng']), name, v, ex;
+            var srt = s.join('; ');
+            if (kind === 'tb') { v = F(sum, n); name = 'Số trung bình cộng'; ex = 'Tổng các giá trị bằng $' + sum + '$, số giá trị $n=' + n + '$ nên số trung bình $\\bar x=\\dfrac{' + sum + '}{' + n + '}=' + tex(v) + '$.'; }
+            else if (kind === 'tv') { v = Qs.q2; name = 'Trung vị'; ex = 'Sắp xếp: ' + srt + '. Trung vị $Q_2=' + tex(v) + '$.'; }
+            else if (kind === 'q1') { v = Qs.q1; name = 'Tứ phân vị thứ nhất $Q_1$'; ex = 'Sắp xếp: ' + srt + '. $Q_1$ là trung vị của nửa số liệu bên trái $Q_2$, bằng $' + tex(v) + '$.'; }
+            else if (kind === 'q3') { v = Qs.q3; name = 'Tứ phân vị thứ ba $Q_3$'; ex = 'Sắp xếp: ' + srt + '. $Q_3$ là trung vị của nửa số liệu bên phải $Q_2$, bằng $' + tex(v) + '$.'; }
+            else if (kind === 'iqr') { v = fsub(Qs.q3, Qs.q1); name = 'Khoảng tứ phân vị $\\Delta_Q$'; ex = 'Sắp xếp: ' + srt + '. $Q_1=' + tex(Qs.q1) + '$, $Q_3=' + tex(Qs.q3) + '$ nên $\\Delta_Q=Q_3-Q_1=' + tex(v) + '$.'; }
+            else { v = F(s[n - 1] - s[0]); name = 'Khoảng biến thiên'; ex = 'Giá trị lớn nhất $' + s[n - 1] + '$, nhỏ nhất $' + s[0] + '$ nên khoảng biến thiên $R=' + (s[n - 1] - s[0]) + '$.'; }
+            need(v.n > 0);
+            return fr(v, ex, name + ' của mẫu số liệu $' + data.join(';\\ ') + '$ là', pos(Q.numWr(v, [Qs.q1, Qs.q3, Qs.q2, F(sum, n), F(s[n - 1] - s[0])]), v), 'TH');
+        });
+        add('l10_phuongsai', 10, D10 + ' › Thống kê', 'Phương sai và độ lệch chuẩn của mẫu số liệu', 'VD', function () {
+            var n = pick([4, 5, 6]), data = []; var m0 = ri(5, 12), dv = [], dsum = 0; for (var i = 0; i < n - 1; i++) { var dd0 = ri(-4, 4); dv.push(dd0); dsum += dd0; } dv.push(-dsum); need(Math.abs(dsum) <= 5 && dv.some(function (x) { return x !== 0; })); for (var i = 0; i < n; i++) data.push(m0 + dv[i]); var sum = data.reduce(function (a, b) { return a + b; }, 0); data = shuf(data);
+            var m = sum / n, ss = data.reduce(function (a, x) { return a + (x - m) * (x - m); }, 0), v = F(ss, n);
+            var sq = 0; data.forEach(function (x) { sq += x * x; });
+            return fr(v, 'Số trung bình $\\bar x=' + m + '$. Phương sai $s^2=\\dfrac{1}{n}\\sum (x_i-\\bar x)^2=\\dfrac{' + ss + '}{' + n + '}=' + tex(v) + '$.', 'Phương sai của mẫu số liệu $' + data.join(';\\ ') + '$ là', pos(Q.numWr(v, [F(ss, n - 1), F(sq, n), F(ss, 1), F(sum, n)]), v), 'VD');
+        });
+        // ---------- XÁC SUẤT ----------
+        add('l10_xs_codien', 10, D10 + ' › Xác suất', 'Xác suất cổ điển (gieo xúc xắc, chọn bi, chọn người)', 'TH', function () {
+            var kind = pick(['xx', 'bi', 'nguoi']), v, q, ex;
+            if (kind === 'xx') { var s = ri(3, 11), cnt = 0; for (var i = 1; i <= 6; i++) for (var j = 1; j <= 6; j++) if (i + j === s) cnt++; v = F(cnt, 36); q = 'Gieo đồng thời hai con xúc xắc cân đối, đồng chất. Xác suất để tổng số chấm trên hai con xúc xắc bằng $' + s + '$ là'; ex = 'Không gian mẫu có $6\\cdot6=36$ phần tử. Có $' + cnt + '$ kết quả thuận lợi nên xác suất bằng $\\dfrac{' + cnt + '}{36}=' + tex(v) + '$.'; }
+            else if (kind === 'bi') { var r = ri(3, 7), b = ri(3, 7), tot = r + b, k = pick(['cm', 'kh']); var all = C(tot, 2); var fav = k === 'cm' ? C(r, 2) + C(b, 2) : r * b; v = F(fav, all); q = 'Một hộp chứa ' + r + ' viên bi đỏ và ' + b + ' viên bi xanh có cùng kích thước. Lấy ngẫu nhiên đồng thời 2 viên bi. Xác suất để hai viên bi ' + (k === 'cm' ? 'cùng màu' : 'khác màu') + ' là'; ex = 'Số cách lấy 2 viên bi: $C_{' + tot + '}^2=' + all + '$. Số cách thuận lợi: ' + (k === 'cm' ? '$C_{' + r + '}^2+C_{' + b + '}^2=' + fav + '$' : '$' + r + '\\cdot' + b + '=' + fav + '$') + '. Xác suất $=' + tex(v) + '$.'; }
+            else { var nam = ri(3, 8), nu = ri(3, 8), t = nam + nu, fav2 = C(t, 3) - C(nam, 3); v = F(fav2, C(t, 3)); q = 'Một tổ có ' + nam + ' học sinh nam và ' + nu + ' học sinh nữ. Chọn ngẫu nhiên 3 học sinh. Xác suất để trong 3 học sinh được chọn có ít nhất 1 học sinh nữ là'; ex = 'Số cách chọn: $C_{' + t + '}^3=' + C(t, 3) + '$. Số cách chọn không có nữ: $C_{' + nam + '}^3=' + C(nam, 3) + '$. Số cách thuận lợi $=' + fav2 + '$. Xác suất $=' + tex(v) + '$.'; }
+            return fr(v, ex, q, pw(v, [F(1, 2), fsub(F(1, 1), v)]), 'TH');
+        });
+        add('l10_xs_bienco', 10, D10 + ' › Xác suất', 'Biến cố hợp, biến cố đối, biến cố độc lập – quy tắc cộng và nhân xác suất', 'TH', function () {
+            var kind = pick(['hop', 'doi', 'dl']), v, q, ex;
+            if (kind === 'hop') { var pa = ri(3, 7), pb = ri(3, 7), pab = ri(1, Math.min(pa, pb) - 1 || 1); need(pab >= 1 && pab < Math.min(pa, pb) && pa + pb - pab <= 10); v = F(pa + pb - pab, 10); q = 'Cho hai biến cố $A$ và $B$ có $P(A)=' + tex(F(pa, 10)) + '$, $P(B)=' + tex(F(pb, 10)) + '$, $P(AB)=' + tex(F(pab, 10)) + '$. Xác suất $P(A\\cup B)$ bằng'; ex = '$P(A\\cup B)=P(A)+P(B)-P(AB)=' + tex(F(pa, 10)) + '+' + tex(F(pb, 10)) + '-' + tex(F(pab, 10)) + '=' + tex(v) + '$.'; }
+            else if (kind === 'doi') { var p = ri(1, 19); need(gcd(p, 20) < 20); v = F(20 - p, 20); q = 'Cho biến cố $A$ có $P(A)=' + tex(F(p, 20)) + '$. Xác suất của biến cố đối $\\overline{A}$ bằng'; ex = '$P(\\overline A)=1-P(A)=1-' + tex(F(p, 20)) + '=' + tex(v) + '$.'; }
+            else { var pa2 = ri(1, 4), pb2 = ri(1, 4), w = pick(['giao', 'hop']); v = w === 'giao' ? F(pa2 * pb2, 25) : F(25 - (5 - pa2) * (5 - pb2), 25); q = 'Hai biến cố $A$, $B$ độc lập với $P(A)=' + tex(F(pa2, 5)) + '$, $P(B)=' + tex(F(pb2, 5)) + '$. Xác suất ' + (w === 'giao' ? '$P(AB)$' : '$P(A\\cup B)$') + ' bằng'; ex = w === 'giao' ? 'Vì $A,B$ độc lập: $P(AB)=P(A)P(B)=' + tex(F(pa2, 5)) + '\\cdot' + tex(F(pb2, 5)) + '=' + tex(v) + '$.' : '$P(AB)=P(A)P(B)=' + tex(F(pa2 * pb2, 25)) + '$ nên $P(A\\cup B)=P(A)+P(B)-P(AB)=' + tex(v) + '$.'; }
+            need(v.n > 0 && v.n < v.d);
+            return fr(v, ex, q, pw(v, [F(1, 2)]), 'TH');
+        });
+        // ---------- TỔ HỢP ----------
+        add('l10_tohop', 10, D10 + ' › Đại số tổ hợp', 'Quy tắc đếm, hoán vị, chỉnh hợp, tổ hợp', 'TH', function () {
+            var kind = pick(['tinh', 'ghe', 'uyban', 'so']), q, v, ex;
+            if (kind === 'tinh') { var n = ri(5, 9), k = ri(2, 4), n2 = ri(4, 7), k2 = ri(2, 3); v = C(n, k) + A(n2, k2); q = 'Giá trị của biểu thức $C_{' + n + '}^{' + k + '}+A_{' + n2 + '}^{' + k2 + '}$ bằng'; ex = '$C_{' + n + '}^{' + k + '}=' + C(n, k) + '$, $A_{' + n2 + '}^{' + k2 + '}=' + A(n2, k2) + '$ nên tổng bằng $' + v + '$.'; }
+            else if (kind === 'ghe') { var n3 = ri(5, 9), k3 = ri(2, 4); v = A(n3, k3); q = 'Có bao nhiêu cách xếp ' + k3 + ' học sinh được chọn từ ' + n3 + ' học sinh vào ' + k3 + ' chiếc ghế được đánh số khác nhau (mỗi ghế một học sinh)?'; ex = 'Mỗi cách xếp là một chỉnh hợp chập ' + k3 + ' của ' + n3 + ' phần tử: $A_{' + n3 + '}^{' + k3 + '}=' + v + '$.'; }
+            else if (kind === 'uyban') { var a = ri(4, 9), b = ri(3, 8), c = ri(2, 3); v = C(a, c) * b; q = 'Một nhóm có ' + a + ' học sinh nam và ' + b + ' học sinh nữ. Có bao nhiêu cách chọn ' + c + ' học sinh nam và 1 học sinh nữ để lập một đội?'; ex = 'Chọn nam: $C_{' + a + '}^{' + c + '}=' + C(a, c) + '$ cách. Chọn nữ: ' + b + ' cách. Theo quy tắc nhân: $' + C(a, c) + '\\cdot' + b + '=' + v + '$.'; }
+            else { var m = ri(4, 8); v = m * m * (m - 1); q = 'Từ các chữ số $0,1,2,\\ldots,' + m + '$ lập được bao nhiêu số tự nhiên có 3 chữ số khác nhau?'; ex = 'Chữ số hàng trăm: ' + m + ' cách (khác 0). Hàng chục: ' + m + ' cách. Hàng đơn vị: ' + (m - 1) + ' cách. Tổng: $' + m + '\\cdot' + m + '\\cdot' + (m - 1) + '=' + v + '$.'; }
+            return mc(q, String(v), [v + 1, v - 1, v * 2, Math.round(v / 2), v + 10, v - 10, v + 6].filter(function (z) { return z > 0; }).map(String), ex, 'TH', String(v));
+        });
+        add('l10_newton', 10, D10 + ' › Đại số tổ hợp', 'Nhị thức Newton: hệ số, số hạng trong khai triển $(ax+b)^n$', 'VD', function () {
+            var a = pick([1, 2, 3, -1, -2]), b = pick([1, 2, 3, -1, -2, -3]), n = ri(4, 6), k = ri(1, n - 1), kind = pick(['hs', 'tong']), v, q, ex;
+            var base = '(' + lnS(a, b) + ')^{' + n + '}';
+            if (kind === 'hs') { v = C(n, k) * Math.pow(a, k) * Math.pow(b, n - k); q = 'Hệ số của $x^{' + k + '}$ trong khai triển $' + base + '$ là'; ex = 'Số hạng chứa $x^{' + k + '}$: $C_{' + n + '}^{' + k + '}(' + lnS(a, 0) + ')^{' + k + '}(' + b + ')^{' + (n - k) + '}$, hệ số bằng $' + C(n, k) + '\\cdot' + sg(a) + '^{' + k + '}\\cdot' + sg(b) + '^{' + (n - k) + '}=' + v + '$.'; }
+            else { v = Math.pow(a + b, n); need(v !== 0); q = 'Tổng các hệ số trong khai triển $' + base + '$ bằng'; ex = 'Thay $x=1$: tổng các hệ số bằng $(' + a + '+' + sg(b) + ')^{' + n + '}=' + v + '$.'; }
+            need(v !== 0);
+            var wr = kind === 'hs' ? [C(n, k) * a * b, Math.pow(a, k) * Math.pow(b, n - k), -v, C(n, k - 1) * Math.pow(a, k - 1) * Math.pow(b, n - k + 1), C(n, k) * Math.pow(a, n - k) * Math.pow(b, k), C(n, k) * (a + b)] : [Math.pow(a, n) + Math.pow(b, n), Math.pow(a * b, n), -v, (a + b) * n, Math.pow(a + b, n - 1)];
+            return mc(q, String(v), wr.map(String), ex, 'VD', String(v));
+        });
+        // ---------- HÀM SỐ / PHƯƠNG TRÌNH / TẬP HỢP ----------
+        add('l10_tapxd_hs', 10, D10 + ' › Hàm số', 'Tìm tập xác định của hàm số (căn thức, phân thức)', 'NB', function () {
+            var kind = pick(['can', 'phan', 'canphan']), f, cor, wr, ex;
+            if (kind === 'can') { var a = pick([1, 2, 3, -1, -2, -3]), b = ri(-8, 8); need(b !== 0 && a !== 0); var x0 = F(-b, a); f = '\\sqrt{' + lnS(a, b) + '}'; cor = a > 0 ? '[' + tex(x0) + ';+\\infty)' : '(-\\infty;' + tex(x0) + ']'; wr = [a > 0 ? '(' + tex(x0) + ';+\\infty)' : '(-\\infty;' + tex(x0) + ')', a > 0 ? '(-\\infty;' + tex(x0) + ']' : '[' + tex(x0) + ';+\\infty)', a > 0 ? '[' + tex(fneg(x0)) + ';+\\infty)' : '(-\\infty;' + tex(fneg(x0)) + ']', '\\mathbb{R}\\setminus\\{' + tex(x0) + '\\}', a > 0 ? '(-\\infty;' + tex(x0) + ')' : '(' + tex(x0) + ';+\\infty)']; ex = 'Điều kiện: $' + lnS(a, b) + '\\ge0\\Leftrightarrow x' + (a > 0 ? '\\ge' : '\\le') + tex(x0) + '$. Tập xác định ' + M(cor) + '.'; }
+            else if (kind === 'phan') { var r1 = ri(-5, 4), r2 = r1 + ri(1, 5); f = '\\dfrac{1}{' + Q.poly([1, -(r1 + r2), r1 * r2], 'x') + '}'; cor = '\\mathbb{R}\\setminus\\{' + r1 + ';' + r2 + '\\}'; wr = ['\\mathbb{R}\\setminus\\{' + (-r1) + ';' + (-r2) + '\\}', '\\mathbb{R}\\setminus\\{' + r1 + '\\}', '\\mathbb{R}\\setminus\\{' + r2 + '\\}', '\\mathbb{R}', '(' + r1 + ';' + r2 + ')']; ex = 'Điều kiện: ' + M(Q.poly([1, -(r1 + r2), r1 * r2], 'x') + '\\ne0') + ', tức $x\\ne' + r1 + '$ và $x\\ne' + r2 + '$. Tập xác định ' + M(cor) + '.'; }
+            else { var p = ri(-5, 5), qv = ri(-5, 5); need(qv > -p - 0 && qv !== -p && qv >= -p); f = '\\dfrac{\\sqrt{x' + (p > 0 ? '+' + p : p < 0 ? p : '') + '}}{x' + (qv > 0 ? '-' + qv : qv < 0 ? '+' + (-qv) : '') + '}'; /* điều kiện x>=-p, x!=qv, cần qv>=-p */ cor = '[' + (-p) + ';+\\infty)\\setminus\\{' + qv + '\\}'; wr = ['(' + (-p) + ';+\\infty)\\setminus\\{' + qv + '\\}', '[' + (-p) + ';+\\infty)', '[' + p + ';+\\infty)\\setminus\\{' + qv + '\\}', '\\mathbb{R}\\setminus\\{' + qv + '\\}', '[' + (-p) + ';+\\infty)\\setminus\\{' + (-qv) + '\\}']; ex = 'Điều kiện: $x' + (p > 0 ? '+' + p : p < 0 ? p : '') + '\\ge0\\Leftrightarrow x\\ge' + (-p) + '$ và $x\\ne' + qv + '$. Tập xác định ' + M(cor) + '.'; }
+            return mc('Tập xác định của hàm số $y=' + f + '$ là', cor, wr, ex, 'NB');
+        });
+        add('l10_pt_can', 10, D10 + ' › Phương trình quy về phương trình bậc hai', 'Phương trình chứa căn thức $\\sqrt{ax+b}=cx+d$: nghiệm, tổng các nghiệm', 'VD', function () {
+            var r1 = ri(-4, 3), r2 = r1 + 2 * ri(1, 3); /* tổng chẵn */ var q = 1 - (r1 + r2) / 2, p = q * q - r1 * r2; var valid = [r1, r2].filter(function (x) { return x + q >= 0; }); need(valid.length >= 1 && valid.length < 2 && (p !== 0));
+            var v = valid[0]; var sum = r1 + r2;
+            return mc('Tổng các nghiệm của phương trình $\\sqrt{2x' + (p > 0 ? '+' + p : p < 0 ? p : '') + '}=' + lnS(1, q) + '$ là', String(v), [r1 + r2, r1, r2, -v, r1 * r2, sum + 1].map(String), 'Bình phương hai vế: $2x' + (p >= 0 ? '+' : '') + p + '=(' + lnS(1, q) + ')^2\\Leftrightarrow ' + Q.poly([1, -(r1 + r2), r1 * r2], 'x') + '=0$, được $x=' + r1 + '$ hoặc $x=' + r2 + '$. Thử lại điều kiện $' + lnS(1, q) + '\\ge0$: chỉ $x=' + v + '$ thỏa mãn. Vậy tổng các nghiệm bằng $' + v + '$.', 'VD', String(v));
+        });
+        function ivS(i) { var f = function (x) { return x === -Infinity ? '-\\infty' : x === Infinity ? '+\\infty' : String(x); }; return (i.lc ? '[' : '(') + f(i.lo) + ';' + f(i.hi) + (i.hc ? ']' : ')'); }
+        add('l10_tap_hop', 10, D10 + ' › Tập hợp', 'Các phép toán trên tập hợp: giao, hợp, hiệu của các khoảng, đoạn', 'NB', function () {
+            var a = ri(-6, 0), b = a + ri(3, 7), c = a + ri(1, b - a - 1), d = b + ri(1, 5); var A1 = { lo: a, hi: b, lc: pick([true, false]), hc: pick([true, false]) }, B1 = { lo: c, hi: d, lc: pick([true, false]), hc: pick([true, false]) };
+            var kind = pick(['giao', 'hop', 'hieu']), cor, ex, sym;
+            if (kind === 'giao') { cor = { lo: c, hi: b, lc: B1.lc, hc: A1.hc }; sym = '\\cap'; ex = 'Phần chung của hai tập là từ $' + c + '$ đến $' + b + '$: ' + M(ivS(cor)) + '.'; }
+            else if (kind === 'hop') { cor = { lo: a, hi: d, lc: A1.lc, hc: B1.hc }; sym = '\\cup'; ex = 'Hai tập có phần giao nên hợp là một khoảng từ $' + a + '$ đến $' + d + '$: ' + M(ivS(cor)) + '.'; }
+            else { cor = { lo: a, hi: c, lc: A1.lc, hc: !B1.lc }; sym = '\\setminus'; ex = 'Phần của $A$ nằm bên trái $' + c + '$ (điểm $' + c + '$ ' + (B1.lc ? 'thuộc $B$ nên bị loại' : 'không thuộc $B$ nên được giữ') + '): ' + M(ivS(cor)) + '.'; }
+            var wr = [{ lo: cor.lo, hi: cor.hi, lc: !cor.lc, hc: cor.hc }, { lo: cor.lo, hi: cor.hi, lc: cor.lc, hc: !cor.hc }, { lo: a, hi: d, lc: !A1.lc, hc: !B1.hc }, { lo: c, hi: b, lc: !B1.lc, hc: !A1.hc }, { lo: a, hi: c, lc: A1.lc, hc: B1.lc }, { lo: c, hi: d, lc: B1.lc, hc: B1.hc }].map(ivS);
+            return mc('Cho $A=' + ivS(A1) + '$ và $B=' + ivS(B1) + '$. Tập hợp $A' + sym + ' B$ là', ivS(cor), wr, ex, 'NB');
+        });
+
+        // ================= LỚP 12 =================
+        var GH = 'Giải tích 12 › Hàm số';
+        add('l12_ham_phanthuc_m', 12, GH, 'Tìm số giá trị nguyên của $m$ để hàm phân thức bậc nhất/bậc nhất đơn điệu trên từng khoảng xác định', 'VD', function () {
+            var p = pick([3, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 17]), kind = pick(['nb', 'db']), N = ri(5, 9), cnt, q, ex;
+            var le = []; for (var m = -N; m <= N; m++) if (m * m < p) le.push(m);
+            if (kind === 'nb') { cnt = le.length; q = 'Có bao nhiêu giá trị nguyên của tham số $m$ để hàm số $y=\\dfrac{mx+' + p + '}{x+m}$ nghịch biến trên từng khoảng xác định của nó?'; ex = '$y\'=\\dfrac{m^2-' + p + '}{(x+m)^2}$. Hàm số nghịch biến trên từng khoảng xác định $\\Leftrightarrow m^2-' + p + '<0\\Leftrightarrow |m|<\\sqrt{' + p + '}$. Các giá trị nguyên: $' + le.join(';\\ ') + '$, có $' + cnt + '$ giá trị.'; }
+            else { cnt = 2 * N + 1 - le.length; q = 'Có bao nhiêu giá trị nguyên của tham số $m$ thuộc đoạn $[-' + N + ';' + N + ']$ để hàm số $y=\\dfrac{mx+' + p + '}{x+m}$ đồng biến trên từng khoảng xác định của nó?'; ex = '$y\'=\\dfrac{m^2-' + p + '}{(x+m)^2}$. Đồng biến trên từng khoảng xác định $\\Leftrightarrow m^2>' + p + '$. Trong đoạn $[-' + N + ';' + N + ']$ có $' + (2 * N + 1) + '$ số nguyên, trong đó $' + le.length + '$ số thỏa $m^2<' + p + '$ nên còn lại $' + cnt + '$ giá trị.'; }
+            need(cnt > 0);
+            return mc(q, String(cnt), [cnt + 1, cnt - 1, cnt + 2, cnt - 2, 2 * cnt, cnt + 3].filter(function (z) { return z > 0; }).map(String), ex, 'VD', String(cnt));
+        });
+        add('l12_cuctri_xp', 12, GH, 'Cực trị của hàm số $y=x+p+\\dfrac{q}{x-h}$ (giá trị cực đại, cực tiểu, điểm cực trị)', 'VD', function () {
+            var s = ri(1, 3), h = ri(-3, 3), p = ri(-4, 4), kind = pick(['cd', 'ct', 'dct', 'tich']);
+            var f = 'x' + (p > 0 ? '+' + p : p < 0 ? p : '') + '+\\dfrac{' + s * s + '}{x' + (h > 0 ? '-' + h : h < 0 ? '+' + (-h) : '') + '}';
+            var cd = h + p - 2 * s, ct = h + p + 2 * s, q, v, ex;
+            var base = '$y\'=1-\\dfrac{' + s * s + '}{' + (h === 0 ? 'x^2' : '(x' + (h > 0 ? '-' + h : '+' + (-h)) + ')^2') + '}=0\\Leftrightarrow x=' + (h - s) + '$ hoặc $x=' + (h + s) + '$. Lập bảng biến thiên: hàm số đạt cực đại tại $x=' + (h - s) + '$, cực tiểu tại $x=' + (h + s) + '$. ';
+            if (kind === 'cd') { v = cd; q = 'Giá trị cực đại của hàm số $y=' + f + '$ bằng'; ex = base + 'Giá trị cực đại $y(' + (h - s) + ')=' + cd + '$.'; }
+            else if (kind === 'ct') { v = ct; q = 'Giá trị cực tiểu của hàm số $y=' + f + '$ bằng'; ex = base + 'Giá trị cực tiểu $y(' + (h + s) + ')=' + ct + '$.'; }
+            else if (kind === 'dct') { v = h + s; q = 'Điểm cực tiểu của hàm số $y=' + f + '$ là $x=$'; ex = base + 'Điểm cực tiểu $x=' + (h + s) + '$.'; }
+            else { v = (h - s) * (h + s); q = 'Tích hoành độ hai điểm cực trị của đồ thị hàm số $y=' + f + '$ bằng'; ex = base + 'Tích $=' + (h - s) + '\\cdot' + sg(h + s) + '=' + v + '$.'; }
+            return mc(q, String(v), [cd, ct, h - s, h + s, -v, v + 1, v - 1, h + p].map(String), ex, 'VD', String(v));
+        });
+        add('l12_toiuu', 12, GH, 'Bài toán thực tế: tìm giá trị lớn nhất, nhỏ nhất (hộp không nắp, rào đất ven sông)', 'VDC', function () {
+            var kind = pick(['hop', 'rao']), q, v, ex;
+            if (kind === 'hop') { var k = ri(1, 5), a = 6 * k; v = 16 * k * k * k; q = 'Từ một tấm tôn hình vuông cạnh $' + a + '\\ \\text{dm}$, người ta cắt bốn góc bốn hình vuông bằng nhau có cạnh $x\\ \\text{(dm)}$ rồi gập lại thành một chiếc hộp không nắp. Thể tích lớn nhất của hộp (đơn vị $\\text{dm}^3$) bằng'; ex = 'Thể tích $V(x)=x(' + a + '-2x)^2$, $0<x<' + a / 2 + '$. $V\'(x)=(' + a + '-2x)(' + a + '-6x)=0\\Rightarrow x=' + k + '$. $V$ lớn nhất tại $x=' + k + '$: $V=' + k + '\\cdot' + 4 * k + '^2=' + v + '$.'; }
+            else { var m = ri(1, 12), L = 4 * m; v = 2 * m * m; q = 'Một người có ' + L + ' mét lưới thép để rào một mảnh đất hình chữ nhật có một cạnh là bờ sông (không phải rào cạnh này). Diện tích lớn nhất của mảnh đất có thể rào được (đơn vị $\\text{m}^2$) bằng'; ex = 'Gọi chiều rộng (cạnh vuông góc với bờ sông) là $x$ thì chiều dài là $' + L + '-2x$. Diện tích $S(x)=x(' + L + '-2x)$ lớn nhất tại $x=' + m + '$ (đỉnh parabol), khi đó $S=' + m + '\\cdot' + 2 * m + '=' + v + '$.'; }
+            return mc(q, String(v), [v * 2, Math.round(v / 2), v + 4, v - 2, v * 3, v + 10].filter(function (z) { return z > 0; }).map(String), ex, 'VDC', String(v));
+        });
+        // ---- thống kê ghép nhóm
+        add('l12_tk_ghepnhom', 12, 'Thống kê và xác suất 12 › Số liệu ghép nhóm', 'Mẫu số liệu ghép nhóm: số trung bình, khoảng biến thiên, tứ phân vị, khoảng tứ phân vị', 'TH', function () {
+            var a0 = pick([0, 5, 10, 20]), w = pick([5, 10]), k = 5, fq = []; for (var i = 0; i < k - 1; i++) fq.push(ri(2, 12)); var s4 = fq.reduce(function (a, b) { return a + b; }, 0), r4 = (4 - s4 % 4) % 4; if (r4 < 2) r4 += 4; fq.push(r4 + 4 * ri(0, 2)); var N = s4 + fq[k - 1]; need(N % 4 === 0);
+            function quartile(j) { var target = F(j * N, 4), cum = 0; for (var i = 0; i < k; i++) { if (fadd(F(cum), F(0)).n * 1 + 0 >= 0 && fval2(F(cum + fq[i])) >= fval2(target)) return fadd(F(a0 + i * w), fmul(fdiv(fsub(target, F(cum)), F(fq[i])), F(w))); cum += fq[i]; } }
+            function fval2(f) { return f.n / f.d; }
+            var Q1 = quartile(1), Q3 = quartile(3), mean = F(0); for (var i = 0; i < k; i++) mean = fadd(mean, fmul(F(fq[i]), F(2 * a0 + (2 * i + 1) * w, 2))); mean = fdiv(mean, F(N));
+            var header = '\\begin{array}{|c|' + 'c|'.repeat(k) + '}\\hline \\text{Nhóm}&' + fq.map(function (_, i) { return '[' + (a0 + i * w) + ';' + (a0 + (i + 1) * w) + ')'; }).join('&') + '\\\\\\hline \\text{Tần số}&' + fq.join('&') + '\\\\\\hline\\end{array}';
+            var kind = pick(['tb', 'rng', 'q1', 'q3', 'iqr']), v, name, ex;
+            var cumtxt = 'Cỡ mẫu $n=' + N + '$. ';
+            if (kind === 'tb') { v = mean; name = 'Số trung bình cộng của mẫu số liệu ghép nhóm trên là'; ex = cumtxt + 'Lấy giá trị đại diện của mỗi nhóm là trung điểm, rồi $\\bar x=\\dfrac{\\sum n_ix_i}{n}=' + tex(v) + '$.'; }
+            else if (kind === 'rng') { v = F(k * w); name = 'Khoảng biến thiên của mẫu số liệu ghép nhóm trên là'; ex = 'Khoảng biến thiên $R=' + (a0 + k * w) + '-' + a0 + '=' + k * w + '$ (đầu mút phải của nhóm cuối trừ đầu mút trái của nhóm đầu).'; }
+            else if (kind === 'q1') { v = Q1; name = 'Tứ phân vị thứ nhất $Q_1$ của mẫu số liệu ghép nhóm trên là'; ex = cumtxt + '$\\dfrac{n}{4}=' + N / 4 + '$. Xác định nhóm chứa $Q_1$ rồi dùng $Q_1=u_m+\\dfrac{\\frac n4-C}{n_m}(u_{m+1}-u_m)=' + tex(v) + '$.'; }
+            else if (kind === 'q3') { v = Q3; name = 'Tứ phân vị thứ ba $Q_3$ của mẫu số liệu ghép nhóm trên là'; ex = cumtxt + '$\\dfrac{3n}{4}=' + 3 * N / 4 + '$. Xác định nhóm chứa $Q_3$ rồi dùng $Q_3=u_m+\\dfrac{\\frac{3n}4-C}{n_m}(u_{m+1}-u_m)=' + tex(v) + '$.'; }
+            else { v = fsub(Q3, Q1); name = 'Khoảng tứ phân vị $\\Delta_Q$ của mẫu số liệu ghép nhóm trên là'; ex = cumtxt + '$Q_1=' + tex(Q1) + '$, $Q_3=' + tex(Q3) + '$ nên $\\Delta_Q=Q_3-Q_1=' + tex(v) + '$.'; }
+            need(v.n > 0);
+            return fr(v, ex, 'Cho mẫu số liệu ghép nhóm: $' + header + '$ ' + name, pos(Q.numWr(v, [Q1, Q3, mean, F(k * w), fsub(Q3, Q1)]), v), 'TH');
+        });
+        // ---- xác suất có điều kiện
+        add('l12_xs_dieukien', 12, 'Thống kê và xác suất 12 › Xác suất có điều kiện', 'Xác suất có điều kiện, công thức xác suất toàn phần, công thức Bayes', 'VD', function () {
+            var kind = pick(['cond', 'total', 'bayes']), v, q, ex;
+            if (kind === 'cond') { var pb = ri(4, 9), pab = ri(1, pb - 1), pa = ri(pab, 9); v = F(pab, pb); q = 'Cho hai biến cố $A$, $B$ với $P(A)=' + tex(F(pa, 10)) + '$, $P(B)=' + tex(F(pb, 10)) + '$, $P(AB)=' + tex(F(pab, 10)) + '$. Xác suất có điều kiện $P(A\\mid B)$ bằng'; ex = '$P(A\\mid B)=\\dfrac{P(AB)}{P(B)}=\\dfrac{' + tex(F(pab, 10)) + '}{' + tex(F(pb, 10)) + '}=' + tex(v) + '$.'; return fr(v, ex, q, pw(v, [F(pab, pa), F(pab, 10), F(pa, pb)]), 'TH'); }
+            var p = pick([20, 30, 40, 50, 60, 70, 80]), u = ri(1, 9), w = ri(1, 9); need(u !== w); var num1 = p * u, num2 = (100 - p) * w, tot = num1 + num2;
+            var story = 'Một nhà máy có hai phân xưởng I và II. Phân xưởng I sản xuất $' + p + '\\%$ tổng sản phẩm, phân xưởng II sản xuất $' + (100 - p) + '\\%$. Tỉ lệ phế phẩm của phân xưởng I là $' + u + '\\%$, của phân xưởng II là $' + w + '\\%$. Chọn ngẫu nhiên một sản phẩm của nhà máy. ';
+            if (kind === 'total') { v = F(tot, 10000); q = story + 'Xác suất để sản phẩm đó là phế phẩm bằng'; ex = 'Theo công thức xác suất toàn phần: $P=' + p / 100 + '\\cdot' + u / 100 + '+' + (100 - p) / 100 + '\\cdot' + w / 100 + '=' + tex(v) + '$.'; return fr(v, ex, q, pos(Q.numWr(v, [F(num1, 10000), F(num2, 10000), F(u + w, 200), F(u * w, 10000)]), v), 'VD'); }
+            v = F(num1, tot); q = story + 'Biết sản phẩm được chọn là phế phẩm. Xác suất để nó do phân xưởng I sản xuất bằng'; ex = 'Theo công thức Bayes: $P(I\\mid \\text{PP})=\\dfrac{P(I)P(\\text{PP}\\mid I)}{P(\\text{PP})}=\\dfrac{' + p + '\\cdot' + u + '}{' + p + '\\cdot' + u + '+' + (100 - p) + '\\cdot' + w + '}=' + tex(v) + '$.';
+            return fr(v, ex, q, pw(v, [F(num2, tot), F(p, 100), F(u, 100), F(num1, 10000)]), 'VD');
+        });
+        // ---- Oxyz: góc
+        var Q4 = [[1, 2, 2, 3], [2, 3, 6, 7], [1, 4, 8, 9], [2, 6, 9, 11], [4, 4, 7, 9], [2, 10, 11, 15], [6, 6, 7, 11], [2, 1, 2, 3], [3, 4, 12, 13]];
+        function vec4() { var t = pick(Q4), c = shuf(t.slice(0, 3)).map(function (x) { return x * pick([1, -1]); }); return { c: c, n: t[3] }; }
+        function par(p0, c) { var cs = ['x', 'y', 'z']; return '\\begin{cases}' + cs.map(function (s, i) { return s + '=' + (p0[i] ? p0[i] + (c[i] > 0 ? '+' + (c[i] === 1 ? '' : c[i]) + 't' : c[i] < 0 ? (c[i] === -1 ? '-' : c[i]) + 't' : '') : (c[i] ? (c[i] === 1 ? '' : c[i] === -1 ? '-' : c[i]) + 't' : '0')); }).join('\\\\') + '\\end{cases}'; }
+        function planeS(n, d) { var s = '', t = ['x', 'y', 'z']; n.forEach(function (c, i) { if (c) s += (c > 0 && s ? '+' : '') + (c === 1 ? '' : c === -1 ? '-' : c) + t[i]; }); if (d) s += (d > 0 ? '+' : '') + d; return s + '=0'; }
+        add('l12_ox_goc', 12, 'Hình học 12 › Tọa độ trong không gian', 'Góc giữa hai đường thẳng, hai mặt phẳng, đường thẳng và mặt phẳng trong Oxyz', 'VD', function () {
+            var kind = pick(['dd', 'pp', 'dp']), u = vec4(), w = vec4(), dot = u.c[0] * w.c[0] + u.c[1] * w.c[1] + u.c[2] * w.c[2]; need(dot !== 0 && u.n && w.n);
+            var v = F(Math.abs(dot), u.n * w.n), q, ex; need(v.n < v.d);
+            var nu = '\\sqrt{' + u.c.map(function (c) { return c * c; }).join('+') + '}=' + u.n, nw = '\\sqrt{' + w.c.map(function (c) { return c * c; }).join('+') + '}=' + w.n;
+            if (kind === 'dd') { var p1 = [ri(-3, 3), ri(-3, 3), ri(-3, 3)], p2 = [ri(-3, 3), ri(-3, 3), ri(-3, 3)]; q = 'Trong không gian $Oxyz$, cho hai đường thẳng $d_1: ' + par(p1, u.c) + '$ và $d_2: ' + par(p2, w.c) + '$. Côsin của góc giữa $d_1$ và $d_2$ bằng'; ex = 'Vectơ chỉ phương $\\vec u_1=(' + u.c.join(';') + ')$, $\\vec u_2=(' + w.c.join(';') + ')$. $\\cos(d_1,d_2)=\\dfrac{|\\vec u_1\\cdot\\vec u_2|}{|\\vec u_1||\\vec u_2|}=\\dfrac{' + Math.abs(dot) + '}{' + u.n + '\\cdot' + w.n + '}=' + tex(v) + '$.'; }
+            else if (kind === 'pp') { q = 'Trong không gian $Oxyz$, cho hai mặt phẳng $(P): ' + planeS(u.c, ri(-5, 5)) + '$ và $(Q): ' + planeS(w.c, ri(-5, 5)) + '$. Côsin của góc giữa hai mặt phẳng $(P)$ và $(Q)$ bằng'; ex = 'Vectơ pháp tuyến $\\vec n_P=(' + u.c.join(';') + ')$, $\\vec n_Q=(' + w.c.join(';') + ')$. $\\cos((P),(Q))=\\dfrac{|\\vec n_P\\cdot\\vec n_Q|}{|\\vec n_P||\\vec n_Q|}=\\dfrac{' + Math.abs(dot) + '}{' + u.n + '\\cdot' + w.n + '}=' + tex(v) + '$.'; }
+            else { var p3 = [ri(-3, 3), ri(-3, 3), ri(-3, 3)]; q = 'Trong không gian $Oxyz$, cho đường thẳng $d: ' + par(p3, u.c) + '$ và mặt phẳng $(P): ' + planeS(w.c, ri(-5, 5)) + '$. Sin của góc giữa $d$ và $(P)$ bằng'; ex = 'Vectơ chỉ phương của $d$: $\\vec u=(' + u.c.join(';') + ')$; vectơ pháp tuyến của $(P)$: $\\vec n=(' + w.c.join(';') + ')$. $\\sin(d,(P))=\\dfrac{|\\vec u\\cdot\\vec n|}{|\\vec u||\\vec n|}=\\dfrac{' + Math.abs(dot) + '}{' + u.n + '\\cdot' + w.n + '}=' + tex(v) + '$.'; }
+            return fr(v, ex, q, pw(v, [F(Math.abs(dot), u.n), F(Math.abs(dot), w.n), F(u.n * w.n, Math.abs(dot))]), 'VD');
+        });
+    })(Q);
+    // ===== (v109) Lô 3 – Toán 12: khảo sát hàm số, nguyên hàm – tích phân, mũ – lôgarit, Oxyz =====
+    (function (Q) {
+        var ri = Q.ri, pick = Q.pick, shuf = Q.shuf, F = Q.F, tex = Q.tex, M = Q.M, need = Q.need, fadd = Q.fadd, fsub = Q.fsub, fmul = Q.fmul, fdiv = Q.fdiv, fneg = Q.fneg, feq = Q.feq, gcd = Q.gcd, dec = Q.dec;
+        function add(id, group, name, lv, make) { Q.GEN.push({ id: id, grade: 12, group: group, name: name, lv: lv, make: make }); }
+        function mc(q, cor, wr, ex, lv, sa) { var seen = {}; seen[cor.replace(/\s/g, '')] = 1; var w = []; wr.forEach(function (x) { var k = String(x).replace(/\s/g, ''); if (!seen[k]) { seen[k] = 1; w.push(String(x)); } }); need(w.length >= 3); var o = { q: q, correct: M(cor), wrongs: w.map(M), exp: ex, level: lv || 'TH' }; if (sa !== undefined) o.sa = sa; return o; }
+        function fnum(v, ex, q, extra, lv) { v = Q.toF(v); var wr = Q.numWr(v, extra || []).filter(function (z) { return !feq(z, v); }); var seen = {}; seen[tex(v)] = 1; wr = wr.filter(function (z) { var k = tex(z); if (seen[k]) return false; seen[k] = 1; return true; }); need(wr.length >= 3); return { q: q, correct: M(tex(v)), wrongs: wr.map(function (z) { return M(tex(z)); }), exp: ex, sa: dec(v), level: lv || 'TH' }; }
+        function sg(n) { return n < 0 ? '(' + n + ')' : String(n); }
+        function lnS(a, b, t) { var s = ''; if (a) s += (a === 1 ? '' : a === -1 ? '-' : a) + t; if (b) s += (b > 0 && s ? '+' : '') + b; return s || '0'; }
+        function sub0(v, t) { return t + (v > 0 ? '-' + v : v < 0 ? '+' + (-v) : ''); }
+        function sq1(v, t) { return v === 0 ? t + '^2' : '(' + sub0(v, t) + ')^2'; }
+        function ivS(lo, hi) { return '(' + (lo === -Infinity ? '-\\infty' : lo) + ';' + (hi === Infinity ? '+\\infty' : hi) + ')'; }
+        var GH = 'Giải tích 12 › Hàm số', GI = 'Giải tích 12 › Nguyên hàm, tích phân', GL = 'Giải tích 12 › Mũ và lôgarit', GO = 'Hình học 12 › Tọa độ trong không gian';
+        // ---------- HÀM SỐ ----------
+        function quartic(t, c) { return Q.poly([1, 0, -2 * t * t, 0, c], 'x'); }
+        add('l12_minmax_tp', GH, 'Giá trị lớn nhất, nhỏ nhất của hàm trùng phương trên một đoạn', 'VD', function () {
+            var t = ri(1, 3), c = ri(-5, 5), a = ri(-3, 2), b = a + ri(2, 5), kind = pick(['max', 'min']);
+            var f = function (x) { return x * x * x * x - 2 * t * t * x * x + c; }; var cand = [a, b], inside = [];
+            [-t, 0, t].forEach(function (x) { if (x > a && x < b) { cand.push(x); inside.push(x); } });
+            var vals = cand.map(f), v = kind === 'max' ? Math.max.apply(null, vals) : Math.min.apply(null, vals);
+            var ex = '$y\'=4x^3-' + 4 * t * t + 'x=4x(x^2-' + t * t + ')$. Các điểm tới hạn thuộc $(' + a + ';' + b + ')$: ' + (inside.length ? '$x=' + inside.join(';\\ x=') + '$' : 'không có') + '. Tính giá trị tại các điểm tới hạn và hai đầu mút: ' + cand.map(function (x, i) { return '$y(' + x + ')=' + vals[i] + '$'; }).join(', ') + '. Giá trị ' + (kind === 'max' ? 'lớn nhất' : 'nhỏ nhất') + ' là $' + v + '$.';
+            var wr = vals.filter(function (z) { return z !== v; }).concat([v + 1, v - 1, -v, v + t, f(0)]);
+            return mc('Giá trị ' + (kind === 'max' ? 'lớn nhất' : 'nhỏ nhất') + ' của hàm số $y=' + quartic(t, c) + '$ trên đoạn $[' + a + ';' + b + ']$ bằng', String(v), wr.map(String), ex, 'VD', String(v));
+        });
+        add('l12_dondieu_tp', GH, 'Khoảng đồng biến, nghịch biến của hàm trùng phương', 'TH', function () {
+            var t = ri(1, 3), c = ri(-4, 4), inc = pick([true, false]), cor, wr;
+            if (inc) { cor = pick([ivS(-t, 0), ivS(t, Infinity)]); wr = [ivS(-Infinity, -t), ivS(0, t), ivS(-t, t), ivS(-Infinity, 0)]; }
+            else { cor = pick([ivS(-Infinity, -t), ivS(0, t)]); wr = [ivS(-t, 0), ivS(t, Infinity), ivS(-t, t), ivS(0, Infinity)]; }
+            return mc('Hàm số $y=' + quartic(t, c) + '$ ' + (inc ? 'đồng biến' : 'nghịch biến') + ' trên khoảng nào sau đây?', cor, wr, '$y\'=4x(x-' + t + ')(x+' + t + ')$. Xét dấu $y\'$: $y\'<0$ trên $(-\\infty;-' + t + ')$ và $(0;' + t + ')$; $y\'>0$ trên $(-' + t + ';0)$ và $(' + t + ';+\\infty)$. Vậy hàm số ' + (inc ? 'đồng biến' : 'nghịch biến') + ' trên ' + M(cor) + '.', 'TH');
+        });
+        // ---------- NGUYÊN HÀM, TÍCH PHÂN ----------
+        add('l12_nguyenham_F', GI, 'Tìm nguyên hàm thỏa điều kiện cho trước, tính giá trị của nguyên hàm', 'VD', function () {
+            var a = ri(-4, 4), b = ri(-4, 4), c = ri(-5, 5), d = ri(-5, 5), k = ri(1, 3); need(a || b);
+            var Fk = fadd(fadd(fadd(F(a * k * k * k, 3), F(b * k * k, 2)), F(c * k)), F(d));
+            return fnum(Fk, 'Ta có $F(x)=\\int(' + Q.poly([a, b, c], 'x') + ')\\,dx=' + (cf(F(a, 3), 'x^3') + cf(F(b, 2), 'x^2') + cf(F(c), 'x')).replace(/^\+/, '') + '+C$. Từ $F(0)=' + d + '$ suy ra $C=' + d + '$. Do đó $F(' + k + ')=' + tex(Fk) + '$.', 'Biết $F(x)$ là một nguyên hàm của hàm số $f(x)=' + Q.poly([a, b, c], 'x') + '$ và $F(0)=' + d + '$. Giá trị $F(' + k + ')$ bằng', [F(a * k * k * k + b * k * k + c * k + d), F(a * k * k * k, 3), fadd(fadd(F(a * k * k * k, 3), F(b * k * k, 2)), F(c * k))], 'VD');
+        });
+        add('l12_tp_tinhchat', GI, 'Tính chất của tích phân: tổng, hiệu, đổi cận, tách cận', 'TH', function () {
+            var kind = pick(['tt', 'cong']), q, v, ex;
+            if (kind === 'tt') { var a = ri(0, 2), b = a + ri(2, 4), p = ri(-6, 8), r = ri(-6, 8), u = ri(1, 4), w = ri(1, 4), z = ri(-3, 3); need(p && r); v = u * p - w * r + z * (b - a); q = 'Cho $\\int_{' + a + '}^{' + b + '}f(x)\\,dx=' + p + '$ và $\\int_{' + a + '}^{' + b + '}g(x)\\,dx=' + r + '$. Giá trị của $\\int_{' + a + '}^{' + b + '}\\left[' + (u === 1 ? '' : u) + 'f(x)-' + (w === 1 ? '' : w) + 'g(x)' + (z > 0 ? '+' + z : z < 0 ? z : '') + '\\right]dx$ bằng'; ex = 'Theo tính chất tuyến tính: $' + u + '\\cdot' + sg(p) + '-' + w + '\\cdot' + sg(r) + (z ? '+' + sg(z) + '\\cdot(' + b + '-' + a + ')' : '') + '=' + v + '$.'; }
+            else { var m = ri(-3, 1), n = m + ri(1, 3), e = n + ri(1, 3), p1 = ri(-7, 9), p2 = ri(-7, 9), ty = pick(['all', 'rev']); need(p1 && p2); v = ty === 'all' ? p1 + p2 : -(p1 + p2); q = 'Cho $\\int_{' + m + '}^{' + n + '}f(x)\\,dx=' + p1 + '$ và $\\int_{' + n + '}^{' + e + '}f(x)\\,dx=' + p2 + '$. Giá trị của $\\int_{' + (ty === 'all' ? m : e) + '}^{' + (ty === 'all' ? e : m) + '}f(x)\\,dx$ bằng'; ex = ty === 'all' ? 'Tách cận: $\\int_{' + m + '}^{' + e + '}f=\\int_{' + m + '}^{' + n + '}f+\\int_{' + n + '}^{' + e + '}f=' + p1 + '+' + sg(p2) + '=' + v + '$.' : 'Tách cận: $\\int_{' + m + '}^{' + e + '}f=' + (p1 + p2) + '$. Đổi cận: $\\int_{' + e + '}^{' + m + '}f=-\\int_{' + m + '}^{' + e + '}f=' + v + '$.'; }
+            return mc(q, String(v), [-v, v + 1, v - 1, kind === 'tt' ? u * p + w * r + z * (b - a) : p1 - p2, v * 2, kind === 'tt' ? u * p - w * r : p1 * p2].map(String), ex, 'TH', String(v));
+        });
+        add('l12_tp_trituyetdoi', GI, 'Tích phân chứa dấu giá trị tuyệt đối', 'VD', function () {
+            var kind = pick(['lin', 'quad']), v, q, ex;
+            if (kind === 'lin') { var p = ri(-4, 0), c = p + ri(1, 4), qq = c + ri(1, 4); v = F((c - p) * (c - p) + (qq - c) * (qq - c), 2); q = 'Tích phân $\\int_{' + p + '}^{' + qq + '}|x' + (c > 0 ? '-' + c : c < 0 ? '+' + (-c) : '') + '|\\,dx$ bằng'; ex = 'Phá giá trị tuyệt đối tại $x=' + c + '$: $\\int_{' + p + '}^{' + c + '}(' + c + '-x)dx+\\int_{' + c + '}^{' + qq + '}(x-' + c + ')dx=\\dfrac{' + (c - p) + '^2}{2}+\\dfrac{' + (qq - c) + '^2}{2}=' + tex(v) + '$.'; }
+            else { var t = ri(1, 3), n = t + ri(1, 3); v = fadd(fadd(F(2 * t * t * t, 3), F(n * n * n - t * t * t, 3)), F(-t * t * (n - t))); q = 'Tích phân $\\int_{0}^{' + n + '}|x^2-' + t * t + '|\\,dx$ bằng'; ex = 'Phá giá trị tuyệt đối tại $x=' + t + '$: $\\int_0^{' + t + '}(' + t * t + '-x^2)dx+\\int_{' + t + '}^{' + n + '}(x^2-' + t * t + ')dx=\\dfrac{' + 2 * t * t * t + '}{3}+\\left(\\dfrac{' + (n * n * n - t * t * t) + '}{3}-' + t * t * (n - t) + '\\right)=' + tex(v) + '$.'; }
+            return fnum(v, ex, q, [kind === 'lin' ? F(qq - p, 1) : F(n * n * n, 3)], 'VD');
+        });
+        // ---------- MŨ – LÔGARIT ----------
+        add('l12_log_theo_ab', GL, 'Biểu diễn lôgarit theo $a=\\log_2 3$', 'VD', function () {
+            var x = ri(0, 3), y = ri(0, 3), u = ri(0, 3), v = ri(0, 3); var B = Math.pow(2, x) * Math.pow(3, y), Ar = Math.pow(2, u) * Math.pow(3, v); need(B > 1 && Ar > 1 && B !== Ar && B <= 108 && Ar <= 108 && u * y - v * x !== 0 && !(x === 0 && y === 0));
+            var num = lnS(v, u, 'a'), den = lnS(y, x, 'a'), cor = '\\dfrac{' + num + '}{' + den + '}';
+            var wr = ['\\dfrac{' + den + '}{' + num + '}', '\\dfrac{' + lnS(v, u + 1, 'a') + '}{' + den + '}', '\\dfrac{' + num + '}{' + lnS(y, x + 1, 'a') + '}', '\\dfrac{' + lnS(u, v, 'a') + '}{' + lnS(x, y, 'a') + '}', '\\dfrac{' + lnS(v, u - 1, 'a') + '}{' + den + '}'];
+            wr = wr.filter(function (z) { return z.indexOf('{0}') < 0 && z.indexOf('}{1}') < 0; }); return mc('Cho $\\log_2 3=a$. Biểu diễn $\\log_{' + B + '}' + Ar + '$ theo $a$ được kết quả là', cor, wr, 'Ta có $' + B + '=2^{' + x + '}\\cdot3^{' + y + '}$, $' + Ar + '=2^{' + u + '}\\cdot3^{' + v + '}$. Đổi sang cơ số 2: $\\log_{' + B + '}' + Ar + '=\\dfrac{\\log_2 ' + Ar + '}{\\log_2 ' + B + '}=\\dfrac{' + cs(u, v) + '}{' + cs(x, y) + '}=' + cor + '$.', 'VD');
+        });
+        // ---------- OXYZ ----------
+        var Q4 = [[1, 2, 2, 3], [2, 1, 2, 3], [2, 3, 6, 7], [4, 4, 7, 9]];
+        function cs(u, v) { return (u ? String(u) : '') + (v ? (u && v > 0 ? '+' : '') + (v === 1 ? '' : v === -1 ? '-' : v) + '\\log_2 3' : ''); }
+        function planeN(n, d) { var g = gcd(gcd(Math.abs(n[0]), Math.abs(n[1])), gcd(Math.abs(n[2]), Math.abs(d))) || 1; n = n.map(function (z) { return z / g; }); d /= g; var first = n[0] || n[1] || n[2]; if (first < 0) { n = n.map(function (z) { return -z; }); d = -d; } return { n: n, d: d }; }
+        function planeS(p) { var s = '', t = ['x', 'y', 'z']; p.n.forEach(function (c, i) { if (c) s += (c > 0 && s ? '+' : '') + (c === 1 ? '' : c === -1 ? '-' : c) + t[i]; }); if (p.d) s += (p.d > 0 ? '+' : '') + p.d; return s + '=0'; }
+        function pt3(a) { return '(' + a.join(';') + ')'; }
+        function par(p0, c) { var cs = ['x', 'y', 'z']; return '\\begin{cases}' + cs.map(function (s, i) { var r = s + '='; if (p0[i]) r += p0[i]; if (c[i]) r += (c[i] > 0 && p0[i] ? '+' : '') + (c[i] === 1 ? '' : c[i] === -1 ? '-' : c[i]) + 't'; if (!p0[i] && !c[i]) r += '0'; return r; }).join('\\\\') + '\\end{cases}'; }
+        function cross(u, v) { return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]; }
+        function dot(u, v) { return u[0] * v[0] + u[1] * v[1] + u[2] * v[2]; }
+        function sgn1(c) { return (c < 0 ? '-' : '+') + (Math.abs(c) === 1 ? '' : Math.abs(c)); }
+        function cf(f, t) { f = Q.toF(f); if (f.n === 0) return ''; var a = Math.abs(f.n), body = (a === 1 && f.d === 1) ? '' : (f.d === 1 ? String(a) : '\\dfrac{' + a + '}{' + f.d + '}'); return (f.n < 0 ? '-' : '+') + body + t; }
+        function rv(lo, hi) { return [ri(lo, hi), ri(lo, hi), ri(lo, hi)]; }
+        add('l12_ox_vitri_dt', GO, 'Vị trí tương đối của hai đường thẳng trong Oxyz (song song, trùng, cắt, chéo nhau)', 'VD', function () {
+            var kind = pick(['sS', 'tr', 'cat', 'cheo']), u1 = rv(-3, 3), p1 = rv(-3, 3), u2, p2; need(u1.some(function (z) { return z; }));
+            var NAMES = { sS: '\\text{song song}', tr: '\\text{trùng nhau}', cat: '\\text{cắt nhau}', cheo: '\\text{chéo nhau}' };
+            if (kind === 'sS' || kind === 'tr') { var k = pick([2, -1, -2, 3]); u2 = u1.map(function (z) { return z * k; }); if (kind === 'tr') { var s = pick([1, 2, -1]); p2 = [p1[0] + s * u1[0], p1[1] + s * u1[1], p1[2] + s * u1[2]]; } else { p2 = rv(-4, 4); var dd = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]; var cr = cross(dd, u1); need(cr.some(function (z) { return z; })); } }
+            else if (kind === 'cat') { u2 = rv(-3, 3); need(cross(u1, u2).some(function (z) { return z; })); var X = rv(-3, 3), s1 = ri(-2, 2), s2 = ri(-2, 2); p1 = [X[0] - s1 * u1[0], X[1] - s1 * u1[1], X[2] - s1 * u1[2]]; p2 = [X[0] - s2 * u2[0], X[1] - s2 * u2[1], X[2] - s2 * u2[2]]; }
+            else { u2 = rv(-3, 3); p2 = rv(-4, 4); var c0 = cross(u1, u2); need(c0.some(function (z) { return z; })); var dd2 = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]; need(dot(dd2, c0) !== 0); }
+            var par12 = !cross(u1, u2).some(function (z) { return z; }); need(!par12 || kind === 'sS' || kind === 'tr');
+            var ex = 'Vectơ chỉ phương $\\vec u_1=(' + u1.join(';') + ')$, $\\vec u_2=(' + u2.join(';') + ')$. ' + (par12 ? '$\\vec u_1,\\vec u_2$ cùng phương' + (kind === 'tr' ? ', điểm $M_2(' + p2.join(';') + ')$ thuộc $d_1$ nên hai đường thẳng trùng nhau.' : ', điểm $M_2(' + p2.join(';') + ')$ không thuộc $d_1$ nên hai đường thẳng song song.') : '$\\vec u_1,\\vec u_2$ không cùng phương. Với $M_1M_2=(' + [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]].join(';') + ')$, $[\\vec u_1,\\vec u_2]\\cdot\\overrightarrow{M_1M_2}=' + dot(cross(u1, u2), [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]) + (kind === 'cat' ? '=0$ nên hai đường thẳng cắt nhau.' : '\\ne0$ nên hai đường thẳng chéo nhau.'));
+            return mc('Trong không gian $Oxyz$, cho hai đường thẳng $d_1: ' + par(p1, u1) + '$ và $d_2: ' + par(p2, u2) + '$ (với tham số $t$ ở mỗi đường). Vị trí tương đối của $d_1$ và $d_2$ là', NAMES[kind], Object.keys(NAMES).filter(function (z) { return z !== kind; }).map(function (z) { return NAMES[z]; }), ex, 'VD');
+        });
+        add('l12_ox_hinhchieu', GO, 'Hình chiếu vuông góc và điểm đối xứng của một điểm qua mặt phẳng', 'VD', function () {
+            var nn = pick(Q4), n = shuf(nn.slice(0, 3)).map(function (z) { return z * pick([1, -1]); }), H = rv(-3, 3), k = pick([1, -1, 2, -2]); if (nn[3] > 3) k = pick([1, -1]);
+            var A = [H[0] + k * n[0], H[1] + k * n[1], H[2] + k * n[2]], d = -dot(n, H), Asym = [H[0] - k * n[0], H[1] - k * n[1], H[2] - k * n[2]], kind = pick(['hc', 'dx']);
+            var P = planeS({ n: n, d: d });
+            var perturb = function (p) { return [p[0] + pick([-1, 1]), p[1], p[2] + pick([-1, 1])]; };
+            var cor = kind === 'hc' ? H : Asym, wr = kind === 'hc' ? [Asym, A, perturb(H), H.map(function (z) { return -z; }), [H[1], H[0], H[2]], [A[0] - H[0], A[1] - H[1], A[2] - H[2]]] : [H, A, perturb(Asym), Asym.map(function (z) { return -z; }), [Asym[1], Asym[0], Asym[2]], [2 * H[0], 2 * H[1], 2 * H[2]]];
+            var ex = 'Mặt phẳng $(P)$ có vectơ pháp tuyến $\\vec n=(' + n.join(';') + ')$. Đường thẳng qua $A$ vuông góc $(P)$: $x=' + A[0] + sgn1(n[0]) + 't$, $y=' + A[1] + sgn1(n[1]) + 't$, $z=' + A[2] + sgn1(n[2]) + 't$. Thay vào $(P)$ được $t=' + (-k) + '$, suy ra hình chiếu $H' + pt3(H) + '$.' + (kind === 'dx' ? ' $H$ là trung điểm của $AA\'$ nên $A\'=2H-A=' + pt3(Asym) + '$.' : '');
+            return mc(kind === 'hc' ? 'Trong không gian $Oxyz$, cho điểm $A' + pt3(A) + '$ và mặt phẳng $(P): ' + P + '$. Tọa độ hình chiếu vuông góc của $A$ lên $(P)$ là' : 'Trong không gian $Oxyz$, cho điểm $A' + pt3(A) + '$ và mặt phẳng $(P): ' + P + '$. Tọa độ điểm $A\'$ đối xứng với $A$ qua $(P)$ là', pt3(cor), wr.map(pt3), ex, 'VD');
+        });
+        add('l12_ox_mp_3diem', GO, 'Viết phương trình mặt phẳng đi qua ba điểm', 'TH', function () {
+            var A = rv(-4, 4), B = rv(-4, 4), C = rv(-4, 4), AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]], AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]], n = cross(AB, AC); need(n.some(function (z) { return z; }));
+            var cor = planeN(n, -dot(n, A)); need(cor.n.every(function (z) { return Math.abs(z) < 30; }));
+            var wr = [planeN(n, dot(n, A)), planeN([n[0], n[1], -n[2]], -dot([n[0], n[1], -n[2]], A)), planeN([n[1], n[0], n[2]], -dot([n[1], n[0], n[2]], A)), planeN(n, -dot(n, B) + 1), planeN(cross(AB, [C[0] - B[0], C[1] - B[1], C[2] - B[2]]), -dot(cross(AB, [C[0] - B[0], C[1] - B[1], C[2] - B[2]]), B)).n ? planeN(n, -dot(n, C) - 2) : cor].map(planeS);
+            return mc('Trong không gian $Oxyz$, mặt phẳng đi qua ba điểm $A' + pt3(A) + '$, $B' + pt3(B) + '$, $C' + pt3(C) + '$ có phương trình là', planeS(cor), wr, '$\\overrightarrow{AB}=(' + AB.join(';') + ')$, $\\overrightarrow{AC}=(' + AC.join(';') + ')$. Vectơ pháp tuyến $\\vec n=[\\overrightarrow{AB},\\overrightarrow{AC}]=(' + n.join(';') + ')$. Mặt phẳng đi qua $A$ nên có phương trình ' + M(planeS(cor)) + ' (sau khi rút gọn).', 'TH');
+        });
+        add('l12_ox_cau_tx', GO, 'Phương trình mặt cầu tâm $I$ tiếp xúc với mặt phẳng', 'VD', function () {
+            var nn = pick(Q4), n = shuf(nn.slice(0, 3)).map(function (z) { return z * pick([1, -1]); }), I = rv(-3, 3), R = ri(1, 4), s = pick([1, -1]); var d = s * R * nn[3] - dot(n, I);
+            var P = planeS({ n: n, d: d }), cor = sq1(I[0], 'x') + '+' + sq1(I[1], 'y') + '+' + sq1(I[2], 'z') + '=' + R * R;
+            var mk = function (r2) { return sq1(I[0], 'x') + '+' + sq1(I[1], 'y') + '+' + sq1(I[2], 'z') + '=' + r2; };
+            var wr = [mk(R), mk((R + 1) * (R + 1)), mk(R * nn[3]), mk(R * R * nn[3]), sq1(-I[0], 'x') + '+' + sq1(-I[1], 'y') + '+' + sq1(-I[2], 'z') + '=' + R * R, mk(R * R + 2)];
+            return mc('Trong không gian $Oxyz$, mặt cầu có tâm $I' + pt3(I) + '$ và tiếp xúc với mặt phẳng $(P): ' + P + '$ có phương trình là', cor, wr, 'Bán kính $R=d(I,(P))=\\dfrac{|' + n.map(function (c, i) { return sg(c) + '\\cdot' + sg(I[i]); }).join('+') + (d ? '+' + sg(d) : '') + '|}{\\sqrt{' + n.map(function (c) { return c * c; }).join('+') + '}}=\\dfrac{' + R * nn[3] + '}{' + nn[3] + '}=' + R + '$. Phương trình mặt cầu: ' + M(cor) + '.', 'VD');
+        });
+    })(Q);
+    // ===== (v110) Lô 4 – Toán 11 (lượng giác, giới hạn – liên tục, xác suất, đạo hàm cơ học, thống kê ghép nhóm) + Toán 12 (Oxyz khoảng cách chéo, tham số m) =====
+    (function (Q) {
+        var ri = Q.ri, pick = Q.pick, shuf = Q.shuf, F = Q.F, tex = Q.tex, M = Q.M, need = Q.need, fadd = Q.fadd, fsub = Q.fsub, fmul = Q.fmul, fdiv = Q.fdiv, fneg = Q.fneg, feq = Q.feq, gcd = Q.gcd, dec = Q.dec;
+        function add(id, group, name, lv, make) { var gr = /^l12_/.test(id) ? 12 : 11; Q.GEN.push({ id: id, grade: gr, group: group, name: name, lv: lv, make: make }); }
+        function mc(q, cor, wr, ex, lv, sa) { var seen = {}; seen[cor.replace(/\s/g, '')] = 1; var w = []; wr.forEach(function (x) { var k = String(x).replace(/\s/g, ''); if (!seen[k]) { seen[k] = 1; w.push(String(x)); } }); need(w.length >= 3); var o = { q: q, correct: M(cor), wrongs: w.map(M), exp: ex, level: lv || 'TH' }; if (sa !== undefined) o.sa = sa; return o; }
+        function fnum(v, ex, q, extra, lv) { v = Q.toF(v); var wr = Q.numWr(v, extra || []).filter(function (z) { return !feq(z, v); }); var seen = {}; seen[tex(v)] = 1; wr = wr.filter(function (z) { var k = tex(z); if (seen[k]) return false; seen[k] = 1; return true; }); need(wr.length >= 3); return { q: q, correct: M(tex(v)), wrongs: wr.map(function (z) { return M(tex(z)); }), exp: ex, sa: dec(v), level: lv || 'TH' }; }
+        function sg(n) { return n < 0 ? '(' + n + ')' : String(n); }
+        function lnS(a, b, t) { var s = ''; if (a) s += (a === 1 ? '' : a === -1 ? '-' : a) + t; if (b) s += (b > 0 && s ? '+' : '') + b; return s || '0'; }
+        function sub0(v, t) { return t + (v > 0 ? '-' + v : v < 0 ? '+' + (-v) : ''); }
+        function sq1(v, t) { return v === 0 ? t + '^2' : '(' + sub0(v, t) + ')^2'; }
+        function ivS(lo, hi) { return '(' + (lo === -Infinity ? '-\\infty' : lo) + ';' + (hi === Infinity ? '+\\infty' : hi) + ')'; }
+        var L11 = 'Đại số và Giải tích 11', GO = 'Hình học 12 › Tọa độ trong không gian';
+        function pw(v, extra) { var c = (extra || []).slice(); for (var a = -3; a <= 3; a++) for (var b = -3; b <= 3; b++) { var dd = v.d + b; if (dd > 0 && (a || b)) c.push(F(v.n + a, dd)); } c.push(fsub(F(1, 1), v)); c.push(F(v.d, v.n || 1)); var seen = {}; return c.filter(function (z) { var k = z.n + '/' + z.d; if (seen[k] || !(z.n > 0 && z.n < z.d) || feq(z, v)) return false; seen[k] = 1; return true; }); }
+        function frm(v, ex, q, wr, lv) { v = Q.toF(v); var seen = {}; seen[tex(v)] = 1; wr = wr.filter(function (z) { z = Q.toF(z); var k = tex(z); if (seen[k]) return false; seen[k] = 1; return true; }); need(wr.length >= 3); return { q: q, correct: M(tex(v)), wrongs: wr.map(function (z) { return M(tex(z)); }), exp: ex, sa: dec(v), level: lv || 'TH' }; }
+        function piS(f) { f = Q.toF(f); if (f.n === 0) return '0'; var a = Math.abs(f.n), s = (f.n < 0 ? '-' : ''); var body = (a === 1 ? '' : a) + '\\pi'; return f.d === 1 ? s + body : s + '\\dfrac{' + body + '}{' + f.d + '}'; }
+        // ---------- LƯỢNG GIÁC ----------
+        var PT = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25], [20, 21, 29]];
+        add('l11_gtlg_cong', L11 + ' › Hàm số lượng giác', 'Công thức lượng giác: tính $\\cos\\alpha$, $\\tan\\alpha$, $\\sin2\\alpha$, $\\cos2\\alpha$ khi biết $\\sin\\alpha$ và góc phần tư', 'TH', function () {
+            var t = pick(PT), s = t[0], c = t[1], h = t[2]; if (Math.random() < 0.5) { s = t[1]; c = t[0]; }
+            var quad = pick(['II', 'III', 'IV']), sv = (quad === 'II') ? s : -s, cv = (quad === 'IV') ? c : -c;
+            var rng = { II: '\\dfrac{\\pi}{2}<\\alpha<\\pi', III: '\\pi<\\alpha<\\dfrac{3\\pi}{2}', IV: '-\\dfrac{\\pi}{2}<\\alpha<0' }[quad];
+            var kind = pick(['cos', 'tan', 'sin2', 'cos2']), v, name, ex;
+            var sF = F(sv, h), cF = F(cv, h);
+            var base = 'Vì $\\sin^2\\alpha+\\cos^2\\alpha=1$ nên $\\cos^2\\alpha=' + tex(F(c * c, h * h)) + '$; với $' + rng + '$ ta có $\\cos\\alpha' + (cv < 0 ? '<0' : '>0') + '$ nên $\\cos\\alpha=' + tex(cF) + '$. ';
+            if (kind === 'cos') { v = cF; name = '$\\cos\\alpha$'; ex = base; }
+            else if (kind === 'tan') { v = F(sv, cv); name = '$\\tan\\alpha$'; ex = base + '$\\tan\\alpha=\\dfrac{\\sin\\alpha}{\\cos\\alpha}=' + tex(v) + '$.'; }
+            else if (kind === 'sin2') { v = F(2 * sv * cv, h * h); name = '$\\sin2\\alpha$'; ex = base + '$\\sin2\\alpha=2\\sin\\alpha\\cos\\alpha=' + tex(v) + '$.'; }
+            else { v = F(cv * cv - sv * sv, h * h); name = '$\\cos2\\alpha$'; ex = '$\\cos2\\alpha=1-2\\sin^2\\alpha=1-2\\cdot' + tex(F(s * s, h * h)) + '=' + tex(v) + '$.'; }
+            need(v.n !== 0);
+            var wr = [fneg(v), F(v.d, v.n), fneg(F(v.d, v.n)), kind === 'tan' ? F(cv, sv) : F(sv, h), kind === 'sin2' ? F(sv * cv, h * h) : F(cv, h), kind === 'cos2' ? F(sv * sv + cv * cv, 1) : fneg(F(sv, h)), kind === 'cos' ? fneg(cF) : F(2 * cv * cv, h * h)];
+            return frm(v, ex, 'Cho $\\sin\\alpha=' + tex(sF) + '$ với $' + rng + '$. Giá trị của ' + name + ' bằng', wr, 'TH');
+        });
+        add('l11_tapxd_lg', L11 + ' › Hàm số lượng giác', 'Tập xác định của hàm số lượng giác ($\\tan$, $\\cot$, $\\dfrac1{\\sin}$, $\\dfrac1{\\cos}$)', 'TH', function () {
+            var a = pick([1, 2, 3, 4]), kind = pick(['tan', 'cot', 'sin', 'cos']), arg = a === 1 ? 'x' : a + 'x';
+            var f = { tan: '\\tan ' + arg, cot: '\\cot ' + arg, sin: '\\dfrac{1}{\\sin ' + arg + '}', cos: '\\dfrac{1}{\\cos ' + arg + '}' }[kind];
+            function setS(off, step) { var s = ''; if (off.n !== 0) s += piS(off) + '+'; var st = Q.toF(step); s += 'k' + (st.d === 1 ? (st.n === 1 ? '\\pi' : st.n + '\\pi') : '\\dfrac{' + (st.n === 1 ? '' : st.n) + '\\pi}{' + st.d + '}'); return '\\mathbb{R}\\setminus\\left\\{' + s + ',k\\in\\mathbb{Z}\\right\\}'; }
+            var half = (kind === 'tan' || kind === 'cos'), cor = setS(half ? F(1, 2 * a) : F(0), F(1, a));
+            var wr = [setS(half ? F(1, 2 * a) : F(0), F(1, 1)), setS(half ? F(1, a) : F(1, 2 * a), F(1, a)), setS(half ? F(0) : F(1, 2 * a), F(1, a)), setS(half ? F(1, 2) : F(0), F(1, 1)), setS(half ? F(1, 4 * a) : F(0), F(1, 2 * a)), setS(F(0), F(1, 2 * a)), setS(half ? F(1, 2 * a) : F(0), F(2, a))];
+            return mc('Tập xác định của hàm số $y=' + f + '$ là', cor, wr, 'Điều kiện: ' + (half ? '$\\cos ' + arg + '\\ne0\\Leftrightarrow ' + arg + '\\ne\\dfrac{\\pi}{2}+k\\pi\\Leftrightarrow x\\ne' + piS(F(1, 2 * a)) + '+k\\dfrac{\\pi}{' + a + '}$' : '$\\sin ' + arg + '\\ne0\\Leftrightarrow ' + arg + '\\ne k\\pi\\Leftrightarrow x\\ne k\\dfrac{\\pi}{' + a + '}$') + '. Tập xác định ' + M(cor) + '.', 'TH');
+        });
+        add('l11_chu_ky', L11 + ' › Hàm số lượng giác', 'Chu kì tuần hoàn của hàm số lượng giác', 'TH', function () {
+            var a = pick([2, 3, 4, 5, 6, '1/2']), kind = pick(['sin', 'cos', 'tan', 'cot']), af = a === '1/2' ? F(1, 2) : F(a), per = (kind === 'sin' || kind === 'cos') ? 2 : 1;
+            var T = fdiv(F(per), af); var arg = a === '1/2' ? '\\dfrac{x}{2}' : a + 'x'; var b = ri(-3, 3); var argb = arg + (b > 0 ? '+' + b : b < 0 ? b : '');
+            var cor = piS(T);
+            var wr = [piS(fdiv(F(per === 2 ? 1 : 2), af)), piS(fmul(F(per), af)), piS(fdiv(F(per), fmul(af, F(2)))), piS(F(per === 2 ? 2 : 1)), piS(fdiv(F(per), fadd(af, F(1))))];
+            return mc('Chu kì tuần hoàn của hàm số $y=\\' + kind + '(' + argb + ')$ là', cor, wr, 'Hàm $y=\\' + kind + '(ax+b)$ tuần hoàn với chu kì $T=\\dfrac{' + (per === 2 ? '2\\pi' : '\\pi') + '}{|a|}$. Ở đây $a=' + tex(af) + '$ nên $T=' + cor + '$.', 'TH');
+        });
+        // ---------- GIỚI HẠN, HÀM SỐ LIÊN TỤC ----------
+        add('l11_ham_lientuc', L11 + ' › Giới hạn, hàm số liên tục', 'Tìm tham số $m$ để hàm số liên tục tại một điểm', 'VD', function () {
+            var kind = pick(['pt', 'ghep']), q, v, ex;
+            if (kind === 'pt') { var r = ri(-4, 4), k = ri(-4, 4); need(k !== -r || true); var num = Q.poly([1, k - r, -r * k], 'x'); v = F(r + k); q = 'Cho hàm số $f(x)=\\begin{cases}\\dfrac{' + num + '}{x' + (r > 0 ? '-' + r : r < 0 ? '+' + (-r) : '') + '}&\\text{khi }x\\ne' + r + '\\\\ m&\\text{khi }x=' + r + '\\end{cases}$. Giá trị của $m$ để hàm số liên tục tại $x=' + r + '$ là'; need(r !== 0 || k !== 0); ex = 'Với $x\\ne' + r + '$: $f(x)=\\dfrac{(x' + (r > 0 ? '-' + r : r < 0 ? '+' + (-r) : '') + ')(x' + (k > 0 ? '+' + k : k < 0 ? k : '') + ')}{x' + (r > 0 ? '-' + r : r < 0 ? '+' + (-r) : '') + '}=x' + (k > 0 ? '+' + k : k < 0 ? k : '') + '$ nên $\\lim_{x\\to' + r + '}f(x)=' + (r + k) + '$. Hàm số liên tục tại $x=' + r + '\\Leftrightarrow m=' + (r + k) + '$.'; return mc(q, String(r + k), [r + k + 1, r + k - 1, -(r + k), r * k, r - k, 0].map(String), ex, 'VD', String(r + k)); }
+            var x0 = pick([-3, -2, -1, 1, 2, 3]), p = ri(-4, 4), c1 = ri(-3, 3); v = F(x0 * x0 + p - c1, x0); need(v.n !== 0);
+            q = 'Cho hàm số $f(x)=\\begin{cases}mx' + (c1 > 0 ? '+' + c1 : c1 < 0 ? c1 : '') + '&\\text{khi }x\\le' + x0 + '\\\\ x^2' + (p > 0 ? '+' + p : p < 0 ? p : '') + '&\\text{khi }x>' + x0 + '\\end{cases}$. Giá trị của $m$ để hàm số liên tục tại $x=' + x0 + '$ là';
+            ex = '$\\lim_{x\\to' + x0 + '^-}f(x)=' + x0 + 'm' + (c1 >= 0 ? '+' : '') + c1 + '$, $\\lim_{x\\to' + x0 + '^+}f(x)=' + (x0 * x0 + p) + '$. Liên tục tại $x=' + x0 + '\\Leftrightarrow ' + x0 + 'm+' + sg(c1) + '=' + (x0 * x0 + p) + '\\Leftrightarrow m=' + tex(v) + '$.';
+            return frm(v, ex, q, [fneg(v), F(x0 * x0 + p + c1, x0), F(x0 * x0 + p, x0), F(x0 * x0 + p - c1, 1), fadd(v, 1), fsub(v, 1)], 'VD');
+        });
+        function sg(n) { return n < 0 ? '(' + n + ')' : String(n); }
+        // ---------- XÁC SUẤT ----------
+        add('l11_xs_nhan', L11 + ' › Tổ hợp, xác suất', 'Quy tắc cộng và nhân xác suất: hai người cùng thực hiện độc lập', 'VD', function () {
+            var p = ri(1, 4), q = ri(1, 4), who = pick([['hai xạ thủ', 'bắn trúng bia', 'cùng bắn một viên đạn']]), kind = pick(['both', 'atleast', 'exactly', 'none']); need(p !== q);
+            var pa = F(p, 5), qa = F(q, 5), v, ex;
+            if (kind === 'both') { v = F(p * q, 25); ex = 'Hai biến cố độc lập nên $P=P(A)P(B)=' + tex(pa) + '\\cdot' + tex(qa) + '=' + tex(v) + '$.'; }
+            else if (kind === 'atleast') { v = F(25 - (5 - p) * (5 - q), 25); ex = 'Biến cố đối: không ai bắn trúng, xác suất $(1-' + tex(pa) + ')(1-' + tex(qa) + ')=' + tex(F((5 - p) * (5 - q), 25)) + '$. Xác suất cần tìm là $1-' + tex(F((5 - p) * (5 - q), 25)) + '=' + tex(v) + '$.'; }
+            else if (kind === 'exactly') { v = F(p * (5 - q) + q * (5 - p), 25); ex = 'Có đúng một người trúng: $P=' + tex(pa) + '(1-' + tex(qa) + ')+(1-' + tex(pa) + ')' + tex(qa) + '=' + tex(v) + '$.'; }
+            else { v = F((5 - p) * (5 - q), 25); ex = 'Cả hai đều không trúng: $P=(1-' + tex(pa) + ')(1-' + tex(qa) + ')=' + tex(v) + '$.'; }
+            var txt = { both: 'cả hai đều bắn trúng bia', atleast: 'có ít nhất một người bắn trúng bia', exactly: 'có đúng một người bắn trúng bia', none: 'không ai bắn trúng bia' }[kind];
+            return frm(v, ex, 'Hai xạ thủ cùng bắn độc lập vào một tấm bia. Xác suất bắn trúng bia của xạ thủ thứ nhất là $' + tex(pa) + '$, của xạ thủ thứ hai là $' + tex(qa) + '$. Xác suất để ' + txt + ' là', pw(v, [F(p + q, 10), F(p * q, 5), fadd(pa, qa)]), 'VD');
+        });
+        // ---------- ĐẠO HÀM ----------
+        add('l11_dh_cohoc', L11 + ' › Đạo hàm', 'Ý nghĩa cơ học của đạo hàm: vận tốc, gia tốc của chuyển động', 'VD', function () {
+            var b = pick([-6, -3, 3, 6, -9]), c = ri(-8, 8), t0 = ri(1, 4), kind = pick(['v', 'a', 't']), v, q, ex;
+            var s = 't^3' + (b > 0 ? '+' + b : b) + 't^2' + (c === 1 ? '+t' : c === -1 ? '-t' : c > 0 ? '+' + c + 't' : c < 0 ? c + 't' : '');
+            var sdesc = 'Một vật chuyển động theo phương trình $s(t)=' + s + '$, trong đó $t$ (giây) là thời gian, $s$ (mét) là quãng đường. ';
+            if (kind === 'v') { v = 3 * t0 * t0 + 2 * b * t0 + c; q = sdesc + 'Vận tốc của vật tại thời điểm $t=' + t0 + '$ giây là (m/s)'; ex = '$v(t)=s\'(t)=3t^2' + (2 * b > 0 ? '+' : '') + 2 * b + 't' + (c >= 0 ? '+' : '') + c + '$. $v(' + t0 + ')=' + v + '$.'; }
+            else if (kind === 'a') { v = 6 * t0 + 2 * b; q = sdesc + 'Gia tốc của vật tại thời điểm $t=' + t0 + '$ giây là (m/s$^2$)'; ex = '$a(t)=s\'\'(t)=6t' + (2 * b > 0 ? '+' : '') + 2 * b + '$. $a(' + t0 + ')=' + v + '$.'; }
+            else { need(b < 0); v = -b / 3; q = sdesc + 'Tại thời điểm nào (giây) thì gia tốc của vật bằng $0$?'; ex = '$a(t)=6t' + 2 * b + '=0\\Leftrightarrow t=' + v + '$.'; }
+            return mc(q, String(v), [v + 1, v - 1, -v, v * 2, v + 3, Math.round(v / 2) + 5].filter(function (z, i, a) { return true; }).map(String), ex, 'VD', String(v));
+        });
+        // ---------- THỐNG KÊ GHÉP NHÓM (trung vị, mốt) ----------
+        add('l11_tk_trungvi_mot', L11 + ' › Thống kê ghép nhóm', 'Mẫu số liệu ghép nhóm: trung vị, mốt, nhóm chứa trung vị', 'TH', function () {
+            var a0 = pick([0, 5, 10, 20]), w = pick([5, 10]), k = 5, fq = []; for (var i = 0; i < k - 1; i++) fq.push(ri(3, 14)); var s4 = fq.reduce(function (a, b) { return a + b; }, 0), r2 = s4 % 2 === 0 ? 2 : 1; fq.push(r2 + 2 * ri(1, 6)); var N = s4 + fq[k - 1]; need(N % 2 === 0);
+            var mx = Math.max.apply(null, fq); need(fq.filter(function (z) { return z === mx; }).length === 1);
+            var cum = 0, mi = -1, Cb = 0; for (var i = 0; i < k; i++) { if (cum + fq[i] >= N / 2) { mi = i; Cb = cum; break; } cum += fq[i]; }
+            var median = fadd(F(a0 + mi * w), fmul(fdiv(fsub(F(N, 2), F(Cb)), F(fq[mi])), F(w)));
+            var j = fq.indexOf(mx), prev = j > 0 ? fq[j - 1] : 0, next = j < k - 1 ? fq[j + 1] : 0, d1 = mx - prev, d2 = mx - next; var mode = fadd(F(a0 + j * w), fmul(F(d1, d1 + d2), F(w)));
+            var hd = '\\begin{array}{|c|' + 'c|'.repeat(k) + '}\\hline \\text{Nhóm}&' + fq.map(function (_, i) { return '[' + (a0 + i * w) + ';' + (a0 + (i + 1) * w) + ')'; }).join('&') + '\\\\\\hline \\text{Tần số}&' + fq.join('&') + '\\\\\\hline\\end{array}';
+            var kind = pick(['med', 'mode', 'grp']), stem = 'Cho mẫu số liệu ghép nhóm: $' + hd + '$ ';
+            if (kind === 'grp') { var grp = function (i) { return '[' + (a0 + i * w) + ';' + (a0 + (i + 1) * w) + ')'; }; var o = []; for (var i = 0; i < k; i++) if (i !== mi) o.push(grp(i)); return mc(stem + 'Nhóm chứa trung vị của mẫu số liệu trên là', grp(mi), o, 'Cỡ mẫu $n=' + N + '$, $\\dfrac n2=' + N / 2 + '$. Tần số tích lũy đầu tiên không nhỏ hơn $' + N / 2 + '$ ứng với nhóm ' + M(grp(mi)) + '.', 'TH'); }
+            if (kind === 'med') return frm(median, 'Cỡ mẫu $n=' + N + '$. Nhóm chứa trung vị là $[' + (a0 + mi * w) + ';' + (a0 + (mi + 1) * w) + ')$ (tần số tích lũy trước đó $' + Cb + '$). $M_e=u_m+\\dfrac{\\frac n2-C}{n_m}(u_{m+1}-u_m)=' + tex(median) + '$.', stem + 'Trung vị của mẫu số liệu trên là', [mode, fadd(F(a0 + mi * w), F(w, 2)), fadd(F(a0 + mi * w), fmul(fdiv(F(N, 4), F(fq[mi])), F(w))), F(a0 + mi * w), F(a0 + (mi + 1) * w)], 'TH');
+            return frm(mode, 'Nhóm có tần số lớn nhất là $[' + (a0 + j * w) + ';' + (a0 + (j + 1) * w) + ')$ với tần số $' + mx + '$. $M_o=u_j+\\dfrac{n_j-n_{j-1}}{(n_j-n_{j-1})+(n_j-n_{j+1})}h=' + tex(mode) + '$.', stem + 'Mốt của mẫu số liệu trên là', [median, F(2 * a0 + (2 * j + 1) * w, 2), F(a0 + j * w), fadd(F(a0 + j * w), fmul(F(d2, d1 + d2), F(w))), F(a0 + (j + 1) * w)], 'TH');
+        });
+        // ---------- LỚP 12 bổ sung (Oxyz) ----------
+        function rv(lo, hi) { return [ri(lo, hi), ri(lo, hi), ri(lo, hi)]; }
+        function par(p0, c) { var cs = ['x', 'y', 'z']; return '\\begin{cases}' + cs.map(function (s, i) { var r = s + '='; if (p0[i]) r += p0[i]; if (c[i]) r += (c[i] > 0 && p0[i] ? '+' : '') + (c[i] === 1 ? '' : c[i] === -1 ? '-' : c[i]) + 't'; if (!p0[i] && !c[i]) r += '0'; return r; }).join('\\\\') + '\\end{cases}'; }
+        add('l12_ox_kc_cheo', GO, 'Khoảng cách giữa hai đường thẳng chéo nhau trong Oxyz', 'VDC', function () {
+            var t = pick([[3, 4, 5], [4, 3, 5], [5, 12, 13], [6, 8, 10]]), p = t[0] * pick([1, -1]), q = t[1] * pick([1, -1]), h = t[2], kk = pick([1, 2, -1, 3]);
+            var pm = shuf([0, 1, 2]); var base1 = [p, q, 0], base2 = [0, 0, kk]; var u1 = [0, 0, 0], u2 = [0, 0, 0]; for (var i = 0; i < 3; i++) { u1[pm[i]] = base1[i]; u2[pm[i]] = base2[i]; }
+            var M1 = rv(-3, 3), M2 = rv(-3, 3), dd = [M2[0] - M1[0], M2[1] - M1[1], M2[2] - M1[2]]; var cr = [base1[1] * base2[2] - base1[2] * base2[1], base1[2] * base2[0] - base1[0] * base2[2], base1[0] * base2[1] - base1[1] * base2[0]]; var crp = [0, 0, 0]; for (var i = 0; i < 3; i++) crp[pm[i]] = cr[i];
+            var num = Math.abs(dd[0] * crp[0] + dd[1] * crp[1] + dd[2] * crp[2]), crn2 = crp[0] * crp[0] + crp[1] * crp[1] + crp[2] * crp[2], crn = Math.abs(kk) * h; need(num > 0);
+            var v = F(num, crn);
+            return frm(v, 'Vectơ chỉ phương $\\vec u_1=(' + u1.join(';') + ')$, $\\vec u_2=(' + u2.join(';') + ')$; $[\\vec u_1,\\vec u_2]=(' + crp.join(';') + ')$, độ dài $' + crn + '$. $\\overrightarrow{M_1M_2}=(' + dd.join(';') + ')$. $d=\\dfrac{|[\\vec u_1,\\vec u_2]\\cdot\\overrightarrow{M_1M_2}|}{|[\\vec u_1,\\vec u_2]|}=\\dfrac{' + num + '}{' + crn + '}=' + tex(v) + '$.', 'Trong không gian $Oxyz$, cho hai đường thẳng chéo nhau $d_1: ' + par(M1, u1) + '$ và $d_2: ' + par(M2, u2) + '$. Khoảng cách giữa $d_1$ và $d_2$ bằng', Q.numWr(v, [F(num, h), F(num, crn * crn), F(num, Math.abs(kk))]).filter(function (z) { return z.n > 0; }), 'VDC');
+        });
+        add('l12_ox_tham_so_m', GO, 'Tìm tham số $m$ để hai mặt phẳng vuông góc hoặc song song', 'VD', function () {
+            var kind = pick(['vg', 'ss']), q, v, ex;
+            function pl(c, d) { var s = '', t = ['x', 'y', 'z']; c.forEach(function (x, i) { if (x === 'm') s += (s ? '+' : '') + 'm' + t[i]; else if (x) s += (x > 0 && s ? '+' : '') + (x === 1 ? '' : x === -1 ? '-' : x) + t[i]; }); if (d) s += (d > 0 ? '+' : '') + d; return s + '=0'; }
+            if (kind === 'vg') { var a1 = ri(-3, 3), b1 = ri(-3, 3), a2 = ri(-3, 3), b2 = ri(-3, 3), c2 = pick([1, 2, -1, -2, 3]); var sum = a1 * a2 + b1 * b2; need(sum % c2 === 0 && (a1 || b1) && (a2 || b2)); v = -sum / c2; q = 'Trong không gian $Oxyz$, cho hai mặt phẳng $(P): ' + pl([a1, b1, 'm'], ri(-3, 3)) + '$ và $(Q): ' + pl([a2, b2, c2], ri(-3, 3)) + '$. Giá trị của $m$ để $(P)\\perp(Q)$ là'; ex = 'Vectơ pháp tuyến $\\vec n_P=(' + a1 + ';' + b1 + ';m)$, $\\vec n_Q=(' + a2 + ';' + b2 + ';' + c2 + ')$. $(P)\\perp(Q)\\Leftrightarrow\\vec n_P\\cdot\\vec n_Q=0\\Leftrightarrow ' + sum + '+' + sg(c2) + 'm=0\\Leftrightarrow m=' + v + '$.'; }
+            else { var k = pick([2, 3, -2, -1]), b = ri(1, 3), c = ri(1, 3) * pick([1, -1]), mm = ri(-3, 3); need(mm); var a = mm * k, d1 = ri(-3, 3), d2 = k * d1 + pick([1, -1, 2]); v = mm; q = 'Trong không gian $Oxyz$, cho hai mặt phẳng $(P): ' + pl(['m', b, c], d1) + '$ và $(Q): ' + pl([a, k * b, k * c], d2) + '$. Giá trị của $m$ để $(P)\\parallel(Q)$ là'; ex = '$(P)\\parallel(Q)\\Leftrightarrow\\dfrac{m}{' + a + '}=\\dfrac{' + b + '}{' + k * b + '}=\\dfrac{' + c + '}{' + k * c + '}\\ne\\dfrac{' + d1 + '}{' + d2 + '}$. Từ $\\dfrac{m}{' + a + '}=\\dfrac1{' + k + '}$ suy ra $m=' + v + '$ (thỏa điều kiện hệ số tự do khác tỉ lệ).'; }
+            return mc(q, String(v), [-v, v + 1, v - 1, v * 2, 0, v + 2].map(String), ex, 'VD', String(v));
+        });
+    })(Q);
+    // (v106) Ẩn các dạng ngoài chương trình GDPT 2018 theo quyết định của cô (số phức, hình trụ - nón - cầu, hệ hai PT bậc nhất hai ẩn). Muốn dùng lại: xóa danh sách HIDE này.
+    (function () { var HIDE = { sp_tinh: 1, sp_modun: 1, sp_chia: 1, sp_bac2: 1, sp_taphop: 1, trongxoay: 1, hept: 1, tf_sophuc: 1 };
+        [Q.GEN, Q.TF].forEach(function (arr) { for (var i = arr.length - 1; i >= 0; i--) if (HIDE[arr[i].id]) arr.splice(i, 1); }); })();
     Q.toks = toks;
     var PROF = null;
     function build() {
