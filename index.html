@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v219] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v220] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1422,10 +1422,10 @@ body nav.navbar .btn-nav, body nav.navbar button { padding: 7px 16px !important;
         let kahootTimer = null; let kahootTimeLeft = 20;
         let lecturePdfBase64 = "";
 
-        let topicsConfig = { general: [], g12: [], g11: [], g10: [] };
+        let topicsConfig = { general: [], g12: [], g11: [], g10: [], thpt: [] };
 
         function processTopicsData(rawTopics) {
-            topicsConfig = { general: [], g12: [], g11: [], g10: [] };
+            topicsConfig = { general: [], g12: [], g11: [], g10: [], thpt: [] };
             if (!rawTopics || !Array.isArray(rawTopics)) return;
 
             rawTopics.forEach(item => {
@@ -1452,6 +1452,7 @@ body nav.navbar .btn-nav, body nav.navbar button { padding: 7px 16px !important;
                 if (khoiStr === '12') topicsConfig.g12.push(topicObj);
                 else if (khoiStr === '11') topicsConfig.g11.push(topicObj);
                 else if (khoiStr === '10') topicsConfig.g10.push(topicObj);
+                else if (/thpt|luyen|luyện|ôn thi|on thi|tốt nghiệp|tot nghiep/i.test(khoiStr)) topicsConfig.thpt.push(topicObj);
                 else topicsConfig.general.push(topicObj);
             });
         }
@@ -1464,6 +1465,7 @@ body nav.navbar .btn-nav, body nav.navbar button { padding: 7px 16px !important;
             if (currentGrade === '12') list = list.concat(topicsConfig.g12);
             else if (currentGrade === '11') list = list.concat(topicsConfig.g11);
             else if (currentGrade === '10') list = list.concat(topicsConfig.g10);
+            else if (currentGrade === 'thpt') list = list.concat(topicsConfig.thpt.length ? topicsConfig.thpt : topicsConfig.g12);
             else list = list.concat(topicsConfig.g12, topicsConfig.g11, topicsConfig.g10);
 
             let currentFolderDiv = null; 
