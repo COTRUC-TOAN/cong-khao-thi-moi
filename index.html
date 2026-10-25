@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v197] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v204] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2475,6 +2475,10 @@ function removeQuestionFromSelected(qId) {
                 if (!confirm("⚠️ Còn " + rvPendingCount() + " câu bị Gemini đánh dấu 'cần xem kỹ' mà cô chưa bấm 'Đã xem'.\nVẫn lưu đề?")) return;
             }
 
+            // v198: hai câu trùng mã câu trong cùng một đề (vd: dán nhiều phần cùng lúc) thì đáp án câu sau đè câu trước -> tự đổi mã câu trùng
+            { const seenQ = {}; let dupFix = 0;
+              selectedQuestions.forEach(q => { if (!q || q.isDynamicConfig) return; let id = String(q.id); if (seenQ[id]) { let n = 2; while (seenQ[id + '_d' + n]) n++; q.id = id + '_d' + n; id = q.id; dupFix++; } seenQ[id] = 1; });
+              if (dupFix > 0) console.log('v198: đã đổi mã ' + dupFix + ' câu bị trùng mã trong đề'); }
             let keysSrv = false;
             let questionsToSave = selectedQuestions.map(q => ({ ...q }));
             if (mode === 'KIEMTRA') {
@@ -8032,7 +8036,7 @@ window.addEventListener('popstate', function () {
         S.ink.style.cursor = t === 'select' ? 'default' : (t === 'text' ? 'text' : (t === 'erase' ? 'none' : (S.curMode === 'dot' ? 'none' : 'default')));
     }
     function setTool(t) {
-        S.tool = t; if (t !== 'select') { S.ids = []; S.marq = null; }
+        S.tool = t; if (t !== 'select') { S.ids = []; S.marq = null; } if (t !== 'geo') S.geoPend = [];
         applyCursor();
         if (t !== 'erase' && S.eDot) S.eDot.style.display = 'none';
         if (S.pDot) S.pDot.style.display = 'none';
@@ -8060,6 +8064,8 @@ window.addEventListener('popstate', function () {
         dropdown(S.penBtn, function (m) {
             Object.keys(PENS).forEach(function (k) { var b = mItem(m, PENS[k], '', function () { setTool(k); }); if (S.tool === k) { b.style.background = '#2563eb'; b.style.color = '#fff'; } });
             var d = mItem(m, S.dash ? '┄ Nét đứt: bật' : '┄ Nét đứt: tắt', 'Dùng cho nét thẳng', function () { S.dash = !S.dash; refreshBar(); }); if (S.dash) d.style.background = '#dbeafe';
+            m.appendChild(el('div', 'font:600 12px system-ui;color:#64748b;margin:6px 2px 2px;', 'Chế độ viết'));
+            Object.keys(WMODES).forEach(function (k) { var b = mItem(m, WMODES[k], k === 'free' ? 'Nét giữ nguyên như bạn viết' : (k === 'line' ? 'Vẽ nét gần thẳng → thành đường thẳng' : (k === 'shape' ? 'Vẽ vòng kín → thành tam giác, tứ giác, hình tròn, elip' : 'Cả hai')), function () { S.wmode = k; refreshBar(); }); if ((S.wmode || 'free') === k) { b.style.background = '#dcfce7'; } });
             var row = el('div', 'display:flex;gap:6px;margin-top:2px;');
             [[2, 'Mảnh'], [4, 'Vừa'], [9, 'Dày']].forEach(function (z) {
                 var b = btn('<span style="display:inline-block;vertical-align:middle;width:20px;height:' + Math.min(z[0], 9) + 'px;background:#111;border-radius:6px"></span>', z[1], function () { S.size = z[0]; if (S.tool === 'select' && S.ids.length) modSelMany(function (o) { return o.kind === 'shape' ? { lw: LWMAP[z[0]] } : (o.kind === 'stroke' && (o.tool === 'pen' || o.tool === 'line' || o.tool === 'cal') ? { w: z[0] } : null); }); refreshBar(); }, 'min-width:42px;flex:1');
@@ -8068,6 +8074,11 @@ window.addEventListener('popstate', function () {
         });
         bar.appendChild(S.penBtn);
         [['erase', '🧽 Tẩy'], ['text', 'A Chữ']].forEach(function (t) { var b = btn(t[1], '', function () { setTool(t[0]); }); toolBtns[t[0]] = b; bar.appendChild(b); });
+        var geoB = btn('📐 Dựng hình ▾', 'Dựng hình tương tác: điểm kéo được, trung điểm, vuông góc, song song, phân giác, tâm tam giác, phép biến hình', null); toolBtns.geo = geoB;
+        dropdown(geoB, function (m) {
+            GEO_MENU.forEach(function (grp) { m.appendChild(el('div', 'font:600 12px system-ui;color:#64748b;margin:6px 2px 2px;', grp[0])); grp[1].forEach(function (z) { var b = mItem(m, z[1], '', function () { geoPickTool(z[0]); }); if (S.tool === 'geo' && (S.geoT || 'move') === z[0]) b.style.background = '#dcfce7'; }); });
+        });
+        bar.appendChild(geoB);
         var tsel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 4px;'); tsel.title = 'Cỡ chữ';
         [[22, 'Chữ 22'], [30, 'Chữ 30'], [36, 'Chữ 36'], [48, 'Chữ 48'], [64, 'Chữ 64'], [90, 'Chữ 90']].forEach(function (z) { var op = el('option', '', z[1]); op.value = z[0]; tsel.appendChild(op); }); tsel.value = 36;
         tsel.onchange = function () { S.tsize = +tsel.value; var o = findSel(); if (o && o.kind === 'text') { var n = Object.assign({}, o, { size: S.tsize }); measureText(n); replaceItem(n); commitNow(); } }; S.tsel = tsel; bar.appendChild(tsel);
@@ -8096,6 +8107,7 @@ window.addEventListener('popstate', function () {
             mItem(m, '📄 PDF', 'Mỗi trang PDF thành một trang của bảng (cần có mạng)', function () { S.pdfIn.click(); });
             mItem(m, '📈 Đồ thị hàm số', 'Gõ hàm số → ra đồ thị', function () { openGraphDialog(null); });
             mItem(m, '🧊 Hình học không gian (xoay được)', 'Chóp, lăng trụ, hộp, chóp cụt, trụ, nón, cầu: kéo để xoay', function () { openSolidDialog(null); });
+            mItem(m, '∑ Công thức (gõ LaTeX)', 'Gõ hoặc bấm nút mẫu: phân số, căn, tích phân, hệ phương trình… rồi chèn thành hình', function () { openFormulaDialog(null); });
             mItem(m, '📊 Bảng biến thiên', 'Lập bảng biến thiên (có máy điền thử)', function () { openBbtDialog(null); });
             mItem(m, '📝 Đề đang soạn (chiếu sửa bài)', 'Đưa các câu của đề đang soạn lên bảng, mỗi trang một hoặc vài câu', openExamDialog);
         });
@@ -8106,7 +8118,7 @@ window.addEventListener('popstate', function () {
         sel.onchange = function () { S.pages[S.pi].bg = sel.value; drawBase(); }; S.bgSel = sel; bar.appendChild(sel);
         // nút cho đối tượng đang chọn
         var g1 = el('span', 'display:none;gap:6px;align-items:center;'); S.selGroup = g1;
-        S.editSel = btn('🔄 Xoay / sửa', 'Mở lại hộp chỉnh hình, đồ thị hoặc bảng biến thiên đang chọn', function () { var so = findSel(); if (!so) return; if (so.kind === 'solid') openSolidDialog(so); else if (so.kind === 'fgraph') openGraphDialog(so); else if (so.kind === 'bbt') openBbtDialog(so); }, 'display:none;background:#eff6ff;border-color:#93c5fd;'); g1.appendChild(S.editSel);
+        S.editSel = btn('🔄 Xoay / sửa', 'Mở lại hộp chỉnh hình, đồ thị hoặc bảng biến thiên đang chọn', function () { var so = findSel(); if (!so) return; if (so.kind === 'solid') openSolidDialog(so); else if (so.kind === 'fgraph') openGraphDialog(so); else if (so.kind === 'bbt') openBbtDialog(so); else if (so.kind === 'img' && so.tex) openFormulaDialog(so); }, 'display:none;background:#eff6ff;border-color:#93c5fd;'); g1.appendChild(S.editSel);
         g1.appendChild(btn('⧉ Nhân đôi', 'Ctrl+D', dupSel)); g1.appendChild(btn('⬆ Lên trên', 'Đưa các thứ đã chọn lên trên', function () { var its = selItems(); if (!its.length) return; var set = {}; its.forEach(function (x) { set[x.uid] = 1; }); commit(S.pages[S.pi].items.filter(function (x) { return !set[x.uid]; }).concat(its)); }));
         S.saveKho = btn('⭐ Lưu vào kho', 'Lưu ảnh này vào Kho của tôi để dùng lại', saveSelToKho, 'display:none;'); g1.appendChild(S.saveKho);
         g1.appendChild(btn('🗑 Xóa đã chọn', 'Phím Delete', delSel, 'background:#fee2e2;border-color:#fecaca;color:#991b1b;')); bar.appendChild(g1);
@@ -8221,7 +8233,7 @@ window.addEventListener('popstate', function () {
         if (S.bgSel) S.bgSel.value = S.pages[S.pi].bg;
         if (S.fsBtn) S.fsBtn.textContent = document.fullscreenElement ? '⛶ Thu nhỏ' : '⛶ Toàn màn hình';
         if (S.selGroup) S.selGroup.style.display = S.ids.length ? 'inline-flex' : 'none';
-        if (S.editSel) { var se = findSel(); S.editSel.style.display = se && (se.kind === 'solid' || se.kind === 'fgraph' || se.kind === 'bbt') ? '' : 'none'; if (se && se.kind === 'solid') S.editSel.textContent = '🔄 Xoay hình'; else S.editSel.textContent = '✏️ Sửa'; }
+        if (S.editSel) { var se = findSel(); S.editSel.style.display = se && (se.kind === 'solid' || se.kind === 'fgraph' || se.kind === 'bbt' || (se.kind === 'img' && se.tex)) ? '' : 'none'; if (se && se.kind === 'solid') S.editSel.textContent = '🔄 Xoay hình'; else S.editSel.textContent = '✏️ Sửa'; }
         if (S.saveKho) { var so = findSel(); S.saveKho.style.display = so && so.kind === 'img' ? '' : 'none'; }
         if (S.tsel) S.tsel.value = String(S.tsize);
         if (S.tsel) { var fo = findSel(); S.tsel.style.display = (S.tool === 'text' || (fo && fo.kind === 'text')) ? '' : 'none'; }
@@ -8278,6 +8290,7 @@ window.addEventListener('popstate', function () {
             g.font = 'italic 20px ' + FONT; g.fillText('x', W - 24, cy + 28); g.fillText('y', cx + 14, 26); g.fillText('O', cx - 22, cy + 22);
         }
         p.items.forEach(function (it) { if (isObj(it)) drawObj(g, it); });
+        p.items.forEach(function (it) { if (it.kind === 'geo') drawGeo(g, it); });
     }
     function grid(g, W, H, u) { for (var x = 0; x < W; x += u) { g.beginPath(); g.moveTo(x + .5, 0); g.lineTo(x + .5, H); g.stroke(); } for (var y = 0; y < H; y += u) { g.beginPath(); g.moveTo(0, y + .5); g.lineTo(W, y + .5); g.stroke(); } }
 
@@ -8312,6 +8325,326 @@ window.addEventListener('popstate', function () {
     function drawInk() { var g = S.ink.getContext('2d'); g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, S.ink.width, S.ink.height); g.restore(); S.pages[S.pi].items.forEach(function (it) { if (it.kind === 'stroke') drawStroke(g, it); }); }
 
     // ---------- lịch sử ----------
+    // ---------- tự kẻ thẳng / tự thành hình (gắn vào nút Bút) ----------
+    var WMODES = { free: '✍️ Viết tay (giữ nguyên nét)', line: '📏 Tự kẻ thẳng', shape: '🔷 Tự thành hình', both: '✨ Hình và đường thẳng' };
+    function aiDist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function aiRdp(P, eps) {
+        if (P.length < 3) return P.slice();
+        var a = P[0], b = P[P.length - 1], mx = 0, mi = 0, L = aiDist(a, b) || 1e-9;
+        for (var i = 1; i < P.length - 1; i++) { var d = Math.abs((b.x - a.x) * (a.y - P[i].y) - (a.x - P[i].x) * (b.y - a.y)) / L; if (a === b) d = aiDist(a, P[i]); if (d > mx) { mx = d; mi = i; } }
+        if (mx > eps) { var l = aiRdp(P.slice(0, mi + 1), eps), r = aiRdp(P.slice(mi), eps); return l.slice(0, -1).concat(r); }
+        return [a, b];
+    }
+    function aiRecognize(P, mode) {
+        var n = P.length; if (n < 4) return null; var a = P[0], b = P[n - 1], len = 0, i, minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
+        for (i = 1; i < n; i++) len += aiDist(P[i - 1], P[i]);
+        for (i = 0; i < n; i++) { minx = Math.min(minx, P[i].x); maxx = Math.max(maxx, P[i].x); miny = Math.min(miny, P[i].y); maxy = Math.max(maxy, P[i].y); }
+        var diag = Math.hypot(maxx - minx, maxy - miny), dd = aiDist(a, b), pr = a.p;
+        function mk(x, y) { return { x: x, y: y, p: pr, pen: a.pen }; }
+        if (len < 50) return null;
+        var closed = dd < Math.max(16, 0.2 * len) && len > 110;
+        if (!closed) {
+            if (mode !== 'line' && mode !== 'both') return null;
+            if (dd < 40 || len > dd * 1.15) return null;
+            var mxd = 0, L = dd; for (i = 1; i < n - 1; i++) { var d = Math.abs((b.x - a.x) * (a.y - P[i].y) - (a.x - P[i].x) * (b.y - a.y)) / L; if (d > mxd) mxd = d; }
+            if (mxd > Math.max(7, 0.045 * dd)) return null;
+            return { line: [mk(a.x, a.y), mk(b.x, b.y)] };
+        }
+        if (mode !== 'shape' && mode !== 'both') return null;
+        var cx = (minx + maxx) / 2, cy = (miny + maxy) / 2, rx = (maxx - minx) / 2, ry = (maxy - miny) / 2; if (rx < 12 || ry < 12) return null;
+        var poly = aiRdp(P.concat([a]), Math.max(7, 0.07 * diag)); poly.pop(); // bỏ điểm cuối trùng đầu
+        var v = poly.length, out = [];
+        if (v === 3 || v === 4) {
+            var okSides = true; for (i = 0; i < v; i++) if (aiDist(poly[i], poly[(i + 1) % v]) < 0.12 * diag) okSides = false;
+            if (okSides) {
+                if (v === 4) { // gần hình chữ nhật thẳng → làm thẳng góc
+                    var dx1 = poly[1].x - poly[0].x, dy1 = poly[1].y - poly[0].y, ang = Math.atan2(dy1, dx1) * 180 / Math.PI, rt = true;
+                    for (i = 0; i < 4; i++) { var u = { x: poly[(i + 1) % 4].x - poly[i].x, y: poly[(i + 1) % 4].y - poly[i].y }, w = { x: poly[(i + 2) % 4].x - poly[(i + 1) % 4].x, y: poly[(i + 2) % 4].y - poly[(i + 1) % 4].y }, cs = (u.x * w.x + u.y * w.y) / (Math.hypot(u.x, u.y) * Math.hypot(w.x, w.y)); if (Math.abs(cs) > 0.26) rt = false; }
+                    var near0 = Math.min(Math.abs(ang % 90), 90 - Math.abs(ang % 90)); if (rt && near0 < 12) poly = [{ x: minx, y: miny }, { x: maxx, y: miny }, { x: maxx, y: maxy }, { x: minx, y: maxy }];
+                }
+                for (i = 0; i < poly.length; i++) { var p0 = poly[i], p1 = poly[(i + 1) % poly.length], k = Math.max(1, Math.round(aiDist(p0, p1) / 5)); for (var j = 0; j < k; j++) out.push(mk(p0.x + (p1.x - p0.x) * j / k, p0.y + (p1.y - p0.y) * j / k)); }
+                out.push(mk(poly[0].x, poly[0].y)); return { shape: out };
+            }
+        }
+        // elip / đường tròn: các điểm phải nằm gần elip ngoại tiếp
+        var s = 0, s2 = 0; for (i = 0; i < n; i++) { var q = Math.sqrt(Math.pow((P[i].x - cx) / rx, 2) + Math.pow((P[i].y - cy) / ry, 2)); s += q; s2 += q * q; }
+        var mean = s / n, sd = Math.sqrt(Math.max(0, s2 / n - mean * mean));
+        if (v >= 5 && sd < 0.14 && mean > 0.8 && mean < 1.2) {
+            var circ = Math.abs(rx - ry) / Math.max(rx, ry) < 0.2; if (circ) { rx = ry = (rx + ry) / 2; }
+            var N = 96; for (i = 0; i <= N; i++) { var t = i / N * Math.PI * 2; out.push(mk(cx + rx * Math.cos(t), cy + ry * Math.sin(t))); }
+            return { shape: out };
+        }
+        return null;
+    }
+    function aiApply(st) {
+        var m = S.wmode || 'free'; if (m === 'free' || (st.tool !== 'pen' && st.tool !== 'cal') || st.pts.length < 4) return false;
+        var r = null; try { r = aiRecognize(st.pts, m); } catch (e) { r = null; } if (!r) return false;
+        if (r.line) { st.tool = 'line'; st.pts = r.line; return true; }
+        st.pts = r.shape; return true;
+    }
+    // =====================================================================
+    //  DỰNG HÌNH TƯƠNG TÁC: điểm kéo được, trung điểm, vuông góc, song song, phân giác,
+    //  giao điểm, tâm tam giác, phép biến hình, kí hiệu góc. Kéo một điểm thì cả hình chạy theo.
+    // =====================================================================
+    var GEO_SPEC = {
+        tang: { s: ['p', 'C'], h: ['Bấm điểm (ngoài hoặc trên đường tròn)', 'Bấm đường tròn'] },
+        pt: { s: ['P'], h: ['Bấm vào chỗ trống để đặt điểm (bấm lên đường thì điểm nằm trên đường)'] },
+        seg: { s: ['P', 'P'], h: ['Bấm điểm đầu (chỗ trống hoặc điểm có sẵn)', 'Bấm điểm cuối'] },
+        line: { s: ['P', 'P'], h: ['Bấm điểm thứ nhất', 'Bấm điểm thứ hai'] },
+        ray: { s: ['P', 'P'], h: ['Bấm gốc của tia', 'Bấm một điểm trên tia'] },
+        poly: { s: null, h: ['Bấm lần lượt các đỉnh; bấm lại đỉnh đầu để khép kín'] },
+        circ: { s: ['P', 'P'], h: ['Bấm tâm', 'Bấm một điểm trên đường tròn'] },
+        mid: { s: ['p', 'p'], h: ['Bấm điểm thứ nhất', 'Bấm điểm thứ hai'] },
+        perp: { s: ['P', 'L'], h: ['Bấm điểm mà đường vuông góc đi qua', 'Bấm đường thẳng / đoạn thẳng'] },
+        alt: { s: ['p', 'L'], h: ['Bấm đỉnh', 'Bấm cạnh đối diện (đoạn thẳng)'] },
+        par: { s: ['P', 'L'], h: ['Bấm điểm mà đường song song đi qua', 'Bấm đường thẳng / đoạn thẳng'] },
+        bis: { s: ['p', 'p', 'p'], h: ['Bấm điểm A (một cạnh của góc)', 'Bấm đỉnh góc', 'Bấm điểm B (cạnh còn lại)'] },
+        inter: { s: ['LC', 'LC'], h: ['Bấm đường thứ nhất', 'Bấm đường thứ hai'] },
+        cen: { s: ['p', 'p', 'p'], h: ['Bấm đỉnh thứ nhất', 'Bấm đỉnh thứ hai', 'Bấm đỉnh thứ ba'] },
+        orth: { s: ['p', 'p', 'p'], h: ['Bấm đỉnh thứ nhất', 'Bấm đỉnh thứ hai', 'Bấm đỉnh thứ ba'] },
+        circ3: { s: ['p', 'p', 'p'], h: ['Bấm đỉnh thứ nhất', 'Bấm đỉnh thứ hai', 'Bấm đỉnh thứ ba'] },
+        inc3: { s: ['p', 'p', 'p'], h: ['Bấm đỉnh thứ nhất', 'Bấm đỉnh thứ hai', 'Bấm đỉnh thứ ba'] },
+        refl: { s: ['PG', 'L'], h: ['Bấm điểm hoặc cạnh của hình cần lấy đối xứng', 'Bấm trục đối xứng'] },
+        reflc: { s: ['PG', 'p'], h: ['Bấm điểm hoặc cạnh của hình cần lấy đối xứng', 'Bấm tâm đối xứng'] },
+        tr: { s: ['PG', 'p', 'p'], h: ['Bấm điểm hoặc cạnh của hình cần tịnh tiến', 'Bấm điểm đầu của vectơ', 'Bấm điểm cuối của vectơ'] },
+        rot: { s: ['PG', 'p'], h: ['Bấm điểm hoặc cạnh của hình cần quay', 'Bấm tâm quay'] },
+        hom: { s: ['PG', 'p'], h: ['Bấm điểm hoặc cạnh của hình cần vị tự', 'Bấm tâm vị tự'] },
+        ang: { s: ['p', 'p', 'p'], h: ['Bấm điểm A', 'Bấm đỉnh góc', 'Bấm điểm B'] },
+        right: { s: ['p', 'p', 'p'], h: ['Bấm điểm A', 'Bấm đỉnh góc vuông', 'Bấm điểm B'] },
+        eq: { s: ['L'], h: ['Bấm vào đoạn thẳng để thêm gạch bằng nhau (bấm nhiều lần: 1, 2, 3 gạch, rồi bỏ)'] },
+        del: { s: ['X'], h: ['Bấm vào điểm hoặc đường muốn xóa (các thứ phụ thuộc cũng bị xóa)'] }
+    };
+    var GEO_MENU = [['Chung', [['move', '🖐 Di chuyển điểm'], ['pt', '• Điểm']]], ['Vẽ', [['seg', 'Đoạn thẳng'], ['line', 'Đường thẳng qua 2 điểm'], ['ray', 'Tia'], ['poly', 'Đa giác'], ['circ', 'Đường tròn (tâm, điểm)']]], ['Dựng', [['mid', 'Trung điểm'], ['perp', 'Đường vuông góc'], ['alt', 'Đường cao (có chân H)'], ['par', 'Đường song song'], ['bis', 'Tia phân giác'], ['inter', 'Giao điểm'], ['tang', 'Tiếp tuyến với đường tròn']]], ['Tâm tam giác', [['cen', 'Trọng tâm'], ['orth', 'Trực tâm'], ['circ3', 'Tâm + đường tròn ngoại tiếp'], ['inc3', 'Tâm + đường tròn nội tiếp']]], ['Phép biến hình', [['refl', 'Đối xứng trục'], ['reflc', 'Đối xứng tâm'], ['tr', 'Tịnh tiến'], ['rot', 'Quay'], ['hom', 'Vị tự']]], ['Kí hiệu', [['ang', 'Kí hiệu góc (có số đo)'], ['right', 'Góc vuông'], ['eq', 'Đoạn bằng nhau']]], ['Xóa', [['del', '🗑 Xóa một thứ'], ['clear', '🧹 Xóa hết hình dựng']]]];
+    function geoItem(create) { var p = S.pages[S.pi], i; for (i = 0; i < p.items.length; i++) if (p.items[i].kind === 'geo') return p.items[i]; return create ? { kind: 'geo', uid: uid(), x: S.W / 2, y: S.H / 2, w: S.W, h: S.H, rot: 0, objs: [], nid: 1 } : null; }
+    function gUnit(x, y) { var l = Math.hypot(x, y); return l < 1e-9 ? null : [x / l, y / l]; }
+    function gFoot(L, x, y) { var t = (x - L.x) * L.dx + (y - L.y) * L.dy; return { x: L.x + L.dx * t, y: L.y + L.dy * t, t: t }; }
+    function gCirc3(A, B, C) { var d = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y)); if (Math.abs(d) < 1e-9) return null; var a2 = A.x * A.x + A.y * A.y, b2 = B.x * B.x + B.y * B.y, c2 = C.x * C.x + C.y * C.y; return { x: (a2 * (B.y - C.y) + b2 * (C.y - A.y) + c2 * (A.y - B.y)) / d, y: (a2 * (C.x - B.x) + b2 * (A.x - C.x) + c2 * (B.x - A.x)) / d }; }
+    function gTanPt(E, d) {
+        var P = E.P[d.a], C = E.C[d.cc]; if (!P || !C) return null; var dx = P.x - C.x, dy = P.y - C.y, D = Math.hypot(dx, dy); if (D < C.r - 1e-6 || D < 1e-9) return null;
+        if (Math.abs(D - C.r) < 1e-6) return { x: P.x, y: P.y };
+        var ux = dx / D, uy = dy / D, cs = C.r / D, sn = Math.sqrt(Math.max(0, 1 - cs * cs)), sg = (d.i || 0) === 0 ? 1 : -1;
+        return { x: C.x + C.r * (ux * cs - sg * uy * sn), y: C.y + C.r * (uy * cs + sg * ux * sn) };
+    }
+    function geoDer(E, d) {
+        if (d.k === 'tanpt') return gTanPt(E, d);
+        var A = E.P[d.a], B = E.P[d.b], C = E.P[d.c], k = d.k;
+        if (k === 'mid') return A && B ? { x: (A.x + B.x) / 2, y: (A.y + B.y) / 2 } : null;
+        if (k === 'foot') { var L = E.L[d.l]; return A && L ? gFoot(L, A.x, A.y) : null; }
+        if (k === 'cen') return A && B && C ? { x: (A.x + B.x + C.x) / 3, y: (A.y + B.y + C.y) / 3 } : null;
+        if (k === 'circ') return A && B && C ? gCirc3(A, B, C) : null;
+        if (k === 'orth') { if (!(A && B && C)) return null; var O = gCirc3(A, B, C); return O ? { x: A.x + B.x + C.x - 2 * O.x, y: A.y + B.y + C.y - 2 * O.y } : null; }
+        if (k === 'inc') { if (!(A && B && C)) return null; var a = Math.hypot(B.x - C.x, B.y - C.y), b = Math.hypot(A.x - C.x, A.y - C.y), c = Math.hypot(A.x - B.x, A.y - B.y), s = a + b + c; return s < 1e-9 ? null : { x: (a * A.x + b * B.x + c * C.x) / s, y: (a * A.y + b * B.y + c * C.y) / s }; }
+        if (k === 'refl') { var Lr = E.L[d.l]; if (!(A && Lr)) return null; var f = gFoot(Lr, A.x, A.y); return { x: 2 * f.x - A.x, y: 2 * f.y - A.y }; }
+        var O2 = E.P[d.o];
+        if (k === 'reflc') return A && O2 ? { x: 2 * O2.x - A.x, y: 2 * O2.y - A.y } : null;
+        if (k === 'tr') { var U = E.P[d.u], V = E.P[d.v]; return A && U && V ? { x: A.x + V.x - U.x, y: A.y + V.y - U.y } : null; }
+        if (k === 'rot') { if (!(A && O2)) return null; var r = d.deg * Math.PI / 180, dx = A.x - O2.x, dy = A.y - O2.y; return { x: O2.x + dx * Math.cos(r) + dy * Math.sin(r), y: O2.y - dx * Math.sin(r) + dy * Math.cos(r) }; }
+        if (k === 'hom') return A && O2 ? { x: O2.x + d.r * (A.x - O2.x), y: O2.y + d.r * (A.y - O2.y) } : null;
+        if (k === 'inter') {
+            var L1 = E.L[d.l1], L2 = E.L[d.l2], C1 = E.C[d.l1], C2 = E.C[d.l2], i = d.i || 0;
+            if (L1 && L2) { var den = L1.dx * L2.dy - L1.dy * L2.dx; if (Math.abs(den) < 1e-9 || i > 0) return null; var t = ((L2.x - L1.x) * L2.dy - (L2.y - L1.y) * L2.dx) / den; return { x: L1.x + L1.dx * t, y: L1.y + L1.dy * t }; }
+            var LL = L1 || L2, CC = C1 || C2; if (LL && CC) { var px = LL.x - CC.x, py = LL.y - CC.y, bq = LL.dx * px + LL.dy * py, cq = px * px + py * py - CC.r * CC.r, dis = bq * bq - cq; if (dis < 0) return null; var sq = Math.sqrt(dis), tt = i === 0 ? -bq - sq : -bq + sq; return { x: LL.x + LL.dx * tt, y: LL.y + LL.dy * tt }; }
+            if (C1 && C2) { var dd = Math.hypot(C2.x - C1.x, C2.y - C1.y); if (dd < 1e-9 || dd > C1.r + C2.r || dd < Math.abs(C1.r - C2.r)) return null; var aa = (C1.r * C1.r - C2.r * C2.r + dd * dd) / (2 * dd), hh = Math.sqrt(Math.max(0, C1.r * C1.r - aa * aa)), ux = (C2.x - C1.x) / dd, uy = (C2.y - C1.y) / dd, mx = C1.x + ux * aa, my = C1.y + uy * aa, sg = i === 0 ? 1 : -1; return { x: mx - sg * hh * uy, y: my + sg * hh * ux }; }
+        }
+        return null;
+    }
+    function geoOnPt(E, on) {
+        var L = E.L[on.ref], C = E.C[on.ref];
+        if (L) { var t = L.len < 1e8 && on.seg ? on.u * L.len : on.u; return { x: L.x + L.dx * t, y: L.y + L.dy * t }; }
+        if (C) return { x: C.x + C.r * Math.cos(on.u), y: C.y + C.r * Math.sin(on.u) };
+        return null;
+    }
+    function geoLine(E, q) {
+        if (q.a) { var A = E.P[q.a], B = E.P[q.b]; if (!A || !B) return null; var u = gUnit(B.x - A.x, B.y - A.y); if (!u) return null; return { k: q.k, x: A.x, y: A.y, dx: u[0], dy: u[1], len: q.k === 'seg' ? Math.hypot(B.x - A.x, B.y - A.y) : 1e9 }; }
+        var v = q.via; if (!v) return null;
+        if (v.type === 'tan') { var P3 = E.P[v.p], T3 = gTanPt(E, { a: v.p, cc: v.cc, i: v.i }); if (!P3 || !T3) return null; var u3 = gUnit(T3.x - P3.x, T3.y - P3.y); if (!u3) { var C3 = E.C[v.cc]; u3 = C3 ? gUnit(-(P3.y - C3.y), P3.x - C3.x) : null; if (!u3) return null; } return { k: 'line', x: P3.x, y: P3.y, dx: u3[0], dy: u3[1], len: 1e9 }; }
+        if (v.type === 'bis') { var O = E.P[v.o], A2 = E.P[v.a], B2 = E.P[v.b]; if (!(O && A2 && B2)) return null; var u1 = gUnit(A2.x - O.x, A2.y - O.y), u2 = gUnit(B2.x - O.x, B2.y - O.y); if (!u1 || !u2) return null; var s = gUnit(u1[0] + u2[0], u1[1] + u2[1]) || [-u1[1], u1[0]]; return { k: 'ray', x: O.x, y: O.y, dx: s[0], dy: s[1], len: 1e9 }; }
+        var P = E.P[v.p], R = E.L[v.l]; if (!P || !R) return null;
+        return v.type === 'perp' ? { k: 'line', x: P.x, y: P.y, dx: -R.dy, dy: R.dx, len: 1e9 } : { k: 'line', x: P.x, y: P.y, dx: R.dx, dy: R.dy, len: 1e9 };
+    }
+    function geoEval(o) {
+        var E = { P: {}, L: {}, C: {}, G: {} };
+        o.objs.forEach(function (q) {
+            try {
+                if (q.t === 'P') { var r = q.d ? geoDer(E, q.d) : (q.on ? geoOnPt(E, q.on) : { x: q.x, y: q.y }); if (r && isFinite(r.x) && isFinite(r.y)) E.P[q.id] = r; }
+                else if (q.t === 'L') { var L = geoLine(E, q); if (L) E.L[q.id] = L; }
+                else if (q.t === 'C') { var c = E.P[q.c]; if (!c) return; if (q.k === 'inc') { var A = E.P[q.a], B = E.P[q.b], u = A && B ? gUnit(B.x - A.x, B.y - A.y) : null; if (u) E.C[q.id] = { x: c.x, y: c.y, r: Math.abs((c.x - A.x) * u[1] - (c.y - A.y) * u[0]) }; } else { var rp = E.P[q.r]; if (rp) E.C[q.id] = { x: c.x, y: c.y, r: Math.hypot(rp.x - c.x, rp.y - c.y) }; } }
+                else if (q.t === 'G') { if (q.ids.every(function (id) { return E.P[id]; })) E.G[q.id] = q.ids; }
+            } catch (e) { }
+        });
+        return E;
+    }
+    function geoNum(v) { return (+v.toFixed(1)).toString().replace('.', ','); }
+    function drawGeo(g, o) {
+        var E = geoEval(o), st = function (q) { g.strokeStyle = q.col || '#111827'; g.lineWidth = q.w || 2.4; g.setLineDash(q.dash ? [9, 6] : []); g.lineCap = 'round'; g.lineJoin = 'round'; }, BIG = 6000;
+        g.save();
+        o.objs.forEach(function (q) {
+            if (q.t === 'G' && E.G[q.id]) { st(q); g.beginPath(); q.ids.forEach(function (id, i) { var P = E.P[id]; i ? g.lineTo(P.x, P.y) : g.moveTo(P.x, P.y); }); g.closePath(); g.stroke(); }
+            else if (q.t === 'L' && E.L[q.id]) { var L = E.L[q.id]; st(q); var t0 = L.k === 'line' ? -BIG : 0, t1 = L.k === 'seg' ? L.len : BIG; g.beginPath(); g.moveTo(L.x + L.dx * t0, L.y + L.dy * t0); g.lineTo(L.x + L.dx * t1, L.y + L.dy * t1); g.stroke(); }
+            else if (q.t === 'C' && E.C[q.id]) { var C = E.C[q.id]; st(q); g.beginPath(); g.arc(C.x, C.y, C.r, 0, Math.PI * 2); g.stroke(); }
+        });
+        g.setLineDash([]);
+        o.objs.forEach(function (q) {
+            if (q.t !== 'M') return; g.strokeStyle = q.col || '#111827'; g.fillStyle = q.col || '#111827'; g.lineWidth = 1.8;
+            if (q.k === 'eq') { var S0 = E.L[q.s]; if (!S0) return; var mx = S0.x + S0.dx * S0.len / 2, my = S0.y + S0.dy * S0.len / 2; for (var i = 0; i < q.n; i++) { var off = (i - (q.n - 1) / 2) * 7; g.beginPath(); g.moveTo(mx + S0.dx * off - S0.dy * 7, my + S0.dy * off + S0.dx * 7); g.lineTo(mx + S0.dx * off + S0.dy * 7, my + S0.dy * off - S0.dx * 7); g.stroke(); } return; }
+            if (q.k === 'rightL') { var H = E.P[q.h], Pp = E.P[q.p], LL = E.L[q.l]; if (!(H && Pp && LL)) return; var u1 = gUnit(Pp.x - H.x, Pp.y - H.y), sgn = 1; if (!u1) return; var ex = H.x + LL.dx * 20, ey = H.y + LL.dy * 20; var u2 = [LL.dx * sgn, LL.dy * sgn]; if (Math.hypot(Pp.x - H.x, Pp.y - H.y) < 1) return; g.beginPath(); g.moveTo(H.x + u1[0] * 14, H.y + u1[1] * 14); g.lineTo(H.x + u1[0] * 14 + u2[0] * 14, H.y + u1[1] * 14 + u2[1] * 14); g.lineTo(H.x + u2[0] * 14, H.y + u2[1] * 14); g.stroke(); return; }
+            var A = E.P[q.a], O = E.P[q.o], B = E.P[q.b]; if (!(A && O && B)) return; var a1 = Math.atan2(A.y - O.y, A.x - O.x), a2 = Math.atan2(B.y - O.y, B.x - O.x), dl = a2 - a1; while (dl > Math.PI) dl -= 2 * Math.PI; while (dl <= -Math.PI) dl += 2 * Math.PI;
+            if (q.k === 'right') { var v1 = gUnit(A.x - O.x, A.y - O.y), v2 = gUnit(B.x - O.x, B.y - O.y); if (!v1 || !v2) return; g.beginPath(); g.moveTo(O.x + v1[0] * 16, O.y + v1[1] * 16); g.lineTo(O.x + (v1[0] + v2[0]) * 16, O.y + (v1[1] + v2[1]) * 16); g.lineTo(O.x + v2[0] * 16, O.y + v2[1] * 16); g.stroke(); }
+            else { g.beginPath(); g.arc(O.x, O.y, 28, a1, a1 + dl, dl < 0); g.stroke(); var am = a1 + dl / 2; g.font = '18px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 4; g.strokeStyle = 'rgba(255,255,255,.9)'; var tx = O.x + Math.cos(am) * 46, ty = O.y + Math.sin(am) * 46, tt = geoNum(Math.abs(dl) * 180 / Math.PI) + '°'; g.strokeText(tt, tx, ty); g.fillText(tt, tx, ty); }
+        });
+        // điểm và tên
+        o.objs.forEach(function (q) {
+            if (q.t !== 'P' || !E.P[q.id]) return; var P = E.P[q.id], dir = [0.7, -0.7], i;
+            for (i = 0; i < o.objs.length; i++) { var pg = o.objs[i]; if (pg.t === 'G' && E.G[pg.id] && pg.ids.indexOf(q.id) >= 0) { var cx = 0, cy = 0; pg.ids.forEach(function (id) { cx += E.P[id].x; cy += E.P[id].y; }); cx /= pg.ids.length; cy /= pg.ids.length; var u = gUnit(P.x - cx, P.y - cy); if (u) dir = u; break; } }
+            g.fillStyle = q.col || '#111827'; g.beginPath(); g.arc(P.x, P.y, 4.6, 0, Math.PI * 2); g.fill();
+            if (q.n) { g.font = 'italic 22px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 4; g.lineJoin = 'round'; g.strokeStyle = 'rgba(255,255,255,.92)'; var lx = P.x + dir[0] * 17, ly = P.y + dir[1] * 17; g.strokeText(q.n, lx, ly); g.fillStyle = q.col || '#111827'; g.fillText(q.n, lx, ly); }
+        });
+        if (S.tool === 'geo' && S.geoPend && S.geoPend.length) {
+            g.strokeStyle = '#f59e0b'; g.lineWidth = 2.4; var prev = null;
+            S.geoPend.forEach(function (pk) { var c = geoPickXY(E, pk); if (!c) return; if (S.geoT === 'poly' && prev) { g.setLineDash([6, 5]); g.beginPath(); g.moveTo(prev.x, prev.y); g.lineTo(c.x, c.y); g.stroke(); g.setLineDash([]); } g.beginPath(); g.arc(c.x, c.y, 10, 0, Math.PI * 2); g.stroke(); prev = c; });
+        }
+        g.restore();
+    }
+    function geoPickXY(E, pk) { if (pk.k === 'pt') return E.P[pk.id] || null; if (pk.k === 'poly') { var ids = E.G[pk.id]; return ids ? E.P[ids[0]] : null; } if (pk.k === 'obj') { var L = E.L[pk.id]; if (L) return { x: L.x + L.dx * Math.min(L.len, 1e8) / 2, y: L.y + L.dy * Math.min(L.len, 1e8) / 2 }; var C = E.C[pk.id]; return C ? { x: C.x + C.r, y: C.y } : null; } return { x: pk.x, y: pk.y }; }
+    function geoHitPt(it, E, x, y) { var best = null, bd = 17; it.objs.forEach(function (q) { if (q.t === 'P' && E.P[q.id]) { var d = Math.hypot(E.P[q.id].x - x, E.P[q.id].y - y); if (d <= bd) { bd = d; best = q; } } }); return best; }
+    function geoHitObj(it, E, x, y, kinds) {
+        var best = null, bd = 10;
+        it.objs.forEach(function (q) {
+            var d = 1e9;
+            if (q.t === 'L' && E.L[q.id] && kinds.indexOf('L') >= 0) { var L = E.L[q.id], f = gFoot(L, x, y), t = Math.max(L.k === 'line' ? -1e9 : 0, Math.min(L.k === 'seg' ? L.len : 1e9, f.t)); d = Math.hypot(L.x + L.dx * t - x, L.y + L.dy * t - y); }
+            else if (q.t === 'C' && E.C[q.id] && kinds.indexOf('C') >= 0) { var C = E.C[q.id]; d = Math.abs(Math.hypot(x - C.x, y - C.y) - C.r); }
+            else if (q.t === 'G' && E.G[q.id] && kinds.indexOf('G') >= 0) { var ids = E.G[q.id], n = ids.length; for (var i = 0; i < n; i++) { var A = E.P[ids[i]], B = E.P[ids[(i + 1) % n]], u = gUnit(B.x - A.x, B.y - A.y); if (!u) continue; var tt = Math.max(0, Math.min(Math.hypot(B.x - A.x, B.y - A.y), (x - A.x) * u[0] + (y - A.y) * u[1])); d = Math.min(d, Math.hypot(A.x + u[0] * tt - x, A.y + u[1] * tt - y)); } }
+            if (d < bd) { bd = d; best = q; }
+        });
+        return best;
+    }
+    function geoRefs(q) { var out = []; (function walk(v, key) { if (v == null) return; if (typeof v === 'string') { if (key !== 'k' && key !== 'type' && key !== 'n' && key !== 't' && key !== 'id' && key !== 'c') out.push(v); } else if (Array.isArray(v)) v.forEach(function (x) { walk(x, 'ids'); }); else if (typeof v === 'object') Object.keys(v).forEach(function (k) { walk(v[k], k); }); })(Object.assign({}, q, { id: null }), ''); return out; }
+    window.__geoItem = function () { return geoItem(false); };
+    function geoHitEdge(it, E, x, y) { var best = null, bd = 10; it.objs.forEach(function (q) { if (q.t !== 'G' || !E.G[q.id]) return; var ids = E.G[q.id], n = ids.length; for (var i = 0; i < n; i++) { var A = E.P[ids[i]], B = E.P[ids[(i + 1) % n]], u = gUnit(B.x - A.x, B.y - A.y); if (!u) continue; var tt = Math.max(0, Math.min(Math.hypot(B.x - A.x, B.y - A.y), (x - A.x) * u[0] + (y - A.y) * u[1])), d = Math.hypot(A.x + u[0] * tt - x, A.y + u[1] * tt - y); if (d < bd) { bd = d; best = { k: 'edge', a: ids[i], b: ids[(i + 1) % n] }; } } }); return best; }
+    function geoOp(fn) {
+        var p = S.pages[S.pi], cur = geoItem(true), G = { objs: cur.objs.slice(), nid: cur.nid, st: { c: S.color === '#ffffff' ? '#111827' : S.color, w: LWMAP[S.size] || 2.4, dash: !!S.dash } };
+        G.id = function () { return 'o' + (G.nid++); };
+        G.name = function (pref) { var used = {}; G.objs.forEach(function (q) { if (q.t === 'P' && q.n) used[q.n] = 1; }); if (pref && !used[pref]) return pref; var L = 'ABCDEFGHIKLMNPQRSTUVWXYZ', i, k; for (k = 0; k < 20; k++) for (i = 0; i < L.length; i++) { var nm = L.charAt(i) + (k ? k : ''); if (!used[nm]) return nm; } return ''; };
+        G.add = function (q) { q.id = G.id(); q.col = G.st.c; q.w = G.st.w; q.dash = q.t === 'P' || q.t === 'M' ? false : G.st.dash; G.objs.push(q); return q.id; };
+        var ok = fn(G); if (ok === false) return;
+        var n = Object.assign({}, cur, { objs: G.objs, nid: G.nid }), items = p.items.indexOf(cur) >= 0 ? p.items.map(function (x) { return x === cur ? n : x; }) : p.items.concat([n]);
+        commit(items);
+    }
+    function geoResolve(G, E, pk, pref) {
+        if (pk.k === 'pt') return pk.id;
+        if (pk.k === 'on') return G.add({ t: 'P', n: G.name(pref), on: { ref: pk.ref, u: pk.u, seg: pk.seg } });
+        if (pk.k === 'new') return G.add({ t: 'P', n: G.name(pref), x: pk.x, y: pk.y });
+        return pk.id;
+    }
+    function geoXform(G, E, pk, mkDef, e) {
+        var done = {}; function one(pid, nm) { var d = mkDef(pid); return G.add({ t: 'P', n: G.name((nm || '') + "'"), d: d }); }
+        if (pk.k === 'pt') { var P0 = G.objs.filter(function (q) { return q.id === pk.id; })[0]; one(pk.id, P0 && P0.n); return; }
+        var pg = G.objs.filter(function (q) { return q.id === pk.id; })[0]; if (!pg) return;
+        var ids = pg.ids.map(function (id) { var P0 = G.objs.filter(function (q) { return q.id === id; })[0]; return one(id, P0 && P0.n); });
+        G.add({ t: 'G', ids: ids });
+    }
+    function geoRun(T, pend, E, it) {
+        geoOp(function (G) {
+            pend = pend.map(function (pk) { if (pk.k !== 'edge') return pk; var ex = G.objs.filter(function (q) { return q.t === 'L' && q.k === 'seg' && q.a && ((q.a === pk.a && q.b === pk.b) || (q.a === pk.b && q.b === pk.a)); })[0]; return { k: 'obj', id: ex ? ex.id : G.add({ t: 'L', k: 'seg', a: pk.a, b: pk.b }) }; });
+            E = geoEval({ objs: G.objs }); var k = T, spec = GEO_SPEC[T], ids;
+            var Pid = function (i, pref) { return geoResolve(G, E, pend[i], pref); };
+            if (T === 'pt') { if (pend[0].k === 'pt') return false; Pid(0); }
+            else if (T === 'seg' || T === 'line' || T === 'ray') { var a = Pid(0), b = Pid(1); G.add({ t: 'L', k: T, a: a, b: b }); }
+            else if (T === 'poly') { ids = pend.map(function (pk) { return geoResolve(G, E, pk); }); G.add({ t: 'G', ids: ids }); }
+            else if (T === 'circ') { var c = Pid(0), r = Pid(1); G.add({ t: 'C', k: 'cr', c: c, r: r }); }
+            else if (T === 'mid') G.add({ t: 'P', n: G.name('M'), d: { k: 'mid', a: pend[0].id, b: pend[1].id } });
+            else if (T === 'perp' || T === 'par') { var p0 = Pid(0); G.add({ t: 'L', k: 'line', via: { type: T, p: p0, l: pend[1].id } }); }
+            else if (T === 'tang') {
+                var seen = null, nn = 0; [0, 1].forEach(function (i) { var tp = gTanPt(E, { a: pend[0].id, cc: pend[1].id, i: i }); if (!tp || (seen && Math.hypot(seen.x - tp.x, seen.y - tp.y) < 1e-6)) return; seen = tp; nn++; G.add({ t: 'L', k: 'line', via: { type: 'tan', p: pend[0].id, cc: pend[1].id, i: i } }); G.add({ t: 'P', n: G.name('T'), d: { k: 'tanpt', a: pend[0].id, cc: pend[1].id, i: i } }); });
+                if (!nn) { note('Điểm nằm trong đường tròn nên không có tiếp tuyến'); return false; }
+            }
+            else if (T === 'alt') { var H = G.add({ t: 'P', n: G.name('H'), d: { k: 'foot', a: pend[0].id, l: pend[1].id } }); G.add({ t: 'L', k: 'seg', a: pend[0].id, b: H }); G.add({ t: 'M', k: 'rightL', h: H, p: pend[0].id, l: pend[1].id }); }
+            else if (T === 'bis') G.add({ t: 'L', k: 'ray', via: { type: 'bis', a: pend[0].id, o: pend[1].id, b: pend[2].id } });
+            else if (T === 'inter') {
+                var made = 0, last = null; [0, 1].forEach(function (i) {
+                    var d = { k: 'inter', l1: pend[0].id, l2: pend[1].id, i: i }, pt = geoDer(E, d); if (!pt) return;
+                    var okb = [pend[0].id, pend[1].id].every(function (rid) { var L = E.L[rid]; if (!L) return true; var f = gFoot(L, pt.x, pt.y); return f.t >= (L.k === 'line' ? -1e12 : -1e-6) && f.t <= (L.k === 'seg' ? L.len + 1e-6 : 1e12); });
+                    if (!okb || (last && Math.hypot(last.x - pt.x, last.y - pt.y) < 1e-6)) return; last = pt; made++; G.add({ t: 'P', n: G.name(), d: d });
+                });
+                if (!made) { note('Hai đường này không cắt nhau (trong phần đang vẽ)'); return false; }
+            }
+            else if (T === 'cen' || T === 'orth') G.add({ t: 'P', n: G.name(T === 'cen' ? 'G' : 'H'), d: { k: T, a: pend[0].id, b: pend[1].id, c: pend[2].id } });
+            else if (T === 'circ3') { var O = G.add({ t: 'P', n: G.name('O'), d: { k: 'circ', a: pend[0].id, b: pend[1].id, c: pend[2].id } }); G.add({ t: 'C', k: 'cr', c: O, r: pend[0].id }); }
+            else if (T === 'inc3') { var I = G.add({ t: 'P', n: G.name('I'), d: { k: 'inc', a: pend[0].id, b: pend[1].id, c: pend[2].id } }); G.add({ t: 'C', k: 'inc', c: I, a: pend[0].id, b: pend[1].id }); }
+            else if (T === 'refl') geoXform(G, E, pend[0], function (pid) { return { k: 'refl', a: pid, l: pend[1].id }; });
+            else if (T === 'reflc') geoXform(G, E, pend[0], function (pid) { return { k: 'reflc', a: pid, o: pend[1].id }; });
+            else if (T === 'tr') geoXform(G, E, pend[0], function (pid) { return { k: 'tr', a: pid, u: pend[1].id, v: pend[2].id }; });
+            else if (T === 'rot') geoXform(G, E, pend[0], function (pid) { return { k: 'rot', a: pid, o: pend[1].id, deg: S.geoRot == null ? 90 : S.geoRot }; });
+            else if (T === 'hom') geoXform(G, E, pend[0], function (pid) { return { k: 'hom', a: pid, o: pend[1].id, r: S.geoHom == null ? 2 : S.geoHom }; });
+            else if (T === 'ang' || T === 'right') G.add({ t: 'M', k: T, a: pend[0].id, o: pend[1].id, b: pend[2].id });
+        });
+    }
+    function geoDown(e, p0) {
+        var it = geoItem(false), E = it ? geoEval(it) : { P: {}, L: {}, C: {}, G: {} }, T = S.geoT || 'move', hp = it ? geoHitPt(it, E, p0.x, p0.y) : null;
+        if (T === 'move') {
+            if (hp && (!hp.d)) { try { S.ink.setPointerCapture(e.pointerId); } catch (er) { } S.geoDrag = { id: e.pointerId, pid: hp.id, base: S.pages[S.pi].items, it: it }; }
+            else if (hp) note('Điểm này được dựng từ các điểm khác nên không kéo trực tiếp, cô kéo các điểm gốc nhé');
+            return;
+        }
+        if (T === 'del') {
+            var tg = hp || (it ? geoHitObj(it, E, p0.x, p0.y, 'LCG') : null); if (!tg) return;
+            geoOp(function (G) { var kill = {}; kill[tg.id] = 1; var ch = true; while (ch) { ch = false; G.objs.forEach(function (q) { if (!kill[q.id] && geoRefs(q).some(function (r) { return kill[r]; })) { kill[q.id] = 1; ch = true; } }); } G.objs = G.objs.filter(function (q) { return !kill[q.id]; }); }); return;
+        }
+        if (T === 'eq') {
+            var sg = it ? geoHitObj(it, E, p0.x, p0.y, 'L') : null, edq = !sg && it ? geoHitEdge(it, E, p0.x, p0.y) : null; if ((!sg || sg.k !== 'seg') && !edq) { note('Bấm đúng vào một đoạn thẳng hoặc một cạnh'); return; }
+            geoOp(function (G) {
+                var sid = sg && sg.k === 'seg' ? sg.id : null;
+                if (!sid) { var ex0 = G.objs.filter(function (q) { return q.t === 'L' && q.k === 'seg' && q.a && ((q.a === edq.a && q.b === edq.b) || (q.a === edq.b && q.b === edq.a)); })[0]; sid = ex0 ? ex0.id : G.add({ t: 'L', k: 'seg', a: edq.a, b: edq.b }); }
+                var ex = G.objs.filter(function (q) { return q.t === 'M' && q.k === 'eq' && q.s === sid; })[0]; if (ex) { var i = G.objs.indexOf(ex); if (ex.n >= 3) G.objs.splice(i, 1); else G.objs[i] = Object.assign({}, ex, { n: ex.n + 1 }); } else G.add({ t: 'M', k: 'eq', s: sid, n: 1 });
+            }); return;
+        }
+        var spec = GEO_SPEC[T]; if (!spec) return;
+        var pend = S.geoPend || (S.geoPend = []), need = T === 'poly' ? 'P' : spec.s[pend.length], pk = null;
+        if (T === 'poly' && pend.length >= 3) { var c0 = geoPickXY(E, pend[0]); if (c0 && Math.hypot(c0.x - p0.x, c0.y - p0.y) <= 17) { var pp = pend.slice(); S.geoPend = []; geoRun('poly', pp, E, it); return; } }
+        if (need === 'P' || need === 'PG') {
+            if (hp) pk = { k: 'pt', id: hp.id };
+            else if (need === 'PG' && it && geoHitObj(it, E, p0.x, p0.y, 'G')) pk = { k: 'poly', id: geoHitObj(it, E, p0.x, p0.y, 'G').id };
+            else if (need === 'P' && it && geoHitObj(it, E, p0.x, p0.y, 'LC')) {
+                var ob = geoHitObj(it, E, p0.x, p0.y, 'LC'); if (ob.t === 'L') { var L = E.L[ob.id], f = gFoot(L, p0.x, p0.y), u = f.t; if (L.k === 'seg') u = Math.max(0, Math.min(1, f.t / L.len)); else if (L.k === 'ray') u = Math.max(0, f.t); pk = { k: 'on', ref: ob.id, u: u, seg: L.k === 'seg', x: L.x + L.dx * (L.k === 'seg' ? u * L.len : u), y: L.y + L.dy * (L.k === 'seg' ? u * L.len : u) }; }
+                else { var C = E.C[ob.id], ang = Math.atan2(p0.y - C.y, p0.x - C.x); pk = { k: 'on', ref: ob.id, u: ang, x: C.x + C.r * Math.cos(ang), y: C.y + C.r * Math.sin(ang) }; }
+            } else if (need === 'PG') { note('Bấm vào một điểm hoặc cạnh của hình đã vẽ'); return; }
+            else pk = { k: 'new', x: p0.x, y: p0.y };
+        } else if (need === 'p') { if (!hp) { note('Bấm vào một điểm đã có'); return; } pk = { k: 'pt', id: hp.id }; }
+        else if (need === 'L') { var lo = it ? geoHitObj(it, E, p0.x, p0.y, 'L') : null; var ed = !lo && it ? geoHitEdge(it, E, p0.x, p0.y) : null; if (ed) { pend.push(ed); lo = 'edge'; } if (!lo) { note('Bấm vào một đường thẳng, tia hoặc đoạn thẳng'); return; } if (lo !== 'edge') pk = { k: 'obj', id: lo.id }; else pk = pend.pop(); }
+        else if (need === 'C') { var co = it ? geoHitObj(it, E, p0.x, p0.y, 'C') : null; if (!co) { note('Bấm vào một đường tròn'); return; } pk = { k: 'obj', id: co.id }; }
+        else if (need === 'LC') { var lc = it ? geoHitObj(it, E, p0.x, p0.y, 'LC') : null, ed2 = !lc && it ? geoHitEdge(it, E, p0.x, p0.y) : null; if (ed2) { pk = ed2; lc = 'edge'; } if (!lc) { note('Bấm vào một đường thẳng hoặc đường tròn'); return; } if (lc !== 'edge') pk = { k: 'obj', id: lc.id }; }
+        if (!pk) return;
+        pend.push(pk);
+        if (T !== 'poly' && pend.length >= spec.s.length) { var pp2 = pend.slice(); S.geoPend = []; geoRun(T, pp2, E, it); drawBase(); return; }
+        drawBase(); note(spec.h[Math.min(pend.length, spec.h.length - 1)]);
+    }
+    function geoMove(p) {
+        var d = S.geoDrag; if (!d) return; var E = geoEval(d.it), q = d.it.objs.filter(function (z) { return z.id === d.pid; })[0], nq;
+        if (q.on) { var L = E.L[q.on.ref], C = E.C[q.on.ref]; if (L) { var f = gFoot(L, p.x, p.y), u = f.t; if (q.on.seg) u = Math.max(0, Math.min(1, f.t / L.len)); else if (L.k === 'ray') u = Math.max(0, u); nq = Object.assign({}, q, { on: Object.assign({}, q.on, { u: u }) }); } else if (C) nq = Object.assign({}, q, { on: Object.assign({}, q.on, { u: Math.atan2(p.y - C.y, p.x - C.x) }) }); }
+        else nq = Object.assign({}, q, { x: Math.max(0, Math.min(S.W, p.x)), y: Math.max(0, Math.min(S.H, p.y)) });
+        if (!nq) return; var n = Object.assign({}, d.it, { objs: d.it.objs.map(function (z) { return z === q ? nq : z; }) }); d.cur = n;
+        var pg = S.pages[S.pi]; pg.items = d.base.map(function (x) { return x === d.it ? n : x; }); drawBase();
+    }
+    function geoUp() { var d = S.geoDrag; S.geoDrag = null; if (!d) return; if (d.cur) { var pg = S.pages[S.pi]; var items = pg.items; pg.items = d.base; commit(items); } }
+    function geoDbl(p) {
+        var it = geoItem(false); if (!it) return; var E = geoEval(it), hp = geoHitPt(it, E, p.x, p.y); if (!hp) return;
+        var M = modal('Đổi tên điểm', 280), inp = el('input', 'width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font:18px system-ui;'); inp.value = hp.n || ''; M.card.appendChild(inp);
+        var foot = el('div', 'display:flex;gap:8px;justify-content:flex-end;margin-top:10px;'); M.card.appendChild(foot);
+        function ok() { var v = inp.value.trim(); geoOp(function (G) { G.objs = G.objs.map(function (q) { return q.id === hp.id ? Object.assign({}, q, { n: v }) : q; }); }); M.close(); }
+        foot.appendChild(btn('Hủy', '', M.close)); foot.appendChild(btn('Đổi', '', ok, 'background:#2563eb;color:#fff;border-color:#1d4ed8;')); inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') ok(); }); setTimeout(function () { inp.focus(); inp.select(); }, 30);
+    }
+    function geoParam(T, then) {
+        var isR = T === 'rot', M = modal(isR ? 'Phép quay' : 'Phép vị tự', 300), v = numInp(isR ? (S.geoRot == null ? 90 : S.geoRot) : (S.geoHom == null ? 2 : S.geoHom), '', 80);
+        M.card.appendChild(el('div', 'margin-bottom:6px;', isR ? 'Góc quay (độ). Số dương: quay ngược chiều kim đồng hồ; số âm: cùng chiều kim đồng hồ.' : 'Tỉ số vị tự k (có thể âm hoặc số lẻ, ví dụ 2, −1, 0,5).')); M.card.appendChild(v);
+        var foot = el('div', 'display:flex;gap:8px;justify-content:flex-end;margin-top:10px;'); M.card.appendChild(foot);
+        function ok() { var n = toNum(v.value); if (!isFinite(n) || (!isR && Math.abs(n) < 1e-9)) { alert('Cô nhập một số hợp lệ.'); return; } if (isR) S.geoRot = n; else S.geoHom = n; M.close(); then(); }
+        foot.appendChild(btn('Hủy', '', M.close)); foot.appendChild(btn('Đồng ý', '', ok, 'background:#2563eb;color:#fff;border-color:#1d4ed8;')); v.addEventListener('keydown', function (e) { if (e.key === 'Enter') ok(); }); setTimeout(function () { v.focus(); v.select(); }, 30);
+    }
+    function geoPickTool(T) {
+        function go() { S.geoT = T; S.geoPend = []; setTool('geo'); S.geoPend = []; drawBase(); var sp = GEO_SPEC[T]; note(T === 'move' ? 'Kéo các điểm để cả hình chạy theo; bấm đúp vào điểm để đổi tên' : (sp ? sp.h[0] : '')); }
+        if (T === 'clear') { if (geoItem(false)) geoOp(function (G) { G.objs = []; }); return; }
+        if (T === 'rot' || T === 'hom') geoParam(T, go); else go();
+    }
     function commit(items) { var p = S.pages[S.pi]; p.hist = p.hist.slice(0, p.hi + 1); p.hist.push(items); p.hi = p.hist.length - 1; p.items = items; pruneSel(); drawBase(); drawInk(); drawSel(); refreshBar(); }
     function commitNow() { var p = S.pages[S.pi]; p.hist = p.hist.slice(0, p.hi + 1); p.hist.push(p.items); p.hi = p.hist.length - 1; drawBase(); drawSel(); refreshBar(); }
     function undo() { var p = S.pages[S.pi]; if (p.hi > 0) { p.hi--; p.items = p.hist[p.hi]; pruneSel(); drawBase(); drawInk(); drawSel(); refreshBar(); } }
@@ -8390,6 +8723,7 @@ window.addEventListener('popstate', function () {
             var p0 = pos(e);
             if (S.tool === 'text') { e.preventDefault(); var ex = S.editor; if (ex) { closeEditor(false); } openEditor(p0.x, p0.y, null); S.editor.pos = { x: p0.x, y: p0.y }; return; }
             if (S.tool === 'select') { e.preventDefault(); selectDown(e, p0); return; }
+            if (S.tool === 'geo') { e.preventDefault(); geoDown(e, p0); return; }
             var tool = S.tool; if (e.pointerType === 'pen' && (e.buttons & 32)) tool = 'erase';
             try { c.setPointerCapture(e.pointerId); } catch (er) { }
             S.drawing = { id: e.pointerId, st: { kind: 'stroke', uid: uid(), tool: tool, color: S.color, w: S.size, dash: S.dash, pts: [p0] } };
@@ -8397,6 +8731,7 @@ window.addEventListener('popstate', function () {
             e.preventDefault();
         });
         c.addEventListener('pointermove', function (e) {
+            if (S.geoDrag && e.pointerId === S.geoDrag.id) { geoMove(pos(e)); e.preventDefault(); return; }
             if (S.drag && e.pointerId === S.drag.id) { dragMove(pos(e), e); e.preventDefault(); return; }
             var d = S.drawing; if (!d || e.pointerId !== d.id) return;
             var list = (e.getCoalescedEvents && e.getCoalescedEvents()) || [e]; if (!list.length) list = [e];
@@ -8410,6 +8745,7 @@ window.addEventListener('popstate', function () {
             e.preventDefault();
         });
         function end(e) {
+            if (S.geoDrag && e.pointerId === S.geoDrag.id) { geoUp(); return; }
             if (S.drag && e.pointerId === S.drag.id) {
                 var dr = S.drag; S.drag = null;
                 if (dr.mode === 'marq') {
@@ -8427,9 +8763,10 @@ window.addEventListener('popstate', function () {
             var d = S.drawing; if (!d || e.pointerId !== d.id) return; S.drawing = null;
             var t = S.tmp.getContext('2d'); t.save(); t.setTransform(1, 0, 0, 1, 0, 0); t.clearRect(0, 0, S.tmp.width, S.tmp.height); t.restore();
             var st = d.st; if (st.tool === 'line' && st.pts.length < 2) return; if (st.raw && st.pts.length > 1 && st.tool !== 'line') { var lp = st.pts[st.pts.length - 1]; if (Math.abs(st.raw.x - lp.x) + Math.abs(st.raw.y - lp.y) > 0.5) { st.pts.push({ x: st.raw.x, y: st.raw.y, p: st.raw.p, pen: st.raw.pen }); var g0 = c.getContext('2d'); g0.save(); styleOf(g0, st); drawSeg(g0, st, st.pts, st.pts.length - 1); g0.restore(); } } delete st.raw;
+            var conv = aiApply(st);
             var p2 = S.pages[S.pi]; p2.hist = p2.hist.slice(0, p2.hi + 1); var items = p2.items.concat([st]); p2.hist.push(items); p2.hi = p2.hist.length - 1; p2.items = items;
             var g = c.getContext('2d');
-            if (st.tool === 'line') drawStroke(g, st); else if (st.pts.length > 1) { g.save(); styleOf(g, st); tailDraw(g, st); g.restore(); }
+            if (conv) { drawInk(); if (S.curMode === 'dot') { } } else if (st.tool === 'line') drawStroke(g, st); else if (st.pts.length > 1) { g.save(); styleOf(g, st); tailDraw(g, st); g.restore(); }
         }
         c.addEventListener('pointerup', end); c.addEventListener('pointercancel', end);
         function updDot(e) {
@@ -8449,7 +8786,7 @@ window.addEventListener('popstate', function () {
         }
         ['pointermove', 'pointerdown', 'pointerenter', 'pointerleave', 'pointerup', 'pointercancel'].forEach(function (nm) { c.addEventListener(nm, updDot); });
         c.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-        c.addEventListener('dblclick', function (e) { if (S.tool !== 'select') return; var p0 = pos(e), o = hitObj(p0.x, p0.y); if (o && o.kind === 'text') { S.sel = o.uid; openEditor(o.x - o.w / 2, o.y - o.h / 2, o); drawSel(); } else if (o && o.kind === 'fgraph') { S.sel = o.uid; openGraphDialog(o); } else if (o && o.kind === 'bbt') { S.sel = o.uid; openBbtDialog(o); } else if (o && o.kind === 'solid') { S.sel = o.uid; openSolidDialog(o); } });
+        c.addEventListener('dblclick', function (e) { if (S.tool === 'geo') { geoDbl(pos(e)); return; } if (S.tool !== 'select') return; var p0 = pos(e), o = hitObj(p0.x, p0.y); if (o && o.kind === 'text') { S.sel = o.uid; openEditor(o.x - o.w / 2, o.y - o.h / 2, o); drawSel(); } else if (o && o.kind === 'fgraph') { S.sel = o.uid; openGraphDialog(o); } else if (o && o.kind === 'bbt') { S.sel = o.uid; openBbtDialog(o); } else if (o && o.kind === 'solid') { S.sel = o.uid; openSolidDialog(o); } else if (o && o.kind === 'img' && o.tex) { S.sel = o.uid; openFormulaDialog(o); } });
     }
     function selectDown(e, p0) {
         var cur = findSel(), add = e.shiftKey || e.ctrlKey || e.metaKey;
@@ -8600,11 +8937,11 @@ window.addEventListener('popstate', function () {
         return NaN;
     }
     // ---- đọc biểu thức: x^3 - 3x, (2x+1)/(x-1), sqrt(x), abs(x), sin(x), ln(x), e^x ... ----
-    function parseFn(src) {
+    function parseFn(src, allowY) {
         var s = String(src || '').trim();
         if (!s) return { err: 'Chưa nhập hàm số' };
         s = s.replace(/^\s*(y|f\s*\(\s*x\s*\))\s*=\s*/i, '').replace(/[−–—]/g, '-').replace(/[×·]/g, '*').replace(/÷/g, '/').replace(/²/g, '^2').replace(/³/g, '^3').replace(/√/g, 'sqrt').replace(/π/g, 'pi');
-        var NAMES = ['sqrt', 'sin', 'cos', 'tan', 'cot', 'abs', 'ln', 'log', 'exp', 'pi', 'e', 'x'];
+        var NAMES = ['sqrt', 'sin', 'cos', 'tan', 'cot', 'abs', 'ln', 'log', 'exp', 'pi', 'e', 'x']; if (allowY) NAMES.push('y');
         var FUN = { sqrt: Math.sqrt, sin: Math.sin, cos: Math.cos, tan: Math.tan, cot: function (v) { return 1 / Math.tan(v); }, abs: Math.abs, ln: Math.log, log: function (v) { return Math.log(v) / Math.LN10; }, exp: Math.exp };
         var T = [], i = 0, n = s.length, p = 0, absD = 0;
         try {
@@ -8633,7 +8970,7 @@ window.addEventListener('popstate', function () {
             pAtom = function () {
                 var t = T[p++]; if (!t) throw new Error('Biểu thức bị thiếu');
                 if (t.t === 'n') { var v = t.v; return function () { return v; }; }
-                if (t.t === 'id') { if (t.v === 'x') return function (x) { return x; }; var cv = t.v === 'pi' ? Math.PI : Math.E; return function () { return cv; }; }
+                if (t.t === 'id') { if (t.v === 'x') return function (x) { return x; }; if (t.v === 'y') return function () { return PY; }; var cv = t.v === 'pi' ? Math.PI : Math.E; return function () { return cv; }; }
                 if (t.t === '(') { var e = pExpr(); expect(')'); return e; }
                 if (t.t === '|') { absD++; var e2 = pExpr(); if (!pk() || pk().t !== '|') throw new Error('Thiếu dấu |'); p++; absD--; return function (x) { return Math.abs(e2(x)); }; }
                 if (t.t === 'f') { var fn = FUN[t.v], arg; if (pk() && pk().t === '(') { p++; arg = pExpr(); expect(')'); } else arg = pAtom(); return function (x) { return fn(arg(x)); }; }
@@ -8731,13 +9068,18 @@ window.addEventListener('popstate', function () {
     }
     var ACACHE = {};
     function analysisFor(o) {
-        var key = JSON.stringify([o.fns.map(function (q) { return q.e; }), o.xr, o.yr]);
+        var key = JSON.stringify([o.fns.map(function (q) { return [q.e, q.lo, q.hi, q.d]; }), o.xr, o.yr, (o.ineq || []).length > 0, (o.pts || []).length > 0]);
         if (ACACHE[key]) return ACACHE[key];
-        var A = { fs: [], xr: o.xr.slice(), yr: null }, a = A.xr[0], b = A.xr[1];
+        var A = { fs: [], ex: [], xr: o.xr.slice(), yr: null }, a = A.xr[0], b = A.xr[1];
+        function toLim(v) { if (v === '' || v == null) return null; var n = typeof v === 'number' ? v : toNum(String(v)); return isFinite(n) ? n : null; }
         o.fns.forEach(function (q) {
-            var pf = (q.e || '').trim() ? parseFn(q.e) : null; if (!pf || pf.err) { A.fs.push(null); return; }
-            var f = pf.f, poles = findPoles(f, a, b, 4000), crit = findCrit(f, a, b, 3000, poles), roots = findRoots(f, a, b, 3000, poles, crit);
-            A.fs.push({ f: f, e: q.e, c: q.c, poles: poles, crit: crit, roots: roots, asy: findAsy(f) });
+            var pf = (q.e || '').trim() ? parseEntry(q.e) : null; if (!pf || pf.err) { A.fs.push(null); return; }
+            if (pf.kind === 'vert') { A.fs.push(null); A.ex.push({ vert: pf.v, c: q.c, dash: !!q.d, e: q.e }); return; }
+            if (pf.kind === 'imp') { A.fs.push(null); A.ex.push({ imp: true, G: pf.G, c: q.c, dash: !!q.d, e: q.e }); return; }
+            var f = pf.f, lo = toLim(q.lo), hi = toLim(q.hi);
+            if (lo != null || hi != null) { var f0 = f; f = function (x) { if ((lo != null && x < lo - 1e-12) || (hi != null && x > hi + 1e-12)) return NaN; return f0(x); }; }
+            var poles = findPoles(f, a, b, 4000), crit = findCrit(f, a, b, 3000, poles), roots = findRoots(f, a, b, 3000, poles, crit);
+            A.fs.push({ f: f, e: q.e, c: q.c, poles: poles, crit: crit, roots: roots, asy: findAsy(f), dash: !!q.d, lo: lo, hi: hi });
         });
         A.inter = (A.fs[0] && A.fs[1]) ? findInter(A.fs[0].f, A.fs[1].f, a, b, 3000) : [];
         if (o.yr) A.yr = o.yr.slice();
@@ -8754,7 +9096,7 @@ window.addEventListener('popstate', function () {
             var hasCrit = A.fs.some(function (F) { return F && F.crit.length; }), all;
             if (hasCrit) { all = extra.filter(isFinite); var l0 = Math.min.apply(null, all), h0 = Math.max.apply(null, all), sp0 = h0 - l0, pd = Math.max(sp0 * 0.5, 0.8); if (sp0 + 2 * pd < 2.6) pd = (2.6 - sp0) / 2; all = [l0 - pd, h0 + pd]; }
             else { all = vals.concat(extra).filter(isFinite); }
-            if (!all.length) all = [-5, 5];
+            if (!all.length) all = (A.ex.length || (o.ineq && o.ineq.length) || (o.pts && o.pts.length)) ? A.xr.slice() : [-5, 5];
             var lo2 = Math.min.apply(null, all), hi2 = Math.max.apply(null, all), span = hi2 - lo2;
             if (span < 1e-9) { lo2 -= 1; hi2 += 1; span = 2; }
             if (lo2 > 0 && lo2 < span * 1.2) lo2 = Math.min(lo2, 0); if (hi2 < 0 && -hi2 < span * 1.2) hi2 = Math.max(hi2, 0);
@@ -8763,6 +9105,178 @@ window.addEventListener('popstate', function () {
         }
         if (Object.keys(ACACHE).length > 40) ACACHE = {}; ACACHE[key] = A; return A;
     }
+    // ===== v199: đồ thị mở rộng – phương trình ẩn, đường x=a, giới hạn đoạn, nét đứt, miền nghiệm, diện tích, điểm =====
+    var PY = 0;
+    var RG_COL = ['#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2'];
+    function hexA(h, a) { var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h || ''); if (!m) return 'rgba(37,99,235,' + a + ')'; return 'rgba(' + parseInt(m[1], 16) + ',' + parseInt(m[2], 16) + ',' + parseInt(m[3], 16) + ',' + a + ')'; }
+    function parseEntry(e) {
+        var s = String(e || '').trim().replace(/[−–—]/g, '-'); if (!s) return { err: 'Chưa nhập' };
+        if (s.indexOf('=') < 0) { var pf0 = parseFn(s); return pf0.err ? { err: pf0.err } : { kind: 'fn', f: pf0.f }; }
+        if (/[<>≤≥]/.test(s)) return { err: 'Đây là bất phương trình, cô nhập ở mục Miền nghiệm nhé' };
+        var parts = s.split('='); if (parts.length !== 2) return { err: 'Chỉ nhận một dấu =' };
+        var L = parts[0].trim(), R = parts[1].trim();
+        if (/^(y|f\s*\(\s*x\s*\))$/i.test(L) && !/y/i.test(R)) { var pf1 = parseFn(R); return pf1.err ? { err: pf1.err } : { kind: 'fn', f: pf1.f }; }
+        if (/^x$/i.test(L) && !/[xy]/i.test(R)) { var pv = parseFn(R); if (pv.err) return { err: pv.err }; var v = pv.f(0); if (!isFinite(v)) return { err: 'Giá trị x chưa đúng' }; return { kind: 'vert', v: v }; }
+        var pl = parseFn(L, true), pr = parseFn(R, true); if (pl.err) return { err: pl.err }; if (pr.err) return { err: pr.err };
+        return { kind: 'imp', G: function (x, y) { PY = y; var a = pl.f(x); PY = y; return a - pr.f(x); } };
+    }
+    function parseIneq(src) {
+        var s = String(src || '').trim().replace(/[−–—]/g, '-').replace(/≤/g, '<=').replace(/≥/g, '>=').replace(/=</g, '<=').replace(/=>/g, '>=');
+        var m = /^(.*?)(<=|>=|<|>)(.*)$/.exec(s); if (!m) return { err: 'Thiếu dấu <, >, <= hoặc >=' };
+        var pl = parseFn(m[1], true), pr = parseFn(m[3], true); if (pl.err) return { err: pl.err }; if (pr.err) return { err: pr.err };
+        var G = function (x, y) { PY = y; var a = pl.f(x); PY = y; return a - pr.f(x); };
+        var c = G(0, 0), a = G(1, 0) - c, b = G(0, 1) - c;
+        if (!isFinite(a) || !isFinite(b) || !isFinite(c)) return { err: 'Chưa đúng' };
+        if (Math.abs(G(1, 1) - (a + b + c)) > 1e-7 || Math.abs(G(2, -3) - (2 * a - 3 * b + c)) > 1e-7 || Math.abs(G(-4, 5) - (-4 * a + 5 * b + c)) > 1e-7) return { err: 'Chỉ nhận bất phương trình bậc nhất với x, y' };
+        if (Math.abs(a) < 1e-12 && Math.abs(b) < 1e-12) return { err: 'Thiếu x hoặc y' };
+        var op = m[2]; return { a: a, b: b, c: c, op: op, strict: op.length === 1, less: op.charAt(0) === '<' };
+    }
+    function clipHalf(poly, a, b, c, keepPos) {
+        var out = [], n = poly.length, sg = keepPos ? 1 : -1;
+        for (var i = 0; i < n; i++) {
+            var P = poly[i], Q = poly[(i + 1) % n], vp = sg * (a * P[0] + b * P[1] + c), vq = sg * (a * Q[0] + b * Q[1] + c);
+            if (vp >= 0) out.push(P);
+            if ((vp >= 0) !== (vq >= 0)) { var t = vp / (vp - vq); out.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]); }
+        }
+        return out;
+    }
+    function simpsonAbs(f1, f2, a, b) {
+        var N = 2000, h = (b - a) / N, s = 0, ok = true;
+        for (var i = 0; i <= N; i++) { var x = a + h * i, d = Math.abs(f1(x) - (f2 ? f2(x) : 0)); if (!isFinite(d)) { ok = false; break; } s += d * (i === 0 || i === N ? 1 : (i % 2 ? 4 : 2)); }
+        return ok ? s * h / 3 : NaN;
+    }
+    function R1v(ar, A) { var F1 = A.fs[ar.f1], F2 = ar.f2 >= 0 ? A.fs[ar.f2] : null; return F1 && F1.f && (ar.f2 < 0 || (F2 && F2.f)); }
+    function simpsonRev(f1, f2, a, b) { var N = 2000, h = (b - a) / N, s = 0; for (var i = 0; i <= N; i++) { var x = a + h * i, u = f1(x), v = f2 ? f2(x) : 0, d = Math.abs(u * u - v * v); if (!isFinite(d)) return NaN; s += d * (i === 0 || i === N ? 1 : (i % 2 ? 4 : 2)); } return Math.PI * s * h / 3; }
+    function simpsonShell(f1, f2, a, b) { var N = 2000, h = (b - a) / N, s = 0; for (var i = 0; i <= N; i++) { var x = a + h * i, d = x * Math.abs(f1(x) - (f2 ? f2(x) : 0)); if (!isFinite(d)) return NaN; s += d * (i === 0 || i === N ? 1 : (i % 2 ? 4 : 2)); } return 2 * Math.PI * s * h / 3; }
+    function drawFGUnder(g, o, A, xr, yr, X, Y, bx0, bx1, by0, by1) {
+        var i;
+        if (o.area && o.area.b > o.area.a) {
+            var ar = o.area, F1 = A.fs[ar.f1], F2 = ar.f2 >= 0 ? A.fs[ar.f2] : null;
+            if (F1 && F1.f && (ar.f2 < 0 || (F2 && F2.f))) {
+                g.save(); g.beginPath(); g.rect(bx0, by0, bx1 - bx0, by1 - by0); g.clip();
+                var N = 240, up = [], dn = [];
+                for (i = 0; i <= N; i++) { var x = ar.a + (ar.b - ar.a) * i / N, y1 = F1.f(x), y2 = F2 ? F2.f(x) : 0; if (isFinite(y1) && isFinite(y2)) { up.push([X(x), Y(y1)]); dn.push([X(x), Y(y2)]); } }
+                if (up.length > 2) {
+                    g.beginPath(); up.forEach(function (p, k) { k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]); }); for (i = dn.length - 1; i >= 0; i--) g.lineTo(dn[i][0], dn[i][1]); g.closePath();
+                    g.fillStyle = hexA(F1.c, 0.28); g.fill(); g.strokeStyle = hexA(F1.c, 0.7); g.lineWidth = 1.2; g.setLineDash([5, 4]);
+                    g.beginPath(); g.moveTo(up[0][0], up[0][1]); g.lineTo(dn[0][0], dn[0][1]); g.moveTo(up[up.length - 1][0], up[up.length - 1][1]); g.lineTo(dn[dn.length - 1][0], dn[dn.length - 1][1]); g.stroke(); g.setLineDash([]);
+                }
+                g.restore();
+            }
+        }
+        if (o.area && o.area.rev === 'y' && o.area.b > o.area.a && o.area.a >= 0) {
+            var ry = o.area, Q1 = A.fs[ry.f1], Q2 = ry.f2 >= 0 ? A.fs[ry.f2] : null;
+            if (Q1 && Q1.f && (ry.f2 < 0 || (Q2 && Q2.f))) {
+                g.save(); g.beginPath(); g.rect(bx0 - 20, by0 - 20, bx1 - bx0 + 40, by1 - by0 + 40); g.clip();
+                var x0p = X(0), ex2 = 0.3, NS = 120, c1 = [], c2 = [], okY = true, colY = Q1.c;
+                for (i = 0; i <= NS; i++) { var xq = ry.a + (ry.b - ry.a) * i / NS, v1 = Q1.f(xq), v2 = Q2 ? Q2.f(xq) : 0; if (!isFinite(v1) || !isFinite(v2)) { okY = false; break; } c1.push([xq, v1]); c2.push([xq, v2]); }
+                if (okY) {
+                    [1, -1].forEach(function (sg) { g.beginPath(); c1.forEach(function (q, k) { var px = x0p + sg * (X(q[0]) - x0p); k ? g.lineTo(px, Y(q[1])) : g.moveTo(px, Y(q[1])); }); for (i = c2.length - 1; i >= 0; i--) g.lineTo(x0p + sg * (X(c2[i][0]) - x0p), Y(c2[i][1])); g.closePath(); g.fillStyle = hexA(colY, 0.14); g.fill(); });
+                    function ringY(xv, yv, alpha, fillIt) { var rr = Math.abs(X(xv) - x0p); if (rr < 1) return; if (fillIt) { g.beginPath(); g.ellipse(x0p, Y(yv), rr, rr * ex2, 0, 0, Math.PI * 2); g.fillStyle = hexA(colY, 0.2); g.fill(); } g.strokeStyle = hexA(colY, alpha); g.lineWidth = 1.5; g.setLineDash([]); g.beginPath(); g.ellipse(x0p, Y(yv), rr, rr * ex2, 0, 0, Math.PI); g.stroke(); g.setLineDash([5, 4]); g.beginPath(); g.ellipse(x0p, Y(yv), rr, rr * ex2, 0, Math.PI, Math.PI * 2); g.stroke(); g.setLineDash([]); }
+                    for (var mm = 1; mm < 6; mm++) { var kk = Math.round(NS * mm / 6); ringY(c1[kk][0], c1[kk][1], 0.3, false); }
+                    [0, NS].forEach(function (kk) { ringY(c1[kk][0], c1[kk][1], 0.85, kk === NS); ringY(c2[kk][0], c2[kk][1], 0.85, false); });
+                    g.strokeStyle = hexA(colY, 0.9); g.lineWidth = 2; [1, -1].forEach(function (sg) { [c1, c2].forEach(function (arr) { g.beginPath(); arr.forEach(function (q, k) { var px = x0p + sg * (X(q[0]) - x0p); k ? g.lineTo(px, Y(q[1])) : g.moveTo(px, Y(q[1])); }); g.stroke(); }); [0, NS].forEach(function (kk) { g.beginPath(); g.moveTo(x0p + sg * (X(c1[kk][0]) - x0p), Y(c1[kk][1])); g.lineTo(x0p + sg * (X(c2[kk][0]) - x0p), Y(c2[kk][1])); g.stroke(); }); });
+                }
+                g.restore();
+            }
+        }
+        if (o.area && (o.area.rev === true || o.area.rev === 'x') && o.area.b > o.area.a) {
+            var rv = o.area, R1 = A.fs[rv.f1], R2 = rv.f2 >= 0 ? A.fs[rv.f2] : null;
+            if (R1 && R1.f && (rv.f2 < 0 || (R2 && R2.f))) {
+                g.save(); g.beginPath(); g.rect(bx0 - 20, by0 - 20, bx1 - bx0 + 40, by1 - by0 + 40); g.clip();
+                var NN = 120, y0p = Y(0), ex = 0.3, outU = [], outD = [], inU = [], inD = [], ok2 = true, xs2 = [];
+                for (i = 0; i <= NN; i++) { var xx = rv.a + (rv.b - rv.a) * i / NN, a1 = Math.abs(R1.f(xx)), a2 = R2 ? Math.abs(R2.f(xx)) : 0; if (!isFinite(a1) || !isFinite(a2)) { ok2 = false; break; } var hi2 = Math.max(a1, a2), lo2 = Math.min(a1, a2); xs2.push(xx); outU.push([X(xx), y0p - (Y(0) - Y(hi2))]); outD.push([X(xx), y0p + (Y(0) - Y(hi2))]); inU.push([X(xx), y0p - (Y(0) - Y(lo2))]); inD.push([X(xx), y0p + (Y(0) - Y(lo2))]); }
+                if (ok2) {
+                    var col2 = R1.c;
+                    g.beginPath(); outU.forEach(function (q, k) { k ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); for (i = outD.length - 1; i >= 0; i--) g.lineTo(outD[i][0], outD[i][1]); g.closePath(); g.fillStyle = hexA(col2, 0.13); g.fill();
+                    function ring(k, front, back, alpha, fillIt) { var rr = Math.abs(outU[k][1] - y0p), rin = Math.abs(inU[k][1] - y0p), cx2 = outU[k][0]; if (rr < 1) return; function el2(r, dash) { g.beginPath(); g.ellipse(cx2, y0p, r * ex, r, 0, 0, Math.PI * 2); } if (fillIt) { g.beginPath(); g.ellipse(cx2, y0p, rr * ex, rr, 0, 0, Math.PI * 2); if (rin > 1) g.ellipse(cx2, y0p, rin * ex, rin, 0, 0, Math.PI * 2, true); g.fillStyle = hexA(col2, 0.22); g.fill('evenodd'); } g.strokeStyle = hexA(col2, alpha); g.lineWidth = 1.5; g.setLineDash([]); g.beginPath(); g.ellipse(cx2, y0p, rr * ex, rr, 0, Math.PI / 2, Math.PI * 1.5); g.stroke(); g.setLineDash([5, 4]); g.beginPath(); g.ellipse(cx2, y0p, rr * ex, rr, 0, -Math.PI / 2, Math.PI / 2); g.stroke(); g.setLineDash([]); if (rin > 1) { g.beginPath(); g.ellipse(cx2, y0p, rin * ex, rin, 0, 0, Math.PI * 2); g.stroke(); } }
+                    for (var mid2 = 1; mid2 < 6; mid2++) ring(Math.round(NN * mid2 / 6), 1, 1, 0.3, false);
+                    ring(0, 1, 1, 0.85, true); ring(NN, 1, 1, 0.85, true);
+                    g.strokeStyle = hexA(col2, 0.9); g.lineWidth = 2; g.setLineDash([]);
+                    [outU, outD, inU, inD].forEach(function (arr, qi) { if (qi >= 2 && !R2) return; g.beginPath(); arr.forEach(function (q, k) { k ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]); }); g.stroke(); });
+                }
+                g.restore();
+            }
+        }
+        var lines = (o.ineq || []).map(function (s) { return parseIneq(s); });
+        if (lines.some(function (q) { return !q.err; })) {
+            g.save(); g.beginPath(); g.rect(bx0, by0, bx1 - bx0, by1 - by0); g.clip();
+            var box = [[xr[0], yr[0]], [xr[1], yr[0]], [xr[1], yr[1]], [xr[0], yr[1]]], sp = 12, H = by1 - by0, W = bx1 - bx0;
+            lines.forEach(function (q, k) {
+                if (q.err) return; var col = RG_COL[k % RG_COL.length], bad = clipHalf(box, q.a, q.b, q.c, q.less);
+                if (bad.length >= 3) {
+                    g.save(); g.beginPath(); bad.forEach(function (P, j) { j ? g.lineTo(X(P[0]), Y(P[1])) : g.moveTo(X(P[0]), Y(P[1])); }); g.closePath(); g.clip();
+                    g.strokeStyle = hexA(col, 0.5); g.lineWidth = 1.1; for (var d = -H; d < W + H; d += sp) { g.beginPath(); g.moveTo(bx0 + d, by1); g.lineTo(bx0 + d + H, by0); g.stroke(); } g.restore();
+                }
+                g.strokeStyle = col; g.lineWidth = 2.6; g.setLineDash(q.strict ? [9, 6] : []); g.beginPath();
+                if (Math.abs(q.b) > 1e-12) { g.moveTo(X(xr[0]), Y(-(q.a * xr[0] + q.c) / q.b)); g.lineTo(X(xr[1]), Y(-(q.a * xr[1] + q.c) / q.b)); }
+                else { var xv = -q.c / q.a; g.moveTo(X(xv), by1); g.lineTo(X(xv), by0); }
+                g.stroke(); g.setLineDash([]);
+            });
+            g.restore();
+        }
+    }
+    function drawFGImplicit(g, F, xr, yr, X, Y, bx0, bx1, by0, by1) {
+        var nx = 200, ny = Math.max(60, Math.round(nx * (by1 - by0) / (bx1 - bx0))), V = [], i, j;
+        for (j = 0; j <= ny; j++) { V.push([]); var y = yr[0] + (yr[1] - yr[0]) * j / ny; for (i = 0; i <= nx; i++) V[j].push(F.G(xr[0] + (xr[1] - xr[0]) * i / nx, y)); }
+        function pt(i0, j0, i1, j1) { var a = V[j0][i0], b = V[j1][i1], t = a / (a - b); var xa = xr[0] + (xr[1] - xr[0]) * i0 / nx, ya = yr[0] + (yr[1] - yr[0]) * j0 / ny, xb = xr[0] + (xr[1] - xr[0]) * i1 / nx, yb = yr[0] + (yr[1] - yr[0]) * j1 / ny; return [X(xa + t * (xb - xa)), Y(ya + t * (yb - ya))]; }
+        g.save(); g.strokeStyle = F.c; g.lineWidth = 2.8; g.setLineDash(F.dash ? [9, 6] : []); g.beginPath();
+        for (j = 0; j < ny; j++) for (i = 0; i < nx; i++) {
+            var c0 = V[j][i], c1 = V[j][i + 1], c2 = V[j + 1][i + 1], c3 = V[j + 1][i]; if (!isFinite(c0 + c1 + c2 + c3)) continue;
+            var b0 = c0 > 0, b1 = c1 > 0, b2 = c2 > 0, b3 = c3 > 0; if (b0 === b1 && b1 === b2 && b2 === b3) continue;
+            var E = [b0 !== b1 ? pt(i, j, i + 1, j) : null, b1 !== b2 ? pt(i + 1, j, i + 1, j + 1) : null, b2 !== b3 ? pt(i, j + 1, i + 1, j + 1) : null, b3 !== b0 ? pt(i, j, i, j + 1) : null], segs;
+            var cr = [0, 1, 2, 3].filter(function (e) { return E[e]; });
+            if (cr.length === 2) segs = [[cr[0], cr[1]]]; else { var ctr = (c0 + c1 + c2 + c3) / 4; segs = ((ctr > 0) === b0) ? [[0, 1], [2, 3]] : [[3, 0], [1, 2]]; }
+            segs.forEach(function (s) { if (E[s[0]] && E[s[1]]) { g.moveTo(E[s[0]][0], E[s[0]][1]); g.lineTo(E[s[1]][0], E[s[1]][1]); } });
+        }
+        g.stroke(); g.restore();
+    }
+    function drawExtraCurves(g, A, xr, yr, X, Y, bx0, bx1, by0, by1) {
+        (A.ex || []).forEach(function (F) {
+            if (!F) return;
+            if (F.vert != null && F.vert >= xr[0] && F.vert <= xr[1]) { g.save(); g.strokeStyle = F.c; g.lineWidth = 2.8; g.setLineDash(F.dash ? [9, 6] : []); g.beginPath(); g.moveTo(X(F.vert), by1); g.lineTo(X(F.vert), by0); g.stroke(); g.restore(); }
+            if (F.imp) drawFGImplicit(g, F, xr, yr, X, Y, bx0, bx1, by0, by1);
+        });
+    }
+    function drawFGOver(g, o, A, xr, yr, X, Y, bx0, bx1, by0, by1, w, h) {
+        var FNT = '14px ' + FONT, i, j;
+        function dot(x, y, c, label) {
+            g.save(); g.fillStyle = c; g.beginPath(); g.arc(X(x), Y(y), 4.4, 0, 7); g.fill();
+            if (label) { g.font = FNT; g.textAlign = 'left'; g.textBaseline = 'middle'; g.lineWidth = 4; g.lineJoin = 'round'; g.strokeStyle = 'rgba(255,255,255,.95)'; var tx = Math.min(X(x) + 7, w - g.measureText(label).width - 3), ty = Math.max(10, Math.min(h - 8, Y(y) - 12)); g.strokeText(label, tx, ty); g.fillStyle = '#111827'; g.fillText(label, tx, ty); }
+            g.restore();
+        }
+        // đỉnh của miền nghiệm
+        var L = (o.ineq || []).map(function (s) { return parseIneq(s); }).filter(function (q) { return !q.err; });
+        if (L.length && o.rverts !== false) {
+            var seen = [];
+            for (i = 0; i < L.length; i++) for (j = i + 1; j < L.length; j++) {
+                var p = L[i], q = L[j], det = p.a * q.b - q.a * p.b; if (Math.abs(det) < 1e-12) continue;
+                var x = (-p.c * q.b + q.c * p.b) / det, y = (-p.a * q.c + q.a * p.c) / det;
+                if (x < xr[0] - 1e-9 || x > xr[1] + 1e-9 || y < yr[0] - 1e-9 || y > yr[1] + 1e-9) continue;
+                var okAll = L.every(function (r) { var v = r.a * x + r.b * y + r.c, t = 1e-7 * (1 + Math.abs(x) + Math.abs(y)); return r.less ? v <= t : v >= -t; });
+                if (!okAll || seen.some(function (s) { return Math.abs(s[0] - x) < 1e-7 && Math.abs(s[1] - y) < 1e-7; })) continue;
+                seen.push([x, y]); dot(x, y, '#111827', '(' + fmtNum(x, 1e-6) + '; ' + fmtNum(y, 1e-6) + ')');
+            }
+        }
+        // diện tích: ghi giá trị
+        if (o.area && (o.area.show !== false || o.area.rev) && o.area.b > o.area.a) {
+            var ar = o.area, F1 = A.fs[ar.f1], F2 = ar.f2 >= 0 ? A.fs[ar.f2] : null;
+            if (F1 && F1.f && (ar.f2 < 0 || (F2 && F2.f))) {
+                var S = simpsonAbs(F1.f, F2 ? F2.f : null, ar.a, ar.b);
+                if (ar.rev && R1v(ar, A) && (ar.rev !== 'y' || ar.a >= 0)) { var Vv = ar.rev === 'y' ? simpsonShell(A.fs[ar.f1].f, ar.f2 >= 0 ? A.fs[ar.f2].f : null, ar.a, ar.b) : simpsonRev(A.fs[ar.f1].f, ar.f2 >= 0 ? A.fs[ar.f2].f : null, ar.a, ar.b); if (isFinite(Vv)) { var tv = 'V = ' + fmtNum(Vv / Math.PI, 1e-5) + 'π ≈ ' + (+Vv.toFixed(2)).toString().replace('.', ','); g.save(); g.font = 'italic 17px ' + FONT; g.textAlign = 'right'; g.textBaseline = 'top'; g.lineWidth = 5; g.lineJoin = 'round'; g.strokeStyle = 'rgba(255,255,255,.92)'; g.strokeText(tv, bx1 - 4, by0 + 4); g.fillStyle = '#111827'; g.fillText(tv, bx1 - 4, by0 + 4); g.restore(); } }
+                if (isFinite(S)) { var xm = (ar.a + ar.b) / 2, ym = (F1.f(xm) + (F2 ? F2.f(xm) : 0)) / 2; var txt = 'S = ' + fmtNum(S, 1e-5); g.save(); g.font = 'italic 17px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 5; g.lineJoin = 'round'; g.strokeStyle = 'rgba(255,255,255,.92)'; var tx = Math.max(bx0 + 30, Math.min(bx1 - 30, X(xm))), ty = Math.max(by0 + 12, Math.min(by1 - 12, isFinite(ym) ? Y(ym) : (by0 + by1) / 2)); g.strokeText(txt, tx, ty); g.fillStyle = '#111827'; g.fillText(txt, tx, ty); g.restore(); }
+            }
+        }
+        // điểm do cô đặt
+        var po = o.ptOpt || {}; (o.pts || []).forEach(function (P) {
+            if (!isFinite(P.x) || !isFinite(P.y)) return;
+            if (po.proj) { g.save(); g.strokeStyle = '#94a3b8'; g.lineWidth = 1.2; g.setLineDash([4, 4]); var ax0 = (xr[0] <= 0 && xr[1] >= 0) ? X(0) : bx0, ay0 = (yr[0] <= 0 && yr[1] >= 0) ? Y(0) : by1; g.beginPath(); g.moveTo(X(P.x), Y(P.y)); g.lineTo(X(P.x), ay0); g.moveTo(X(P.x), Y(P.y)); g.lineTo(ax0, Y(P.y)); g.stroke(); g.restore(); }
+            var lab = (P.n || '') + (po.coord !== false ? '(' + fmtNum(P.x, 1e-6) + '; ' + fmtNum(P.y, 1e-6) + ')' : '');
+            dot(P.x, P.y, '#dc2626', lab);
+        });
+    }
+
+    window.__fg = { draw: function (c, o) { var g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); o.w = c.width; o.h = c.height; g.save(); g.translate(o.w / 2, o.h / 2); drawFGraph(g, o); g.restore(); }, pe: function (e) { var r = parseEntry(e); return { kind: r.kind, err: r.err }; }, pi: parseIneq };
     function niceStep(span, target) { var raw = span / Math.max(1, target), mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), f = raw / mag; return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * mag; }
     function tickTxt(v, st) { var dec = st < 1 ? Math.min(4, Math.ceil(-Math.log(st) / Math.LN10 - 1e-9)) : 0; return (+v.toFixed(dec)).toString().replace('.', ',').replace('-', '−'); }
     function prettyFn(e) {
@@ -8772,6 +9286,7 @@ window.addEventListener('popstate', function () {
     }
     function drawFGraph(g, o) {
         var A = analysisFor(o), w = o.w, h = o.h, ml = 34, mr = 26, mt = 20, mb = 30, bx0 = ml, bx1 = w - mr, by0 = mt, by1 = h - mb, xr = A.xr, yr = A.yr, opt = o.opt || {}, col = o.color || '#111827';
+        if (opt.equal) { var uu = Math.max((xr[1] - xr[0]) / (bx1 - bx0), (yr[1] - yr[0]) / (by1 - by0)), mX = (xr[0] + xr[1]) / 2, mY = (yr[0] + yr[1]) / 2; xr = [mX - uu * (bx1 - bx0) / 2, mX + uu * (bx1 - bx0) / 2]; yr = [mY - uu * (by1 - by0) / 2, mY + uu * (by1 - by0) / 2]; }
         function X(x) { return bx0 + (x - xr[0]) / (xr[1] - xr[0]) * (bx1 - bx0); }
         function Y(y) { return by1 - (y - yr[0]) / (yr[1] - yr[0]) * (by1 - by0); }
         g.save(); g.translate(-w / 2, -h / 2); g.lineCap = 'round'; g.lineJoin = 'round';
@@ -8798,18 +9313,21 @@ window.addEventListener('popstate', function () {
             });
             g.restore();
         }
+        drawFGUnder(g, o, A, xr, yr, X, Y, bx0, bx1, by0, by1);
         // đường cong
         g.save(); g.beginPath(); g.rect(bx0 - 3, by0 - 3, bx1 - bx0 + 6, by1 - by0 + 6); g.clip();
         var M = Math.max(260, Math.round((bx1 - bx0) * 1.3));
         A.fs.forEach(function (F) {
-            if (!F) return; g.strokeStyle = F.c; g.lineWidth = 2.8; g.beginPath(); var prevOk = false, px = 0;
+            if (!F) return; g.strokeStyle = F.c; g.lineWidth = 2.8; g.setLineDash(F.dash ? [9, 6] : []); g.beginPath(); var prevOk = false, px = 0;
             for (var i = 0; i <= M; i++) {
                 var x = xr[0] + (xr[1] - xr[0]) * i / M, y = F.f(x), ok = isFinite(y) && Math.abs(y) < 1e7;
                 if (ok && prevOk && F.poles.some(function (p) { return p > px && p <= x; })) prevOk = false;
                 if (ok) { if (prevOk) g.lineTo(X(x), Y(y)); else g.moveTo(X(x), Y(y)); } prevOk = ok; px = x;
             }
-            g.stroke();
+            g.stroke(); g.setLineDash([]);
+            [F.lo, F.hi].forEach(function (ee) { if (ee != null && ee >= xr[0] && ee <= xr[1]) { var ye = F.f(ee); if (isFinite(ye)) { g.fillStyle = F.c; g.beginPath(); g.arc(X(ee), Y(ye), 4, 0, 7); g.fill(); } } });
         });
+        drawExtraCurves(g, A, xr, yr, X, Y, bx0, bx1, by0, by1);
         g.restore();
         // điểm đặc biệt
         var F0 = A.fs[0];
@@ -8818,6 +9336,7 @@ window.addEventListener('popstate', function () {
         if (F0 && opt.ext !== false) F0.crit.forEach(function (c) { if (c.x > xr[0] && c.x < xr[1] && c.y > yr[0] && c.y < yr[1]) { proj(c.x, c.y, F0.c); pt(c.x, c.y, F0.c, '(' + fmtNum(c.x, 1e-6) + '; ' + fmtNum(c.y, 1e-6) + ')', c.max ? -15 : 15); } });
         if (F0 && opt.icpt) { F0.roots.forEach(function (r) { if (r > xr[0] && r < xr[1] && inY) pt(r, 0, '#111827', fmtNum(r, 1e-6), -13); }); var y0 = F0.f(0); if (isFinite(y0) && inX && y0 > yr[0] && y0 < yr[1] && Math.abs(y0) > 1e-9) { g.save(); g.font = '14px ' + FONT; g.textAlign = 'left'; pt(0, y0, '#111827', fmtNum(y0, 1e-6), 0, 20); g.restore(); } }
         A.inter.forEach(function (t) { if (t.x > xr[0] && t.x < xr[1] && t.y > yr[0] && t.y < yr[1]) { proj(t.x, t.y); pt(t.x, t.y, '#111827', '(' + fmtNum(t.x, 1e-6) + '; ' + fmtNum(t.y, 1e-6) + ')', -15); } });
+        drawFGOver(g, o, A, xr, yr, X, Y, bx0, bx1, by0, by1, w, h);
         // tên hàm
         if (opt.lab !== false) A.fs.forEach(function (F, k) {
             if (!F) return; var fr = [0.8, 0.58, 0.36][k] || 0.5, x = xr[0] + (xr[1] - xr[0]) * fr, y = F.f(x), tries = 0;
@@ -10309,31 +10828,85 @@ var CAS = (function () {
     }
 
     function openGraphDialog(ex) {
-        var fns = ex ? ex.fns.map(function (q) { return { e: q.e, c: q.c }; }) : [{ e: 'x^3 - 3x', c: FN_COLORS[0] }, { e: '', c: FN_COLORS[1] }, { e: '', c: FN_COLORS[2] }];
-        var M = modal(ex ? '📈 Sửa đồ thị hàm số' : '📈 Đồ thị hàm số', 640), card = M.card, ins = [], errs = [];
+        var fns = ex ? ex.fns.map(function (q) { return { e: q.e, c: q.c, lo: q.lo, hi: q.hi, d: q.d }; }) : [{ e: 'x^3 - 3x', c: FN_COLORS[0] }, { e: '', c: FN_COLORS[1] }, { e: '', c: FN_COLORS[2] }];
+        var M = modal(ex ? '📈 Sửa đồ thị' : '📈 Đồ thị hàm số', 680), card = M.card, ins = [], errs = [], los = [], his = [], dks = [], eqTouched = !!(ex && ex.opt && ex.opt.equal != null);
         fns.forEach(function (q, k) {
-            var row = el('div', 'display:flex;align-items:center;gap:6px;margin-bottom:4px;'); row.appendChild(el('span', 'display:inline-block;width:14px;height:14px;border-radius:50%;background:' + q.c + ';flex:none;')); row.appendChild(el('span', 'font:italic 16px ' + FONT, 'y ='));
-            var inp = el('input', 'flex:1;min-width:0;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:15px system-ui;'); inp.type = 'text'; inp.value = q.e; inp.placeholder = k === 0 ? 'Gõ hàm số, ví dụ: x^3 - 3x + 1' : 'Hàm thứ ' + (k + 1) + ' (không bắt buộc)'; inp.autocapitalize = 'off'; inp.spellcheck = false;
-            var er = el('span', 'font-size:12px;color:#b91c1c;margin-left:4px;max-width:180px;'); ins.push(inp); errs.push(er); row.appendChild(inp); row.appendChild(er); card.appendChild(row);
+            var row = el('div', 'margin-bottom:5px;padding-bottom:4px;border-bottom:1px dashed #e2e8f0;'), r1 = el('div', 'display:flex;align-items:center;gap:6px;');
+            r1.appendChild(el('span', 'display:inline-block;width:14px;height:14px;border-radius:50%;background:' + q.c + ';flex:none;')); r1.appendChild(el('span', 'font:italic 15px ' + FONT + ';white-space:nowrap;', 'Đường ' + (k + 1) + ':'));
+            var inp = el('input', 'flex:1;min-width:0;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:15px system-ui;'); inp.type = 'text'; inp.value = q.e; inp.placeholder = k === 0 ? 'Ví dụ: x^3 - 3x + 1   hoặc   x=2   hoặc   x^2+y^2=4' : 'Đường thứ ' + (k + 1) + ' (không bắt buộc)'; inp.autocapitalize = 'off'; inp.spellcheck = false;
+            r1.appendChild(inp); row.appendChild(r1);
+            var r1b = el('div', 'font-size:12px;color:#b91c1c;min-height:0;margin-left:22px;'); errs.push(r1b); row.appendChild(r1b);
+            var r2 = el('div', 'display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:3px 0 0 22px;font-size:13px;color:#475569;');
+            var lo = numInp(q.lo, 'đầu', 52), hi = numInp(q.hi, 'cuối', 52), dk = el('input'); dk.type = 'checkbox'; dk.checked = !!q.d;
+            r2.appendChild(document.createTextNode('Chỉ vẽ từ x =')); r2.appendChild(lo); r2.appendChild(document.createTextNode('đến')); r2.appendChild(hi); var lb = el('label', 'cursor:pointer;margin-left:8px;'); lb.appendChild(dk); lb.appendChild(document.createTextNode(' nét đứt')); r2.appendChild(lb); r2.appendChild(el('span', 'font-size:11.5px;color:#94a3b8;', '(để trống = vẽ cả đoạn)'));
+            row.appendChild(r2); ins.push(inp); los.push(lo); his.push(hi); dks.push(dk); card.appendChild(row);
         });
-        card.appendChild(el('div', 'font-size:12.5px;color:#64748b;margin:2px 0 8px;', 'Gõ như viết tay: <b>x^3 - 3x</b>, <b>(2x+1)/(x-1)</b>, <b>sqrt(x)</b>, <b>abs(x)</b>, <b>sin(x)</b>, <b>ln(x)</b>, <b>e^x</b>. Nhân có thể viết liền: <b>2x</b>, <b>x(x-1)</b>.'));
+        card.appendChild(el('div', 'font-size:12.5px;color:#64748b;margin:2px 0 8px;', 'Gõ như viết tay: <b>x^3 - 3x</b>, <b>(2x+1)/(x-1)</b>, <b>sqrt(x)</b>, <b>abs(x)</b>, <b>sin(x)</b>, <b>ln(x)</b>, <b>e^x</b>. Đường thẳng đứng: <b>x=2</b>. Đường cong có cả x và y: <b>x^2+y^2=4</b>, <b>y^2=x</b>, <b>x*y=1</b>.'));
         var r2 = el('div', 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;');
         var x0 = numInp(ex ? ex.xr[0] : -4, '', 56), x1 = numInp(ex ? ex.xr[1] : 4, '', 56), y0 = numInp(ex && ex.yr ? ex.yr[0] : '', 'tự động', 64), y1 = numInp(ex && ex.yr ? ex.yr[1] : '', 'tự động', 64);
         [el('span', '', 'x từ'), x0, el('span', '', 'đến'), x1, el('span', 'margin-left:10px;', 'y từ'), y0, el('span', '', 'đến'), y1].forEach(function (e) { r2.appendChild(e); }); r2.appendChild(el('span', 'font-size:12px;color:#64748b;', '(để trống y: máy tự chọn)'));
         card.appendChild(r2);
         var opt0 = ex ? ex.opt : { grid: true, ext: true, icpt: false, asym: true, lab: true }, ck = {}, r3 = el('div', 'display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px;');
-        [['grid', 'Lưới'], ['ext', 'Đánh dấu cực trị'], ['icpt', 'Giao với trục'], ['asym', 'Tiệm cận'], ['lab', 'Ghi công thức']].forEach(function (z) { var lb = el('label', 'cursor:pointer;'); var c = el('input'); c.type = 'checkbox'; c.checked = opt0[z[0]] !== false && (z[0] !== 'icpt' || !!opt0.icpt); ck[z[0]] = c; lb.appendChild(c); lb.appendChild(document.createTextNode(' ' + z[1])); r3.appendChild(lb); });
+        [['grid', 'Lưới'], ['ext', 'Đánh dấu cực trị'], ['icpt', 'Giao với trục'], ['asym', 'Tiệm cận'], ['lab', 'Ghi công thức'], ['equal', 'Hai trục cùng tỉ lệ (cho đường tròn)']].forEach(function (z) { var lb = el('label', 'cursor:pointer;'); var c = el('input'); c.type = 'checkbox'; c.checked = (z[0] === 'icpt' || z[0] === 'equal') ? !!opt0[z[0]] : opt0[z[0]] !== false; ck[z[0]] = c; lb.appendChild(c); lb.appendChild(document.createTextNode(' ' + z[1])); r3.appendChild(lb); });
+        ck.equal.addEventListener('change', function () { eqTouched = true; });
         card.appendChild(r3);
+        // ---- miền nghiệm ----
+        function sect(title, open) { var d = el('details', 'border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;margin-bottom:6px;background:#f8fafc;'); if (open) d.open = true; d.appendChild(el('summary', 'cursor:pointer;font-weight:600;', title)); card.appendChild(d); return d; }
+        var dIq = sect('🟦 Miền nghiệm của bất phương trình', ex && ex.ineq && ex.ineq.length);
+        dIq.appendChild(el('div', 'font-size:12.5px;color:#64748b;margin:4px 0;', 'Mỗi dòng một bất phương trình bậc nhất. Ví dụ: <b>x+y<=4</b>, <b>x>0</b>, <b>2x-y>=-1</b>. Phần <b>gạch chéo</b> là phần <b>bị loại</b>, phần để trống là miền nghiệm. Dấu &lt; &gt; vẽ nét đứt, dấu &lt;= &gt;= vẽ nét liền.'));
+        var taI = el('textarea', 'width:100%;box-sizing:border-box;height:70px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:15px system-ui;'); taI.value = ex && ex.ineq ? ex.ineq.join('\n') : ''; taI.spellcheck = false; dIq.appendChild(taI);
+        var iqErr = el('div', 'font-size:12px;color:#b91c1c;'); dIq.appendChild(iqErr);
+        var lbV = el('label', 'cursor:pointer;display:block;margin:3px 0;'); var ckV = el('input'); ckV.type = 'checkbox'; ckV.checked = !ex || ex.rverts !== false; lbV.appendChild(ckV); lbV.appendChild(document.createTextNode(' Ghi tọa độ các đỉnh của miền')); dIq.appendChild(lbV);
+        // ---- điểm ----
+        var dPt = sect('📍 Đánh dấu điểm', ex && ex.pts && ex.pts.length);
+        dPt.appendChild(el('div', 'font-size:12.5px;color:#64748b;margin:4px 0;', 'Mỗi dòng một điểm: <b>A(1;2)</b> hoặc <b>1;-3</b> hoặc <b>B(0,5; 2)</b>.'));
+        var taP = el('textarea', 'width:100%;box-sizing:border-box;height:56px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:15px system-ui;'); taP.value = ex && ex.pts ? ex.pts.map(function (P) { return (P.n || '') + '(' + String(P.x).replace('.', ',') + ';' + String(P.y).replace('.', ',') + ')'; }).join('\n') : ''; taP.spellcheck = false; dPt.appendChild(taP);
+        var ptErr = el('div', 'font-size:12px;color:#b91c1c;'); dPt.appendChild(ptErr);
+        var po0 = ex && ex.ptOpt ? ex.ptOpt : { coord: true, proj: false }, ckC = el('input'), ckPj = el('input'); ckC.type = ckPj.type = 'checkbox'; ckC.checked = po0.coord !== false; ckPj.checked = !!po0.proj;
+        var lbC = el('label', 'cursor:pointer;margin-right:12px;'); lbC.appendChild(ckC); lbC.appendChild(document.createTextNode(' Ghi tọa độ')); var lbPj = el('label', 'cursor:pointer;'); lbPj.appendChild(ckPj); lbPj.appendChild(document.createTextNode(' Kẻ nét đứt xuống hai trục')); dPt.appendChild(lbC); dPt.appendChild(lbPj);
+        // ---- diện tích ----
+        var dAr = sect('🟩 Tô diện tích', ex && ex.area);
+        var ar0 = ex && ex.area ? ex.area : { f1: 0, f2: -1, a: '', b: '', show: true };
+        function mkSel2(withAxis, cur) { var s = el('select', 'padding:4px;border:1px solid #cbd5e1;border-radius:6px;font:14px system-ui;background:#fff;'); if (withAxis) { var o = el('option', '', 'trục Ox'); o.value = '-1'; s.appendChild(o); } fns.forEach(function (q, k) { var o = el('option', '', 'Đường ' + (k + 1)); o.value = String(k); s.appendChild(o); }); s.value = String(cur); return s; }
+        var s1 = mkSel2(false, ar0.f1), s2 = mkSel2(true, ar0.f2), aA = numInp(ar0.a, 'từ', 56), aB = numInp(ar0.b, 'đến', 56), ckAr = el('input'); ckAr.type = 'checkbox'; ckAr.checked = !!(ex && ex.area);
+        var arRow = el('div', 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0;'), lbA = el('label', 'cursor:pointer;font-weight:600;'); lbA.appendChild(ckAr); lbA.appendChild(document.createTextNode(' Tô phần giữa ')); arRow.appendChild(lbA);
+        [s1, el('span', '', 'và'), s2, el('span', '', ', x từ'), aA, el('span', '', 'đến'), aB].forEach(function (e) { arRow.appendChild(e); }); dAr.appendChild(arRow);
+        var ckS = el('input'); ckS.type = 'checkbox'; ckS.checked = ar0.show !== false; var lbS = el('label', 'cursor:pointer;display:block;'); lbS.appendChild(ckS); lbS.appendChild(document.createTextNode(' Ghi giá trị diện tích S (máy tính gần đúng, cô nên kiểm tra lại)')); dAr.appendChild(lbS);
+        var ckRv = el('select', 'padding:4px;border:1px solid #cbd5e1;border-radius:6px;font:14px system-ui;background:#fff;'); [['', 'không quay'], ['x', 'quanh trục Ox'], ['y', 'quanh trục Oy']].forEach(function (z) { var op = el('option', '', z[1]); op.value = z[0]; ckRv.appendChild(op); }); var rv0 = ex && ex.area ? ex.area.rev : ''; ckRv.value = rv0 === true ? 'x' : (rv0 || ''); var lbRv = el('div', 'margin-top:4px;font-weight:600;'); lbRv.appendChild(document.createTextNode('🔄 Quay phần này (vẽ vật thể tròn xoay, ghi thể tích V): ')); lbRv.appendChild(ckRv); dAr.appendChild(lbRv); dAr.appendChild(el('div', 'font-size:12px;color:#64748b;', 'Quanh Ox: phần quay phải nằm một phía của Ox. Quanh Oy: phần quay phải nằm bên phải Oy (x ≥ 0). Thể tích máy tính gần đúng, cô nên kiểm tra lại.'));
         var pv = document.createElement('canvas'); pv.width = 1200; pv.height = 700; pv.style.cssText = 'width:100%;aspect-ratio:12/7;border:1px solid #e2e8f0;border-radius:8px;background:#fff;'; card.appendChild(pv);
         var foot = el('div', 'display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:10px;'); card.appendChild(foot);
+        function parsePts(t) {
+            var out = [], bad = [];
+            String(t || '').split('\n').forEach(function (line) {
+                line = line.trim(); if (!line) return;
+                var m = /^([A-Za-z][A-Za-z0-9'’]*)?\s*\(?\s*(.+?)\s*\)?\s*$/.exec(line), body = m ? m[2] : '', nm = m && m[1] ? m[1] : '', parts;
+                if (body.indexOf(';') >= 0) parts = body.split(';'); else { var cm = body.split(','); parts = cm.length === 2 ? cm : []; }
+                if (parts.length !== 2) { bad.push(line); return; }
+                var x = toNum(parts[0]), y = toNum(parts[1]); if (!isFinite(x) || !isFinite(y)) { bad.push(line); return; }
+                out.push({ n: nm, x: x, y: y });
+            });
+            return { pts: out, bad: bad };
+        }
         function readObj() {
-            var fl = [], any = false, ok = true;
-            ins.forEach(function (inp, k) { var e = inp.value; if (!e.trim()) { errs[k].textContent = ''; fl.push({ e: '', c: fns[k].c }); return; } var pf = parseFn(e); errs[k].textContent = pf.err || ''; if (pf.err) ok = false; else any = true; fl.push({ e: e, c: fns[k].c }); });
+            var fl = [], any = false, hasImp = false;
+            ins.forEach(function (inp, k) {
+                var e = inp.value, it = { e: e, c: fns[k].c }; if (!e.trim()) { errs[k].textContent = ''; fl.push({ e: '', c: fns[k].c }); return; }
+                var pe = parseEntry(e); errs[k].textContent = pe.err || ''; if (!pe.err) { any = true; if (pe.kind === 'imp') hasImp = true; }
+                if (los[k].value.trim()) { var lv = toNum(los[k].value); if (isFinite(lv)) it.lo = lv; } if (his[k].value.trim()) { var hv = toNum(his[k].value); if (isFinite(hv)) it.hi = hv; } if (dks[k].checked) it.d = 1;
+                fl.push(it);
+            });
+            var iq = taI.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean), iqBad = [], iqOk = [];
+            iq.forEach(function (s) { var q = parseIneq(s); if (q.err) iqBad.push(s + '  →  ' + q.err); else iqOk.push(s); });
+            iqErr.textContent = iqBad.join(' | ');
+            var pp = parsePts(taP.value); ptErr.textContent = pp.bad.length ? 'Chưa đọc được: ' + pp.bad.join(' | ') : '';
             var a = toNum(x0.value), b = toNum(x1.value); if (!isFinite(a) || !isFinite(b) || a >= b) return null;
             var ya = y0.value.trim() ? toNum(y0.value) : null, yb = y1.value.trim() ? toNum(y1.value) : null, yr = null; if (ya !== null && yb !== null && isFinite(ya) && isFinite(yb) && ya < yb) yr = [ya, yb];
-            if (!any) return null;
+            if (!any && !iqOk.length && !pp.pts.length) return null;
+            if (hasImp && !eqTouched) ck.equal.checked = true;
             var op = {}; Object.keys(ck).forEach(function (k) { op[k] = ck[k].checked; });
-            return { kind: 'fgraph', fns: fl, xr: [a, b], yr: yr, opt: op, color: '#111827' };
+            var o = { kind: 'fgraph', fns: fl, xr: [a, b], yr: yr, opt: op, color: '#111827', ineq: iqOk, rverts: ckV.checked, pts: pp.pts, ptOpt: { coord: ckC.checked, proj: ckPj.checked }, area: null };
+            if (ckAr.checked) { var aa = toNum(aA.value), ab = toNum(aB.value), f1 = parseInt(s1.value, 10), f2 = parseInt(s2.value, 10); if (isFinite(aa) && isFinite(ab) && aa < ab && f1 !== f2 && fl[f1] && fl[f1].e.trim() && (f2 < 0 || (fl[f2] && fl[f2].e.trim()))) o.area = { f1: f1, f2: f2, a: aa, b: ab, show: ckS.checked, rev: ckRv.value || false }; }
+            return o;
         }
         var timer = null;
         function preview() {
@@ -10342,10 +10915,11 @@ var CAS = (function () {
             o.w = pv.width / 2; o.h = pv.height / 2; g.setTransform(2, 0, 0, 2, 0, 0); g.translate(o.w / 2, o.h / 2); try { drawFGraph(g, o); } catch (e) { }
         }
         function sched() { clearTimeout(timer); timer = setTimeout(preview, 160); }
-        ins.concat([x0, x1, y0, y1]).forEach(function (i) { i.addEventListener('input', sched); }); Object.keys(ck).forEach(function (k) { ck[k].addEventListener('change', sched); });
+        ins.concat(los, his, [x0, x1, y0, y1, taI, taP, aA, aB]).forEach(function (i) { i.addEventListener('input', sched); }); Object.keys(ck).forEach(function (k) { ck[k].addEventListener('change', sched); });
+        dks.concat([ckV, ckC, ckPj, ckAr, ckS, ckRv, s1, s2]).forEach(function (i) { i.addEventListener('change', sched); });
         function finish(thenBbt) {
-            var o = readObj(); if (!o) { alert('Cô nhập giúp em ít nhất một hàm số đúng cú pháp và khoảng x hợp lệ (x từ nhỏ hơn đến).'); return; }
-            if (ex) { replaceItem(Object.assign({}, ex, { fns: o.fns, xr: o.xr, yr: o.yr, opt: o.opt })); commitNow(); M.close(); }
+            var o = readObj(); if (!o) { alert('Cô nhập giúp em ít nhất một hàm số (hoặc bất phương trình, hoặc điểm) đúng cú pháp và khoảng x hợp lệ (x từ nhỏ hơn đến).'); return; }
+            if (ex) { replaceItem(Object.assign({}, ex, { fns: o.fns, xr: o.xr, yr: o.yr, opt: o.opt, ineq: o.ineq, rverts: o.rverts, pts: o.pts, ptOpt: o.ptOpt, area: o.area })); commitNow(); M.close(); }
             else {
                 var w = Math.min(S.W * 0.55, 560), h = w * 0.62; if (h > S.H * 0.7) { h = S.H * 0.7; w = h / 0.62; }
                 var it = Object.assign({ uid: uid(), x: S.W / 2, y: S.H / 2, w: w, h: h, rot: 0 }, o); M.close(); commit(S.pages[S.pi].items.concat([it])); setTool('select'); S.ids = [it.uid]; refreshBar(); drawSel();
@@ -10566,6 +11140,57 @@ var CAS = (function () {
         return s + '</div>';
     }
     function exLoadImg(src) { return new Promise(function (res, rej) { var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { rej(new Error('Không tạo được ảnh trang (nội dung câu có định dạng lạ).')); }; im.src = src; }); }
+    // =====================================================================
+    //  CHÈN CÔNG THỨC (dùng lại máy vẽ công thức MathJax của "Đề đang soạn")
+    // =====================================================================
+    async function texToImg(tex, px, color, display) {
+        var f = await mjFrame(), w = f.contentWindow, d = f.contentDocument;
+        var box = d.createElement('div'); box.style.cssText = 'position:absolute;left:0;top:0;font-size:' + px + 'px;white-space:nowrap;color:#000;'; d.body.appendChild(box);
+        try {
+            box.textContent = display ? '\\[' + tex + '\\]' : '\\(' + tex + '\\)';
+            if (w.MathJax.texReset) w.MathJax.texReset(); await w.MathJax.typesetPromise([box]);
+            var svg = box.querySelector('svg'); if (!svg || box.querySelector('mjx-merror,[data-mjx-error]')) throw new Error('Công thức chưa đúng cú pháp LaTeX');
+            var r = svg.getBoundingClientRect(), W = Math.ceil(r.width), H = Math.ceil(r.height);
+            svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); svg.setAttribute('width', r.width); svg.setAttribute('height', r.height); svg.style.cssText = 'color:' + color + ';vertical-align:0;margin:0';
+            var xml = new XMLSerializer().serializeToString(svg).replace(/currentColor/g, color);
+            var wrap = xml;
+            var im = await exLoadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(wrap));
+            var PD = 8, cv = document.createElement('canvas'); cv.width = (W + 2 * PD) * 2; cv.height = (H + 2 * PD) * 2; cv.getContext('2d').drawImage(im, PD * 2, PD * 2, W * 2, H * 2);
+            var out = await exLoadImg(cv.toDataURL('image/png')); out.__w = W + 2 * PD; out.__h = H + 2 * PD; return out;
+        } finally { box.remove(); }
+    }
+    var FX_BTNS = [['a/b', '\\dfrac{a}{b}'], ['√', '\\sqrt{a}'], ['ⁿ√', '\\sqrt[n]{a}'], ['xⁿ', 'x^{n}'], ['xₙ', 'x_{n}'], ['∫', '\\int_{a}^{b} f(x)\\,dx'], ['lim', '\\lim_{x\\to +\\infty}'], ['Σ', '\\sum_{k=1}^{n}'], ['log', '\\log_{a}b'], ['|x|', '\\left|x\\right|'], ['( )', '\\left( \\right)'], ['hệ {', '\\begin{cases} x+y=1 \\\\ x-y=3 \\end{cases}'], ['ma trận', '\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}'], ['vectơ', '\\overrightarrow{AB}'], ['góc', '\\widehat{ABC}'], ['≤', '\\le '], ['≥', '\\ge '], ['≠', '\\ne '], ['≈', '\\approx '], ['±', '\\pm '], ['π', '\\pi '], ['∞', '\\infty '], ['∈', '\\in '], ['⊂', '\\subset '], ['∪', '\\cup '], ['∩', '\\cap '], ['ℝ', '\\mathbb{R}'], ['⇒', '\\Rightarrow '], ['⇔', '\\Leftrightarrow '], ['∀', '\\forall '], ['∃', '\\exists '], ['α', '\\alpha '], ['β', '\\beta '], ['Δ', '\\Delta '], ['°', '^{\\circ}'], ['sin', '\\sin '], ['cos', '\\cos '], ['tan', '\\tan ']];
+    function openFormulaDialog(ex) {
+        var M = modal(ex ? '∑ Sửa công thức' : '∑ Chèn công thức', 640), card = M.card, cur = { tex: ex ? ex.tex : '', px: ex ? ex.px : 46, color: ex ? ex.fcolor : (S.color === '#ffffff' ? '#111827' : S.color), disp: ex ? ex.disp : false };
+        card.appendChild(el('div', 'font-size:12.5px;color:#64748b;margin-bottom:6px;', 'Gõ công thức theo kiểu LaTeX (như trong đề), hoặc bấm các nút bên dưới để chèn mẫu. Ví dụ: <b>\\dfrac{x+1}{x-1}</b>, <b>\\sqrt{x^2+1}</b>.'));
+        var ta = el('textarea', 'width:100%;box-sizing:border-box;height:70px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font:15px ui-monospace,Consolas,monospace;'); ta.value = cur.tex; ta.spellcheck = false; card.appendChild(ta);
+        var pal = el('div', 'display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;');
+        FX_BTNS.forEach(function (z) { var b = btn(z[0], z[1], function () { var s = ta.selectionStart, e = ta.selectionEnd; ta.value = ta.value.slice(0, s) + z[1] + ta.value.slice(e); ta.focus(); var c = ta.value.indexOf('{', s) >= 0 && ta.value.indexOf('{', s) < s + z[1].length ? ta.value.indexOf('{', s) + 1 : s + z[1].length; ta.setSelectionRange(c, c); sched(); }, 'min-height:34px;padding:2px 9px;font:600 15px system-ui;'); pal.appendChild(b); });
+        card.appendChild(pal);
+        var r2 = el('div', 'display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:6px;');
+        var sz = el('input'); sz.type = 'range'; sz.min = 24; sz.max = 120; sz.value = cur.px; var szl = el('span', 'min-width:28px;', String(cur.px)); var col = el('input'); col.type = 'color'; col.value = /^#[0-9a-f]{6}$/i.test(cur.color) ? cur.color : '#111827'; var dl = el('label', 'cursor:pointer;'); var dk = el('input'); dk.type = 'checkbox'; dk.checked = cur.disp; dl.appendChild(dk); dl.appendChild(document.createTextNode(' Cỡ lớn, căn giữa (display)'));
+        [el('span', '', 'Cỡ'), sz, szl, el('span', '', 'Màu'), col, dl].forEach(function (e) { r2.appendChild(e); }); card.appendChild(r2);
+        var pv = el('div', 'min-height:90px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;padding:8px;overflow:auto;'); card.appendChild(pv);
+        var msg = el('div', 'font-size:12.5px;color:#b91c1c;min-height:16px;margin-top:4px;'); card.appendChild(msg);
+        var foot = el('div', 'display:flex;gap:8px;justify-content:flex-end;margin-top:8px;'); card.appendChild(foot);
+        var timer = null, seq = 0, last = null;
+        function render() {
+            var t = ta.value.trim(), my = ++seq; last = null; if (!t) { pv.textContent = 'Công thức sẽ hiện ở đây'; pv.style.color = '#94a3b8'; msg.textContent = ''; return; }
+            pv.style.color = '#94a3b8'; pv.textContent = 'Đang vẽ…';
+            texToImg(t, +sz.value, col.value, dk.checked).then(function (im) { if (my !== seq) return; last = im; msg.textContent = ''; pv.textContent = ''; var c = document.createElement('canvas'); var k = Math.min(1, 560 / im.__w); c.width = im.__w * 2; c.height = im.__h * 2; c.style.cssText = 'width:' + im.__w * k + 'px;height:' + im.__h * k + 'px;'; c.getContext('2d').drawImage(im, 0, 0); pv.appendChild(c); }, function (e) { if (my !== seq) return; pv.textContent = ''; msg.textContent = e.message || 'Chưa vẽ được'; });
+        }
+        function sched() { clearTimeout(timer); timer = setTimeout(render, 350); }
+        ta.addEventListener('input', sched); sz.addEventListener('input', function () { szl.textContent = sz.value; sched(); }); col.addEventListener('input', sched); dk.addEventListener('change', sched);
+        foot.appendChild(btn('Hủy', '', M.close));
+        foot.appendChild(btn(ex ? 'Cập nhật' : 'Chèn vào bảng', '', async function () {
+            var t = ta.value.trim(); if (!t) { alert('Cô gõ công thức trước nhé.'); return; }
+            var im = last; if (!im) { try { im = await texToImg(t, +sz.value, col.value, dk.checked); } catch (e) { alert(e.message || 'Công thức chưa đúng'); return; } }
+            var k = 0.5, w = im.__w * k, h = im.__h * k, extra = { tex: t, px: +sz.value, fcolor: col.value, disp: dk.checked };
+            if (ex) { replaceItem(Object.assign({}, ex, extra, { img: im, w: w, h: h })); commitNow(); M.close(); return; }
+            var o = Object.assign({ uid: uid(), kind: 'img', img: im, x: S.W / 2, y: S.H / 2, w: w, h: h, rot: 0 }, extra); M.close(); commit(S.pages[S.pi].items.concat([o])); setTool('select'); S.sel = o.uid; S.ids = [o.uid]; refreshBar(); drawSel();
+        }, 'background:#2563eb;color:#fff;border-color:#1d4ed8;'));
+        render(); setTimeout(function () { ta.focus(); }, 30);
+    }
     async function exBuild(list, o, onProg) {
         var f = await mjFrame(), w = f.contentWindow, d = f.contentDocument, W = 1100, H = Math.round(W * S.H / S.W), PX = 36, PY = 26, HEAD = 46, inner = W - 2 * PX, Hmax = H - 2 * PY - HEAD;
         var css = ''; try { css = w.MathJax.svgStylesheet().textContent; } catch (e) { }
