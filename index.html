@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v245] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v251] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -684,6 +684,57 @@ body #portal-view .exam-card .card-body{padding-bottom:12px !important}
 #portal-view .topic-list > div[data-sub]{margin-bottom:4px !important;gap:1px !important}
 #portal-view .sidebar{padding:10px !important}
 </style>
+<style>
+/* (v246) Thanh chức năng bên trái: nền xanh đậm, nút nổi bật */
+html body #teacher-view > .teacher-nav{background:linear-gradient(180deg,#172554 0%,#1e3a8a 45%,#1d4ed8 100%) !important;border:none !important;border-radius:20px !important;padding:16px 12px !important;box-shadow:0 14px 30px rgba(23,37,84,.38) !important}
+html body #teacher-view .tn-title{color:#fbbf24 !important;font-size:.82rem !important;letter-spacing:.2em !important;text-align:center;padding:2px 6px 8px !important}
+html body #teacher-view .tn-sep{background:rgba(255,255,255,.22) !important}
+html body #teacher-view > .teacher-nav > .btn-t-tab{background:rgba(255,255,255,.10) !important;border:1px solid rgba(255,255,255,.20) !important;color:#fff !important;text-shadow:none !important;box-shadow:none !important;border-radius:14px !important;padding:11px 12px !important;transition:transform .15s,background .15s}
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-ic{width:42px !important;height:42px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.16);border-radius:12px;font-size:1.45rem !important}
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-tx b{color:#fff !important;font-size:1.05rem !important}
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-tx small{color:#c7d7fb !important;opacity:1 !important}
+html body #teacher-view > .teacher-nav > .btn-t-tab:hover{background:rgba(255,255,255,.22) !important;transform:translateX(4px)}
+html body #teacher-view > .teacher-nav > .btn-t-tab.active{background:#fff !important;border:2px solid #fbbf24 !important;box-shadow:0 0 0 4px rgba(251,191,36,.35),0 8px 18px rgba(0,0,0,.25) !important;transform:translateX(6px)}
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-ic{background:#fef3c7}
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx b{color:#1e3a8a !important}
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx small{color:#475569 !important}
+@media (max-width:820px){html body #teacher-view > .teacher-nav > .btn-t-tab.active{transform:none}html body #teacher-view > .teacher-nav > .btn-t-tab .tn-ic{width:34px !important;height:34px}}
+</style>
+<style>
+/* (v248) Bảng viết: thẻ nhóm công cụ nhiều màu, nhãn nổi bật */
+html body #wb-ov .wbgrp{border-radius:16px !important;border:1.5px solid var(--gc,#c7d6ee) !important;background:linear-gradient(180deg,#fff 0%,var(--gb,#f4f8ff) 100%) !important;box-shadow:0 4px 0 var(--gs,#d7e2f5),0 8px 14px rgba(30,58,138,.10) !important;padding:7px 7px 6px !important;margin-top:14px !important}
+html body #wb-ov .wbgrp[data-cap]::before{top:-11px !important;left:12px !important;font:800 11px 'Be Vietnam Pro',system-ui,sans-serif !important;letter-spacing:.04em;color:#fff !important;background:var(--gc,#3b82f6) !important;padding:2px 10px !important;border-radius:999px !important;box-shadow:0 2px 4px rgba(15,23,42,.25);text-transform:uppercase}
+html body #wb-ov .wbgrp:nth-child(1){--gc:#2563eb;--gb:#eaf2ff;--gs:#bfd5fb}
+html body #wb-ov .wbgrp:nth-child(2){--gc:#db2777;--gb:#fdecf4;--gs:#f6bfd7}
+html body #wb-ov .wbgrp:nth-child(3){--gc:#64748b;--gb:#f1f5f9;--gs:#cbd5e1}
+html body #wb-ov .wbgrp:nth-child(4){--gc:#059669;--gb:#e8faf2;--gs:#a7e3c9}
+html body #wb-ov .wbgrp:nth-child(5){--gc:#7c3aed;--gb:#f2ecff;--gs:#d4c2fa}
+html body #wb-ov .wbgrp:nth-child(6){--gc:#d97706;--gb:#fff5e0;--gs:#f5d59a}
+html body #wb-ov .wbgrp:nth-child(7){--gc:#dc2626;--gb:#feeeee;--gs:#f5bcbc}
+html body #wb-ov .wbgrp button,html body #wb-ov .wbgrp select{min-height:42px !important;font-weight:700 !important;font-size:14.5px !important;border:1px solid rgba(15,23,42,.16) !important;background:#fff;box-shadow:0 2px 0 rgba(15,23,42,.14) !important}
+html body #wb-ov .wbgrp button:hover{background:#f8fbff;border-color:var(--gc,#3b82f6) !important}
+html body #wb-ov .wbgrp button[style*="2563eb"]{color:#fff}
+html body #wb-ov .wbgrp:last-child{background:linear-gradient(180deg,#eef4ff,#dbe8ff) !important;border-color:#93b4ea !important;margin-top:14px !important}
+html body #wb-ov .wbgrp:last-child::before{display:none !important}
+</style>
+<style>
+.s3grid{display:grid;gap:14px;margin-top:16px}
+.s3card{display:flex;flex-direction:column;position:relative;border-radius:16px;padding:16px 16px 14px;color:#fff;box-shadow:0 8px 22px rgba(15,23,42,.16);overflow:hidden;transition:transform .15s,box-shadow .15s}
+.s3card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,23,42,.22)}
+.s3card:after{content:"";position:absolute;right:-40px;top:-40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.12)}
+.s3a{background:linear-gradient(135deg,#2563eb,#1e40af)}
+.s3b{background:linear-gradient(135deg,#0d9488,#115e59)}
+.s3c{background:linear-gradient(135deg,#f59e0b,#b45309)}
+.s3head{margin-bottom:12px;display:flex;gap:12px;align-items:flex-start;position:relative;z-index:1}
+.s3num{flex:none;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:800}
+.s3ico{font-size:1.9rem;line-height:1}
+.s3t{font-weight:800;font-size:1.08rem}
+.s3d{font-size:.88rem;opacity:.93;margin-top:3px;line-height:1.4}
+.s3btn{margin-top:auto !important;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:0;border-radius:12px;background:#fff;color:#0f172a;font:inherit;font-weight:800;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.s3a .s3btn{color:#1d4ed8}.s3b .s3btn{color:#0f766e}.s3c .s3btn{color:#b45309}
+.s3btn:hover{filter:brightness(.96)}
+@media(min-width:900px){.s3grid{grid-template-columns:repeat(3,1fr)}}
+</style>
 </head>
 <body>
 
@@ -885,7 +936,7 @@ body #portal-view .exam-card .card-body{padding-bottom:12px !important}
                         <h3 style="margin-bottom: 14px; color: var(--primary);"><i class="fa-solid fa-file-signature"></i> Bước 1: Thông tin đề thi</h3>
                         <div style="font-size:.9rem; color:#475569; margin-bottom:10px;">Điền tên, khối lớp, thời gian và (nếu cần) mật khẩu phòng thi. Xong bước này cô kéo xuống bước 2.</div>
                         <div class="form-row"><label>Khối Lớp:</label><select class="form-input" id="new-exam-grade" onchange="updateNewExamTopicDropdown(); renderMatrixTable();"><option value="12">Lớp 12</option><option value="11">Lớp 11</option><option value="10">Lớp 10</option></select></div>
-                        <div class="form-row"><label>Chuyên Mục Chung:</label><select class="form-input" id="new-exam-topic"></select></div>
+                        <div class="form-row"><label>Chuyên Mục Chung:</label><div style="flex:1;min-width:0"><select class="form-input" id="new-exam-topic"></select><button type="button" id="topic-refresh-btn" onclick="refreshTopicsNow(true)" style="margin-top:6px;padding:5px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:.85rem">🔄 Tải lại danh sách chủ đề từ Sheet</button></div></div>
                         <div class="form-row"><label>Mã Đề:</label><input type="text" class="form-input" id="new-exam-id" placeholder="KT12-01"></div>
                         <div class="form-row"><label>Tên Đề:</label><input type="text" class="form-input" id="new-exam-title" placeholder="Kiểm Tra 45 Phút"></div>
                         
@@ -1127,21 +1178,7 @@ body #portal-view .exam-card .card-body{padding-bottom:12px !important}
                             </div>
                             <div id="selected-items-container" style="max-height: 200px; overflow-y: auto;"><p style="text-align: center; color: #94a3b8;">Chưa chọn câu hỏi.</p></div>
                         </div>
-                        <div style="margin-top:14px; border:2px solid #bfdbfe; border-radius:10px; padding:10px; background:#eff6ff;">
-                            <b style="color:#1d4ed8;">A. Cho học sinh làm trên web</b>
-                            <div style="font-size:.85rem; color:#475569; margin:2px 0 6px;">Học sinh vào link làm bài, web tự chấm và ghi điểm vào sổ điểm.</div>
-                            <button class="btn-start" style="width: 100%; padding: 12px;" onclick="saveExamFinal()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Xuất Bản Đề</button>
-                        </div>
-                        <div style="margin-top:10px; border:2px solid #99f6e4; border-radius:10px; padding:10px; background:#f0fdfa;">
-                            <b style="color:#0f766e;">B. In đề giấy</b>
-                            <div style="font-size:.85rem; color:#475569; margin:2px 0 6px;">Nhiều mã đề, phiếu tô đáp án ở trên, đề ở dưới, vừa 2 trang A4. Chấm bằng điện thoại.</div>
-                            <button class="btn-start" id="btn-paper" style="width: 100%; padding: 12px; background:#0f766e;" onclick="paperOpen()"><i class="fa-solid fa-print"></i> In đề giấy (nhiều mã đề)</button>
-                        </div>
-                        <div style="margin-top:10px; border:2px solid #fde68a; border-radius:10px; padding:10px; background:#fffbeb;">
-                            <b style="color:#b45309;">C. Chiếu sửa bài trên bảng viết</b>
-                            <div style="font-size:.85rem; color:#475569; margin:2px 0 6px;">Mỗi câu (hoặc vài câu trắc nghiệm) thành một trang bảng, chữ to, cô viết lời giải lên trên. Cần có mạng.</div>
-                            <button class="btn-start" style="width: 100%; padding: 12px; background:#d97706;" onclick="wbOpenExam()"><i class="fa-solid fa-chalkboard"></i> Đưa đề lên bảng viết</button>
-                        </div>
+                        <div class="s3grid"><div class="s3card s3a"><div class="s3head"><span class="s3num">A</span><span class="s3ico">🌐</span><div><div class="s3t">Cho học sinh làm trên web</div><div class="s3d">Học sinh vào link làm bài, web tự chấm và ghi điểm vào sổ điểm.</div></div></div><button class="s3btn" onclick="saveExamFinal()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu &amp; Xuất Bản Đề</button></div><div class="s3card s3b"><div class="s3head"><span class="s3num">B</span><span class="s3ico">🖨️</span><div><div class="s3t">In đề giấy</div><div class="s3d">Nhiều mã đề, phiếu tô đáp án ở trên, đề ở dưới, vừa 2 trang A4. Chấm bằng điện thoại.</div></div></div><button class="s3btn" id="btn-paper" onclick="paperOpen()"><i class="fa-solid fa-print"></i> In đề giấy (nhiều mã đề)</button></div><div class="s3card s3c"><div class="s3head"><span class="s3num">C</span><span class="s3ico">🧑‍🏫</span><div><div class="s3t">Chiếu sửa bài trên bảng viết</div><div class="s3d">Mỗi câu (hoặc vài câu trắc nghiệm) thành một trang bảng, chữ to, cô viết lời giải lên trên. Cần có mạng.</div></div></div><button class="s3btn" onclick="wbOpenExam()"><i class="fa-solid fa-chalkboard"></i> Đưa đề lên bảng viết</button></div></div>
                     </div>
                 </div>
             </div>
@@ -1558,9 +1595,10 @@ body #portal-view .exam-card .card-body{padding-bottom:12px !important}
                     };
                 }
 
-                if (khoiStr === '12') topicsConfig.g12.push(topicObj);
-                else if (khoiStr === '11') topicsConfig.g11.push(topicObj);
-                else if (khoiStr === '10') topicsConfig.g10.push(topicObj);
+                const kn = (khoiStr.match(/^(?:khối|khoi|lớp|lop)?\s*(10|11|12)\s*$/i) || [])[1];
+                if (kn === '12') topicsConfig.g12.push(topicObj);
+                else if (kn === '11') topicsConfig.g11.push(topicObj);
+                else if (kn === '10') topicsConfig.g10.push(topicObj);
                 else if (/thpt|luyen|luyện|ôn thi|on thi|tốt nghiệp|tot nghiep/i.test(khoiStr)) topicsConfig.thpt.push(topicObj);
                 else topicsConfig.general.push(topicObj);
             });
@@ -6862,7 +6900,18 @@ window.addEventListener('popstate', function () {
 
     // ---------- Tạo các mã đề ----------
     function normTF(q) {
-        const arr = (q.ansOptions && q.ansOptions.length ? q.ansOptions : String(q.ans || '').split('')).map(x => { x = String(x || '').trim(); return /^[DdĐđ]/.test(x) ? 'D' : (/^[Ss]/.test(x) ? 'S' : '-'); });
+        const f = x => { x = String(x || '').trim(); return /^(Đúng|Dung|[DdĐđTt])/.test(x) ? 'D' : (/^(Sai|sai|[SsFf])/.test(x) ? 'S' : '-'); };
+        let arr;
+        if (q.ansOptions && q.ansOptions.length) arr = q.ansOptions.map(f);
+        else {
+            const s = String(q.ans || '').trim();
+            const tk = s.match(/Đúng|Dung|Sai|[DSTFĐ]/gi) || [];
+            if (tk.length < 4 && /^[a-dA-D](?:\s*[,;\s]\s*[a-dA-D])*$/.test(s) && /[a-d]/.test(s)) {
+                /* ghi dạng liệt kê các ý đúng, ví dụ "a, c" */
+                const on = s.toLowerCase().match(/[a-d]/g) || [];
+                arr = ['a', 'b', 'c', 'd'].map(c => on.indexOf(c) >= 0 ? 'D' : 'S');
+            } else arr = tk.map(f);
+        }
         while (arr.length < 4) arr.push('-'); return arr.slice(0, 4).join('');
     }
     function makeSet(i, o) {
@@ -8888,13 +8937,13 @@ window.addEventListener('popstate', function () {
             mItem(m, '🖼 Ảnh', 'Chọn ảnh hoặc dán bằng Ctrl+V', function () { S.file.click(); });
             mItem(m, '📄 PDF', 'Mỗi trang PDF thành một trang của bảng (cần có mạng)', function () { S.pdfIn.click(); });
             mItem(m, '📈 Đồ thị hàm số', 'Gõ hàm số → ra đồ thị', function () { openGraphDialog(null); });
-            mItem(m, '🧊 Hình học không gian (xoay được)', 'Chóp, lăng trụ, hộp, chóp cụt, trụ, nón, cầu: kéo để xoay', function () { openSolidDialog(null); });
             mItem(m, '∑ Công thức (gõ LaTeX)', 'Gõ hoặc bấm nút mẫu: phân số, căn, tích phân, hệ phương trình… rồi chèn thành hình', function () { openFormulaDialog(null); });
             mItem(m, '📋 Đề bài LaTeX (dán đề, ra khung đẹp)', 'Dán đề có công thức và \\choice, chọn mẫu khung và màu, chèn lên bảng', function () { openLatexDialog(null); });
             mItem(m, '📊 Bảng biến thiên', 'Lập bảng biến thiên (có máy điền thử)', function () { openBbtDialog(null); });
-            mItem(m, '📝 Đề đang soạn (chiếu sửa bài)', 'Đưa các câu của đề đang soạn lên bảng, mỗi trang một hoặc vài câu', openExamDialog);
+            mItem(m, '🌐 Trang web / bài luyện tập (mở bên cạnh)', 'Dán đường link, trang hiện ngay bên cạnh bảng để vừa dạy vừa viết', toggleWeb);
         });
         bar.appendChild(insB);
+        bar.appendChild(btn('🌐 Trang web', 'Mở một trang web hoặc bài luyện tập ngay bên cạnh bảng', toggleWeb, 'background:#eff6ff;border-color:#93c5fd;'));
         bar.appendChild(btn('🧮 Máy tính', 'Máy tính bấm tay kiểu fx-580 (nổi trên bảng, kéo được)', toggleCalc, 'background:#fff7ed;border-color:#fdba74;'));
         var sel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 6px;'); sel.title = 'Nền trang';
         [['trang', 'Giấy trơn'], ['oli', 'Ô li (lớn)'], ['vuong', 'Ô vuông (nhỏ)'], ['cham', 'Giấy chấm'], ['ke', 'Dòng kẻ có lề'], ['ke2', 'Dòng kẻ'], ['oxy', 'Trục Oxy']].forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; sel.appendChild(op); });
@@ -9059,6 +9108,84 @@ window.addEventListener('popstate', function () {
     function thumb(cv, d) {
         var g = cv.getContext('2d'); g.setTransform(2, 0, 0, 2, 0, 0); var W = 84, H = 56, pad = 6, r = d.ratio, w = W - pad * 2, h = w / r; if (h > H - pad * 2) { h = H - pad * 2; w = h * r; }
         drawObj(g, { kind: 'shape', sid: d.id, x: W / 2, y: H / 2, w: w, h: h, rot: 0, color: '#1f2937', lw: 1.2, labels: false });
+    }
+    // ---------- trang web bên cạnh bảng (bài luyện tập, khảo sát hàm số...) ----------
+    function webBuild() {
+        var mid = S.lib.parentNode, side = 'right', presets = [44, 66, 86, 100], pi = 0;
+        var p = el('div', 'display:none;flex-direction:column;width:44%;min-width:260px;max-width:100%;background:#fff;position:relative;border-left:3px solid #2563eb;'); S.web = p;
+        var hd = el('div', 'display:flex;gap:6px;align-items:center;padding:6px;background:#eff6ff;border-bottom:1px solid #bfdbfe;flex-wrap:wrap;');
+        var inp = el('input', 'flex:1;min-width:120px;border:1px solid #94a3b8;border-radius:8px;padding:8px 10px;font:14px system-ui;'); inp.placeholder = 'Dán đường link bài luyện tập hoặc trang web…'; inp.setAttribute('list', 'wb-web-hist');
+        var dl = document.createElement('datalist'); dl.id = 'wb-web-hist';
+        function hist() { try { return JSON.parse(localStorage.getItem('wb_web_hist') || '[]') || []; } catch (e) { return []; } }
+        function fillHist() { dl.innerHTML = ''; hist().forEach(function (u) { var o = document.createElement('option'); o.value = u; dl.appendChild(o); }); }
+        var area = el('div', 'position:relative;flex:1;min-height:0;background:#fff;');
+        var fr = el('iframe', 'position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;'); fr.setAttribute('allow', 'fullscreen'); fr.title = 'Trang web bên cạnh bảng'; area.appendChild(fr);
+        var cv = el('canvas', 'position:absolute;left:0;top:0;pointer-events:none;touch-action:none;z-index:2;'); area.appendChild(cv);
+        var hint = el('div', 'position:absolute;left:0;right:0;top:0;padding:10px 12px;font:13.5px/1.5 system-ui;color:#475569;background:#f8fafc;z-index:1;', 'Dán link vào ô trên rồi bấm <b>Mở</b>. Cô vừa viết lên bảng bên cạnh, vừa bấm chọn đáp án trong trang này. Bấm <b>✏️ Vẽ</b> để vẽ ngay lên trang. Nếu trang trắng hoặc báo từ chối kết nối, trang đó không cho nhúng: bấm <b>⤢</b> để mở ở cửa sổ mới.');
+        area.appendChild(hint);
+        function go() {
+            var u = String(inp.value || '').trim(); if (!u) return;
+            if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+            inp.value = u; fr.src = u; hint.style.display = 'none';
+            var h = hist().filter(function (x) { return x !== u; }); h.unshift(u); h = h.slice(0, 12); try { localStorage.setItem('wb_web_hist', JSON.stringify(h)); } catch (e) { } fillHist();
+        }
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
+        // ---- vẽ lên trang ----
+        var W = { on: false, color: '#dc2626', size: 4, eraser: false, strokes: [], cur: null };
+        function sizeCv() {
+            var r = area.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(50, Math.floor(r.width)), h = Math.max(50, Math.floor(r.height));
+            if (cv.width !== Math.round(w * d) || cv.height !== Math.round(h * d)) { cv.width = Math.round(w * d); cv.height = Math.round(h * d); cv.style.width = w + 'px'; cv.style.height = h + 'px'; cv._d = d; redraw(); }
+        }
+        function strokeDraw(g, st) {
+            if (!st.pts.length) return; g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = st.size; g.strokeStyle = st.color; g.globalCompositeOperation = st.eraser ? 'destination-out' : 'source-over';
+            g.beginPath(); g.moveTo(st.pts[0][0], st.pts[0][1]); if (st.pts.length === 1) g.lineTo(st.pts[0][0] + 0.1, st.pts[0][1]); for (var i = 1; i < st.pts.length; i++) g.lineTo(st.pts[i][0], st.pts[i][1]); g.stroke(); g.restore();
+        }
+        function redraw() { var g = cv.getContext('2d'), d = cv._d || 1; g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, cv.width, cv.height); W.strokes.forEach(function (st) { strokeDraw(g, st); }); if (W.cur) strokeDraw(g, W.cur); }
+        function pt(e) { var r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+        cv.addEventListener('pointerdown', function (e) { if (!W.on) return; e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (er) { } W.cur = { color: W.color, size: W.eraser ? W.size * 5 : W.size, eraser: W.eraser, pts: [pt(e)] }; redraw(); });
+        cv.addEventListener('pointermove', function (e) { if (!W.cur) return; e.preventDefault(); W.cur.pts.push(pt(e)); redraw(); });
+        function endS() { if (!W.cur) return; W.strokes.push(W.cur); W.cur = null; redraw(); }
+        cv.addEventListener('pointerup', endS); cv.addEventListener('pointercancel', endS);
+        var tb = el('div', 'display:none;gap:6px;align-items:center;padding:6px;background:#fef9c3;border-bottom:1px solid #fde68a;flex-wrap:wrap;');
+        var colorBtns = [];
+        ['#dc2626', '#2563eb', '#111827', '#16a34a', '#f59e0b'].forEach(function (c) {
+            var b = el('button', 'width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #94a3b8;background:' + c + ';cursor:pointer;padding:0;'); b.type = 'button';
+            b.onclick = function () { W.color = c; W.eraser = false; mark(); }; colorBtns.push([c, b]); tb.appendChild(b);
+        });
+        var eb = btn('🧽 Tẩy', 'Tẩy nét vẽ', function () { W.eraser = !W.eraser; mark(); }); tb.appendChild(eb);
+        var sz = el('select', 'min-height:36px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 6px;'); [[3, 'Nét mảnh'], [5, 'Nét vừa'], [9, 'Nét dày']].forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; sz.appendChild(op); }); sz.value = '5'; W.size = 5; sz.onchange = function () { W.size = +sz.value; }; tb.appendChild(sz);
+        tb.appendChild(btn('↶ Hoàn tác', 'Xóa nét vừa vẽ', function () { W.strokes.pop(); redraw(); }));
+        tb.appendChild(btn('🗑 Xóa hết nét', 'Xóa tất cả nét vẽ trên trang', function () { W.strokes = []; redraw(); }, 'background:#fee2e2;border-color:#fecaca;color:#991b1b;'));
+        tb.appendChild(el('span', 'font:12.5px system-ui;color:#92400e;flex-basis:100%;', 'Đang ở chế độ vẽ: bấm vào trang sẽ không bấm được nút của trang. Muốn bấm chọn đáp án hay cuộn trang, bấm <b>✏️ Vẽ</b> lần nữa để tắt (nét vẽ vẫn giữ). Nét vẽ nằm trên màn hình, không dính theo trang khi cuộn.'));
+        function mark() { colorBtns.forEach(function (x) { x[1].style.boxShadow = (!W.eraser && W.color === x[0]) ? '0 0 0 3px #2563eb' : '0 0 0 1px #94a3b8'; }); eb.style.background = W.eraser ? '#bfdbfe' : '#fff'; }
+        var drawB = btn('✏️ Vẽ', 'Bật/tắt vẽ lên trang web', function () {
+            W.on = !W.on; cv.style.pointerEvents = W.on ? 'auto' : 'none'; cv.style.cursor = W.on ? 'crosshair' : 'default'; tb.style.display = W.on ? 'flex' : 'none';
+            drawB.style.background = W.on ? '#facc15' : '#fff'; drawB.style.borderColor = W.on ? '#a16207' : '#cbd5e1'; mark(); setTimeout(sizeCv, 30);
+        });
+        var wid = btn('⇔ Rộng', 'Đổi độ rộng: 44% → 66% → 86% → toàn màn hình', function () { pi = (pi + 1) % presets.length; p.style.width = presets[pi] + '%'; wid.textContent = pi === presets.length - 1 ? '⇔ Thu nhỏ' : '⇔ Rộng'; setTimeout(function () { fit(); sizeCv(); }, 30); });
+        hd.appendChild(inp); hd.appendChild(dl);
+        hd.appendChild(btn('Mở', 'Mở trang', go, 'background:#2563eb;color:#fff;border-color:#1d4ed8;'));
+        hd.appendChild(drawB); hd.appendChild(wid);
+        hd.appendChild(btn('⟳', 'Tải lại trang', function () { if (fr.src) { try { fr.src = fr.src; } catch (e) { } } }));
+        hd.appendChild(btn('⇄', 'Đổi sang bên kia', function () { side = side === 'right' ? 'left' : 'right'; p.style.order = side === 'left' ? '-1' : '0'; p.style.borderLeft = side === 'right' ? '3px solid #2563eb' : 'none'; p.style.borderRight = side === 'left' ? '3px solid #2563eb' : 'none'; setTimeout(fit, 30); }));
+        hd.appendChild(btn('⤢', 'Mở ở cửa sổ mới', function () { var u = String(inp.value || '').trim(); if (u) window.open(/^https?:\/\//i.test(u) ? u : 'https://' + u, '_blank'); }));
+        hd.appendChild(btn('✕', 'Đóng', toggleWeb, 'background:#fee2e2;border-color:#fecaca;color:#991b1b;'));
+        var grip = el('div', 'position:absolute;top:0;bottom:0;left:-10px;width:18px;cursor:col-resize;z-index:5;background:linear-gradient(90deg,transparent 6px,rgba(37,99,235,.55) 6px,rgba(37,99,235,.55) 12px,transparent 12px);'); grip.title = 'Kéo để đổi độ rộng';
+        grip.addEventListener('pointerdown', function (e) {
+            e.preventDefault(); var x0 = e.clientX, w0 = p.getBoundingClientRect().width, mw = mid.getBoundingClientRect().width; fr.style.pointerEvents = 'none'; try { grip.setPointerCapture(e.pointerId); } catch (er) { }
+            function mv(ev) { var dx = ev.clientX - x0; var nw = side === 'right' ? w0 - dx : w0 + dx; p.style.width = Math.max(260, Math.min(mw, nw)) + 'px'; }
+            function up() { grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', up); fr.style.pointerEvents = ''; fit(); sizeCv(); }
+            grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', up);
+        });
+        p.appendChild(grip); p.appendChild(hd); p.appendChild(tb); p.appendChild(area); fillHist(); S.webInp = inp; S.webSize = sizeCv;
+        if (window.ResizeObserver) { try { new ResizeObserver(function () { sizeCv(); }).observe(area); } catch (e) { } }
+        mid.appendChild(p);
+    }
+    function toggleWeb() {
+        if (!S.web) webBuild();
+        var on = S.web.style.display === 'none'; S.web.style.display = on ? 'flex' : 'none';
+        if (on && S.webInp) setTimeout(function () { S.webInp.focus(); }, 60);
+        setTimeout(fit, 30);
     }
     function toggleLib() { var on = S.lib.style.display === 'none'; S.lib.style.display = on ? 'flex' : 'none'; if (on) renderLib(); setTimeout(fit, 30); }
 
@@ -16296,11 +16423,20 @@ var QGEN = (function () {
             var A = [ri(-5, 5), ri(-5, 5), ri(-5, 5)], pl = pick([['Oxy', 2], ['Oyz', 0], ['Oxz', 1]]), B = A.slice(); B[pl[1]] = -B[pl[1]]; var S = B[0] + B[1] + B[2]; need(A[pl[1]] !== 0);
             return fnumI(S, 'Đối xứng qua mặt phẳng $(' + pl[0] + ')$ thì đổi dấu tọa độ ' + ['x', 'y', 'z'][pl[1]] + ': $A\'' + pz(B) + '$, nên $a+b+c=' + S + '$.', 'Trong không gian $Oxyz$, điểm $A\'(a;b;c)$ đối xứng với $A' + pz(A) + '$ qua mặt phẳng $(' + pl[0] + ')$. Giá trị $a+b+c$ bằng', [A[0] + A[1] + A[2], -S, S + 2 * A[pl[1]], S - 2, S + 1], 'TH');
         });
-        add('l10_sa_tap_khoang_nguyen', 10, GZ10a, 'Trả lời ngắn: số số nguyên thuộc giao của hai khoảng/đoạn', 'TH', function () {
+        add('l10_sa_tap_khoang_nguyen', 10, GZ10a, 'Trả lời ngắn: số số nguyên thuộc giao / hợp / hiệu của hai khoảng/đoạn', 'TH', function () {
             var a = ri(-8, 0), b = a + ri(5, 12), c = ri(-6, 2), d = c + ri(5, 12), ol = pick([0, 1]), cr = pick([0, 1]), pl = pick([0, 1]), qr = pick([0, 1]);
-            var lo = Math.max(a + (ol ? 1 : 0), c + (pl ? 1 : 0)), hi = Math.min(b - (cr ? 1 : 0), d - (qr ? 1 : 0)); need(hi - lo + 1 >= 2 && hi - lo + 1 <= 12);
-            var A = (ol ? '(' : '[') + a + ';' + b + (cr ? ')' : ']'), B = (pl ? '(' : '[') + c + ';' + d + (qr ? ')' : ']'), cnt = hi - lo + 1;
-            return fnumI(cnt, 'Giao $A\\cap B$ có các số nguyên từ $' + lo + '$ đến $' + hi + '$, gồm $' + hi + '-' + sg0(lo) + '+1=' + cnt + '$ số.', 'Cho $A=' + A + '$ và $B=' + B + '$. Số phần tử nguyên của tập $A\\cap B$ là', [cnt - 1, cnt + 1, hi - lo, cnt + 2, cnt - 2], 'TH', true);
+            var op = pick(['cap', 'cup', 'AB', 'BA']);
+            var lA = a + (ol ? 1 : 0), hA = b - (cr ? 1 : 0), lB = c + (pl ? 1 : 0), hB = d - (qr ? 1 : 0), els = [], x;
+            for (x = Math.min(a, c) - 1; x <= Math.max(b, d) + 1; x++) {
+                var inA = x >= lA && x <= hA, inB = x >= lB && x <= hB, ok = op === 'cap' ? (inA && inB) : op === 'cup' ? (inA || inB) : op === 'AB' ? (inA && !inB) : (inB && !inA);
+                if (ok) els.push(x);
+            }
+            var cnt = els.length; need(cnt >= 2 && cnt <= 14 && hA - lA >= 2 && hB - lB >= 2);
+            if (op === 'cap') need(true);
+            var A = (ol ? '(' : '[') + a + ';' + b + (cr ? ')' : ']'), B = (pl ? '(' : '[') + c + ';' + d + (qr ? ')' : ']');
+            var sym = op === 'cap' ? 'A\\cap B' : op === 'cup' ? 'A\\cup B' : op === 'AB' ? 'A\\setminus B' : 'B\\setminus A';
+            var ex = 'Các số nguyên của $A$ là $' + lA + ',\\ldots,' + hA + '$; của $B$ là $' + lB + ',\\ldots,' + hB + '$. ' + (els.length <= 9 ? 'Tập $' + sym + '$ có các số nguyên: $' + els.join(';') + '$. ' : '') + 'Vậy có $' + cnt + '$ số nguyên.';
+            return fnumI(cnt, ex, 'Cho $A=' + A + '$ và $B=' + B + '$. Số phần tử nguyên của tập $' + sym + '$ là', [cnt - 1, cnt + 1, cnt + 2, cnt - 2, (hA - lA + 1), (hB - lB + 1)], 'TH', true);
         });
         function sg0(n) { return n < 0 ? '(' + n + ')' : '' + n; }
         add('l10_sa_bpt_F_max', 10, GZ10b, 'Trả lời ngắn: giá trị lớn nhất (nhỏ nhất) của $F=ax+by$ trên miền đa giác cho bởi đỉnh', 'VD', function () {
@@ -23046,6 +23182,28 @@ window.aiLayout = function () {
     }
     var tm = setInterval(function () { if (document.getElementById('btn-t-room') && typeof window.switchTeacherTab === 'function') { clearInterval(tm); init(); } }, 400);
 })();
+</script>
+<script>
+/* v250: tải lại chủ đề mới nhất từ Sheet (không dùng bản nhớ cũ) */
+window.refreshTopicsNow=async function(manual){
+  var b=document.getElementById('topic-refresh-btn');
+  try{
+    if(b){b.disabled=true;b.textContent='Đang tải...';}
+    var u=SCRIPT_URL+(SCRIPT_URL.indexOf('?')>=0?'&':'?')+'nocache='+Date.now();
+    var r=await fetch(u,{cache:'no-store'}); var d=await r.json();
+    if(d&&Array.isArray(d.topics)){
+      processTopicsData(d.topics); renderSidebarTopics(); updateNewExamTopicDropdown();
+      try{updateBankFilterTopics();}catch(e){}
+      window.__topicsAt=Date.now();
+      if(b)b.textContent='✅ Đã tải '+d.topics.length+' dòng chủ đề';
+      if(manual&&!d.topics.length)alert('Sheet chưa trả về chủ đề nào.');
+    }else if(b)b.textContent='Sheet không trả về chủ đề';
+  }catch(e){if(b)b.textContent='Không tải được, thử lại';}
+  if(b)setTimeout(function(){b.disabled=false;b.textContent='🔄 Tải lại danh sách chủ đề từ Sheet';},2500);
+};
+(function(){var o=window.switchTeacherTab;if(typeof o!=='function')return;
+ window.switchTeacherTab=function(t){var r=o.apply(this,arguments);
+  if(t==='creator'&&(!window.__topicsAt||Date.now()-window.__topicsAt>60000))setTimeout(function(){refreshTopicsNow(false);},300);return r;};})();
 </script>
 </body>
 </html>
