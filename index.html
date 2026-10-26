@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v237] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v238] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21706,6 +21706,88 @@ var QGEN = (function () {
             window.__GK1 = window.__GK1 || {}; ids.forEach(function (i) { if (i) window.__GK1[i] = 1; });
         })();
     })(Q);
+    // ===== (v238) GK1 Toán 10 – Đúng sai "Hệ thức lượng trong tam giác": gom còn 3 dạng thông hiểu theo yêu cầu của cô =====
+    (function (Q) {
+        var ri = Q.ri, pick = Q.pick, shuf = Q.shuf, F = Q.F, tex = Q.tex, fneg = Q.fneg;
+        var GRP = 'Đại số 10 › Hệ thức lượng trong tam giác (Chương III)';
+        function mkTF(stem, builders, lv) { var bits; do { bits = builders.map(function () { return Math.random() < 0.5; }); } while (bits.every(Boolean) || !bits.some(Boolean)); var items = builders.map(function (f, i) { var r = f(bits[i]); r.ok = bits[i]; return r; }); return { q: stem, items: items, level: lv || 'TH', exp: items.map(function (it, i) { return 'abcd'[i] + ') ' + (it.ok ? 'ĐÚNG' : 'SAI') + '. ' + it.why; }).join('<br>') }; }
+        function gc(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = a % b; a = b; b = t; } return a; }
+        /* (A + B√m) / D, rút gọn */
+        function tx(A, B, D, m) {
+            var g = gc(gc(A, B), D) || 1; A /= g; B /= g; D /= g; if (D < 0) { A = -A; B = -B; D = -D; }
+            var s = ''; if (A !== 0) s += A; if (B !== 0) s += (B > 0 && A !== 0 ? '+' : '') + (B === 1 ? '' : B === -1 ? '-' : B) + '\\sqrt{' + m + '}'; if (s === '') s = '0';
+            return D === 1 ? s : '\\dfrac{' + s + '}{' + D + '}';
+        }
+        /* Dạng 1: hai cạnh và góc xen giữa */
+        var T1 = [[60, 3, 8, 7], [60, 5, 8, 7], [60, 7, 15, 13], [60, 8, 15, 13], [60, 5, 21, 19], [60, 16, 21, 19], [120, 3, 5, 7], [120, 5, 16, 19], [120, 7, 8, 13], [120, 7, 33, 37]];
+        Q.TF.push({ id: 'l10_tf_hl_haicanh_goc', grade: 10, group: GRP, lv: 'TH', name: 'Biết hai cạnh và góc xen giữa: cạnh còn lại, diện tích, bán kính nội tiếp, ngoại tiếp (đúng – sai)', make: function () {
+            var t = pick(T1), ang = t[0], b = t[1], c = t[2], a = t[3]; if (Math.random() < 0.5) { var z = b; b = c; c = z; }
+            var P2 = a + b + c, sg = ang === 60 ? '-' : '+';
+            var items = [
+                function (ok) { var v = ok ? a : a + pick([-2, -1, 1, 2]); return { t: 'Độ dài cạnh $BC$ bằng $' + v + '$.', why: 'Định lí côsin: $BC^2=' + c + '^2+' + b + '^2-2\\cdot' + c + '\\cdot' + b + '\\cos' + ang + '^\\circ=' + a * a + '$ nên $BC=' + a + '$.' }; },
+                function (ok) { return { t: 'Diện tích tam giác $ABC$ bằng $' + (ok ? tx(0, b * c, 4, 3) : tx(0, b * c, 2, 3)) + '$.', why: '$S=\\dfrac12\\cdot AB\\cdot AC\\cdot\\sin A=\\dfrac12\\cdot' + c + '\\cdot' + b + '\\cdot\\dfrac{\\sqrt3}{2}=' + tx(0, b * c, 4, 3) + '$.' }; },
+                function (ok) { return { t: 'Bán kính đường tròn nội tiếp tam giác $ABC$ bằng $' + (ok ? tx(0, b * c, 2 * P2, 3) : tx(0, b * c, P2, 3)) + '$.', why: 'Nửa chu vi $p=\\dfrac{' + a + '+' + b + '+' + c + '}{2}=\\dfrac{' + P2 + '}{2}$ nên $r=\\dfrac{S}{p}=' + tx(0, b * c, 2 * P2, 3) + '$.' }; },
+                function (ok) { return { t: 'Bán kính đường tròn ngoại tiếp tam giác $ABC$ bằng $' + (ok ? tx(0, a, 3, 3) : tx(0, a, 2, 3)) + '$.', why: '$R=\\dfrac{BC}{2\\sin A}=\\dfrac{' + a + '}{\\sqrt3}=' + tx(0, a, 3, 3) + '$.' }; }
+            ];
+            return mkTF('Cho tam giác $ABC$ có $AB=' + c + '$, $AC=' + b + '$ và $\\widehat{A}=' + ang + '^\\circ$. Xét tính đúng sai của các mệnh đề sau:', items, 'TH');
+        } });
+        /* Dạng 2: biết ba cạnh */
+        var HT3 = [[13, 14, 15, 84], [5, 12, 13, 30], [9, 10, 17, 36], [6, 25, 29, 60], [8, 15, 17, 60], [13, 20, 21, 126], [10, 17, 21, 84], [7, 15, 20, 42], [4, 13, 15, 24]];
+        Q.TF.push({ id: 'l10_tf_hl_bacanh', grade: 10, group: GRP, lv: 'TH', name: 'Biết ba cạnh: góc nhọn hay tù, diện tích, bán kính nội tiếp, ngoại tiếp (đúng – sai)', make: function () {
+            var t = pick(HT3), pm = shuf(t.slice(0, 3)), a = pm[0], b = pm[1], c = pm[2], S = t[3], p = (a + b + c) / 2;
+            var cosA = F(b * b + c * c - a * a, 2 * b * c), R = F(a * b * c, 4 * S), r = F(S, p);
+            var kind = cosA.n > 0 ? 'nhọn' : cosA.n < 0 ? 'tù' : 'vuông', useCos = cosA.n !== 0 && Math.random() < 0.5;
+            var angIt = useCos
+                ? function (ok) { return { t: '$\\cos A=' + tex(ok ? cosA : fneg(cosA)) + '$.', why: '$\\cos A=\\dfrac{b^2+c^2-a^2}{2bc}=\\dfrac{' + b * b + '+' + c * c + '-' + a * a + '}{' + 2 * b * c + '}=' + tex(cosA) + '$.' }; }
+                : function (ok) { var w = kind === 'nhọn' ? 'tù' : 'nhọn'; return { t: 'Góc $A$ là góc ' + (ok ? kind : w) + '.', why: '$\\cos A=\\dfrac{b^2+c^2-a^2}{2bc}=' + tex(cosA) + (cosA.n > 0 ? '>0' : cosA.n < 0 ? '<0' : '=0') + '$ nên góc $A$ là góc ' + kind + '.' }; };
+            var items = [
+                angIt,
+                function (ok) { return { t: 'Diện tích tam giác $ABC$ bằng $' + (ok ? S : S + pick([-2, 2, 4])) + '$.', why: 'Nửa chu vi $p=' + p + '$; công thức Heron cho $S=' + S + '$.' }; },
+                function (ok) { return { t: 'Bán kính đường tròn nội tiếp bằng $' + tex(ok ? r : Q.fadd(r, F(1))) + '$.', why: '$r=\\dfrac{S}{p}=\\dfrac{' + S + '}{' + p + '}=' + tex(r) + '$.' }; },
+                function (ok) { return { t: 'Bán kính đường tròn ngoại tiếp bằng $' + tex(ok ? R : Q.fadd(R, F(1, 2))) + '$.', why: '$R=\\dfrac{abc}{4S}=\\dfrac{' + a * b * c + '}{' + 4 * S + '}=' + tex(R) + '$.' }; }
+            ];
+            return mkTF('Cho tam giác $ABC$ có $BC=' + a + '$, $CA=' + b + '$, $AB=' + c + '$. Xét tính đúng sai của các mệnh đề sau:', items, 'TH');
+        } });
+        /* Dạng 3: hai góc và một cạnh */
+        function case3(k) {
+            var C = pick([1, 2, 3, 4]);
+            if (C === 1) return { st: '$\\widehat{B}=30^\\circ$, $\\widehat{C}=60^\\circ$ và $BC=' + 2 * k + '$', ang: 90, aw: [80, 100, 60],
+                sd: pick([['AC', tx(k, 0, 1, 3), tx(0, k, 1, 3), '$AC=BC\\sin B=' + 2 * k + '\\cdot\\dfrac12=' + k + '$'], ['AB', tx(0, k, 1, 3), tx(k, 0, 1, 3), '$AB=BC\\sin C=' + 2 * k + '\\cdot\\dfrac{\\sqrt3}{2}=' + tx(0, k, 1, 3) + '$']]),
+                S: [tx(0, k * k, 2, 3), tx(0, k * k, 4, 3), '$\\widehat{A}=90^\\circ$ nên $S=\\dfrac12\\cdot AB\\cdot AC=\\dfrac12\\cdot' + k + '\\cdot' + tx(0, k, 1, 3) + '=' + tx(0, k * k, 2, 3) + '$'],
+                R: [tx(k, 0, 1, 3), tx(2 * k, 0, 1, 3), '$R=\\dfrac{BC}{2\\sin A}=\\dfrac{' + 2 * k + '}{2}=' + k + '$'],
+                r: [tx(-k, k, 2, 3), tx(k, k, 2, 3), '$r=\\dfrac{AB+AC-BC}{2}=\\dfrac{' + tx(0, k, 1, 3) + '+' + k + '-' + 2 * k + '}{2}=' + tx(-k, k, 2, 3) + '$'] };
+            if (C === 2) return { st: '$\\widehat{B}=\\widehat{C}=45^\\circ$ và $BC=' + 2 * k + '$', ang: 90, aw: [80, 100, 60],
+                sd: ['AB', tx(0, k, 1, 2), tx(k, 0, 1, 2), '$AB=BC\\sin C=' + 2 * k + '\\cdot\\dfrac{\\sqrt2}{2}=' + tx(0, k, 1, 2) + '$'],
+                S: [tx(k * k, 0, 1, 2), tx(2 * k * k, 0, 1, 2), '$AB=AC=' + tx(0, k, 1, 2) + '$ nên $S=\\dfrac12\\cdot AB\\cdot AC=' + k * k + '$'],
+                R: [tx(k, 0, 1, 2), tx(2 * k, 0, 1, 2), '$R=\\dfrac{BC}{2\\sin A}=\\dfrac{' + 2 * k + '}{2}=' + k + '$'],
+                r: [tx(-k, k, 1, 2), tx(k, k, 1, 2), '$p=' + tx(k, k, 1, 2) + '$ nên $r=\\dfrac{S}{p}=\\dfrac{' + k * k + '}{' + tx(k, k, 1, 2) + '}=' + tx(-k, k, 1, 2) + '$'] };
+            if (C === 3) return { st: '$\\widehat{B}=\\widehat{C}=30^\\circ$ và $AB=' + 2 * k + '$', ang: 120, aw: [100, 150, 60],
+                sd: pick([['BC', tx(0, 2 * k, 1, 3), tx(4 * k, 0, 1, 3), '$BC=2\\cdot AB\\cos B=2\\cdot' + 2 * k + '\\cdot\\dfrac{\\sqrt3}{2}=' + tx(0, 2 * k, 1, 3) + '$'], ['AC', tx(2 * k, 0, 1, 3), tx(0, 2 * k, 1, 3), 'Tam giác cân tại $A$ ($\\widehat{B}=\\widehat{C}$) nên $AC=AB=' + 2 * k + '$']]),
+                S: [tx(0, k * k, 1, 3), tx(0, 2 * k * k, 1, 3), '$S=\\dfrac12\\cdot AB\\cdot AC\\cdot\\sin120^\\circ=\\dfrac12\\cdot' + 2 * k + '\\cdot' + 2 * k + '\\cdot\\dfrac{\\sqrt3}{2}=' + tx(0, k * k, 1, 3) + '$'],
+                R: [tx(2 * k, 0, 1, 3), tx(4 * k, 0, 1, 3), '$R=\\dfrac{BC}{2\\sin A}=\\dfrac{' + tx(0, 2 * k, 1, 3) + '}{\\sqrt3}=' + 2 * k + '$'],
+                r: [tx(-3 * k, 2 * k, 1, 3), tx(3 * k, 2 * k, 1, 3), '$p=' + tx(2 * k, k, 1, 3) + '$ nên $r=\\dfrac{S}{p}=\\dfrac{' + tx(0, k * k, 1, 3) + '}{' + tx(2 * k, k, 1, 3) + '}=' + tx(-3 * k, 2 * k, 1, 3) + '$'] };
+            return { st: '$\\widehat{B}=\\widehat{C}=60^\\circ$ và $BC=' + 2 * k + '$', ang: 60, aw: [30, 90, 120],
+                sd: ['AB', tx(2 * k, 0, 1, 3), tx(0, k, 1, 3), 'Tam giác có $\\widehat{A}=60^\\circ$ nên đều, $AB=BC=' + 2 * k + '$'],
+                S: [tx(0, k * k, 1, 3), tx(0, k * k, 2, 3), '$S=\\dfrac{(' + 2 * k + ')^2\\sqrt3}{4}=' + tx(0, k * k, 1, 3) + '$'],
+                R: [tx(0, 2 * k, 3, 3), tx(0, k, 1, 3), '$R=\\dfrac{BC}{2\\sin A}=\\dfrac{' + 2 * k + '}{\\sqrt3}=' + tx(0, 2 * k, 3, 3) + '$'],
+                r: [tx(0, k, 3, 3), tx(0, k, 2, 3), '$r=\\dfrac{S}{p}=\\dfrac{' + tx(0, k * k, 1, 3) + '}{' + 3 * k + '}=' + tx(0, k, 3, 3) + '$'] };
+        }
+        Q.TF.push({ id: 'l10_tf_hl_haigoc_canh', grade: 10, group: GRP, lv: 'TH', name: 'Biết hai góc và một cạnh: góc còn lại, một cạnh còn lại, diện tích, bán kính nội tiếp hoặc ngoại tiếp (đúng – sai)', make: function () {
+            var k = ri(2, 6), o = case3(k), useR = Math.random() < 0.5, rr = useR ? o.R : o.r;
+            var items = [
+                function (ok) { return { t: 'Số đo góc $A$ bằng $' + (ok ? o.ang : pick(o.aw)) + '^\\circ$.', why: 'Tổng ba góc bằng $180^\\circ$ nên $\\widehat{A}=' + o.ang + '^\\circ$.' }; },
+                function (ok) { return { t: 'Độ dài cạnh $' + o.sd[0] + '$ bằng $' + (ok ? o.sd[1] : o.sd[2]) + '$.', why: o.sd[3] + '.' }; },
+                function (ok) { return { t: 'Diện tích tam giác $ABC$ bằng $' + (ok ? o.S[0] : o.S[1]) + '$.', why: o.S[2] + '.' }; },
+                function (ok) { return { t: 'Bán kính đường tròn ' + (useR ? 'ngoại' : 'nội') + ' tiếp tam giác $ABC$ bằng $' + (ok ? rr[0] : rr[1]) + '$.', why: rr[2] + '.' }; }
+            ];
+            return mkTF('Cho tam giác $ABC$ có ' + o.st + '. Xét tính đúng sai của các mệnh đề sau:', items, 'TH');
+        } });
+        /* Bỏ các dạng đúng – sai cũ về hệ thức lượng đã được gom vào 3 dạng trên */
+        var OLD = { l10_tf_tg_gocgoc: 1, l10_tf_tg_bacanh: 1, l10_tf_hethuc: 1, l10_tf_hethuc_tg: 1 };
+        for (var i = Q.TF.length - 1; i >= 0; i--) if (OLD[Q.TF[i].id]) Q.TF.splice(i, 1);
+        window.__GK1 = window.__GK1 || {}; Object.keys(OLD).forEach(function (k) { delete window.__GK1[k]; });
+        ['l10_tf_hl_haicanh_goc', 'l10_tf_hl_bacanh', 'l10_tf_hl_haigoc_canh'].forEach(function (k) { window.__GK1[k] = 1; });
+    })(Q);
     // (v106) Ẩn các dạng ngoài chương trình GDPT 2018 theo quyết định của cô (số phức, hình trụ - nón - cầu, hệ hai PT bậc nhất hai ẩn). Muốn dùng lại: xóa danh sách HIDE này.
     (function () { var HIDE = { sp_tinh: 1, sp_modun: 1, sp_chia: 1, sp_bac2: 1, sp_taphop: 1, trongxoay: 1, hept: 1, tf_sophuc: 1 };
         [Q.GEN, Q.TF].forEach(function (arr) { for (var i = arr.length - 1; i >= 0; i--) if (HIDE[arr[i].id]) arr.splice(i, 1); }); })();
@@ -21949,7 +22031,7 @@ var QGEN = (function () {
         var LVO = { NB: 0, TH: 1, VD: 2, VDC: 3 }, LVN = ['Nhận biết', 'Thông hiểu', 'Vận dụng', 'Vận dụng cao'];
         function lvOf(x) { var m = String(x.lv || x.level || 'TH').toUpperCase().match(/VDC|VD|NB|TH/); return m ? LVO[m[0]] : 1; }
         lb.forEach(function (o) { o.l = lvOf(o.x); });
-        function subOf(x) { var r = String(x.group || ''), i = r.indexOf('›'); return (i >= 0 ? r.slice(i + 1) : r).trim(); }
+        function subOf(x) { var r = String(x.group || ''), i = r.indexOf('›'); return (i >= 0 ? r.slice(i + 1) : r).replace(/\s*\((?:Chương|Chuyên đề)[^)]*\)\s*$/i, '').trim(); }
         function baiOf(x) { var m = /\(Bài\s*(\d+)/.exec(String(x.group || '')); return m ? +m[1] : 0; }
         lb.forEach(function (o) { o.b = baiOf(o.x); o.s = subOf(o.x); });
         var sFirst = {}; lb.forEach(function (o) { if (!(o.s in sFirst)) sFirst[o.s] = o.i; });
