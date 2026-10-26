@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v234] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v237] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1680,7 +1680,7 @@ body #portal-view .exam-card .card-body{padding-bottom:12px !important}
         }
 
         function updateNewExamTopicDropdown() {
-            const grade = document.getElementById('new-exam-grade')?.value || '12';
+            const grade = (document.getElementById('new-exam-grade') || {}).value || '12';
             const select = document.getElementById('new-exam-topic');
             if (!select) return;
             select.innerHTML = "";
@@ -1968,7 +1968,7 @@ body #portal-view .exam-card .card-body{padding-bottom:12px !important}
                 .replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
             // "Đáp án" phải là từ đứng riêng; dạng viết tắt Đ/A, ĐA chỉ nhận khi đứng đầu dòng (tránh nhầm "đa diện", "rađa")
-            textContent = textContent.replace(/(?<![\p{L}\p{N}])Đáp\s*án[:\s]*([A-D])(?![\p{L}\p{N}])/giu, '\nĐáp án: $1\n');
+            textContent = textContent.replace(/(^|[^\p{L}\p{N}])Đáp\s*án[:\s]*([A-D])(?![\p{L}\p{N}])/giu, function (m, pre, L) { return pre + '\nĐáp án: ' + L + '\n'; });
             textContent = textContent.replace(/(^|\n)[ \t]*Đ\s*\/?\s*A[ \t]*[:\-.]?[ \t]*([A-D])(?![\p{L}\p{N}])/giu, '$1Đáp án: $2\n');
             textContent = textContent.replace(/([^\n])\s*(C[âa]u|B[àa]i)\s*(\d+)[\s:.]/gi, '$1\n\nCâu $3.');
             textContent = textContent.replace(/\n\s*\n+/g, '\n\n');
@@ -2642,7 +2642,7 @@ function removeQuestionFromSelected(qId) {
             const examPass = document.getElementById('new-exam-pass') ? document.getElementById('new-exam-pass').value.trim() : '';
             const startTime = document.getElementById('new-exam-start-time').value;
             const deadline = document.getElementById('new-exam-deadline').value;
-            const maxAttemptsVal = parseInt(document.getElementById('new-exam-max-attempts')?.value) || 0;
+            const maxAttemptsVal = parseInt((document.getElementById('new-exam-max-attempts') || {}).value) || 0;
             
             if (!examId || !title) { alert("⚠️ Vui lòng nhập đầy đủ Mã đề và Tên đề thi!"); return; }
             { const same = examBank.find(e => String(e.id).trim().toLowerCase() === String(examId).trim().toLowerCase());
@@ -2769,7 +2769,7 @@ function removeQuestionFromSelected(qId) {
                 examPass: examPass,
                 startTime: startTime,
                 deadline: deadline,
-                youtubeUrl: document.getElementById('lecture-youtube-url')?.value.trim() || '',
+                youtubeUrl: ((document.getElementById('lecture-youtube-url') || {}).value || '').trim(),
                 pdfData: lecturePdfBase64 || '',
                 maxAttempts: maxAttemptsVal,
                 questions: questionsToSave,
@@ -2916,8 +2916,8 @@ function removeQuestionFromSelected(qId) {
             const tbody = document.getElementById('scores-table-body');
             if (!tbody) return;
 
-            const fClass = (document.getElementById('filter-score-class')?.value || 'all').trim().toLowerCase();
-            const fExam = (document.getElementById('filter-score-exam')?.value || 'all').trim().toLowerCase();
+            const fClass = ((document.getElementById('filter-score-class') || {}).value || 'all').trim().toLowerCase();
+            const fExam = ((document.getElementById('filter-score-exam') || {}).value || 'all').trim().toLowerCase();
 
             let displayList = (globalScoresData || []).filter(r => {
                 const itemClass = String(r.sClass || '').trim().toLowerCase();
@@ -2971,8 +2971,8 @@ function removeQuestionFromSelected(qId) {
 
         function exportScoresToExcel() {
             if (!globalScoresData || globalScoresData.length === 0) { alert("Chưa có dữ liệu để xuất Excel!"); return; }
-            const fClass = (document.getElementById('filter-score-class')?.value || 'all').trim().toLowerCase();
-            const fExam = (document.getElementById('filter-score-exam')?.value || 'all').trim().toLowerCase();
+            const fClass = ((document.getElementById('filter-score-class') || {}).value || 'all').trim().toLowerCase();
+            const fExam = ((document.getElementById('filter-score-exam') || {}).value || 'all').trim().toLowerCase();
 
             let filteredList = globalScoresData.filter(r => {
                 const itemClass = String(r.sClass || '').trim().toLowerCase();
@@ -3098,6 +3098,7 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
             const hint = document.getElementById('m-hint');
             if (hint) { hint.style.display = HINTS[method] ? 'block' : 'none'; hint.textContent = HINTS[method] || ''; }
             // cách B, C cần khung Gemini mở sẵn (có ô nhập khóa)
+            if (method === 'ai' && window.aiLayout) { try { window.aiLayout(); } catch (er) { console.warn(er); } }
             if (method === 'ai' && window.mxPtsInit) { try { window.mxPtsInit(); } catch (er) { } }
             if (method === 'ai' || method === 'img') {
                 const b = document.getElementById('rv-body');
@@ -3793,7 +3794,7 @@ let editingExamId = null;
                 const targetAnsOptions = (activeExam.mode === 'KIEMTRA' && secretData[q.id]) ? secretData[q.id].ansOptions : q.ansOptions;
 
                 if (qType === 'MCQ') {
-                    let userAns = document.querySelector(`input[name="q_${qNum}"]:checked`)?.value || "";
+                    let userAns = (document.querySelector(`input[name="q_${qNum}"]:checked`) || {}).value || "";
                     studentResponses[q.id || `Q_${qNum}`] = userAns;
                     let correctA = String(targetAns || "").trim().toUpperCase();
                     // KHÔNG CHO ĐIỂM NẾU BỎ TRỐNG
@@ -3801,7 +3802,7 @@ let editingExamId = null;
                         totalWeightedScore += weight;
                     }
                 } else if (qType === 'SA') {
-                    let userAns = document.querySelector(`input[name="q_${qNum}"]`)?.value.trim() || "";
+                    let userAns = ((document.querySelector(`input[name="q_${qNum}"]`) || {}).value || '').trim();
                     studentResponses[q.id || `Q_${qNum}`] = userAns;
                     let correctA = String(targetAns || "").trim().toLowerCase();
                     // KHÔNG CHO ĐIỂM NẾU BỎ TRỐNG
@@ -3809,7 +3810,7 @@ let editingExamId = null;
                         totalWeightedScore += weight;
                     }
                 } else if (qType === 'TF') {
-                    let subAnsList = ['a', 'b', 'c', 'd'].map(ch => document.querySelector(`input[name="q_${qNum}_${ch}"]:checked`)?.value || "-");
+                    let subAnsList = ['a', 'b', 'c', 'd'].map(ch => (document.querySelector(`input[name="q_${qNum}_${ch}"]:checked`) || {}).value || "-");
                     studentResponses[q.id || `Q_${qNum}`] = subAnsList.join('');
                     let correctSubCount = 0;
                     ['a', 'b', 'c', 'd'].forEach((ch, subIdx) => {
@@ -4138,7 +4139,7 @@ let editingExamId = null;
             const qList = activeExam.questions || [];
             let correctCount = 0;
             qList.forEach((q, idx) => {
-                let userAns = document.querySelector(`input[name="l_q_${idx}"]:checked`)?.value || "";
+                let userAns = (document.querySelector(`input[name="l_q_${idx}"]:checked`) || {}).value || "";
                 if (userAns.trim().toUpperCase() === String(q.ans || "").trim().toUpperCase()) correctCount++;
             });
             const resDiv = document.getElementById('lecture-result');
@@ -4348,7 +4349,7 @@ let editingExamId = null;
 
         function copyExamLink(id) {
             const tId = currentTeacherId || 'trucnt';
-            const studentUrl = `${window.location.origin}${window.location.pathname}?exam=${id}&t=${tId}`;
+            const studentUrl = `${window.location.origin}${window.location.pathname}?exam=${encodeURIComponent(id)}&t=${encodeURIComponent(tId)}`;
             navigator.clipboard.writeText(studentUrl).then(() => {
                 const toast = document.getElementById('toast'); toast.style.display = 'block';
                 setTimeout(() => { toast.style.display = 'none'; }, 2500);
@@ -7005,7 +7006,9 @@ window.addEventListener('popstate', function () {
     }
     const clean = h => String(h == null ? '' : h).replace(/^(\s|<br\s*\/?>)+|(\s|<br\s*\/?>)+$/gi, '');
     // (v60) nối các dòng bị ngắt cứng khi dán từ PDF/Word; giữ xuống dòng trước ý a) b), A., hình, bảng, gạch đầu dòng
-    const joinL = h => String(h == null ? '' : h).replace(/(?<!<img[^>]*>)(<br\s*\/?>|<\/(?:div|p)>\s*<(?:div|p)[^>]*>)(\s*)(?!(?:\s|<[^>]+>)*(?:[A-Da-d]\s*[\.\)]|[-•–+]\s|(?:Câu|Bài|Hình)\b|\d+\s*[\.\)]\s|<img|<table|<\/?(?:div|p|br|ul|ol|li)\b))/gi, ' ');
+    const JL_BODY = String.raw`(<br\s*\/?>|<\/(?:div|p)>\s*<(?:div|p)[^>]*>)(\s*)(?!(?:\s|<[^>]+>)*(?:[A-Da-d]\s*[\.\)]|[-•–+]\s|(?:Câu|Bài|Hình)\b|\d+\s*[\.\)]\s|<img|<table|<\/?(?:div|p|br|ul|ol|li)\b))`;
+    let JL_RE; try { JL_RE = new RegExp('(?<!<img[^>]*>)' + JL_BODY, 'gi'); } catch (e) { JL_RE = new RegExp(JL_BODY, 'gi'); }
+    const joinL = h => String(h == null ? '' : h).replace(JL_RE, ' ');
     function buildItems(set, o) {
         const out = [], lay = o.lay || 'A', mk = (html, keep, part) => { const d = document.createElement('div'); d.className = 'pp-it'; d.innerHTML = html; out.push({ el: d, keep: !!keep, wide: lay === 'C' || (lay === 'A' && part !== 1) }); };
         if (set.mcq.length) {
@@ -22141,6 +22144,62 @@ var QGEN = (function () {
     };
 })();
 
+</script>
+<script>
+/* v235: bố cục lại cách B "AI soạn theo ma trận" thành các bước đánh số (chỉ di chuyển khối có sẵn, không đổi chức năng) */
+window.aiLayout = function () {
+    var $ = function (i) { return document.getElementById(i); };
+    var d = $('ai-draft'); if (!d || d.dataset.lay) return; d.dataset.lay = '1';
+    if (!document.getElementById('v235-ai')) {
+        var st = document.createElement('style'); st.id = 'v235-ai';
+        st.textContent = '.aiS{border:1.5px solid #c7d2fe;border-radius:14px;background:#fff;padding:12px 14px;margin:12px 0;box-shadow:0 2px 8px rgba(67,56,202,.06)}' +
+            '.aiS>.aiH{display:flex;align-items:center;gap:10px;margin-bottom:6px}.aiS .aiN{flex:none;width:28px;height:28px;border-radius:50%;background:#4338ca;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}' +
+            '.aiS .aiT{font-weight:800;color:#1e1b4b;font-size:1.02rem}.aiS .aiSub{font-size:.85rem;color:#64748b;font-weight:500}' +
+            '.aiOr{display:flex;align-items:center;gap:10px;color:#94a3b8;font-size:.85rem;margin:10px 0}.aiOr:before,.aiOr:after{content:"";flex:1;border-top:1px dashed #cbd5e1}' +
+            '.aiOpt{border:1px solid #e2e8f0;border-radius:10px;padding:10px;background:#f8fafc}.aiOpt>.aiOh{font-weight:700;color:#4338ca;margin-bottom:4px}' +
+            '#ai-go{width:100%;font-size:1.1rem;padding:12px;border-radius:12px}.aiS details.aiMore{border:1px dashed #cbd5e1;border-radius:10px;padding:6px 10px;margin-top:8px}.aiS details.aiMore>summary{cursor:pointer;font-weight:700;color:#4338ca;font-size:.92rem}' +
+            '#rv-body .aiKey{border:1px solid #e2e8f0;border-radius:12px;background:#f8fafc;padding:10px 12px;margin-bottom:6px}';
+        document.head.appendChild(st);
+    }
+    var mk = function (t, h) { var e = document.createElement('div'); e.innerHTML = t; return e.firstChild; };
+    var step = function (n, title, sub) { return mk('<div class="aiS"><div class="aiH"><span class="aiN">' + n + '</span><div><div class="aiT">' + title + '</div><div class="aiSub">' + sub + '</div></div></div><div class="aiB"></div></div>'); };
+    var kids = Array.prototype.slice.call(d.children);
+    var intro = kids[1]; if (intro) intro.style.display = 'none';
+    var title = kids[0]; if (title) title.style.cssText = 'display:block;font-size:1.15rem;color:#4338ca;';
+    var lab = kids.filter(function (k) { return k.tagName === 'LABEL' && /Phạm vi/.test(k.textContent); })[0];
+    var rows = $('ai-rows'), addRow = rows.nextElementSibling;
+    var mt = $('mt-box'), topic = $('ai-topic');
+    var s1 = step(1, 'Cho máy biết đề gồm những gì', 'Chọn MỘT trong hai cách dưới đây.'), b1 = s1.querySelector('.aiB');
+    var o1 = mk('<div class="aiOpt"><div class="aiOh">Cách 1 – Nhanh: dán ma trận của tổ</div></div>'); mt.style.cssText = 'margin:0;border:0;padding:0;background:transparent;'; var st1 = mt.querySelector('strong'); if (st1) st1.style.display = 'none'; o1.appendChild(mt);
+    var o2 = mk('<div class="aiOpt"><div class="aiOh">Cách 2 – Tự chọn từng chủ đề và số câu</div></div>');
+    if (lab) { lab.style.marginTop = '0'; o2.appendChild(lab); } o2.appendChild(topic); o2.appendChild(rows); o2.appendChild(addRow);
+    b1.appendChild(o1); b1.appendChild(mk('<div class="aiOr">hoặc</div>')); b1.appendChild(o2);
+    var s2 = step(2, 'Tùy chọn thêm', 'Không chỉnh gì cũng được.'), b2 = s2.querySelector('.aiB');
+    b2.appendChild($('ai-fig').parentNode); b2.appendChild($('ai-auto').parentNode); var src = $('ai-source').closest('details'); if (src) b2.appendChild(src);
+    var s3 = step(3, 'Bấm "Soạn đề"', 'Đề hiện ở khung "Xem Trước Gọn Gàng" phía dưới. Cần khóa Gemini ở trên.'), b3 = s3.querySelector('.aiB');
+    var goRow = $('ai-go').parentNode; b3.appendChild(goRow); var ext = $('ai-ext'); if (ext) b3.appendChild(ext);
+    var rev = $('ai-revise-box'); if (rev) b3.appendChild(rev);
+    var s4 = step(4, 'Điểm và bảng ma trận Word', 'Không bắt buộc. Dùng khi cần in đề hoặc nộp bảng ma trận.'), b4 = s4.querySelector('.aiB');
+    var more = mk('<details class="aiMore"><summary>Mở phần này ▸</summary></details>');
+    more.appendChild($('mx-pts')); more.appendChild($('mx-go').parentNode); more.appendChild($('mx-paste')); b4.appendChild(more);
+    [s1, s2, s3, s4].forEach(function (x) { d.appendChild(x); });
+    /* khối Gemini ở trên: gom thành một thẻ nhỏ */
+    var body = $('rv-body');
+    if (body && $('rv-key')) {
+        var key = mk('<div class="aiKey"><div style="font-weight:800;color:#334155;margin-bottom:4px">🔑 Kết nối Gemini <span style="font-weight:500;color:#64748b;font-size:.85rem">(làm một lần, máy nhớ nếu cô tick "Nhớ khóa")</span></div></div>');
+        var ch = Array.prototype.slice.call(body.children), end = $('rv-model-row');
+        var i1 = 0, i2 = ch.indexOf(end);
+        for (var i = i1; i <= i2 && i >= 0; i++) key.appendChild(ch[i]);
+        body.insertBefore(key, body.firstChild);
+    }
+    /* Hội đồng AI + Rà soát: đóng sẵn */
+    var cn = $('cn-box');
+    if (cn) {
+        var wrap = mk('<details class="aiMore" style="background:#fff;margin:12px 0"><summary>🔍 Kiểm tra đáp án của đề (Hội đồng AI, Rà soát) – mở khi cần ▸</summary></details>');
+        var nx = []; var e = cn; while (e) { nx.push(e); e = e.nextElementSibling; }
+        cn.parentNode.insertBefore(wrap, cn); nx.forEach(function (x) { wrap.appendChild(x); });
+    }
+};
 </script>
 <script>
 (function () {
