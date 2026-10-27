@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v261] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v262] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2858,7 +2858,7 @@ function removeQuestionFromSelected(qId) {
                 const imgLen = imgs.reduce((a, x) => a + x.length, 0), figLen = figs.reduce((a, x) => a + x.length, 0);
                 bigInfo = '\n\nTrong đó: ' + imgs.length + ' ảnh dán vào chiếm ' + imgLen.toLocaleString('vi-VN') + ' ký tự; ' + figs.length + ' mã hình vẽ chiếm ' + figLen.toLocaleString('vi-VN') + ' ký tự; chữ và công thức khoảng ' + (qJsonStr.length - imgLen - figLen).toLocaleString('vi-VN') + ' ký tự (' + questionsToSave.length + ' câu).' + (imgLen > qJsonStr.length * 0.5 ? '\nẢnh dán là thủ phạm chính: cô thử đưa ảnh lên mạng (Drive, Imgur) rồi dán đường link, hoặc dùng mã hình vẽ thay ảnh chụp.' : '');
             } catch (e) { }
-            if (qJsonStr.length > 200000 && !confirm('⚠️ Đề này rất dài (' + qJsonStr.length.toLocaleString('vi-VN') + ' ký tự, hơn 200.000)' + shrunkInfo + '. Đề quá dài có thể tải chậm hoặc không lưu đủ trên Google Sheet.' + bigInfo + '\n\nBấm OK để vẫn xuất bản, Hủy để quay lại bớt hình/bớt câu.')) return;
+            if (qJsonStr.length > 300000 && !confirm('⚠️ Đề này rất dài (' + qJsonStr.length.toLocaleString('vi-VN') + ' ký tự, hơn 300.000)' + shrunkInfo + '. Đề quá dài có thể tải chậm hoặc không lưu đủ trên Google Sheet.' + bigInfo + '\n\nBấm OK để vẫn xuất bản, Hủy để quay lại bớt hình/bớt câu.')) return;
 
             const newExamObj = {
                 id: examId,
