@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v253] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v255] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2780,7 +2780,19 @@ function removeQuestionFromSelected(qId) {
                         if (kj && kj.message === 'keys_blank') { alert('⚠️ Máy chủ từ chối lưu: đề này đã có đáp án mà bộ đáp án đang gửi lên bị trống, nên giữ nguyên đáp án cũ. Cô mở lại đề để sửa rồi thử lại.'); return; }
                         keysOnServer = !!(kj && kj.status === 'success');
                         keysSrv = keysOnServer;
+                        if (!keysOnServer) window.__keyErr = (kj && (kj.message || kj.error)) || '';
                     } catch (e) { console.log('save_keys lỗi', e); if (tryK < 2) await new Promise(r => setTimeout(r, 1500)); }
+                }
+                /* v255: máy chủ trả lời nhưng không nhận (thường vì lời giải chứa ảnh quá nặng, ô Sheet không chứa nổi): bỏ ảnh khỏi lời giải rồi thử lại, đáp án không đổi */
+                if (keysReplied && !keysOnServer) {
+                    try {
+                        const lite = {}; let cut = 0;
+                        Object.keys(secretKeys).forEach(id => { const k = secretKeys[id]; let ex = String(k.explanation || ''); const ex2 = ex.replace(/<img[^>]*>/gi, ' [ảnh] ').replace(/data:image\/[a-z+]+;base64,[A-Za-z0-9+\/=]+/g, '').slice(0, 20000); if (ex2 !== ex) cut++; lite[id] = { ans: k.ans, ansOptions: k.ansOptions, explanation: ex2 }; });
+                        const kr2 = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'save_keys', password: teacherPassAuth, examId: examId, keys: lite }) });
+                        const kj2 = await kr2.json();
+                        if (kj2 && kj2.status === 'success') { keysOnServer = true; keysSrv = true; if (cut) alert('Lưu đáp án thành công. Lưu ý: lời giải của ' + cut + ' câu có ảnh quá nặng nên đã bỏ ảnh trong lời giải (đáp án vẫn đúng, câu hỏi vẫn giữ ảnh).'); }
+                        else window.__keyErr = (kj2 && (kj2.message || kj2.error)) || window.__keyErr || '';
+                    } catch (e) { console.log('save_keys lite lỗi', e); }
                 }
                 // v197: không lưu được đáp án thì KHÔNG xuất bản (trước đây vẫn xuất bản, học sinh làm bài sẽ bị 0 điểm vì đáp án mất)
                 if (!keysReplied) { alert('❌ CHƯA XUẤT BẢN: không lưu được ĐÁP ÁN lên máy chủ (mạng yếu hoặc máy chủ bận). Em làm bài sẽ bị 0 điểm nếu cứ xuất bản.\nNội dung cô soạn vẫn còn trên màn hình. Cô kiểm tra mạng rồi bấm Lưu & Xuất Bản Đề lại.'); return; }
@@ -2791,11 +2803,37 @@ function removeQuestionFromSelected(qId) {
                     // Apps Script cũ chưa cập nhật: giữ cách cũ nhưng phải CHẮC đã ghi được (Firebase bị khóa quy tắc thì ghi sẽ bị từ chối)
                     let fbKeysOk = false;
                     try { await Promise.race([db.ref(`exam_secure_keys/${examId}`).set(secretKeys), new Promise((_, rj) => setTimeout(() => rj(new Error('timeout')), 10000))]); fbKeysOk = true; } catch (e) { console.log('Firebase keys lỗi', e); }
-                    if (!fbKeysOk) { alert('❌ CHƯA XUẤT BẢN: máy chủ Google Sheet chưa nhận lưu đáp án (code Apps Script cần cập nhật) và nơi lưu dự phòng cũng từ chối. Nếu xuất bản, em làm bài sẽ bị 0 điểm.\nCô dán code Apps Script mới và chọn Phiên bản mới, rồi thử lại.'); return; }
+                    if (!fbKeysOk) { alert('❌ CHƯA XUẤT BẢN: máy chủ Google Sheet chưa nhận lưu đáp án (code Apps Script cần cập nhật) và nơi lưu dự phòng cũng từ chối.' + (window.__keyErr ? '\nMáy chủ báo: ' + window.__keyErr : '') + '\nNếu xuất bản, em làm bài sẽ bị 0 điểm.\nCô chụp màn hình báo này gửi em (có thể do đề quá nặng, không nhất thiết do code Apps Script cũ).'); return; }
                 }
             }
 
             if (questionsToSave.length > 0) questionsToSave[0].maxAttempts = maxAttemptsVal;
+            /* v254: tự thu nhỏ ảnh nhúng quá nặng (đổi sang JPEG, tối đa 1000 px) trước khi lưu, ảnh nào không nhẹ đi đáng kể thì giữ nguyên */
+            let shrunkInfo = '';
+            try {
+                const re = /data:image\/(?:png|jpeg|jpg|webp);base64,[A-Za-z0-9+\/=]+/g, cache = {}; let before = 0, after = 0;
+                const shrink = (u) => new Promise(res => {
+                    if (cache[u]) return res(cache[u]);
+                    const im = new Image(); const to = setTimeout(() => res(u), 6000);
+                    im.onload = () => { clearTimeout(to); try {
+                        const k = Math.min(1, 1000 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
+                        const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+                        const j = c.toDataURL('image/jpeg', 0.82); cache[u] = (j.length < u.length * 0.7) ? j : u; } catch (e) { cache[u] = u; } res(cache[u]); };
+                    im.onerror = () => { clearTimeout(to); res(u); }; im.src = u;
+                });
+                const walk = async (o) => {
+                    for (const k of Object.keys(o || {})) {
+                        const v = o[k];
+                        if (typeof v === 'string' && v.length > 40000 && v.indexOf('data:image') >= 0) {
+                            const ms = v.match(re) || []; let out = v;
+                            for (const m of ms) { if (m.length < 40000) continue; const n = await shrink(m); if (n !== m) { before += m.length; after += n.length; out = out.split(m).join(n); } }
+                            o[k] = out;
+                        } else if (v && typeof v === 'object') await walk(v);
+                    }
+                };
+                await walk(questionsToSave);
+                if (before > after) shrunkInfo = ' (đã tự thu nhỏ ảnh: ' + before.toLocaleString('vi-VN') + ' → ' + after.toLocaleString('vi-VN') + ' ký tự)';
+            } catch (e) { console.log('shrink lỗi', e); }
             const qJsonStr = JSON.stringify(questionsToSave);
             let bigInfo = '';
             try {
@@ -2803,7 +2841,7 @@ function removeQuestionFromSelected(qId) {
                 const imgLen = imgs.reduce((a, x) => a + x.length, 0), figLen = figs.reduce((a, x) => a + x.length, 0);
                 bigInfo = '\n\nTrong đó: ' + imgs.length + ' ảnh dán vào chiếm ' + imgLen.toLocaleString('vi-VN') + ' ký tự; ' + figs.length + ' mã hình vẽ chiếm ' + figLen.toLocaleString('vi-VN') + ' ký tự; chữ và công thức khoảng ' + (qJsonStr.length - imgLen - figLen).toLocaleString('vi-VN') + ' ký tự (' + questionsToSave.length + ' câu).' + (imgLen > qJsonStr.length * 0.5 ? '\nẢnh dán là thủ phạm chính: cô thử đưa ảnh lên mạng (Drive, Imgur) rồi dán đường link, hoặc dùng mã hình vẽ thay ảnh chụp.' : '');
             } catch (e) { }
-            if (qJsonStr.length > 200000 && !confirm('⚠️ Đề này rất dài (' + qJsonStr.length.toLocaleString('vi-VN') + ' ký tự, hơn 200.000). Đề quá dài có thể tải chậm hoặc không lưu đủ trên Google Sheet.' + bigInfo + '\n\nBấm OK để vẫn xuất bản, Hủy để quay lại bớt hình/bớt câu.')) return;
+            if (qJsonStr.length > 200000 && !confirm('⚠️ Đề này rất dài (' + qJsonStr.length.toLocaleString('vi-VN') + ' ký tự, hơn 200.000)' + shrunkInfo + '. Đề quá dài có thể tải chậm hoặc không lưu đủ trên Google Sheet.' + bigInfo + '\n\nBấm OK để vẫn xuất bản, Hủy để quay lại bớt hình/bớt câu.')) return;
 
             const newExamObj = {
                 id: examId,
