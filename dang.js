@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v263";
+window.__DANG_VER = "v264";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -8911,10 +8911,10 @@ window.__DANG_VER = "v263";
             var ab = pick([60, 80, 100, 120, 125, 150]), al = ri(48, 66), be = ri(14, 30), tA = Math.tan(al * RAD), tB = Math.tan(be * RAD);
             var xd = ab / (tA - tB), hc = xd * tA, ce = xd * tB; need(xd > 30 && hc < 500 && Math.abs(hc - Math.floor(hc) - 0.5) > 0.12);
             var N = Math.round(hc);
-            var q = 'Một người quan sát đỉnh $C$ của một ngọn núi nhân tạo từ hai vị trí $A$ (chân tòa nhà) và $B$ (đỉnh tòa nhà). Lần đầu tiên người đó quan sát đỉnh núi từ chân tòa nhà với góc nâng là $' + al + '^\\circ$, lần thứ hai người này quan sát tại đỉnh tòa nhà với góc nâng là $' + be + '^\\circ$ (như hình vẽ). Chiều cao tòa nhà $AB$ là $' + ab + '$ m.';
-            var s1 = 'Trong tam giác vuông $ACD$: $CD=AD\\cdot\\tan ' + al + '^\\circ=x\\tan ' + al + '^\\circ$. Trong tam giác vuông $BCE$ ($BE=AD=x$): $CE=BE\\cdot\\tan ' + be + '^\\circ=x\\tan ' + be + '^\\circ$.';
+            var q = 'Một người quan sát đỉnh $C$ của một ngọn núi nhân tạo từ hai vị trí $A$ (chân tòa nhà) và $B$ (đỉnh tòa nhà). Lần đầu tiên người đó quan sát đỉnh núi từ chân tòa nhà với góc nâng là $' + al + '^\\circ$, lần thứ hai người này quan sát tại đỉnh tòa nhà với góc nâng là $' + be + '^\\circ$ (như hình vẽ).';
+            var s1 = 'Đặt $AD=x$ (m), khi đó $BE=AD=x$. Trong tam giác vuông $ACD$: $CD=AD\\cdot\\tan ' + al + '^\\circ=x\\tan ' + al + '^\\circ$. Trong tam giác vuông $BCE$ ($BE=AD=x$): $CE=BE\\cdot\\tan ' + be + '^\\circ=x\\tan ' + be + '^\\circ$.';
             var s2 = 'Vì $ED=AB=' + ab + '$ nên $CD=CE+ED$, tức $x\\tan ' + al + '^\\circ=x\\tan ' + be + '^\\circ+' + ab + '$. Suy ra $x=\\dfrac{' + ab + '}{\\tan ' + al + '^\\circ-\\tan ' + be + '^\\circ}\\approx' + dd(xd, 2) + '$ (m). Vậy $CD=x\\tan ' + al + '^\\circ\\approx' + dd(hc, 2) + '$, làm tròn: $CD\\approx' + N + '$ m.';
-            return { level: 'VD', q: q, fig: window.__geoFig('nui', { ab: ab, al: al, be: be, xd: xd, hc: hc }), parts: [{ t: 'Đặt $AD=x$ (m). Hãy biểu diễn $CD$ và $CE$ theo $x$.', p: 0.5, sol: s1 }, { t: 'Tính chiều cao $CD$ của ngọn núi (kết quả làm tròn đến hàng đơn vị).', p: 1, sol: s2 }] };
+            return { level: 'VD', q: q, fig: window.__geoFig('nui', { ab: ab, al: al, be: be, xd: xd, hc: hc }), parts: [{ t: 'Tính chiều cao ngọn núi $CD$ biết rằng chiều cao tòa nhà $AB$ là $' + ab + '$ m (kết quả làm tròn đến hàng đơn vị).', p: 1, sol: s1 + ' ' + s2 }] };
         });
         /* ---------- trả lời ngắn: cho tanα (hoặc cotα), tính giá trị biểu thức ---------- */
         function lin(a, b, f1, f2) { var s = ''; [[a, f1], [b, f2]].forEach(function (z, i) { var c = z[0]; if (!c) return; var ab = Math.abs(c); s += (s === '' ? (c < 0 ? '-' : '') : (c < 0 ? '-' : '+')) + (ab === 1 && z[1] !== '' ? '' : ab) + z[1]; }); return s; }
