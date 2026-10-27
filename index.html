@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v269] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v270] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13247,7 +13247,18 @@ var QGEN = (function () {
         var a = cur.map(toQ), ok = 0, bad = 0, why = '';
         document.body.style.cursor = 'wait';
         for (var i = 0; i < a.length; i++) {
-            try { var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: a[i] }) }); var j = await r.json(); if (j && j.status === 'success') ok++; else { bad++; why = (j && (j.message || j.error)) || ''; } } catch (e) { bad++; why = 'không kết nối được máy chủ'; }
+            var done = false, lastWhy = '';
+            for (var tr = 0; tr < 3 && !done; tr++) { /* thử tối đa 3 lần, mỗi lần cách nhau vài giây */
+                try {
+                    if (tr) await new Promise(function (rs) { setTimeout(rs, 1500 * tr); });
+                    var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: a[i] }) });
+                    var txt = await r.text(), j = null; try { j = JSON.parse(txt); } catch (pe) { }
+                    if (j && j.status === 'success') { ok++; done = true; }
+                    else if (j) { lastWhy = (j.message || j.error || 'máy chủ báo lỗi'); if (/mật khẩu|password|quyền/i.test(lastWhy)) break; }
+                    else lastWhy = 'máy chủ trả về trang lỗi (mã ' + r.status + ') — thường do Apps Script chưa triển khai bản mới hoặc hết lượt trong ngày';
+                } catch (e) { lastWhy = 'không kết nối được máy chủ (' + ((e && e.message) || 'lỗi mạng') + ') — cô kiểm tra mạng, hoặc thử lại sau ít phút'; }
+            }
+            if (!done) { bad++; why = lastWhy; }
         }
         document.body.style.cursor = 'default';
         alert(bad ? ('Đã lưu ' + ok + ' câu, CHƯA lưu ' + bad + ' câu (' + why + ').') : ('🎉 Đã lưu ' + ok + ' câu vào Ngân hàng!'));
