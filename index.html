@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v265] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v266] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13164,6 +13164,7 @@ var QGEN = (function () {
         function subOf(x) { var r = String(x.group || ''), i = r.indexOf('›'); return (i >= 0 ? r.slice(i + 1) : r).replace(/\s*\((?:Chương|Chuyên đề)[^)]*\)\s*$/i, '').trim(); }
         function baiOf(x) { var m = /\(Bài\s*(\d+)/.exec(String(x.group || '')); return m ? +m[1] : 0; }
         lb.forEach(function (o) { o.b = baiOf(o.x); o.s = subOf(o.x); });
+        if (g === '12') lb.forEach(function (o) { var c = GP('12', o.x.group); if (c[0] !== 999) { o.b = c[0]; o.s = c[1]; } }); /* lớp 12: gom theo chương, mỗi chương hiện 1 lần */
         var sFirst = {}; lb.forEach(function (o) { if (!(o.s in sFirst)) sFirst[o.s] = o.i; });
         lb.sort(function (a, b) { return (ord[a.t.k] - ord[b.t.k]) || (a.b - b.b) || (sFirst[a.s] - sFirst[b.s]) || (a.l - b.l) || (a.i - b.i); });
         var html = '', lastKey = null, LVT = ['NB', 'TH', 'VD', 'VDC'];
