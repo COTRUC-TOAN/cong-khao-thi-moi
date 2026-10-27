@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v270] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v273] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13248,6 +13248,7 @@ var QGEN = (function () {
         document.body.style.cursor = 'wait';
         for (var i = 0; i < a.length; i++) {
             var done = false, lastWhy = '';
+            if (JSON.stringify(a[i]).length > 48000) { bad++; why = 'câu quá nặng (có hình lớn), Google Sheet chỉ lưu được mỗi ô tối đa 50.000 ký tự'; continue; }
             for (var tr = 0; tr < 3 && !done; tr++) { /* thử tối đa 3 lần, mỗi lần cách nhau vài giây */
                 try {
                     if (tr) await new Promise(function (rs) { setTimeout(rs, 1500 * tr); });

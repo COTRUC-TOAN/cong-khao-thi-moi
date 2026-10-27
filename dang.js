@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v271";
+window.__DANG_VER = "v273";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -9213,7 +9213,7 @@ window.__DANG_VER = "v271";
                 var dx = px - cx, dy = py - cy, ln = Math.hypot(dx, dy) || 1; g.fillStyle = '#0f172a'; g.font = 'italic 700 16px "Times New Roman", serif'; g.textAlign = 'center'; g.fillText(f.lab[n], px + dx / ln * 17, py + dy / ln * 17 + 5);
             });
             if (f.note) { g.fillStyle = '#64748b'; g.font = 'italic 11px sans-serif'; g.textAlign = 'center'; g.fillText(f.note, w / 2, h - 5); }
-            return c.toDataURL('image/png');
+            return c.toDataURL('image/jpeg', 0.85);
         };
     })();
     // (v106) Ẩn các dạng ngoài chương trình GDPT 2018 theo quyết định của cô (số phức, hình trụ - nón - cầu, hệ hai PT bậc nhất hai ẩn). Muốn dùng lại: xóa danh sách HIDE này.
@@ -9262,4 +9262,4 @@ window.__DANG_VER = "v271";
     };
 })(QGEN);
 /* hiện phiên bản file dạng ở tên tab */
-(function(){var f=function(){try{if(document.title.indexOf("dạng")<0)document.title+=" · dạng "+window.__DANG_VER;}catch(e){}};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",f);else f();window.addEventListener("load",f);})();
+(function(){var f=function(){try{if(document.title.indexOf("dạng")<0)document.title=document.title.replace(/^\[(v\d+)\]/,function(m,v){return "["+v+" · dạng "+window.__DANG_VER+"]";});}catch(e){}};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",f);else f();window.addEventListener("load",f);})();
