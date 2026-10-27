@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v273";
+window.__DANG_VER = "v278";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -2013,6 +2013,67 @@ window.__DANG_VER = "v273";
             var T = function (z) { return '(' + z.join(';') + ')'; }, cor = T(u), wr = [T([u[0] + 1, u[1], u[2]]), T([u[2], u[1], u[0]]), T([-u[0], -u[1], -u[2]]), T([m * a[0] + n * b[0] - p * c[0], m * a[1] + n * b[1] - p * c[1], m * a[2] + n * b[2] - p * c[2]])];
             return mcT('Trong không gian $Oxyz$, cho $\\vec a=' + T(a) + '$, $\\vec b=' + T(b) + '$, $\\vec c=' + cexp + '$. Tọa độ của vectơ $\\vec u=' + cm(m) + '\\vec a' + (n < 0 ? '-' : '+') + cm(Math.abs(n)) + '\\vec b' + (p < 0 ? '+' : '-') + cm(Math.abs(p)) + '\\vec c$ là', cor, wr, 'Ta có $\\vec c=' + T(c) + '$ nên $\\vec u=' + cm(m) + T(a) + (n < 0 ? '-' : '+') + cm(Math.abs(n)) + T(b) + (p < 0 ? '+' : '-') + cm(Math.abs(p)) + T(c) + '=' + cor + '$.', 'TH');
         });
+        /* ===== Chương II · Định nghĩa tọa độ: vectơ theo ba vectơ đơn vị i, j, k; tọa độ điểm và vectơ (v274) ===== */
+        (function () {
+            var VN = ['\\vec i', '\\vec j', '\\vec k'];
+            function Tt(z) { return '(' + z.join(';') + ')'; }
+            function lin(c) { var s = ''; for (var i = 0; i < 3; i++) { if (!c[i]) continue; var a = Math.abs(c[i]); s += (c[i] < 0 ? '-' : (s ? '+' : '')) + (a === 1 ? '' : a) + VN[i]; } return s || '\\vec 0'; }
+            function linOrd(c, ord) { var s = ''; ord.forEach(function (i) { if (!c[i]) return; var a = Math.abs(c[i]); s += (c[i] < 0 ? '-' : (s ? '+' : '')) + (a === 1 ? '' : a) + VN[i]; }); return s || '\\vec 0'; }
+            function rv(z) { return [ri(-5, 5), ri(-5, 5), ri(-5, 5)]; }
+            function nz(c) { return c[0] || c[1] || c[2]; }
+            function wrongsVec(c) { return [[c[2], c[1], c[0]], [-c[0], -c[1], -c[2]], [c[1], c[0], c[2]], [c[0], c[2], c[1]], [c[0] + 1, c[1], c[2]], [c[0], c[1], -c[2]]]; }
+            add('l12_ox_ijk_toado', 12, GV, 'Cho $\\vec u=x\\vec i+y\\vec j+z\\vec k$: tìm tọa độ của vectơ $\\vec u$ (có thể thiếu một vài vectơ đơn vị)', 'NB', function () {
+                var c = rv(); if (ri(0, 1)) c[ri(0, 2)] = 0; need(nz(c)); need(c.filter(function (x) { return x; }).length >= 2);
+                var ord = shuf([0, 1, 2]), cor = Tt(c), wr = wrongsVec(c).map(Tt);
+                return mcT('Trong không gian $Oxyz$, cho vectơ $\\vec u=' + linOrd(c, ord) + '$. Tọa độ của vectơ $\\vec u$ là', cor, wr, 'Hệ số đứng trước $\\vec i,\\vec j,\\vec k$ lần lượt là hoành độ, tung độ, cao độ; vectơ nào vắng mặt thì hệ số bằng $0$. Vậy $\\vec u=' + cor + '$.', 'NB');
+            });
+            add('l12_ox_toado_ijk', 12, GV, 'Cho tọa độ $\\vec a=(x;y;z)$: chọn biểu thức đúng của $\\vec a$ theo $\\vec i,\\vec j,\\vec k$', 'NB', function () {
+                var c = rv(); if (ri(0, 1)) c[ri(0, 2)] = 0; need(nz(c)); need(c.filter(function (x) { return x; }).length >= 2);
+                var cor = lin(c), wr = wrongsVec(c).filter(nz).map(lin);
+                return mcT('Trong không gian $Oxyz$, vectơ $\\vec a=' + Tt(c) + '$ được biểu diễn qua các vectơ đơn vị $\\vec i,\\vec j,\\vec k$ là', '$' + cor + '$', wr.map(function (w) { return '$' + w + '$'; }), 'Vectơ $\\vec a=(x;y;z)$ khi và chỉ khi $\\vec a=x\\vec i+y\\vec j+z\\vec k$. Với $\\vec a=' + Tt(c) + '$ ta được $\\vec a=' + cor + '$.', 'NB');
+            });
+            add('l12_ox_om_ijk_diem', 12, GV, 'Cho $\\overrightarrow{OM}=x\\vec i+y\\vec j+z\\vec k$: tìm tọa độ điểm $M$', 'NB', function () {
+                var c = rv(); if (ri(0, 1)) c[ri(0, 2)] = 0; need(nz(c)); need(c.filter(function (x) { return x; }).length >= 2);
+                var P = pick(['M', 'N', 'A', 'B', 'E']), ord = shuf([0, 1, 2]), cor = Tt(c), wr = wrongsVec(c).map(Tt);
+                return mcT('Trong không gian $Oxyz$, cho điểm $' + P + '$ thỏa mãn $\\overrightarrow{O' + P + '}=' + linOrd(c, ord) + '$. Tọa độ điểm $' + P + '$ là', cor, wr, 'Điểm $' + P + '(x;y;z)$ khi và chỉ khi $\\overrightarrow{O' + P + '}=x\\vec i+y\\vec j+z\\vec k$. Do đó $' + P + cor + '$.', 'NB');
+            });
+            add('l12_ox_diem_om_ijk', 12, GV, 'Cho điểm $M(x;y;z)$: chọn đẳng thức đúng của $\\overrightarrow{OM}$ theo $\\vec i,\\vec j,\\vec k$', 'NB', function () {
+                var c = rv(); if (ri(0, 1)) c[ri(0, 2)] = 0; need(nz(c)); need(c.filter(function (x) { return x; }).length >= 2);
+                var P = pick(['M', 'N', 'A', 'B', 'E']), cor = lin(c), wr = wrongsVec(c).filter(nz).map(lin);
+                return mcT('Trong không gian $Oxyz$, cho điểm $' + P + Tt(c) + '$. Khẳng định nào sau đây đúng?', '$\\overrightarrow{O' + P + '}=' + cor + '$', wr.map(function (w) { return '$\\overrightarrow{O' + P + '}=' + w + '$'; }), 'Điểm $' + P + '(x;y;z)$ thì $\\overrightarrow{O' + P + '}=(x;y;z)$, tức là $\\overrightarrow{O' + P + '}=x\\vec i+y\\vec j+z\\vec k$. Với $' + P + Tt(c) + '$ ta có $\\overrightarrow{O' + P + '}=' + cor + '$.', 'NB');
+            });
+            add('l12_ox_toado_ab', 12, GV, 'Cho hai điểm $A$, $B$: tìm tọa độ vectơ $\\overrightarrow{AB}$ (lấy tọa độ điểm cuối trừ điểm đầu)', 'NB', function () {
+                var A = rv(), B = rv(), d = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]; need(nz(d));
+                var wr = [[A[0] - B[0], A[1] - B[1], A[2] - B[2]], [A[0] + B[0], A[1] + B[1], A[2] + B[2]], [B[0] - A[0], B[1] + A[1], B[2] - A[2]], [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2, (A[2] + B[2]) / 2]].map(function (z) { return Tt(z.map(function (v) { return Math.round(v * 2) / 2; })); });
+                return mcT('Trong không gian $Oxyz$, cho hai điểm $A' + Tt(A) + '$ và $B' + Tt(B) + '$. Tọa độ của vectơ $\\overrightarrow{AB}$ là', Tt(d), wr, '$\\overrightarrow{AB}=(x_B-x_A;\\,y_B-y_A;\\,z_B-z_A)=' + Tt(d) + '$.', 'NB');
+            });
+            add('l12_ox_ab_ijk', 12, GV, 'Cho hai điểm $A$, $B$: biểu diễn vectơ $\\overrightarrow{AB}$ theo $\\vec i,\\vec j,\\vec k$', 'TH', function () {
+                var A = rv(), B = rv(), d = [B[0] - A[0], B[1] - A[1], B[2] - A[2]]; need(nz(d)); need(d.filter(function (x) { return x; }).length >= 2);
+                var neg = d.map(function (x) { return -x; }), sw = [d[2], d[1], d[0]], sm = [A[0] + B[0], A[1] + B[1], A[2] + B[2]], b = [B[0], B[1], B[2]];
+                var wr = [neg, sw, sm, [d[1], d[0], d[2]]].filter(nz).map(lin);
+                return mcT('Trong không gian $Oxyz$, cho hai điểm $A' + Tt(A) + '$ và $B' + Tt(B) + '$. Vectơ $\\overrightarrow{AB}$ được viết theo $\\vec i,\\vec j,\\vec k$ là', '$' + lin(d) + '$', wr.map(function (w) { return '$' + w + '$'; }), '$\\overrightarrow{AB}=(' + B[0] + '-' + (A[0] < 0 ? '(' + A[0] + ')' : A[0]) + ';\\,' + B[1] + '-' + (A[1] < 0 ? '(' + A[1] + ')' : A[1]) + ';\\,' + B[2] + '-' + (A[2] < 0 ? '(' + A[2] + ')' : A[2]) + ')=' + Tt(d) + '$ nên $\\overrightarrow{AB}=' + lin(d) + '$.', 'TH');
+            });
+            add('l12_ox_diem_tu_vecto', 12, GV, 'Biết điểm $A$ và tọa độ $\\overrightarrow{AB}$: tìm tọa độ điểm $B$ (hoặc điểm $A$)', 'TH', function () {
+                var A = rv(), d = rv(); need(nz(d)); var B = [A[0] + d[0], A[1] + d[1], A[2] + d[2]], findB = ri(0, 1);
+                var cor, wr, q, ex;
+                if (findB) { cor = Tt(B); wr = [[A[0] - d[0], A[1] - d[1], A[2] - d[2]], d, [d[0] - A[0], d[1] - A[1], d[2] - A[2]], [A[0] + d[0], A[1] + d[1], A[2] - d[2]]].map(Tt); q = 'Trong không gian $Oxyz$, cho điểm $A' + Tt(A) + '$ và $\\overrightarrow{AB}=' + Tt(d) + '$. Tọa độ điểm $B$ là'; ex = 'Gọi $B(x;y;z)$ thì $\\overrightarrow{AB}=(x-' + (A[0] < 0 ? '(' + A[0] + ')' : A[0]) + ';\\,y-' + (A[1] < 0 ? '(' + A[1] + ')' : A[1]) + ';\\,z-' + (A[2] < 0 ? '(' + A[2] + ')' : A[2]) + ')=' + Tt(d) + '$ nên $B=A+\\overrightarrow{AB}=' + cor + '$.'; }
+                else { cor = Tt(A); wr = [B, d, [B[0] + d[0], B[1] + d[1], B[2] + d[2]], [d[0] - B[0], d[1] - B[1], d[2] - B[2]]].map(Tt); q = 'Trong không gian $Oxyz$, cho điểm $B' + Tt(B) + '$ và $\\overrightarrow{AB}=' + Tt(d) + '$. Tọa độ điểm $A$ là'; ex = 'Gọi $A(x;y;z)$ thì $\\overrightarrow{AB}=(' + B[0] + '-x;\\,' + B[1] + '-y;\\,' + B[2] + '-z)=' + Tt(d) + '$ nên $A=B-\\overrightarrow{AB}=' + cor + '$.'; }
+                return mcT(q, cor, wr, ex, 'TH');
+            });
+            add('l12_ox_diem_dacbiet', 12, GV, 'Điểm thuộc trục tọa độ hoặc mặt phẳng tọa độ (định nghĩa tọa độ điểm đặc biệt)', 'NB', function () {
+                var k = ri(0, 5), ax = ['Ox', 'Oy', 'Oz'], pl = ['Oxy', 'Oyz', 'Oxz'], a = ri(1, 6) * pick([1, -1]), b = ri(1, 6) * pick([1, -1]), c = ri(1, 6) * pick([1, -1]), q, cor, wr, ex;
+                if (k < 3) {
+                    var u = [[a, 0, 0], [0, b, 0], [0, 0, c]][k]; cor = Tt(u);
+                    wr = []; [[a, b, 0], [0, b, c], [a, 0, c], [a, b, c]].forEach(function (z) { var onAx = z.filter(function (x, i) { return i !== k && x; }).length === 0; if (!onAx) wr.push(Tt(z)); });
+                    q = 'Trong không gian $Oxyz$, điểm nào sau đây thuộc trục $' + ax[k] + '$?'; ex = 'Điểm thuộc trục $' + ax[k] + '$ có hai tọa độ còn lại bằng $0$, dạng ' + ['$(x;0;0)$', '$(0;y;0)$', '$(0;0;z)$'][k] + '. Vậy chọn $' + cor + '$.';
+                } else {
+                    var j = k - 3, u2 = [[a, b, 0], [0, b, c], [a, 0, c]][j]; cor = Tt(u2);
+                    wr = []; [[a, b, c], [0, b, c], [a, 0, c], [a, b, 0], [a, 0, 0], [0, b, 0]].forEach(function (z) { if (z[[2, 0, 1][j]] !== 0) wr.push(Tt(z)); });
+                    q = 'Trong không gian $Oxyz$, điểm nào sau đây thuộc mặt phẳng $(' + pl[j] + ')$?'; ex = 'Điểm thuộc mặt phẳng $(' + pl[j] + ')$ có ' + ['cao độ $z=0$', 'hoành độ $x=0$', 'tung độ $y=0$'][j] + ', dạng ' + ['$(x;y;0)$', '$(0;y;z)$', '$(x;0;z)$'][j] + '. Vậy chọn $' + cor + '$.';
+                }
+                return mcT(q, cor, wr, ex, 'NB');
+            });
+        })();
         add('l12_ox_tamhinhhop', 12, GV, 'Tọa độ tâm của hình hộp, trung điểm đường chéo', 'VD', function () {
             var A = [ri(-3, 3), ri(-3, 3), ri(-3, 3)], d = [ri(1, 4) * 2, ri(1, 4) * 2, ri(1, 4) * 2]; var C1 = [A[0] + d[0], A[1] + d[1], A[2] + d[2]], I = [A[0] + d[0] / 2, A[1] + d[1] / 2, A[2] + d[2] / 2]; var B = [A[0] + ri(1, 3), A[1] + ri(-2, 2), A[2]], D = [A[0] + ri(-2, 2), A[1] + ri(1, 3), A[2] + ri(-2, 2)];
             var T = function (z) { return '(' + z.join(';') + ')'; }; return mcT('Trong không gian $Oxyz$, cho hình hộp $ABCD.A\'B\'C\'D\'$ có $A' + T(A) + '$, $B' + T(B) + '$, $D' + T(D) + '$, $C\'' + T(C1) + '$. Tọa độ tâm $I$ của hình hộp là', T(I), [T([I[0] + 1, I[1], I[2]]), T([d[0] / 2, d[1] / 2, d[2] / 2]), T(C1.map(function (z, i) { return z + A[i]; })), T([I[0], I[1] + 1, I[2] - 1])], 'Tâm hình hộp là trung điểm của đường chéo $AC\'$: $I=\\left(\\dfrac{' + A[0] + '+' + sg(C1[0]) + '}{2};\\dfrac{' + A[1] + '+' + sg(C1[1]) + '}{2};\\dfrac{' + A[2] + '+' + sg(C1[2]) + '}{2}\\right)=' + T(I) + '$.', 'VD');
@@ -2070,11 +2131,13 @@ window.__DANG_VER = "v273";
         });
         add('l12_tt_hop_day_vuong', 12, GA1, 'Thực tế: hộp đáy vuông có thể tích cho trước, chi phí vật liệu nhỏ nhất (tìm chiều cao)', 'VD', function () {
             var o = pick([[2, 2], [2, 1], [4, 2], [4, 1]]), x = o[0], rho = o[1], V = x * x * x / (2 * rho), h = F(V, x * x); var cb = 100000; var cs = cb * rho;
-            return fnum(h, 'Gọi $x$ (m) là cạnh đáy, $h=\\dfrac{' + tex(F(V)) + '}{x^2}$. Chi phí $f(x)=' + cb + 'x^2+' + cs + '\\cdot4xh=' + cb + 'x^2+\\dfrac{' + 4 * cs * V + '}{x}$. $f\'(x)=0\\Leftrightarrow x^3=' + x * x * x + '\\Leftrightarrow x=' + x + '$. Vậy $h=\\dfrac{' + tex(F(V)) + '}{' + x * x + '}=' + tex(h) + '$ m.', 'Một xưởng gia công các bể chứa nước dạng hình hộp chữ nhật không nắp, đáy là hình vuông, thể tích chứa được đúng $' + tex(F(V)) + '\\ \\text{m}^3$. Giá vật liệu làm mặt đáy là $' + cb + '$ đồng/m$^2$, giá vật liệu làm bốn mặt bên là $' + cs + '$ đồng/m$^2$. Để chi phí vật liệu thấp nhất thì chiều cao $h$ của bể (mét) bằng', [fmul(h, F(2)), fdiv(h, F(2)), F(x), F(V)], 'VD');
+            var oF = fnum(h, 'Gọi $x$ (m) là cạnh đáy, $h=\\dfrac{' + tex(F(V)) + '}{x^2}$. Chi phí $f(x)=' + cb + 'x^2+' + cs + '\\cdot4xh=' + cb + 'x^2+\\dfrac{' + 4 * cs * V + '}{x}$. $f\'(x)=0\\Leftrightarrow x^3=' + x * x * x + '\\Leftrightarrow x=' + x + '$. Vậy $h=\\dfrac{' + tex(F(V)) + '}{' + x * x + '}=' + tex(h) + '$ m.', 'Một xưởng gia công các bể chứa nước dạng hình hộp chữ nhật không nắp, đáy là hình vuông, thể tích chứa được đúng $' + tex(F(V)) + '\\ \\text{m}^3$. Giá vật liệu làm mặt đáy là $' + cb + '$ đồng/m$^2$, giá vật liệu làm bốn mặt bên là $' + cs + '$ đồng/m$^2$. Để chi phí vật liệu thấp nhất thì chiều cao $h$ của bể (mét) bằng', [fmul(h, F(2)), fdiv(h, F(2)), F(x), F(V)], 'VD');
+            oF.fig = window.__geoFig('hop_vuong', {}); return oF;
         });
         add('l12_tt_apphich', 12, GA1, 'Thực tế: áp phích có lề, diện tích phần in lớn nhất (tìm chu vi hoặc kích thước)', 'VD', function () {
             var as = pick([2, 3, 4, 6]), bt = pick([2, 3, 4, 6]); need(as !== bt); var jj = ri(3, 8), x = as * jj, y = bt * jj; var S = x * y, kind = pick(['cv', 'rong']); var ans = kind === 'cv' ? 2 * (x + y) : x;
-            return nq(ans, 'Một tấm áp phích quảng cáo dạng hình chữ nhật có tổng diện tích bằng $' + S + '\\ \\text{cm}^2$. Theo yêu cầu kĩ thuật, viền mép trên và mép dưới chừa trống mỗi bên $' + bt + '$ cm; viền mép bên trái và phải chừa trống mỗi bên $' + as + '$ cm; toàn bộ phần hình còn lại ở giữa để in nội dung. Để diện tích phần in nội dung đạt giá trị lớn nhất thì ' + (kind === 'cv' ? 'chu vi của tấm áp phích đó bằng bao nhiêu centimét?' : 'chiều rộng (cạnh nằm ngang) của tấm áp phích bằng bao nhiêu centimét?'), 'Gọi $x$, $y$ là chiều rộng, chiều dài ($xy=' + S + '$). Diện tích phần in $(x-' + 2 * as + ')(y-' + 2 * bt + ')=' + (S + 4 * as * bt) + '-' + 2 * bt + 'x-\\dfrac{' + 2 * as * S + '}{x}$. Giá trị lớn nhất khi $' + 2 * bt + '=\\dfrac{' + 2 * as * S + '}{x^2}$ hay $x=' + x + '$, $y=' + y + '$. ' + (kind === 'cv' ? 'Chu vi $=2(' + x + '+' + y + ')=' + ans + '$ cm.' : 'Chiều rộng $=' + x + '$ cm.'), [ans + 10, ans - 10, x + y, S]);
+            var oF = nq(ans, 'Một tấm áp phích quảng cáo dạng hình chữ nhật có tổng diện tích bằng $' + S + '\\ \\text{cm}^2$. Theo yêu cầu kĩ thuật, viền mép trên và mép dưới chừa trống mỗi bên $' + bt + '$ cm; viền mép bên trái và phải chừa trống mỗi bên $' + as + '$ cm; toàn bộ phần hình còn lại ở giữa để in nội dung. Để diện tích phần in nội dung đạt giá trị lớn nhất thì ' + (kind === 'cv' ? 'chu vi của tấm áp phích đó bằng bao nhiêu centimét?' : 'chiều rộng (cạnh nằm ngang) của tấm áp phích bằng bao nhiêu centimét?'), 'Gọi $x$, $y$ là chiều rộng, chiều dài ($xy=' + S + '$). Diện tích phần in $(x-' + 2 * as + ')(y-' + 2 * bt + ')=' + (S + 4 * as * bt) + '-' + 2 * bt + 'x-\\dfrac{' + 2 * as * S + '}{x}$. Giá trị lớn nhất khi $' + 2 * bt + '=\\dfrac{' + 2 * as * S + '}{x^2}$ hay $x=' + x + '$, $y=' + y + '$. ' + (kind === 'cv' ? 'Chu vi $=2(' + x + '+' + y + ')=' + ans + '$ cm.' : 'Chiều rộng $=' + x + '$ cm.'), [ans + 10, ans - 10, x + y, S]);
+            oF.fig = window.__geoFig('ap_phich', { w: x, h: y, u: bt, v: as }); return oF;
         });
         add('l12_tt_vantoc', 12, GA1, 'Thực tế: vận tốc lớn nhất của vật chuyển động $s(t)$ bậc ba', 'VD', function () {
             var t0 = ri(2, 6), c = ri(3, 12), b = 2 * t0, vmax = c + t0 * t0; var s = '-\\dfrac{1}{3}t^3+' + (b / 2) + 't^2+' + c + 't';
@@ -2819,7 +2882,8 @@ window.__DANG_VER = "v273";
         });
         add('l12_tt_cheothuyen', 12, 'Giải tích 12 › Ứng dụng đạo hàm (Chương I)', 'Thực tế: chèo thuyền rồi đi bộ, thời gian ít nhất', 'VDC', function () {
             var k = ri(1, 2), L = 3 * k + ri(2, 8), d = 4 * k, T = F(5 * k, 3), rest = F(L - 3 * k, 5), tot = fadd(T, rest);
-            return fnum(tot, 'Gọi $x$ là khoảng cách $HM$. $T(x)=\\dfrac{\\sqrt{x^2+' + d * d + '}}{3}+\\dfrac{' + L + '-x}{5}$, $T\'(x)=0\\Leftrightarrow 5x=3\\sqrt{x^2+' + d * d + '}\\Leftrightarrow x=' + 3 * k + '$. $T(' + 3 * k + ')=\\dfrac{' + 5 * k + '}{3}+\\dfrac{' + (L - 3 * k) + '}{5}=' + tex(tot) + '$ (giờ).', 'Một người ở trên thuyền tại điểm $A$ cách bờ biển thẳng một khoảng $AH=' + d + '$ km. Người đó muốn đến điểm $B$ trên bờ, cách $H$ một khoảng $' + L + '$ km (với $H$ là chân đường vuông góc hạ từ $A$ xuống bờ). Người này chèo thuyền thẳng đến điểm $M$ trên đoạn $HB$ với vận tốc $3$ km/h rồi đi bộ từ $M$ đến $B$ với vận tốc $5$ km/h. Thời gian ít nhất để người đó đến $B$ là (giờ)', [fadd(F(d, 3), F(L, 5)), F(L, 5), fadd(T, F(L, 5)), F(L + d, 4), F(d + L, 8)], 'VDC', true);
+            var oF = fnum(tot, 'Gọi $x$ là khoảng cách $HM$. $T(x)=\\dfrac{\\sqrt{x^2+' + d * d + '}}{3}+\\dfrac{' + L + '-x}{5}$, $T\'(x)=0\\Leftrightarrow 5x=3\\sqrt{x^2+' + d * d + '}\\Leftrightarrow x=' + 3 * k + '$. $T(' + 3 * k + ')=\\dfrac{' + 5 * k + '}{3}+\\dfrac{' + (L - 3 * k) + '}{5}=' + tex(tot) + '$ (giờ).', 'Một người ở trên thuyền tại điểm $A$ cách bờ biển thẳng một khoảng $AH=' + d + '$ km. Người đó muốn đến điểm $B$ trên bờ, cách $H$ một khoảng $' + L + '$ km (với $H$ là chân đường vuông góc hạ từ $A$ xuống bờ). Người này chèo thuyền thẳng đến điểm $M$ trên đoạn $HB$ với vận tốc $3$ km/h rồi đi bộ từ $M$ đến $B$ với vận tốc $5$ km/h. Thời gian ít nhất để người đó đến $B$ là (giờ)', [fadd(F(d, 3), F(L, 5)), F(L, 5), fadd(T, F(L, 5)), F(L + d, 4), F(d + L, 8)], 'VDC', true);
+            oF.fig = window.__geoFig('cheo_thuyen', { w: d, d: L, nc: 'H', nd: 'M', band: 'biển', note: 'Hình minh họa: vị trí điểm M chỉ mang tính minh họa' }); return oF;
         });
         add('l12_tt_lon_tru', 12, 'Giải tích 12 › Ứng dụng đạo hàm (Chương I)', 'Thực tế: lon (hộp) hình trụ có thể tích cho trước, tốn ít vật liệu nhất', 'VD', function () {
             var R0 = ri(1, 4), V = 2 * R0 * R0 * R0, wantH = pick([false, true]), Sm = 6 * R0 * R0;
@@ -2827,7 +2891,8 @@ window.__DANG_VER = "v273";
             var ex = 'Gọi $R$ là bán kính đáy, $h=\\dfrac{V}{\\pi R^2}$. $S_{tp}=2\\pi R^2+2\\pi Rh=2\\pi R^2+\\dfrac{' + 2 * V + '}{R}$. $S\'=0\\Leftrightarrow 4\\pi R=\\dfrac{' + 2 * V + '}{R^2}$ hay $R^3=' + (V / 2) + '$ nên $R=' + R0 + '$.';
             if (wantH) { q = 'Một lon sữa hình trụ có thể tích $V=' + V + '\\pi$ ($\\text{cm}^3$). Để tốn ít vật liệu nhất (diện tích toàn phần nhỏ nhất) thì chiều cao của lon bằng (đơn vị cm)'; ex += ' Khi đó $h=\\dfrac{' + V + '}{R^2}=' + 2 * R0 + '$.'; }
             var ans = wantH ? 2 * R0 : R0;
-            return fnumI(ans, ex, q, [wantH ? R0 : 2 * R0, ans + 1, V, R0 * R0], 'VD', true);
+            var oF = fnumI(ans, ex, q, [wantH ? R0 : 2 * R0, ans + 1, V, R0 * R0], 'VD', true);
+            oF.fig = window.__geoFig('hinh_tru', {}); return oF;
         });
     })(Q);
     // ===== (v129) Lô 14 – Toán 12 bổ sung (chóp đều, Oxyz) =====
@@ -8693,12 +8758,34 @@ window.__DANG_VER = "v273";
         add('l12_gk_mcq_mx0', 12, GA, 'Giá trị nhỏ nhất $m=f(x_0)$ của hàm bậc ba trên đoạn, tính $T=m\\,x_0$', 'VD', function () { return mx0(false); });
         add('l12_gk_sa_mx0', 12, GA, 'Trả lời ngắn: giá trị nhỏ nhất $m=f(x_0)$ của hàm bậc ba trên đoạn, tính $T=m\\,x_0$', 'VD', function () { return mx0(true); });
         /* ---- Đề 1 TLN 2: tâm hình hộp ---- */
-        add('l12_gk_sa_ox_tamhop', 12, GVV, 'Trả lời ngắn: hình hộp $ABCD.A\'B\'C\'D\'$ biết ba đỉnh và $C\'$ — tọa độ tâm $I$, tính $a+b+c$', 'VD', function () {
-            var A = [ri(-3, 4), ri(-3, 4), ri(-3, 4)], B = [A[0] + ri(-2, 3), A[1] + ri(-2, 3), A[2] + ri(-2, 3)], D = [A[0] + ri(-2, 3), A[1] + ri(-2, 3), A[2] + ri(-2, 3)];
-            var Cp = [A[0] + 2 * ri(-4, 4), A[1] + 2 * ri(-4, 4), A[2] + 2 * ri(-4, 4)]; need(Cp.some(function (v, i) { return v !== A[i]; }));
-            var I = [(A[0] + Cp[0]) / 2, (A[1] + Cp[1]) / 2, (A[2] + Cp[2]) / 2], S = I[0] + I[1] + I[2];
+        add('l12_gk_sa_ox_tamhop', 12, GVV, 'Trả lời ngắn: hình hộp $ABCD.A\'B\'C\'D\'$ biết $A,B,D,A\'$ — tìm tọa độ một đỉnh còn lại, tính $a+b+c$', 'TH', function () {
+            var A = [ri(-3, 4), ri(-3, 4), ri(-3, 4)], u = [ri(-3, 3), ri(-3, 3), ri(-3, 3)], v = [ri(-3, 3), ri(-3, 3), ri(-3, 3)], w = [ri(-3, 3), ri(-3, 3), ri(-3, 3)];
+            var det = u[0] * (v[1] * w[2] - v[2] * w[1]) - u[1] * (v[0] * w[2] - v[2] * w[0]) + u[2] * (v[0] * w[1] - v[1] * w[0]); need(det !== 0);
+            var B = [A[0] + u[0], A[1] + u[1], A[2] + u[2]], D = [A[0] + v[0], A[1] + v[1], A[2] + v[2]], A1 = [A[0] + w[0], A[1] + w[1], A[2] + w[2]];
             function P(p) { return '(' + p.join(';') + ')'; }
-            return nS('Trong không gian $Oxyz$, cho hình hộp $ABCD.A\'B\'C\'D\'$ có $A' + P(A) + '$, $B' + P(B) + '$, $D' + P(D) + '$, $C\'' + P(Cp) + '$. Tâm $I(a;b;c)$ của hình hộp. Tính $a+b+c$.', S, 0, 'Tâm hình hộp là trung điểm của đường chéo $AC\'$: $I=\\left(\\dfrac{' + A[0] + '+' + sd2(Cp[0]) + '}{2};\\dfrac{' + A[1] + '+' + sd2(Cp[1]) + '}{2};\\dfrac{' + A[2] + '+' + sd2(Cp[2]) + '}{2}\\right)=' + P(I) + '$ nên $a+b+c=' + S + '$.', 'VD', [S + 1, S - 1, A[0] + A[1] + A[2], Cp[0] + Cp[1] + Cp[2]]);
+            var T = pick([['C', function (k) { return u[k] + v[k]; }, '\\overrightarrow{AC}=\\overrightarrow{AB}+\\overrightarrow{AD}'], ['C\'', function (k) { return u[k] + v[k] + w[k]; }, '\\overrightarrow{AC\'}=\\overrightarrow{AB}+\\overrightarrow{AD}+\\overrightarrow{AA\'}'], ['B\'', function (k) { return u[k] + w[k]; }, '\\overrightarrow{AB\'}=\\overrightarrow{AB}+\\overrightarrow{AA\'}'], ['D\'', function (k) { return v[k] + w[k]; }, '\\overrightarrow{AD\'}=\\overrightarrow{AD}+\\overrightarrow{AA\'}']]);
+            var X = [0, 1, 2].map(function (k) { return A[k] + T[1](k); }), S = X[0] + X[1] + X[2];
+            var Ab = P([u[0], u[1], u[2]]), Ad = P(v), Aa = P(w), pt = T[0];
+            var ex = 'Ta có $\\overrightarrow{AB}=' + P(u) + '$, $\\overrightarrow{AD}=' + P(v) + '$, $\\overrightarrow{AA\'}=' + P(w) + '$. Theo quy tắc hình hộp ' + '$' + T[2] + '$ ' + (T[0] === 'C\'' ? 'nên ' : 'nên ') + '$' + pt + '=' + P(X) + '$, suy ra $a+b+c=' + S + '$.';
+            return nS('Trong không gian $Oxyz$, cho hình hộp $ABCD.A\'B\'C\'D\'$ có $A' + P(A) + '$, $B' + P(B) + '$, $D' + P(D) + '$, $A\'' + P(A1) + '$. Đỉnh $' + pt + '(a;b;c)$. Tính $a+b+c$.', S, 0, ex, 'TH', [S + 1, S - 1, A[0] + A[1] + A[2], -S]);
+        });
+        add('l12_gk_sa_ox_diem_m', 12, GVV, 'Trả lời ngắn: tìm điểm $M(a;b;c)$ thỏa đẳng thức vectơ (tổng hoặc tổ hợp của các vectơ), tính $a+b+c$', 'TH', function () {
+            function P(p) { return '(' + p.join(';') + ')'; }
+            function R() { return [ri(-4, 5), ri(-4, 5), ri(-4, 5)]; }
+            function co(k, v) { return (k < 0 ? '-' : '+') + (Math.abs(k) === 1 ? '' : Math.abs(k)) + v; }
+            var A = R(), B = R(), kind = ri(0, 1), M, C, q, ex;
+            if (kind === 0) {
+                var m = pick([1, 2, 3, -1, -2]); M = R(); C = [0, 1, 2].map(function (i) { return (2 + m) * M[i] - A[i] - m * B[i]; }); need(C.every(function (x) { return Math.abs(x) <= 12; }));
+                q = 'Trong không gian $Oxyz$, cho ba điểm $A' + P(A) + '$, $B' + P(B) + '$, $C' + P(C) + '$. Điểm $M(a;b;c)$ thỏa mãn $\\overrightarrow{MA}' + co(m, '\\overrightarrow{MB}') + '+\\overrightarrow{MC}=\\vec 0$. Tính $a+b+c$.';
+                ex = 'Từ $\\overrightarrow{MA}' + co(m, '\\overrightarrow{MB}') + '+\\overrightarrow{MC}=\\vec 0$ ta có $' + (2 + m === 1 ? '' : 2 + m) + '\\overrightarrow{OM}=\\overrightarrow{OA}' + co(m, '\\overrightarrow{OB}') + '+\\overrightarrow{OC}$. Suy ra $M=' + (2 + m === 1 ? 'A' + co(m, 'B') + '+C' : '\\dfrac{A' + co(m, 'B') + '+C}{' + (2 + m) + '}') + '=' + P(M) + '$, nên $a+b+c=' + (M[0] + M[1] + M[2]) + '$.';
+            } else {
+                C = R(); var m1 = pick([1, 2, 3, -1, -2]), n1 = pick([1, 2, -1, -3]); var AB = [B[0] - A[0], B[1] - A[1], B[2] - A[2]], AC = [C[0] - A[0], C[1] - A[1], C[2] - A[2]];
+                M = [0, 1, 2].map(function (i) { return A[i] + m1 * AB[i] + n1 * AC[i]; }); need(AB.some(function (x) { return x; }) && AC.some(function (x) { return x; }));
+                q = 'Trong không gian $Oxyz$, cho ba điểm $A' + P(A) + '$, $B' + P(B) + '$, $C' + P(C) + '$. Điểm $M(a;b;c)$ thỏa mãn $\\overrightarrow{AM}=' + (m1 < 0 ? '-' : '') + (Math.abs(m1) === 1 ? '' : Math.abs(m1)) + '\\overrightarrow{AB}' + co(n1, '\\overrightarrow{AC}') + '$. Tính $a+b+c$.';
+                ex = '$\\overrightarrow{AB}=' + P(AB) + '$, $\\overrightarrow{AC}=' + P(AC) + '$. Do đó $\\overrightarrow{AM}=' + P([0, 1, 2].map(function (i) { return M[i] - A[i]; })) + '$ nên $M=' + P(M) + '$ và $a+b+c=' + (M[0] + M[1] + M[2]) + '$.';
+            }
+            var S = M[0] + M[1] + M[2];
+            return nS(q, S, 0, ex, 'TH', [S + 1, S - 1, -S, A[0] + A[1] + A[2]]);
         });
         /* ---- Đề 1 TLN 3: tốc độ bơm ---- */
         add('l12_gk_sa_bom', 12, GA, 'Trả lời ngắn: thể tích bể $V(t)=\\frac1m(at^3-\\frac{t^4}4)$, tốc độ bơm $v=V\'(t)$ lớn nhất', 'VD', function () {
@@ -8715,7 +8802,8 @@ window.__DANG_VER = "v273";
         add('l12_gk_sa_bech_inox', 12, GA, 'Trả lời ngắn: bể chứa hình hộp chữ nhật không nắp, đáy vuông, giá đáy khác giá mặt bên — tìm chiều cao để chi phí thấp nhất', 'VD', function () {
             var x = pick([2, 3, 4, 6]), r = pick([1, 2, 3, 4]), V = x * x * x / (2 * r); need(V === Math.floor(V)); var h = x / (2 * r); need(Math.round(h * 100) / 100 === h);
             var p1 = pick([50, 100, 150]), p2 = p1 * r;
-            return nS('Một xưởng cơ khí nhận gia công các bể chứa nước inox dạng hình hộp chữ nhật không nắp, có đáy là hình vuông với yêu cầu dung tích chứa đúng $' + V + '$ m$^3$. Giá vật liệu làm mặt đáy là $' + p1 + '\\,000$ đồng/m$^2$, còn giá vật liệu làm $4$ mặt bên là $' + p2 + '\\,000$ đồng/m$^2$. Tính chiều cao $h$ (m) của bể để tổng chi phí thấp nhất.', h, 2, 'Gọi cạnh đáy $x$ thì $h=\\dfrac{' + V + '}{x^2}$. Chi phí $\\propto ' + p1 + 'x^2+' + p2 + '\\cdot4x\\cdot\\dfrac{' + V + '}{x^2}=' + p1 + 'x^2+\\dfrac{' + (4 * p2 * V) + '}{x}$. Đạo hàm bằng $0$: $x^3=' + (2 * p2 * V / p1) + '\\Rightarrow x=' + x + '$, suy ra $h=\\dfrac{' + V + '}{' + x * x + '}=' + dd(h, 2) + '$.', 'VD', [x, V / x, h * 2, h / 2]);
+            var oF = nS('Một xưởng cơ khí nhận gia công các bể chứa nước inox dạng hình hộp chữ nhật không nắp, có đáy là hình vuông với yêu cầu dung tích chứa đúng $' + V + '$ m$^3$. Giá vật liệu làm mặt đáy là $' + p1 + '\\,000$ đồng/m$^2$, còn giá vật liệu làm $4$ mặt bên là $' + p2 + '\\,000$ đồng/m$^2$. Tính chiều cao $h$ (m) của bể để tổng chi phí thấp nhất.', h, 2, 'Gọi cạnh đáy $x$ thì $h=\\dfrac{' + V + '}{x^2}$. Chi phí $\\propto ' + p1 + 'x^2+' + p2 + '\\cdot4x\\cdot\\dfrac{' + V + '}{x^2}=' + p1 + 'x^2+\\dfrac{' + (4 * p2 * V) + '}{x}$. Đạo hàm bằng $0$: $x^3=' + (2 * p2 * V / p1) + '\\Rightarrow x=' + x + '$, suy ra $h=\\dfrac{' + V + '}{' + x * x + '}=' + dd(h, 2) + '$.', 'VD', [x, V / x, h * 2, h / 2]);
+            oF.fig = window.__geoFig('hop_vuong', {}); return oF;
         });
         /* ---- Đề 2 TLN 2: CE = 2EB ---- */
         add('l12_gk_sa_ox_tile', 12, GVV, 'Trả lời ngắn: $\\overrightarrow{CE}=k\\,\\overrightarrow{EB}$ — tìm $E(a;b;c)$, tính $a+b+c$', 'VD', function () {
@@ -8732,7 +8820,8 @@ window.__DANG_VER = "v273";
         /* ---- Đề 2 TLN 4: tấm bìa vuông gấp thành chóp tứ giác đều ---- */
         add('l12_gk_sa_chop_tambia', 12, GA, 'Trả lời ngắn: tấm bìa hình vuông cắt bốn tam giác cân, gập thành khối chóp tứ giác đều — thể tích lớn nhất (làm tròn hàng phần mười)', 'VDC', function () {
             var a = pick([4, 5, 6, 8, 9, 10, 12]), V = 4 * a * a * a / (75 * Math.sqrt(10)), x = 2 * a / 5; var Vr = Math.round(V * 10) / 10;
-            return nS('Từ một tấm bìa mỏng hình vuông cạnh $' + a + '$ dm, bạn Hoa cắt bỏ bốn tam giác cân bằng nhau có cạnh đáy là cạnh của hình vuông ban đầu và đỉnh là đỉnh của một hình vuông nhỏ phía trong rồi gập lên, ghép lại tạo thành một khối chóp tứ giác đều. Thể tích lớn nhất của khối chóp bằng bao nhiêu decimét khối (làm tròn đến hàng phần mười)?', Vr, 1, 'Gọi $x$ là cạnh hình vuông nhỏ (đáy chóp). Cạnh bên của chóp bằng nửa đường chéo tấm bìa trừ nửa đường chéo đáy, nên chiều cao $h=\\sqrt{\\dfrac{' + a * a + '}{2}-' + a + 'x}$. Thể tích $V=\\dfrac13x^2h$. Xét $V^2=\\dfrac19x^4\\left(\\dfrac{' + a * a + '}{2}-' + a + 'x\\right)$, đạo hàm bằng $0$ tại $x=\\dfrac{2\\cdot' + a + '}{5}=' + dd(x, 2) + '$, khi đó $h=\\dfrac{' + a + '}{\\sqrt{10}}$ và $V_{\\max}=\\dfrac{4\\cdot' + a + '^3}{75\\sqrt{10}}\\approx' + dd(V, 3) + '$. Làm tròn: $' + dd(Vr, 1) + '$.', 'VDC', [Vr + 0.1, Vr - 0.1, V * 3, V / 3]);
+            var oF = nS('Từ một tấm bìa mỏng hình vuông cạnh $' + a + '$ dm, bạn Hoa cắt bỏ bốn tam giác cân bằng nhau có cạnh đáy là cạnh của hình vuông ban đầu và đỉnh là đỉnh của một hình vuông nhỏ phía trong rồi gập lên, ghép lại tạo thành một khối chóp tứ giác đều. Thể tích lớn nhất của khối chóp bằng bao nhiêu decimét khối (làm tròn đến hàng phần mười)?', Vr, 1, 'Gọi $x$ là cạnh hình vuông nhỏ (đáy chóp). Cạnh bên của chóp bằng nửa đường chéo tấm bìa trừ nửa đường chéo đáy, nên chiều cao $h=\\sqrt{\\dfrac{' + a * a + '}{2}-' + a + 'x}$. Thể tích $V=\\dfrac13x^2h$. Xét $V^2=\\dfrac19x^4\\left(\\dfrac{' + a * a + '}{2}-' + a + 'x\\right)$, đạo hàm bằng $0$ tại $x=\\dfrac{2\\cdot' + a + '}{5}=' + dd(x, 2) + '$, khi đó $h=\\dfrac{' + a + '}{\\sqrt{10}}$ và $V_{\\max}=\\dfrac{4\\cdot' + a + '^3}{75\\sqrt{10}}\\approx' + dd(V, 3) + '$. Làm tròn: $' + dd(Vr, 1) + '$.', 'VDC', [Vr + 0.1, Vr - 0.1, V * 3, V / 3]);
+            oF.fig = window.__geoFig('chop_tam_bia', { a: a }); return oF;
         });
         /* ---- Đề 2 TLN 5: s(t) bậc ba cho bằng đồ thị ---- */
         add('l12_gk_sa_vantoc_dothi', 12, GA, 'Trả lời ngắn có hình: quãng đường $s(t)$ bậc ba cho bằng đồ thị — vận tốc tối đa', 'VDC', function () {
@@ -8766,7 +8855,18 @@ window.__DANG_VER = "v273";
             if (nice) { var tp = pick([[3, 5, 4, 4], [4, 5, 3, 3], [6, 10, 8, 4]]); v1 = tp[0]; v2 = tp[1]; w = tp[3] * pick([1, 2]); x = w * v1 / Math.sqrt(v2 * v2 - v1 * v1); }
             else { var tq = pick([[6, 8], [5, 8], [4, 6], [3, 4], [6, 10]]); v1 = tq[0]; v2 = tq[1]; w = ri(2, 6); x = w * v1 / Math.sqrt(v2 * v2 - v1 * v1); }
             var xr = Math.round(x * 10) / 10; var d = Math.ceil(x) + ri(2, 8);
-            return nS('Anh An chèo thuyền từ điểm $A$ trên bờ một con sông thẳng rộng $' + w + '$ km, muốn đến điểm $B$ ở bờ đối diện, cách điểm $C$ (đối diện $A$) $' + d + '$ km về phía hạ lưu, càng nhanh càng tốt. Anh có thể chèo thuyền đến một điểm $D$ giữa $C$ và $B$ rồi chạy bộ đến $B$. Vận tốc chèo thuyền là $' + v1 + '$ km/h, vận tốc chạy bộ là $' + v2 + '$ km/h. Điểm $D$ cách $C$ bao nhiêu km (làm tròn đến hàng phần mười nếu cần) để anh đến $B$ sớm nhất?', xr, 1, 'Đặt $CD=x$. Thời gian $t(x)=\\dfrac{\\sqrt{' + w * w + '+x^2}}{' + v1 + '}+\\dfrac{' + d + '-x}{' + v2 + '}$. $t\'(x)=0\\Leftrightarrow \\dfrac{x}{' + v1 + '\\sqrt{' + w * w + '+x^2}}=\\dfrac1{' + v2 + '}\\Rightarrow x=\\dfrac{' + w * v1 + '}{\\sqrt{' + (v2 * v2 - v1 * v1) + '}}\\approx' + dd(x, 2) + '$ (thỏa $0<x<' + d + '$). Làm tròn: $' + dd(xr, 1) + '$.', 'VDC', [d, w, xr + 0.1, xr - 0.1]);
+            var oCT = nS('Anh An chèo thuyền từ điểm $A$ trên bờ một con sông thẳng rộng $' + w + '$ km, muốn đến điểm $B$ ở bờ đối diện, cách điểm $C$ (đối diện $A$) $' + d + '$ km về phía hạ lưu, càng nhanh càng tốt. Anh có thể chèo thuyền đến một điểm $D$ giữa $C$ và $B$ rồi chạy bộ đến $B$. Vận tốc chèo thuyền là $' + v1 + '$ km/h, vận tốc chạy bộ là $' + v2 + '$ km/h. Điểm $D$ cách $C$ bao nhiêu km (làm tròn đến hàng phần mười nếu cần) để anh đến $B$ sớm nhất?', xr, 1, 'Đặt $CD=x$. Thời gian $t(x)=\\dfrac{\\sqrt{' + w * w + '+x^2}}{' + v1 + '}+\\dfrac{' + d + '-x}{' + v2 + '}$. $t\'(x)=0\\Leftrightarrow \\dfrac{x}{' + v1 + '\\sqrt{' + w * w + '+x^2}}=\\dfrac1{' + v2 + '}\\Rightarrow x=\\dfrac{' + w * v1 + '}{\\sqrt{' + (v2 * v2 - v1 * v1) + '}}\\approx' + dd(x, 2) + '$ (thỏa $0<x<' + d + '$). Làm tròn: $' + dd(xr, 1) + '$.', 'VDC', [d, w, xr + 0.1, xr - 0.1]);
+            oCT.fig = window.__geoFig('cheo_thuyen', { w: w, d: d }); return oCT;
+        });
+        add('l12_gk_sa_cuctri_can_bac2', 12, GA, 'Trả lời ngắn: hàm $y=\\sqrt{ax^2+bx+c}$ với $a<0$ — gọi $A$ là điểm cực đại, $B$ là giá trị cực đại, tính $A+B$', 'VD', function () {
+            var k = pick([1, 2, 3]), pp = ri(-3, 3), h = pick([4, 9, 16, 25, 36]), a = -k, b = 2 * k * pp, c = h - k * pp * pp, r = Math.round(Math.sqrt(h)), S = pp + r;
+            var f = '\\sqrt{' + ps([c, b, a]) + '}';
+            return nS('Cho hàm số $y=' + f + '$. Biết hàm số đạt cực đại tại $x=A$ và giá trị cực đại của hàm số bằng $B$. Tính $A+B$.', S, 0, 'Tập xác định là đoạn nằm giữa hai nghiệm của $' + ps([c, b, a]) + '=0$. Với $u=' + ps([c, b, a]) + '$ ta có $y\'=\\dfrac{u\'}{2\\sqrt{u}}=\\dfrac{' + (-2 * k) + 'x' + (b === 0 ? '' : (b < 0 ? '' : '+') + b) + '}{2\\sqrt{u}}$, $y\'=0\\Leftrightarrow x=' + pp + '$; $y\'$ đổi dấu từ dương sang âm nên $x=' + pp + '$ là điểm cực đại. Hàm số chỉ có một cực trị là cực đại, giá trị cực đại $y(' + pp + ')=\\sqrt{' + h + '}=' + r + '$. Vậy $A=' + pp + '$, $B=' + r + '$, $A+B=' + S + '$.', 'VD', [pp, r, S + 1, S - 1, pp - r]);
+        });
+        add('l12_gk_sa_gtln_can_bac2', 12, GA, 'Trả lời ngắn: hàm $y=\\sqrt{-x^2+bx+c}$ trên một đoạn — gọi $A$, $B$ là giá trị lớn nhất, nhỏ nhất, tính $A+B$', 'VD', function () {
+            var tp = pick([[25, 3, 4], [25, 4, 3], [100, 6, 8], [100, 8, 6], [169, 5, 12], [169, 12, 5]]), h = tp[0], s1 = tp[1], s2 = tp[2], pp = ri(-3, 3), b = 2 * pp, c = h - pp * pp, r = Math.round(Math.sqrt(h));
+            var v1 = Math.round(Math.sqrt(h - s1 * s1)), v2 = Math.round(Math.sqrt(h - s2 * s2)), m = Math.min(v1, v2), lo = pp - s1, hi = pp + s2, S = r + m;
+            return nS('Cho hàm số $y=\\sqrt{' + ps([c, b, -1]) + '}$. Gọi $A$, $B$ lần lượt là giá trị lớn nhất và giá trị nhỏ nhất của hàm số trên đoạn $[' + lo + ';' + hi + ']$. Tính $A+B$.', S, 0, 'Ta có $' + ps([c, b, -1]) + '=' + h + '-(x' + (pp < 0 ? '+' + (-pp) : (pp > 0 ? '-' + pp : '')) + ')^2$. Hàm số liên tục trên đoạn, đạt giá trị lớn nhất tại đỉnh $x=' + pp + '\\in[' + lo + ';' + hi + ']$: $A=\\sqrt{' + h + '}=' + r + '$. Hai đầu mút: $y(' + lo + ')=' + v1 + '$, $y(' + hi + ')=' + v2 + '$ nên $B=' + m + '$. Vậy $A+B=' + S + '$.', 'VD', [r, m, S + 1, S - 1, r - m]);
         });
         /* ---- Đề 4 TLN 1: khoảng cách giữa hai điểm cực trị ---- */
         add('l12_gk_sa_kc_cuctri', 12, GA, 'Trả lời ngắn: khoảng cách giữa hai điểm cực trị của đồ thị hàm bậc ba (làm tròn hàng phần trăm)', 'VD', function () {
@@ -8790,12 +8890,14 @@ window.__DANG_VER = "v273";
         /* ---- Đề 4 TLN 4: áp phích ---- */
         add('l12_gk_sa_apphich', 12, GA, 'Trả lời ngắn: tấm áp phích hình chữ nhật có diện tích cho trước, chừa lề — chu vi để diện tích phần in lớn nhất', 'VD', function () {
             var u = ri(2, 5), v = ri(2, 8), t = ri(3, 7); need(u !== v); var w = v * t, h = u * t, S = w * h, P = 2 * (w + h);
-            return nS('Một công ty truyền thông cần thiết kế một tấm áp phích quảng cáo dạng hình chữ nhật có tổng diện tích bằng $' + S + '$ cm$^2$. Theo yêu cầu kỹ thuật, viền mép trên và mép dưới chừa trống mỗi bên $' + u + '$ cm, hai viền mép bên trái và phải chừa trống mỗi bên $' + v + '$ cm; toàn bộ phần hình chữ nhật còn lại ở giữa dùng để in nội dung. Để diện tích phần in nội dung lớn nhất thì chu vi của tấm áp phích bằng bao nhiêu centimét?', P, 0, 'Gọi chiều rộng $w$, chiều cao $h=\\dfrac{' + S + '}{w}$. Diện tích in $(w-' + 2 * v + ')\\left(\\dfrac{' + S + '}{w}-' + 2 * u + '\\right)=' + (S + 4 * u * v) + '-' + 2 * u + 'w-\\dfrac{' + 2 * v * S + '}{w}$, lớn nhất khi $w^2=' + (v * S / u) + '$ nên $w=' + w + '$, $h=' + h + '$. Chu vi $2(' + w + '+' + h + ')=' + P + '$.', 'VD', [P / 2, S / 2, w + h + 2, 2 * (w + h) + 4]);
+            var oF = nS('Một công ty truyền thông cần thiết kế một tấm áp phích quảng cáo dạng hình chữ nhật có tổng diện tích bằng $' + S + '$ cm$^2$. Theo yêu cầu kỹ thuật, viền mép trên và mép dưới chừa trống mỗi bên $' + u + '$ cm, hai viền mép bên trái và phải chừa trống mỗi bên $' + v + '$ cm; toàn bộ phần hình chữ nhật còn lại ở giữa dùng để in nội dung. Để diện tích phần in nội dung lớn nhất thì chu vi của tấm áp phích bằng bao nhiêu centimét?', P, 0, 'Gọi chiều rộng $w$, chiều cao $h=\\dfrac{' + S + '}{w}$. Diện tích in $(w-' + 2 * v + ')\\left(\\dfrac{' + S + '}{w}-' + 2 * u + '\\right)=' + (S + 4 * u * v) + '-' + 2 * u + 'w-\\dfrac{' + 2 * v * S + '}{w}$, lớn nhất khi $w^2=' + (v * S / u) + '$ nên $w=' + w + '$, $h=' + h + '$. Chu vi $2(' + w + '+' + h + ')=' + P + '$.', 'VD', [P / 2, S / 2, w + h + 2, 2 * (w + h) + 4]);
+            oF.fig = window.__geoFig('ap_phich', { w: w, h: h, u: u, v: v }); return oF;
         });
         /* ---- Đề 4 TLN 5: hộp trụ ---- */
         add('l12_gk_sa_hop_tru', 12, GA, 'Trả lời ngắn: hộp hình trụ có nắp, thể tích cho trước, tốn ít vật liệu nhất — chiều cao $h$ (làm tròn hàng phần mười)', 'VD', function () {
             var V = pick([500, 750, 1000, 1200, 1500, 2000]), r = Math.pow(V / (2 * Math.PI), 1 / 3), h = 2 * r, hr = Math.round(h * 10) / 10;
-            return nS('Một nhà sản xuất cần làm một hộp đựng hình trụ có nắp bằng nhôm với thể tích $' + V + '$ cm$^3$. Biết chi phí vật liệu tỉ lệ thuận với diện tích toàn phần của hộp đựng. Để tiết kiệm chi phí vật liệu nhất, chiều cao $h$ của hình trụ bằng bao nhiêu centimét (làm tròn đến hàng phần mười)?', hr, 1, 'Với bán kính $r$, $h=\\dfrac{' + V + '}{\\pi r^2}$ và $S_{tp}=2\\pi r^2+\\dfrac{' + 2 * V + '}{r}$. $S\'=0\\Rightarrow r^3=\\dfrac{' + V + '}{2\\pi}\\Rightarrow r\\approx' + dd(r, 3) + '$. Khi đó $h=2r\\approx' + dd(h, 3) + '$. Làm tròn: $' + dd(hr, 1) + '$.', 'VD', [r, hr + 0.1, hr - 0.1, h * 2]);
+            var oF = nS('Một nhà sản xuất cần làm một hộp đựng hình trụ có nắp bằng nhôm với thể tích $' + V + '$ cm$^3$. Biết chi phí vật liệu tỉ lệ thuận với diện tích toàn phần của hộp đựng. Để tiết kiệm chi phí vật liệu nhất, chiều cao $h$ của hình trụ bằng bao nhiêu centimét (làm tròn đến hàng phần mười)?', hr, 1, 'Với bán kính $r$, $h=\\dfrac{' + V + '}{\\pi r^2}$ và $S_{tp}=2\\pi r^2+\\dfrac{' + 2 * V + '}{r}$. $S\'=0\\Rightarrow r^3=\\dfrac{' + V + '}{2\\pi}\\Rightarrow r\\approx' + dd(r, 3) + '$. Khi đó $h=2r\\approx' + dd(h, 3) + '$. Làm tròn: $' + dd(hr, 1) + '$.', 'VD', [r, hr + 0.1, hr - 0.1, h * 2]);
+            oF.fig = window.__geoFig('hinh_tru', {}); return oF;
         });
         /* ---- Đề 2 trắc nghiệm câu 12: f'(x)>0 trên (a;b) ---- */
         add('l12_gk_mcq_fprime_khoang', 12, GA, 'Cho $f\'(x)>0$ (hoặc $<0$) với mọi $x$ thuộc một khoảng: chọn khẳng định đúng về tính đơn điệu', 'NB', function () {
@@ -9008,7 +9110,7 @@ window.__DANG_VER = "v273";
             var ids = ('l10_menhde_dem l10_menhde_pdinh l10_menhde_dao l10_menhde_keotheo l10_menhde_dungsai l10_tap_lietke l10_tapcon_dem l10_tap_roirac l10_tap_khoang_nguyen l10_tap_phanbu l10_tap_kyhieu l10_tap_viet_khoang l10_tap_khangdinh l10_tap_hop l10_bpt2an_diem l10_hept_diem l10_bpt2an_mien l10_hept_nhandang l10_mien_hinh l10_gtlg_bu l10_gtlg_dau l10_gtlg_dangthuc l10_gtlg_goc_phu_bu l10_gtlg_biethuc l10_tg_congthuc l10_cosin_canh l10_cosin_goc l10_sin_R l10_dientich l10_tg_dientich_sin l10_tg_goc l10_tg_thucte l10_tg_thucte2 l10_bpt_lap_he l10_qhtt_thucte l10_qhtt_3rb ' +
                 'l10_tf_tg_gocgoc l10_tf_tg_bacanh l10_tf_hethuc l10_tf_hethuc_tg l10_tf_menhde l10_tf_tap l10_tf_bpt2an l10_tf_gtlg_dacbiet l10_tf_tap_hop l10_tf_bpt_hai_an_nghiem ' +
                 'l10_sa_menhde_dem_dung l10_sa_tap_dem l10_sa_tap_khoang_nguyen l10_sa_tap_khoang_nguyen_3 l10_sa_gtlg_biethuc l10_sa_cosin_canh l10_sa_heron l10_sa_dientich_sin l10_sa_ven_batap l10_sa_ven_haitap l10_sa_ven_batap_nguoc l10_es_tap l10_es_venn l10_es_qhtt l10_es_qhtt3 l10_es_thucte ' +
-                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron').split(' ');
+                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron l12_ox_ijk_toado l12_ox_toado_ijk l12_ox_om_ijk_diem l12_ox_diem_om_ijk l12_ox_toado_ab l12_ox_ab_ijk l12_ox_diem_tu_vecto l12_ox_diem_dacbiet l12_gk_sa_ox_diem_m l12_gk_sa_cuctri_can_bac2 l12_gk_sa_gtln_can_bac2').split(' ');
             window.__GK1 = window.__GK1 || {}; ids.forEach(function (i) { if (i) window.__GK1[i] = 1; });
         })();
     })(Q);
@@ -9177,6 +9279,41 @@ window.__DANG_VER = "v273";
                 var Bx = p.L * cs(p.al), By = p.L * sn(p.al); P.A = [0, 0]; P.B = [Bx, By]; P.C = [Bx, By + p.h]; P.X = [Bx * 1.3, 0]; P.Y = [Bx * 1.3, By * 1.3]; lab.A = 'A'; lab.B = 'B'; lab.C = 'C';
                 S('A', 'X', { col: '#94a3b8', w: 2, dash: 1 }); S('A', 'B', ext(WOOD, { w: 4 })); S('B', 'Y', ext(WOOD, { w: 4 })); S('B', 'C', ext(LEAF, { txt: '?', side: 1 })); S('A', 'C', { col: '#f59e0b', w: 2, dash: 1, txt: 'tia nắng ' + p.be + '°', side: -1, off: 30 });
                 arcs.push(['A', 'X', 'B', p.al + '°', 44, [44, 22]]); arcs.push(['A', 'X', 'C', '', 74]); note = 'AB = ' + p.L + ' m (bóng cây dọc theo sườn đồi)';
+            } else if (k === 'cheo_thuyen') {
+                P.A = [0, p.w]; P.C = [0, 0]; P.D = [p.d * 0.42, 0]; P.B = [p.d, 0]; lab.A = 'A'; lab.B = 'B'; lab.C = p.nc || 'C'; lab.D = p.nd || 'D';
+                bands.push([0, p.w, '#cfe8ff', p.band || 'sông']);
+                S('A', 'C', ext(G, { txt: p.w + ' km', side: -1, off: 16 })); S('C', 'B', ext(G, { txt: p.d + ' km', side: 1, off: 44 })); S('A', 'D', { col: '#1d4ed8', w: 4, txt: 'chèo thuyền', side: -1, off: 40 }); S('D', 'B', { col: '#16a34a', w: 4, txt: 'chạy bộ', side: -1, off: 14 });
+                note = p.note || 'Hình minh họa: vị trí điểm D chỉ mang tính minh họa';
+            } else if (k === 'ap_phich') {
+                var Wd = p.w, Hd = p.h, u = p.u, v = p.v;
+                P.O1 = [0, 0]; P.O2 = [Wd, 0]; P.O3 = [Wd, Hd]; P.O4 = [0, Hd]; P.I1 = [v, u]; P.I2 = [Wd - v, u]; P.I3 = [Wd - v, Hd - u]; P.I4 = [v, Hd - u]; P.MT = [Wd / 2, Hd]; P.MU = [Wd / 2, Hd - u]; P.ML = [0, Hd / 2]; P.MV = [v, Hd / 2];
+                var OUT = { col: '#334155', w: 3 }, INN = { col: '#2563eb', w: 3 };
+                S('O1', 'O2', OUT); S('O2', 'O3', OUT); S('O3', 'O4', OUT); S('O4', 'O1', OUT); S('I1', 'I2', INN); S('I2', 'I3', INN); S('I3', 'I4', INN); S('I4', 'I1', INN);
+                S('MT', 'MU', { col: '#dc2626', w: 2, txt: p.u + ' cm', side: -1, off: 20 }); S('ML', 'MV', { col: '#dc2626', w: 2, txt: p.v + ' cm', side: 1, off: 14 });
+                note = 'Khung xanh là phần in nội dung; phần viền còn lại chừa trống';
+            } else if (k === 'chop_tam_bia') {
+                var a = 10, d = 3; P.A = [0, 0]; P.B = [a, 0]; P.C = [a, a]; P.D = [0, a]; P.P1 = [a / 2, d]; P.P2 = [a - d, a / 2]; P.P3 = [a / 2, a - d]; P.P4 = [d, a / 2]; lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D';
+                var CUT = { col: '#dc2626', w: 2, dash: 1 }, BD = { col: '#334155', w: 3 }, BASE = { col: '#2563eb', w: 4 };
+                S('A', 'B', BD); S('B', 'C', BD); S('C', 'D', BD); S('D', 'A', BD);
+                S('A', 'P1', CUT); S('B', 'P1', CUT); S('B', 'P2', CUT); S('C', 'P2', CUT); S('C', 'P3', CUT); S('D', 'P3', CUT); S('D', 'P4', CUT); S('A', 'P4', CUT);
+                S('P1', 'P2', BASE); S('P2', 'P3', BASE); S('P3', 'P4', BASE); S('P4', 'P1', BASE);
+                S('A', 'B', { hide: 1, txt: p.a + ' dm', side: 1, off: 22 });
+                note = 'Cắt bỏ 4 tam giác (nét đứt đỏ), gập 4 tam giác còn lại lên thành chóp';
+            } else if (k === 'hop_vuong') {
+                var X = 1, Hh = p.hr || 1.3, dx = 0.5, dy = 0.38;
+                P.A = [0, 0]; P.B = [X, 0]; P.C = [X + dx, dy]; P.D = [dx, dy]; P.A1 = [0, Hh]; P.B1 = [X, Hh]; P.C1 = [X + dx, dy + Hh]; P.D1 = [dx, dy + Hh];
+                var VS = { col: '#334155', w: 3 }, HD = { col: '#64748b', w: 2, dash: 1 };
+                S('A', 'B', ext(VS, { txt: 'x', side: 1, off: 18 })); S('B', 'C', VS); S('C', 'D', HD); S('D', 'A', HD);
+                S('A', 'A1', ext(VS, { txt: 'h', side: -1, off: 14 })); S('B', 'B1', VS); S('C', 'C1', VS); S('D', 'D1', HD);
+                S('A1', 'B1', VS); S('B1', 'C1', VS); S('C1', 'D1', VS); S('D1', 'A1', VS);
+                note = p.note || 'Hộp hình chữ nhật không nắp, đáy là hình vuông cạnh x';
+            } else if (k === 'hinh_tru') {
+                var N = 28, Hc = p.hr || 1.6, RY = 0.32, i;
+                for (i = 0; i < N; i++) { var t = 2 * Math.PI * i / N; P['T' + i] = [Math.cos(t), Hc + RY * Math.sin(t)]; P['B' + i] = [Math.cos(t), RY * Math.sin(t)]; }
+                P.TC = [0, Hc];
+                for (i = 0; i < N; i++) { var j = (i + 1) % N, front = i >= N / 2; S('T' + i, 'T' + j, { col: '#334155', w: 3 }); S('B' + i, 'B' + j, front ? { col: '#334155', w: 3 } : { col: '#64748b', w: 2, dash: 1 }); }
+                S('T0', 'B0', { col: '#334155', w: 3 }); S('T' + (N / 2), 'B' + (N / 2), ext({ col: '#334155', w: 3 }, { txt: 'h', side: 1, off: 16 })); S('TC', 'T0', { col: '#dc2626', w: 2, dash: 1, txt: 'r', side: -1, off: 12 });
+                note = p.note || 'Hình trụ có bán kính đáy r, chiều cao h';
             } else if (k === 'nui') {
                 P.A = [0, 0]; P.B = [0, p.ab]; P.D = [p.xd, 0]; P.C = [p.xd, p.hc]; P.E = [p.xd, p.ab]; lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D'; lab.E = 'E';
                 S('A', 'B', ext(G, { w: 5, txt: 'AB = ' + p.ab + ' m', side: -1, off: 30 })); S('A', 'D', G); S('B', 'E', { col: '#94a3b8', w: 2, dash: 1 }); S('D', 'C', ext(WOOD, { txt: 'CD = ?', side: 1, off: 26 })); S('A', 'C', THIN); S('B', 'C', THIN);
