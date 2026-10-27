@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v255] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v256] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2884,7 +2884,7 @@ function removeQuestionFromSelected(qId) {
                     return;
                 }
 
-             pubOk = true;
+             pubOk = true; window.__pubDone = true;
              alert(mode === 'KIEMTRA' 
                     ? "🎉 Xuất bản ĐỀ KIỂM TRA thành công! Đề đã được mã hóa bảo mật chống F12." 
                     : "🎉 Xuất bản đề thành công!");
@@ -23260,6 +23260,28 @@ window.refreshTopicsNow=async function(manual){
 (function(){var o=window.switchTeacherTab;if(typeof o!=='function')return;
  window.switchTeacherTab=function(t){var r=o.apply(this,arguments);
   if(t==='creator'&&(!window.__topicsAt||Date.now()-window.__topicsAt>60000))setTimeout(function(){refreshTopicsNow(false);},300);return r;};})();
+</script>
+<script>
+/* v256: báo tiến trình rõ khi bấm Lưu & Xuất Bản (đề nặng chờ lâu, trước đây không thấy gì) */
+(function(){
+  function bar(){var b=document.getElementById('pub-bar');if(!b){b=document.createElement('div');b.id='pub-bar';b.style.cssText='position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:2147483000;max-width:92vw;padding:12px 18px;border-radius:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;text-align:center';document.body.appendChild(b);}return b;}
+  function show(msg,bg,ms){var b=bar();b.textContent=msg;b.style.background=bg;b.style.color='#fff';b.style.display='block';clearTimeout(b.__t);if(ms)b.__t=setTimeout(function(){b.style.display='none';},ms);}
+  var o=window.saveExamFinal; if(typeof o!=='function')return; var busy=false;
+  window.saveExamFinal=async function(){
+    if(busy){show('⏳ Đang xuất bản, cô chờ thêm chút, đừng bấm lại...','#b45309');return;}
+    busy=true;window.__pubDone=false;
+    var btns=[].slice.call(document.querySelectorAll('.s3btn'));btns.forEach(function(x){x.disabled=true;x.style.opacity=.6;});
+    show('⏳ Đang xuất bản... Đề nhiều ảnh có thể mất 1–2 phút. Cô đừng đóng trang.','#1d4ed8');
+    try{ return await o.apply(this,arguments); }
+    finally{
+      busy=false;btns.forEach(function(x){x.disabled=false;x.style.opacity=1;});
+      if(window.__pubDone)show('✅ Đã xuất bản xong. Cô mở trang học sinh để kiểm tra.','#15803d',12000);
+      else show('Chưa xuất bản xong (xem thông báo vừa hiện). Cô sửa rồi bấm lại.','#b91c1c',12000);
+    }
+  };
+  var g=window.generateMatrixExam;
+  if(typeof g==='function')window.generateMatrixExam=function(){var r=g.apply(this,arguments);try{if(typeof selectedQuestions!=='undefined'&&selectedQuestions[0]&&selectedQuestions[0].isDynamicConfig)show('✅ Đã lưu ma trận động. Cô kéo xuống Bước 3 để xuất bản.','#15803d',6000);}catch(e){}return r;};
+})();
 </script>
 </body>
 </html>
