@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v262] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v263] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21863,6 +21863,15 @@ var QGEN = (function () {
             else { q = 'Lớp ' + cls.replace('lớp ', '') + ' có $' + N + '$ ' + who + ', trong đó có $' + A + '$ ' + who + ' ' + v[2] + v[0] + ', $' + B + '$ ' + who + ' ' + v[2] + v[1] + ' và $' + none + '$ ' + who + ' ' + v[4] + ' ' + v[0] + ' và ' + v[1] + '.'; p1 = 'Có bao nhiêu ' + who + ' ' + v[2] + v[0] + ' hoặc ' + v[1] + ' (ít nhất một trong hai)?'; s1 = '$' + N + '-' + none + '=' + U + '$.'; p2 = 'Có bao nhiêu ' + who + ' ' + v[3] + ' ' + v[0] + ' và ' + v[1] + '?'; s2 = '$n(A\\cap B)=n(A)+n(B)-n(A\\cup B)=' + A + '+' + B + '-' + U + '=' + AB + '$.'; }
             return { level: 'TH', q: q.replace(/Lớp (\d+\w*)/, function (m, c) { return 'Lớp ' + c; }), parts: [{ t: p1, p: 1, sol: s1 }, { t: p2, p: 1, sol: s2 }] };
         });
+        addES('l10_gk_es_nui', 10, H3, 'Tự luận: đo chiều cao ngọn núi từ chân và đỉnh một tòa nhà (hai góc nâng, có hình vẽ)', 'VD', function () {
+            var ab = pick([60, 80, 100, 120, 125, 150]), al = ri(48, 66), be = ri(14, 30), tA = Math.tan(al * RAD), tB = Math.tan(be * RAD);
+            var xd = ab / (tA - tB), hc = xd * tA, ce = xd * tB; need(xd > 30 && hc < 500 && Math.abs(hc - Math.floor(hc) - 0.5) > 0.12);
+            var N = Math.round(hc);
+            var q = 'Một người quan sát đỉnh $C$ của một ngọn núi nhân tạo từ hai vị trí $A$ (chân tòa nhà) và $B$ (đỉnh tòa nhà). Lần đầu tiên người đó quan sát đỉnh núi từ chân tòa nhà với góc nâng là $' + al + '^\\circ$, lần thứ hai người này quan sát tại đỉnh tòa nhà với góc nâng là $' + be + '^\\circ$ (như hình vẽ). Chiều cao tòa nhà $AB$ là $' + ab + '$ m.';
+            var s1 = 'Trong tam giác vuông $ACD$: $CD=AD\\cdot\\tan ' + al + '^\\circ=x\\tan ' + al + '^\\circ$. Trong tam giác vuông $BCE$ ($BE=AD=x$): $CE=BE\\cdot\\tan ' + be + '^\\circ=x\\tan ' + be + '^\\circ$.';
+            var s2 = 'Vì $ED=AB=' + ab + '$ nên $CD=CE+ED$, tức $x\\tan ' + al + '^\\circ=x\\tan ' + be + '^\\circ+' + ab + '$. Suy ra $x=\\dfrac{' + ab + '}{\\tan ' + al + '^\\circ-\\tan ' + be + '^\\circ}\\approx' + dd(xd, 2) + '$ (m). Vậy $CD=x\\tan ' + al + '^\\circ\\approx' + dd(hc, 2) + '$, làm tròn: $CD\\approx' + N + '$ m.';
+            return { level: 'VD', q: q, fig: window.__geoFig('nui', { ab: ab, al: al, be: be, xd: xd, hc: hc }), parts: [{ t: 'Đặt $AD=x$ (m). Hãy biểu diễn $CD$ và $CE$ theo $x$.', p: 0.5, sol: s1 }, { t: 'Tính chiều cao $CD$ của ngọn núi (kết quả làm tròn đến hàng đơn vị).', p: 1, sol: s2 }] };
+        });
         /* ---------- trả lời ngắn: cho tanα (hoặc cotα), tính giá trị biểu thức ---------- */
         function lin(a, b, f1, f2) { var s = ''; [[a, f1], [b, f2]].forEach(function (z, i) { var c = z[0]; if (!c) return; var ab = Math.abs(c); s += (s === '' ? (c < 0 ? '-' : '') : (c < 0 ? '-' : '+')) + (ab === 1 && z[1] !== '' ? '' : ab) + z[1]; }); return s; }
         function frac(p, q) { var g = gc(p, q) || 1; p /= g; q /= g; if (q < 0) { p = -p; q = -q; } return q === 1 ? String(p) : (p < 0 ? '-' : '') + '\\dfrac{' + Math.abs(p) + '}{' + q + '}'; }
@@ -21955,7 +21964,7 @@ var QGEN = (function () {
             var ids = ('l10_menhde_dem l10_menhde_pdinh l10_menhde_dao l10_menhde_keotheo l10_menhde_dungsai l10_tap_lietke l10_tapcon_dem l10_tap_roirac l10_tap_khoang_nguyen l10_tap_phanbu l10_tap_kyhieu l10_tap_viet_khoang l10_tap_khangdinh l10_tap_hop l10_bpt2an_diem l10_hept_diem l10_bpt2an_mien l10_hept_nhandang l10_mien_hinh l10_gtlg_bu l10_gtlg_dau l10_gtlg_dangthuc l10_gtlg_goc_phu_bu l10_gtlg_biethuc l10_tg_congthuc l10_cosin_canh l10_cosin_goc l10_sin_R l10_dientich l10_tg_dientich_sin l10_tg_goc l10_tg_thucte l10_tg_thucte2 l10_bpt_lap_he l10_qhtt_thucte l10_qhtt_3rb ' +
                 'l10_tf_tg_gocgoc l10_tf_tg_bacanh l10_tf_hethuc l10_tf_hethuc_tg l10_tf_menhde l10_tf_tap l10_tf_bpt2an l10_tf_gtlg_dacbiet l10_tf_tap_hop l10_tf_bpt_hai_an_nghiem ' +
                 'l10_sa_menhde_dem_dung l10_sa_tap_dem l10_sa_tap_khoang_nguyen l10_sa_tap_khoang_nguyen_3 l10_sa_gtlg_biethuc l10_sa_cosin_canh l10_sa_heron l10_sa_dientich_sin l10_sa_ven_batap l10_sa_ven_haitap l10_sa_ven_batap_nguoc l10_es_tap l10_es_venn l10_es_qhtt l10_es_qhtt3 l10_es_thucte ' +
-                'l10_gk_es_tap l10_gk_es_venn l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron').split(' ');
+                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron').split(' ');
             window.__GK1 = window.__GK1 || {}; ids.forEach(function (i) { if (i) window.__GK1[i] = 1; });
         })();
     })(Q);
@@ -22124,6 +22133,10 @@ var QGEN = (function () {
                 var Bx = p.L * cs(p.al), By = p.L * sn(p.al); P.A = [0, 0]; P.B = [Bx, By]; P.C = [Bx, By + p.h]; P.X = [Bx * 1.3, 0]; P.Y = [Bx * 1.3, By * 1.3]; lab.A = 'A'; lab.B = 'B'; lab.C = 'C';
                 S('A', 'X', { col: '#94a3b8', w: 2, dash: 1 }); S('A', 'B', ext(WOOD, { w: 4 })); S('B', 'Y', ext(WOOD, { w: 4 })); S('B', 'C', ext(LEAF, { txt: '?', side: 1 })); S('A', 'C', { col: '#f59e0b', w: 2, dash: 1, txt: 'tia nắng ' + p.be + '°', side: -1, off: 30 });
                 arcs.push(['A', 'X', 'B', p.al + '°', 44, [44, 22]]); arcs.push(['A', 'X', 'C', '', 74]); note = 'AB = ' + p.L + ' m (bóng cây dọc theo sườn đồi)';
+            } else if (k === 'nui') {
+                P.A = [0, 0]; P.B = [0, p.ab]; P.D = [p.xd, 0]; P.C = [p.xd, p.hc]; P.E = [p.xd, p.ab]; lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D'; lab.E = 'E';
+                S('A', 'B', ext(G, { w: 5, txt: 'AB = ' + p.ab + ' m', side: -1, off: 30 })); S('A', 'D', G); S('B', 'E', { col: '#94a3b8', w: 2, dash: 1 }); S('D', 'C', ext(WOOD, { txt: 'CD = ?', side: 1, off: 26 })); S('A', 'C', THIN); S('B', 'C', THIN);
+                arcs.push(['A', 'D', 'C', p.al + '°', 40]); arcs.push(['B', 'E', 'C', p.be + '°', 40]); note = 'Hình minh họa, không đúng tỉ lệ';
             } else if (k === 'lat_gach') {
                 P.A = [0, 0]; P.C = [p.m, 0]; P.B = [p.a * cs(p.al), p.a * sn(p.al)]; P.D = [p.d * cs(p.de), -p.d * sn(p.de)]; lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D';
                 S('A', 'B', ext(G, { txt: p.a + ' m', side: -1, off: 20 })); S('B', 'C', G); S('C', 'D', G); S('D', 'A', ext(G, { txt: p.d + ' m', side: -1, off: 20 })); S('A', 'C', { col: '#64748b', w: 2, dash: 1, txt: 'AC = ' + p.m + ' m', side: 1, off: 16 });
@@ -22429,7 +22442,7 @@ var QGEN = (function () {
             try {
                 var r = fixLt(g.make(2));
                 if (kind === 'TF') { var ans = r.items.map(function (it) { return it.ok ? 'D' : 'S'; }).join(''), key = r.q + '|' + r.items.map(function (it) { return it.t; }).join('|'); if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'TF', q: r.q, options: r.items.map(function (it) { return it.t; }), ans: ans, exp: r.exp, fig: false }; }
-                if (kind === 'ES') { var pts = r.parts, tot = 0, h = r.q; pts.forEach(function (x, i) { tot += x.p; h += '<br>' + (pts.length > 1 ? 'abc'[i] + ') ' : '') + x.t + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }); var key = h; if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'ES', q: h, options: [], ans: '', exp: pts.map(function (x, i) { return (pts.length > 1 ? '<b>' + 'abc'[i] + ')</b> ' : '') + x.sol + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }).join('<br>'), fig: false, tot: tot }; }
+                if (kind === 'ES') { var pts = r.parts, tot = 0, h = r.q; if (r.fig && r.fig.t === 'geo' && window.__geoPng) { try { h += '<br><img src="' + window.__geoPng(r.fig, 420, 270) + '" style="max-width:420px">'; } catch (e) { } } pts.forEach(function (x, i) { tot += x.p; h += '<br>' + (pts.length > 1 ? 'abc'[i] + ') ' : '') + x.t + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }); var key = h; if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'ES', q: h, options: [], ans: '', exp: pts.map(function (x, i) { return (pts.length > 1 ? '<b>' + 'abc'[i] + ')</b> ' : '') + x.sol + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }).join('<br>'), fig: false, tot: tot }; }
                 if (kind === 'SA' && (!r.sa || String(r.sa).replace(/\s/g, '').length > 4 || /[\\a-zA-Z]/.test(String(r.sa)))) continue; /* phiếu trả lời ngắn chỉ có 4 ô: tối đa 4 ký tự, gồm dấu - và dấu phẩy */
                 var b = Q.build4(r.correct, r.wrongs), key = r.q + '|' + r.correct;
                 if (seen[key]) continue; seen[key] = 1;
