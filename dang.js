@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v264";
+window.__DANG_VER = "v265";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -9217,7 +9217,7 @@ window.__DANG_VER = "v264";
         };
     })();
     // (v106) Ẩn các dạng ngoài chương trình GDPT 2018 theo quyết định của cô (số phức, hình trụ - nón - cầu, hệ hai PT bậc nhất hai ẩn). Muốn dùng lại: xóa danh sách HIDE này.
-    (function () { var HIDE = { sp_tinh: 1, sp_modun: 1, sp_chia: 1, sp_bac2: 1, sp_taphop: 1, trongxoay: 1, hept: 1, tf_sophuc: 1 };
+    (function () { var HIDE = { sp_tinh: 1, sp_modun: 1, sp_chia: 1, sp_bac2: 1, sp_taphop: 1, trongxoay: 1, hept: 1, tf_sophuc: 1, l12_vecto_hinhhop: 1, l12_tf_phanthuc_bnb: 1, tf_bac3: 1 };
         [Q.GEN, Q.TF].forEach(function (arr) { for (var i = arr.length - 1; i >= 0; i--) if (HIDE[arr[i].id]) arr.splice(i, 1); }); })();
     Q.toks = toks;
     var PROF = null;
