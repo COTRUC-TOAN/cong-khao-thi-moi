@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v257] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v259] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2811,30 +2811,47 @@ function removeQuestionFromSelected(qId) {
             /* v254: tự thu nhỏ ảnh nhúng quá nặng (đổi sang JPEG, tối đa 1000 px) trước khi lưu, ảnh nào không nhẹ đi đáng kể thì giữ nguyên */
             let shrunkInfo = '';
             try {
-                const re = /data:image\/(?:png|jpeg|jpg|webp);base64,[A-Za-z0-9+\/=]+/g, cache = {}; let before = 0, after = 0;
+                const re = /data:image\/(?:png|jpeg|jpg|webp);base64,[A-Za-z0-9+\/=]+/g; let cache = {}, MAXD = 800, JQ = 0.78, RATIO = 0.8; let before = 0, after = 0;
                 const shrink = (u) => new Promise(res => {
                     if (cache[u]) return res(cache[u]);
                     const im = new Image(); const to = setTimeout(() => res(u), 6000);
                     im.onload = () => { clearTimeout(to); try {
-                        const k = Math.min(1, 1000 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
+                        const k = Math.min(1, MAXD / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
                         const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
-                        const j = c.toDataURL('image/jpeg', 0.82); cache[u] = (j.length < u.length * 0.7) ? j : u; } catch (e) { cache[u] = u; } res(cache[u]); };
+                        const j = c.toDataURL('image/jpeg', JQ); cache[u] = (j.length < u.length * RATIO) ? j : u; } catch (e) { cache[u] = u; } res(cache[u]); };
                     im.onerror = () => { clearTimeout(to); res(u); }; im.src = u;
                 });
                 const walk = async (o) => {
                     for (const k of Object.keys(o || {})) {
                         const v = o[k];
-                        if (typeof v === 'string' && v.length > 40000 && v.indexOf('data:image') >= 0) {
+                        if (typeof v === 'string' && v.length > 8000 && v.indexOf('data:image') >= 0) {
                             const ms = v.match(re) || []; let out = v;
-                            for (const m of ms) { if (m.length < 40000) continue; const n = await shrink(m); if (n !== m) { before += m.length; after += n.length; out = out.split(m).join(n); } }
+                            for (const m of ms) { if (m.length < 8000) continue; const n = await shrink(m); if (n !== m) { before += m.length; after += n.length; out = out.split(m).join(n); } }
                             o[k] = out;
                         } else if (v && typeof v === 'object') await walk(v);
                     }
                 };
                 await walk(questionsToSave);
+                if (JSON.stringify(questionsToSave).length > 330000) { cache = {}; MAXD = 640; JQ = 0.66; RATIO = 0.97; await walk(questionsToSave); } // lần thu nhỏ thứ hai, mạnh hơn
                 if (before > after) shrunkInfo = ' (đã tự thu nhỏ ảnh: ' + before.toLocaleString('vi-VN') + ' → ' + after.toLocaleString('vi-VN') + ' ký tự)';
             } catch (e) { console.log('shrink lỗi', e); }
+            /* v258: đề động lưu cả kho câu nên rất nặng. Nếu vẫn quá 330.000 ký tự thì bỏ bớt các câu nặng nhất trong kho (mỗi mục vẫn giữ ít nhất số câu cần + 2 để còn xáo trộn) */
+            let trimInfo = '';
+            try {
+                if (questionsToSave.length === 1 && questionsToSave[0].isDynamicConfig) {
+                    questionsToSave[0] = { ...questionsToSave[0], configs: questionsToSave[0].configs.map(c => ({ ...c, pool: c.pool.slice() })) };
+                    const cf = questionsToSave[0].configs; let removed = 0, size = JSON.stringify(questionsToSave).length;
+                    while (size > 330000) {
+                        let best = null, bl = 0;
+                        cf.forEach(c => { if (c.pool.length > (c.count || 0) + 2) c.pool.forEach((q, i) => { const l = JSON.stringify(q).length; if (l > bl) { bl = l; best = [c, i]; } }); });
+                        if (!best) break;
+                        best[0].pool.splice(best[1], 1); size -= bl; removed++;
+                    }
+                    if (removed) trimInfo = removed;
+                }
+            } catch (e) { console.log('trim lỗi', e); }
             const qJsonStr = JSON.stringify(questionsToSave);
+            if (trimInfo) alert('ℹ️ Kho câu của đề động quá nặng nên web bỏ bớt ' + trimInfo + ' câu có ảnh nặng nhất khỏi kho của đề này (kho ngân hàng của cô không bị xóa). Đề vẫn đủ câu để xáo trộn.');
             let bigInfo = '';
             try {
                 const imgs = qJsonStr.match(/data:image\/[a-z+]+;base64,[A-Za-z0-9+\/=]+/g) || [], figs = qJsonStr.match(/\[\[HINH[\s\S]*?\]\]/g) || [];
