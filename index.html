@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v259] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v261] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16502,6 +16502,22 @@ var QGEN = (function () {
             return fnumI(cnt, ex, 'Cho $A=' + A + '$ và $B=' + B + '$. Số phần tử nguyên của tập $' + sym + '$ là', [cnt - 1, cnt + 1, cnt + 2, cnt - 2, (hA - lA + 1), (hB - lB + 1)], 'TH', true);
         });
         function sg0(n) { return n < 0 ? '(' + n + ')' : '' + n; }
+        add('l10_sa_tap_khoang_nguyen_3', 10, GZ10a, 'Trả lời ngắn (khó): số số nguyên thuộc tập tạo từ ba khoảng/đoạn $A,B,C$ (giao, hợp, hiệu kết hợp)', 'VD', function () {
+            var a = ri(-10, 0), b = a + ri(6, 14), c = ri(-8, 4), d = c + ri(6, 14), e = ri(-8, 6), f = e + ri(6, 14);
+            var o1 = pick([0, 1]), o2 = pick([0, 1]), p1 = pick([0, 1]), p2 = pick([0, 1]), r1 = pick([0, 1]), r2 = pick([0, 1]);
+            var I = [[a, b, o1, o2], [c, d, p1, p2], [e, f, r1, r2]].map(function (t) { return { lo: t[0] + (t[2] ? 1 : 0), hi: t[1] - (t[3] ? 1 : 0), L: (t[2] ? '(' : '[') + t[0] + ';' + t[1] + (t[3] ? ')' : ']') }; });
+            var op = pick(['abc', 'abUc', 'aUbc', 'aBC', 'abUC', 'ab_c']);
+            var sym = { abc: 'A\\cap B\\cap C', abUc: '(A\\cup B)\\cap C', aUbc: 'A\\cap(B\\cup C)', aBC: 'A\\setminus(B\\cup C)', abUC: '(A\\cap B)\\cup C', ab_c: '(A\\setminus B)\\cap C' }[op];
+            var els = [], x;
+            for (x = -14; x <= 30; x++) {
+                var iA = x >= I[0].lo && x <= I[0].hi, iB = x >= I[1].lo && x <= I[1].hi, iC = x >= I[2].lo && x <= I[2].hi;
+                var ok = op === 'abc' ? (iA && iB && iC) : op === 'abUc' ? ((iA || iB) && iC) : op === 'aUbc' ? (iA && (iB || iC)) : op === 'aBC' ? (iA && !iB && !iC) : op === 'abUC' ? ((iA && iB) || iC) : ((iA && !iB) && iC);
+                if (ok) els.push(x);
+            }
+            var cnt = els.length; need(cnt >= 3 && cnt <= 15 && I.every(function (t) { return t.hi - t.lo >= 3; }));
+            var ex = 'Số nguyên của $A$: $' + I[0].lo + ',\\ldots,' + I[0].hi + '$; của $B$: $' + I[1].lo + ',\\ldots,' + I[1].hi + '$; của $C$: $' + I[2].lo + ',\\ldots,' + I[2].hi + '$. ' + (els.length <= 9 ? 'Tập $' + sym + '$ có các số nguyên: $' + els.join(';') + '$. ' : '') + 'Vậy có $' + cnt + '$ số nguyên.';
+            return fnumI(cnt, ex, 'Cho $A=' + I[0].L + '$, $B=' + I[1].L + '$ và $C=' + I[2].L + '$. Số phần tử nguyên của tập $' + sym + '$ là', [cnt - 1, cnt + 1, cnt + 2, cnt - 2, I[0].hi - I[0].lo + 1, I[2].hi - I[2].lo + 1], 'VD', true);
+        });
         add('l10_sa_bpt_F_max', 10, GZ10b, 'Trả lời ngắn: giá trị lớn nhất (nhỏ nhất) của $F=ax+by$ trên miền đa giác cho bởi đỉnh', 'VD', function () {
             var p0 = ri(0, 3), r0 = p0 + ri(2, 5), q0 = ri(0, 3), s0 = q0 + ri(2, 5), V = [[p0, q0], [r0, q0], [r0, s0], [p0, s0]], a = ri(1, 5), b = ri(1, 5), kind = pick(['lớn nhất', 'nhỏ nhất']); need(a * (r0 - p0) !== b * (s0 - q0));
             var vals = V.map(function (p) { return a * p[0] + b * p[1]; }), ans = kind === 'lớn nhất' ? Math.max.apply(null, vals) : Math.min.apply(null, vals);
@@ -18951,6 +18967,28 @@ var QGEN = (function () {
             var k = pick([0, 1, 2]), ans = k === 0 ? o : k === 1 ? r[0] + r[1] + r[2] : r[3] + r[4] + r[5], what = ['không tham gia môn nào', 'chỉ tham gia đúng một môn', 'tham gia đúng hai môn'][k];
             var ex = k === 0 ? 'Số học sinh tham gia ít nhất một môn: $' + nA + '+' + nB + '+' + nC + '-' + nAB + '-' + nAC + '-' + nBC + '+' + t + '=' + (N - o) + '$. Vậy số học sinh không tham gia môn nào là $' + N + '-' + (N - o) + '=' + o + '$.' : k === 1 ? 'Chỉ tham gia môn A: $' + nA + '-' + nAB + '-' + nAC + '+' + t + '=' + r[0] + '$; chỉ môn B: $' + r[1] + '$; chỉ môn C: $' + r[2] + '$. Tổng: $' + ans + '$.' : 'Đúng hai môn: $(' + nAB + '-' + t + ')+(' + nAC + '-' + t + ')+(' + nBC + '-' + t + ')=' + ans + '$.';
             return fl(ans, ex, 'Một lớp có $' + N + '$ học sinh, mỗi em được chọn tham gia các câu lạc bộ A, B, C: $' + nA + '$ em tham gia A, $' + nB + '$ em tham gia B, $' + nC + '$ em tham gia C, $' + nAB + '$ em tham gia cả A và B, $' + nAC + '$ em tham gia cả A và C, $' + nBC + '$ em tham gia cả B và C, $' + t + '$ em tham gia cả ba câu lạc bộ. Số học sinh ' + what + ' là', [ans + 1, ans + 2, ans - 1 || ans + 3, N - ans], 'VDC');
+        });
+        add('l10_sa_ven_haitap', 10, G10A, 'Trả lời ngắn: bài toán Ven hai tập hợp (số học sinh không tham gia, tham gia cả hai, chỉ một môn, ít nhất một môn)', 'TH', function () {
+            var oA = ri(3, 15), oB = ri(3, 15), bo = ri(2, 10), no = ri(1, 8), N = oA + oB + bo + no, nA = oA + bo, nB = oB + bo, both = bo, k = pick([0, 1, 2, 3, 4, 5]);
+            var cl = pick([['A', 'B'], ['bóng đá', 'bóng rổ'], ['Toán', 'Lý'], ['hát', 'múa']]), nm = function (x) { return x; }, a = cl[0], b = cl[1];
+            var ctx = 'Một lớp có $' + N + '$ học sinh, mỗi em có thể tham gia câu lạc bộ ' + a + ', câu lạc bộ ' + b + ', cả hai hoặc không tham gia câu lạc bộ nào. ';
+            var give, ask, ans, ex;
+            if (k === 0) { give = 'Có $' + nA + '$ em tham gia ' + a + ', $' + nB + '$ em tham gia ' + b + ' và $' + both + '$ em tham gia cả hai. '; ask = 'Số học sinh không tham gia câu lạc bộ nào là'; ans = no; ex = 'Số em tham gia ít nhất một câu lạc bộ: $' + nA + '+' + nB + '-' + both + '=' + (nA + nB - both) + '$. Vậy số em không tham gia là $' + N + '-' + (nA + nB - both) + '=' + no + '$.'; }
+            else if (k === 1) { give = 'Có $' + nA + '$ em tham gia ' + a + ', $' + nB + '$ em tham gia ' + b + ' và $' + no + '$ em không tham gia câu lạc bộ nào. '; ask = 'Số học sinh tham gia cả hai câu lạc bộ là'; ans = both; ex = 'Số em tham gia ít nhất một câu lạc bộ: $' + N + '-' + no + '=' + (N - no) + '$. Số em tham gia cả hai: $' + nA + '+' + nB + '-' + (N - no) + '=' + both + '$.'; }
+            else if (k === 2) { give = 'Có $' + nA + '$ em tham gia ' + a + ', $' + nB + '$ em tham gia ' + b + ' và $' + both + '$ em tham gia cả hai. '; ask = 'Số học sinh tham gia ít nhất một câu lạc bộ là'; ans = nA + nB - both; ex = '$n(A\\cup B)=n(A)+n(B)-n(A\\cap B)=' + nA + '+' + nB + '-' + both + '=' + ans + '$.'; }
+            else if (k === 3) { give = 'Có $' + nA + '$ em tham gia ' + a + ', $' + nB + '$ em tham gia ' + b + ' và $' + both + '$ em tham gia cả hai. '; ask = 'Số học sinh chỉ tham gia đúng một câu lạc bộ là'; ans = oA + oB; ex = 'Chỉ ' + a + ': $' + nA + '-' + both + '=' + oA + '$; chỉ ' + b + ': $' + nB + '-' + both + '=' + oB + '$. Tổng: $' + ans + '$.'; }
+            else if (k === 4) { give = 'Có $' + nA + '$ em tham gia ' + a + ' và $' + both + '$ em tham gia cả hai câu lạc bộ. '; ask = 'Số học sinh chỉ tham gia câu lạc bộ ' + a + ' là'; ans = oA; ex = 'Chỉ ' + a + ': $' + nA + '-' + both + '=' + oA + '$.'; }
+            else { give = 'Có $' + nA + '$ em tham gia ' + a + ', $' + nB + '$ em tham gia ' + b + ' và $' + no + '$ em không tham gia câu lạc bộ nào. '; ask = 'Số học sinh chỉ tham gia đúng một câu lạc bộ là'; ans = oA + oB; ex = 'Ít nhất một câu lạc bộ: $' + N + '-' + no + '=' + (N - no) + '$. Tham gia cả hai: $' + nA + '+' + nB + '-' + (N - no) + '=' + both + '$. Chỉ một câu lạc bộ: $' + (N - no) + '-' + both + '=' + ans + '$.'; }
+            return fl(ans, ex, ctx + give + ask, [ans - 1, ans + 1, ans + 2, ans - 2, both, no, nA + nB], 'TH');
+        });
+        add('l10_sa_ven_batap_nguoc', 10, G10A, 'Trả lời ngắn (khó): bài toán Ven ba tập hợp cho các giao đôi, tìm số em tham gia cả ba hoặc chỉ một môn', 'VDC', function () {
+            var r = [ri(2, 8), ri(2, 8), ri(2, 8), ri(1, 5), ri(1, 5), ri(1, 5), ri(1, 4)], o = ri(1, 6), N = r.reduce(function (z, y) { return z + y; }, 0) + o;
+            var nA = r[0] + r[3] + r[4] + r[6], nB = r[1] + r[3] + r[5] + r[6], nC = r[2] + r[4] + r[5] + r[6], nAB = r[3] + r[6], nAC = r[4] + r[6], nBC = r[5] + r[6], t = r[6], U = N - o;
+            var k = pick([0, 1, 2, 3]), ans, what, ex;
+            var tEx = 'Số em tham gia ít nhất một môn: $' + N + '-' + o + '=' + U + '$. Theo công thức: $' + U + '=' + nA + '+' + nB + '+' + nC + '-' + nAB + '-' + nAC + '-' + nBC + '+t$, suy ra $t=' + t + '$.';
+            if (k === 0) { ans = t; what = 'tham gia cả ba câu lạc bộ'; ex = tEx; }
+            else { var nn = ['A', 'B', 'C'], vv = [nA, nB, nC], pr = [[nAB, nAC], [nAB, nBC], [nAC, nBC]], i = k - 1; ans = r[i]; what = 'chỉ tham gia đúng câu lạc bộ ' + nn[i]; ex = tEx + ' Chỉ ' + nn[i] + ': $' + vv[i] + '-' + pr[i][0] + '-' + pr[i][1] + '+' + t + '=' + ans + '$.'; }
+            return fl(ans, ex, 'Một lớp có $' + N + '$ học sinh, mỗi em có thể tham gia các câu lạc bộ A, B, C. Có $' + nA + '$ em tham gia A, $' + nB + '$ em tham gia B, $' + nC + '$ em tham gia C, $' + nAB + '$ em tham gia cả A và B, $' + nAC + '$ em tham gia cả A và C, $' + nBC + '$ em tham gia cả B và C, và $' + o + '$ em không tham gia câu lạc bộ nào. Số học sinh ' + what + ' là', [ans - 1, ans + 1, ans + 2, ans - 2, t, U, o], 'VDC');
         });
         // ---- Bài 3, 4
         add('l10_sa_bpt_tim_m', 10, G10B, 'Trả lời ngắn: tìm giá trị nguyên của $m$ để cặp số $(x_0;y_0)$ là nghiệm của bất phương trình bậc nhất hai ẩn', 'TH', function () {
@@ -21916,7 +21954,7 @@ var QGEN = (function () {
         (function () {
             var ids = ('l10_menhde_dem l10_menhde_pdinh l10_menhde_dao l10_menhde_keotheo l10_menhde_dungsai l10_tap_lietke l10_tapcon_dem l10_tap_roirac l10_tap_khoang_nguyen l10_tap_phanbu l10_tap_kyhieu l10_tap_viet_khoang l10_tap_khangdinh l10_tap_hop l10_bpt2an_diem l10_hept_diem l10_bpt2an_mien l10_hept_nhandang l10_mien_hinh l10_gtlg_bu l10_gtlg_dau l10_gtlg_dangthuc l10_gtlg_goc_phu_bu l10_gtlg_biethuc l10_tg_congthuc l10_cosin_canh l10_cosin_goc l10_sin_R l10_dientich l10_tg_dientich_sin l10_tg_goc l10_tg_thucte l10_tg_thucte2 l10_bpt_lap_he l10_qhtt_thucte l10_qhtt_3rb ' +
                 'l10_tf_tg_gocgoc l10_tf_tg_bacanh l10_tf_hethuc l10_tf_hethuc_tg l10_tf_menhde l10_tf_tap l10_tf_bpt2an l10_tf_gtlg_dacbiet l10_tf_tap_hop l10_tf_bpt_hai_an_nghiem ' +
-                'l10_sa_menhde_dem_dung l10_sa_tap_dem l10_sa_tap_khoang_nguyen l10_sa_gtlg_biethuc l10_sa_cosin_canh l10_sa_heron l10_sa_dientich_sin l10_sa_ven_batap l10_es_tap l10_es_venn l10_es_qhtt l10_es_qhtt3 l10_es_thucte ' +
+                'l10_sa_menhde_dem_dung l10_sa_tap_dem l10_sa_tap_khoang_nguyen l10_sa_tap_khoang_nguyen_3 l10_sa_gtlg_biethuc l10_sa_cosin_canh l10_sa_heron l10_sa_dientich_sin l10_sa_ven_batap l10_sa_ven_haitap l10_sa_ven_batap_nguoc l10_es_tap l10_es_venn l10_es_qhtt l10_es_qhtt3 l10_es_thucte ' +
                 'l10_gk_es_tap l10_gk_es_venn l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron').split(' ');
             window.__GK1 = window.__GK1 || {}; ids.forEach(function (i) { if (i) window.__GK1[i] = 1; });
         })();
