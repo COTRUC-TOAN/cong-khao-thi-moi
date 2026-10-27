@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v251] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v253] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -988,6 +988,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                                 <button type="button" class="rv-btn" style="margin-top:6px;" onclick="rvCopyFigGuide()">📋 Sao chép hướng dẫn để dán cho AI khác</button> <span id="fig-guide-msg" style="font-size:.85rem;"></span>
                             </details>
                             <button class="btn-start m-paste" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự Động Phân Tích</button>
+                            <div id="es-slot-A" class="m-paste"></div>
                             <div class="m-paste btn-note"><b>Bước 2 của cách A:</b> dán đề vào khung trên rồi bấm nút này. Máy tách từng câu và đáp án, hiện ở khung "Xem trước" bên dưới để cô kiểm tra.</div>
                             <button class="btn-start m-paste" id="btn-lock-batch" style="width: 100%; background: #0f766e; margin-top: 8px;" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt Phần Này Để Dán Phần Tiếp</button>
                             <div class="m-paste btn-note"><b>Đề dài?</b> Dán từng phần. Xong mỗi phần bấm nút này để giữ lại, rồi dán phần kế tiếp.</div>
@@ -1171,6 +1172,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                     <div class="creator-card" id="step3-card">
                         <h3 style="color: #b45309; margin-bottom: 6px;"><i class="fa-solid fa-cloud-arrow-up"></i> Bước 3: Xem lại và xuất bản</h3>
                         <div style="font-size:.9rem; color:#475569; margin-bottom:8px;">Các câu cô đã bóc tách hoặc chọn ở bước 2 nằm trong danh sách dưới đây. Cô kiểm tra số câu, xóa câu không cần, rồi chọn cách dùng đề: <b>cho học sinh làm trên web</b> hoặc <b>in đề giấy</b>. Học sinh chỉ thấy đề sau khi cô xuất bản.</div>
+                        <div id="es-slot-3"></div>
                         <div class="selected-list-box" id="bank-selected-box">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                 <strong style="color: #334155;"><i class="fa-solid fa-list-check"></i> Đã Chọn (<span id="selected-q-count" style="color: var(--primary);">0</span> câu)</strong>
@@ -2795,7 +2797,13 @@ function removeQuestionFromSelected(qId) {
 
             if (questionsToSave.length > 0) questionsToSave[0].maxAttempts = maxAttemptsVal;
             const qJsonStr = JSON.stringify(questionsToSave);
-            if (qJsonStr.length > 200000 && !confirm('⚠️ Đề này rất dài (' + qJsonStr.length.toLocaleString('vi-VN') + ' ký tự, hơn 200.000). Đề quá dài có thể tải chậm hoặc không lưu đủ trên Google Sheet.\n\nBấm OK để vẫn xuất bản, Hủy để quay lại bớt hình/bớt câu.')) return;
+            let bigInfo = '';
+            try {
+                const imgs = qJsonStr.match(/data:image\/[a-z+]+;base64,[A-Za-z0-9+\/=]+/g) || [], figs = qJsonStr.match(/\[\[HINH[\s\S]*?\]\]/g) || [];
+                const imgLen = imgs.reduce((a, x) => a + x.length, 0), figLen = figs.reduce((a, x) => a + x.length, 0);
+                bigInfo = '\n\nTrong đó: ' + imgs.length + ' ảnh dán vào chiếm ' + imgLen.toLocaleString('vi-VN') + ' ký tự; ' + figs.length + ' mã hình vẽ chiếm ' + figLen.toLocaleString('vi-VN') + ' ký tự; chữ và công thức khoảng ' + (qJsonStr.length - imgLen - figLen).toLocaleString('vi-VN') + ' ký tự (' + questionsToSave.length + ' câu).' + (imgLen > qJsonStr.length * 0.5 ? '\nẢnh dán là thủ phạm chính: cô thử đưa ảnh lên mạng (Drive, Imgur) rồi dán đường link, hoặc dùng mã hình vẽ thay ảnh chụp.' : '');
+            } catch (e) { }
+            if (qJsonStr.length > 200000 && !confirm('⚠️ Đề này rất dài (' + qJsonStr.length.toLocaleString('vi-VN') + ' ký tự, hơn 200.000). Đề quá dài có thể tải chậm hoặc không lưu đủ trên Google Sheet.' + bigInfo + '\n\nBấm OK để vẫn xuất bản, Hủy để quay lại bớt hình/bớt câu.')) return;
 
             const newExamObj = {
                 id: examId,
@@ -22555,40 +22563,50 @@ window.aiLayout = function () {
 </script>
 <script>
 (function () {
-    var orig = window.gnInit, parts = [];
+    var AB = 'abcdefgh', I = {};
     function $(id) { return document.getElementById(id); }
-    window.gnInit = function () {
-        orig(); var p = $('add-method-gen'); if (!p || p.dataset.es) return; p.dataset.es = 1;
-        p.insertAdjacentHTML('afterbegin', '<details id="es-box" style="border:1px solid #c4b5fd;border-radius:10px;padding:10px;margin-bottom:12px;background:#faf5ff"><summary style="cursor:pointer;font-weight:700;color:#6d28d9">✍️ Soạn câu TỰ LUẬN có ý a), b), c) và thang điểm (để in đề giấy)</summary>' +
-            '<div style="font-size:.85rem;color:#64748b;margin:6px 0">Gõ công thức trong dấu $...$ (ví dụ $x^2-3x+2=0$). Không cần đáp án. Điểm từng ý tự cộng thành điểm cả câu khi in đề.</div>' +
-            '<textarea id="es-stem" class="form-input" rows="3" placeholder="Đề chung của câu (ví dụ: Cho hàm số $y=x^3-3x$.)" style="width:100%;margin-bottom:6px"></textarea><div id="es-parts"></div>' +
-            '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px"><button class="btn-start" style="background:#64748b" onclick="esAddPart()">+ Thêm ý</button><b id="es-sum" style="color:#6d28d9"></b></div>' +
-            '<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:8px;margin-top:8px"><select class="form-input" id="es-grade"><option>12</option><option>11</option><option>10</option></select><select class="form-input" id="es-topic"></select></div>' +
-            '<div id="es-prev" style="margin:8px 0;padding:8px;background:#fff;border:1px dashed #c4b5fd;border-radius:8px"></div>' +
-            '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-start" style="background:#059669" onclick="esAdd(0)">➕ Thêm vào đề đang soạn</button><button class="btn-start" style="background:#7c3aed" onclick="esAdd(1)">💾 Lưu vào ngân hàng</button></div></details>');
-        var esFill = function () { var sel = $('es-topic'), old = sel.value, tl = []; try { tl = getTopicsForGrade($('es-grade').value); } catch (e) { } sel.innerHTML = '<option value="">(chưa chọn bài) - chỉ hiện bài của Lớp ' + $('es-grade').value + '</option>' + tl.map(function (t) { return t.id ? '<option value="' + t.id + '">' + String(t.name).replace(/</g, '&lt;') + '</option>' : ''; }).join(''); if (old && Array.prototype.some.call(sel.options, function (o) { return o.value === old; })) sel.value = old; try { topicPicker(sel, tl, '(chưa chọn bài) - chỉ hiện bài của Lớp ' + $('es-grade').value); } catch (e) { } };
-        $('es-grade').onchange = esFill; esFill();
-        parts = [{ t: '', p: '' }, { t: '', p: '' }, { t: '', p: '' }]; esDraw();
-    };
-    function esDraw() {
-        $('es-parts').innerHTML = parts.map(function (x, i) { return '<div style="display:grid;grid-template-columns:28px 1fr 80px 28px;gap:6px;margin-bottom:6px;align-items:start"><b style="padding-top:8px">' + 'abcdefgh'[i] + ')</b><textarea class="form-input" rows="2" oninput="esSet(' + i + ',\'t\',this.value)" placeholder="Nội dung ý ' + 'abcdefgh'[i] + '">' + x.t.replace(/</g, '&lt;') + '</textarea><input class="form-input" value="' + x.p + '" oninput="esSet(' + i + ',\'p\',this.value)" placeholder="điểm"><button onclick="esDel(' + i + ')" title="Xóa ý">🗑</button></div>'; }).join(''); esPrev();
+    function make(slot, pre) {
+        if (!slot || slot.dataset.es) return; slot.dataset.es = 1;
+        var S = { parts: [{ t: '', p: '' }, { t: '', p: '' }, { t: '', p: '' }] }; I[pre] = S;
+        var g = function (k) { return $(pre + '-' + k); };
+        slot.innerHTML = '<details style="border:1px solid #c4b5fd;border-radius:10px;padding:10px;margin:10px 0;background:#faf5ff"><summary style="cursor:pointer;font-weight:700;color:#6d28d9">✍️ Soạn câu TỰ LUẬN có ý a), b), c) và thang điểm (để in đề giấy)</summary>' +
+            '<div style="font-size:.85rem;color:#64748b;margin:6px 0">Gõ công thức trong dấu $...$ (ví dụ $x^2-3x+2=0$). Không cần đáp án. Điểm từng ý tự cộng thành điểm cả câu khi in đề. Soạn xong bấm "Thêm vào đề đang soạn": câu nằm chung danh sách với trắc nghiệm, đúng/sai, trả lời ngắn.</div>' +
+            '<textarea id="' + pre + '-stem" class="form-input" rows="3" placeholder="Đề chung của câu (ví dụ: Cho hàm số $y=x^3-3x$.)" style="width:100%;margin-bottom:6px" oninput="esI(\'' + pre + '\').prev()"></textarea><div id="' + pre + '-parts"></div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px"><button type="button" class="btn-start" style="background:#64748b" onclick="esI(\'' + pre + '\').add()">+ Thêm ý</button><b id="' + pre + '-sum" style="color:#6d28d9"></b></div>' +
+            '<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:8px;margin-top:8px"><select class="form-input" id="' + pre + '-grade"><option>12</option><option>11</option><option>10</option></select><select class="form-input" id="' + pre + '-topic"></select></div>' +
+            '<div id="' + pre + '-prev" style="margin:8px 0;padding:8px;background:#fff;border:1px dashed #c4b5fd;border-radius:8px"></div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-start" style="background:#059669" onclick="esI(\'' + pre + '\').save(0)">➕ Thêm vào đề đang soạn</button><button type="button" class="btn-start" style="background:#7c3aed" onclick="esI(\'' + pre + '\').save(1)">💾 Lưu vào ngân hàng</button></div></details>';
+        S.fill = function () {
+            var sel = g('topic'), old = sel.value, tl = []; try { tl = getTopicsForGrade(g('grade').value); } catch (e) { }
+            var ph = '(chưa chọn bài) - chỉ hiện bài của Lớp ' + g('grade').value;
+            sel.innerHTML = '<option value="">' + ph + '</option>' + tl.map(function (t) { return t.id ? '<option value="' + t.id + '">' + String(t.name).replace(/</g, '&lt;') + '</option>' : ''; }).join('');
+            if (old && Array.prototype.some.call(sel.options, function (o) { return o.value === old; })) sel.value = old;
+            try { topicPicker(sel, tl, ph); } catch (e) { }
+        };
+        S.build = function () {
+            var h = g('stem').value.trim().replace(/\n/g, '<br>'), tot = 0;
+            S.parts.forEach(function (x, i) { if (!x.t.trim()) return; var pt = parseFloat(String(x.p).replace(',', '.')); if (isFinite(pt) && pt > 0) tot += pt; h += '<br>' + AB[i] + ') ' + x.t.trim().replace(/\n/g, '<br>') + (isFinite(pt) && pt > 0 ? ' <i>(' + String(pt).replace('.', ',') + ' điểm)</i>' : ''); });
+            return { html: h, tot: Math.round(tot * 1000) / 1000 };
+        };
+        S.prev = function () { var b = S.build(); g('sum').textContent = 'Tổng: ' + String(b.tot).replace('.', ',') + ' điểm'; g('prev').innerHTML = b.html || '<i>Xem trước câu hỏi hiện ở đây</i>'; try { renderMath(g('prev')); } catch (e) { } };
+        S.draw = function () {
+            g('parts').innerHTML = S.parts.map(function (x, i) { return '<div style="display:grid;grid-template-columns:28px 1fr 80px 28px;gap:6px;margin-bottom:6px;align-items:start"><b style="padding-top:8px">' + AB[i] + ')</b><textarea class="form-input" rows="2" oninput="esI(\'' + pre + '\').set(' + i + ',\'t\',this.value)" placeholder="Nội dung ý ' + AB[i] + '">' + x.t.replace(/</g, '&lt;') + '</textarea><input class="form-input" value="' + x.p + '" oninput="esI(\'' + pre + '\').set(' + i + ',\'p\',this.value)" placeholder="điểm"><button type="button" onclick="esI(\'' + pre + '\').del(' + i + ')" title="Xóa ý">🗑</button></div>'; }).join(''); S.prev();
+        };
+        S.set = function (i, k, v) { S.parts[i][k] = v; S.prev(); };
+        S.add = function () { if (S.parts.length < 8) { S.parts.push({ t: '', p: '' }); S.draw(); } };
+        S.del = function (i) { S.parts.splice(i, 1); S.draw(); };
+        S.save = async function (toBank) {
+            var b = S.build(); if (!g('stem').value.trim() && !S.parts.some(function (x) { return x.t.trim(); })) { alert('Cô chưa nhập nội dung câu.'); return; }
+            var grade = g('grade').value, topic = g('topic').value, safe = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
+            var q = { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_ES', grade: grade, topic: topic, level: 'TH', type: 'ES', q: b.html, options: ['', '', '', ''], ans: '', ansOptions: [], explanation: '' };
+            if (!toBank) { if (selectedQuestions.length === 1 && selectedQuestions[0].isDynamicConfig) { alert('Đề đang là đề ma trận động.'); return; } selectedQuestions = selectedQuestions.concat([q]); updateSelectedItemsDisplay(); alert('Đã thêm câu tự luận (' + b.tot + ' điểm) vào đề đang soạn. Cô xem ở danh sách "Đã chọn" ở Bước 3.'); S.parts = [{ t: '', p: '' }, { t: '', p: '' }, { t: '', p: '' }]; g('stem').value = ''; S.draw(); return; }
+            try { var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) }); var j = await r.json(); if (j && j.status === 'success') { alert('🎉 Đã lưu vào Ngân hàng.'); loadQuestionBank(); } else alert('Chưa lưu được: ' + ((j && (j.message || j.error)) || '')); } catch (e) { alert('Không kết nối được máy chủ.'); }
+        };
+        g('grade').onchange = S.fill; slot.querySelector('details').addEventListener('toggle', S.fill); S.fill(); S.draw();
     }
-    function build() {
-        var stem = $('es-stem').value.trim().replace(/\n/g, '<br>'), tot = 0, h = stem;
-        parts.forEach(function (x, i) { if (!x.t.trim()) return; var pt = parseFloat(String(x.p).replace(',', '.')); if (isFinite(pt) && pt > 0) tot += pt; h += '<br>' + 'abcdefgh'[i] + ') ' + x.t.trim().replace(/\n/g, '<br>') + (isFinite(pt) && pt > 0 ? ' <i>(' + String(pt).replace('.', ',') + ' điểm)</i>' : ''); });
-        return { html: h, tot: Math.round(tot * 1000) / 1000 };
-    }
-    function esPrev() { var b = build(); $('es-sum').textContent = 'Tổng: ' + String(b.tot).replace('.', ',') + ' điểm'; $('es-prev').innerHTML = b.html || '<i>Xem trước câu hỏi hiện ở đây</i>'; try { renderMath($('es-prev')); } catch (e) { } }
-    window.esSet = function (i, k, v) { parts[i][k] = v; esPrev(); };
-    window.esAddPart = function () { if (parts.length < 8) { parts.push({ t: '', p: '' }); esDraw(); } };
-    window.esDel = function (i) { parts.splice(i, 1); esDraw(); };
-    window.esAdd = async function (toBank) {
-        var b = build(); if (!$('es-stem').value.trim() && !parts.some(function (x) { return x.t.trim(); })) { alert('Cô chưa nhập nội dung câu.'); return; }
-        var grade = $('es-grade').value, topic = $('es-topic').value, safe = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
-        var q = { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_ES', grade: grade, topic: topic, level: 'TH', type: 'ES', q: b.html, options: ['', '', '', ''], ans: '', ansOptions: [], explanation: '' };
-        if (!toBank) { if (selectedQuestions.length === 1 && selectedQuestions[0].isDynamicConfig) { alert('Đề đang là đề ma trận động.'); return; } selectedQuestions = selectedQuestions.concat([q]); updateSelectedItemsDisplay(); alert('Đã thêm câu tự luận (' + b.tot + ' điểm) vào đề đang soạn.'); return; }
-        try { var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) }); var j = await r.json(); if (j && j.status === 'success') { alert('🎉 Đã lưu vào Ngân hàng.'); loadQuestionBank(); } else alert('Chưa lưu được: ' + ((j && (j.message || j.error)) || '')); } catch (e) { alert('Không kết nối được máy chủ.'); }
-    };
+    window.esI = function (pre) { return I[pre]; };
+    function init() { make($('es-slot-A'), 'esA'); make($('es-slot-3'), 'es3'); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
 
