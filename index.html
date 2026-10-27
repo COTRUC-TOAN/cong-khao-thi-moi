@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v256] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v257] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23269,14 +23269,15 @@ window.refreshTopicsNow=async function(manual){
   var o=window.saveExamFinal; if(typeof o!=='function')return; var busy=false;
   window.saveExamFinal=async function(){
     if(busy){show('⏳ Đang xuất bản, cô chờ thêm chút, đừng bấm lại...','#b45309');return;}
-    busy=true;window.__pubDone=false;
+    busy=true;window.__pubDone=false;window.__pubErr='';
     var btns=[].slice.call(document.querySelectorAll('.s3btn'));btns.forEach(function(x){x.disabled=true;x.style.opacity=.6;});
     show('⏳ Đang xuất bản... Đề nhiều ảnh có thể mất 1–2 phút. Cô đừng đóng trang.','#1d4ed8');
     try{ return await o.apply(this,arguments); }
+    catch(err){ window.__pubErr=String(err&&err.message||err); console.error('saveExamFinal',err); try{alert('❌ Có lỗi khi xuất bản: '+window.__pubErr+'\nCô chụp màn hình báo em.');}catch(e){} }
     finally{
       busy=false;btns.forEach(function(x){x.disabled=false;x.style.opacity=1;});
       if(window.__pubDone)show('✅ Đã xuất bản xong. Cô mở trang học sinh để kiểm tra.','#15803d',12000);
-      else show('Chưa xuất bản xong (xem thông báo vừa hiện). Cô sửa rồi bấm lại.','#b91c1c',12000);
+      else show(window.__pubErr?('❌ Lỗi: '+window.__pubErr):'Chưa xuất bản xong (xem thông báo vừa hiện). Cô sửa rồi bấm lại.','#b91c1c',15000);
     }
   };
   var g=window.generateMatrixExam;
