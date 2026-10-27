@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[THỬ NGHIỆM v266] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[THỬ NGHIỆM v267] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11333,7 +11333,7 @@ var CAS = (function () {
     // =====================================================================
     var CX = null;
     var CX_CSS = '.cxp{position:absolute;z-index:60;background:#2b2f36;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.45);color:#fff;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation;outline:none}' +
-        '.cxp *{box-sizing:border-box}.cxh{display:flex;align-items:center;gap:6px;padding:4px 8px;cursor:move;touch-action:none;font-size:.62em;color:#cbd5e1}.cxh b{flex:1;font-weight:600}.cxh span{cursor:pointer;padding:0 6px;font-size:1.3em}' +
+        '.cxp *{box-sizing:border-box}.cxh{display:flex;align-items:center;gap:6px;padding:4px 8px;cursor:move;touch-action:none;font-size:.62em;color:#cbd5e1}.cxh b{flex:1;font-weight:600}.cxh span{cursor:pointer;padding:0 10px;font-size:1.7em;line-height:1.1;background:rgba(255,255,255,.14);border-radius:6px}.cxh span:hover{background:rgba(255,255,255,.3)}' +
         '.cxs{margin:0 8px 6px;background:#d9e2c5;color:#111;border-radius:6px;padding:4px 8px 6px;height:10.6em;overflow:hidden;position:relative;font-size:1em;display:flex;flex-direction:column;box-shadow:inset 0 0 6px rgba(0,0,0,.35)}' +
         '.cxst{font-size:.55em;display:flex;gap:8px;color:#1f2a14;height:1.3em;align-items:center;border-bottom:1px solid rgba(0,0,0,.18);margin-bottom:2px;flex:none}.cxst i{font-style:normal;font-weight:700}' +
         '.cxe{flex:1;overflow:auto hidden;white-space:nowrap;font-size:1.25em;padding-top:2px;scrollbar-width:none;min-height:0}.cxe::-webkit-scrollbar{display:none}' +
@@ -11547,7 +11547,7 @@ var CAS = (function () {
         return null;
     }
     function cxVarForm(title, names, onOk) {
-        var fields = names.map(function (nm) { var ed = eNew(), v = CX.vars[nm]; if (v && v.d !== 0) eStr(ed, cxPlain(v.d)); else if (v) eStr(ed, '0'); return { label: nm + '?', ed: ed, name: nm }; });
+        var fields = names.map(function (nm) { var ed = eNew(), v = CX.vars[nm]; if (v && v.d !== 0) eStr(ed, cxPlain(v.d)); else if (v) eStr(ed, '0'); return { label: nm + '?', ed: ed, name: nm, fresh: !!v }; });
         CX.form = { title: title, fields: fields, act: 0, kind: 'vars', onDone: onOk, back: function () { CX.mode = 'calc'; CX.ed = CX.main; cxRender(); } }; CX.mode = 'form'; CX.ed = fields[0].ed; cxRender();
     }
     function cxCalc(solve) {
@@ -11573,7 +11573,7 @@ var CAS = (function () {
             }); return;
         }
         if (!names.length) { cxExec(); return; }
-        cxVarForm('CALC: nhập giá trị các biến', names, function () { cxExec(); });
+        cxVarForm('CALC: nhập giá trị các biến', names, function () { CX.mode = 'calc'; CX.ed = CX.main; cxExec(); });
     }
     // ---- biểu mẫu nhiều ô ----
     function cxForm(title, labels, onDone, back, defaults, grid) {
@@ -11902,9 +11902,9 @@ var CAS = (function () {
         if (!document.getElementById('cx-style')) { var st = document.createElement('style'); st.id = 'cx-style'; st.textContent = CX_CSS; document.head.appendChild(st); }
         CX = CX && CX.keep ? CX : { vars: {}, ans: CAS.rat(0), hist: [], hi: 0, ang: 'deg', nf: 'norm1', nd: 0, mixed: false };
         Object.assign(CX, { mode: 'calc', shift: false, alpha: false, hyp: false, pending: null, main: eNew(), res: null, showRes: false, title: '' }); CX.ed = CX.main;
-        var W = 340, root = cxH('div', 'cxp'); root.tabIndex = 0; root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; root.style.left = Math.max(10, S.W - W - 24) + 'px'; root.style.top = '60px';
+        var HOST = document.getElementById('wb-ov') || S.stage, HW = function () { return HOST.clientWidth || S.W || 1000; }, HH = function () { return HOST.clientHeight || S.H || 700; }; var W = 340, root = cxH('div', 'cxp'); root.tabIndex = 0; root.style.zIndex = '100000'; root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; root.style.left = Math.max(10, HW() - W - 24) + 'px'; root.style.top = '60px';
         var hd = cxH('div', 'cxh', '<b>🧮 Máy tính bấm tay (mô phỏng)</b>'), small = cxH('span', '', '−'), big = cxH('span', '', '＋'), x = cxH('span', '', '✕'); small.title = 'Thu nhỏ'; big.title = 'Phóng to'; x.title = 'Đóng';
-        function sz(d) { W = Math.max(250, Math.min(560, W + d)); root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; } small.onclick = function () { sz(-40); }; big.onclick = function () { sz(50); }; x.onclick = cxClose; hd.appendChild(small); hd.appendChild(big); hd.appendChild(x); root.appendChild(hd);
+        function sz(d) { var W0 = W; W = Math.max(250, Math.min(900, W + d)); root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; if (d > 0 && root.offsetHeight > HH() - 6) { W = W0; root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; } root.style.top = Math.max(0, Math.min(root.offsetTop, HH() - root.offsetHeight)) + 'px'; root.style.left = Math.max(0, Math.min(root.offsetLeft, HW() - W)) + 'px'; } small.onclick = function () { sz(-40); }; big.onclick = function () { sz(60); }; x.onclick = cxClose; hd.appendChild(small); hd.appendChild(big); hd.appendChild(x); root.appendChild(hd);
         var scr = cxH('div', 'cxs'), stEl = cxH('div', 'cxst'), body = cxH('div', ''); body.style.cssText = 'display:flex;flex-direction:column;flex:1;min-height:0;'; scr.appendChild(stEl); scr.appendChild(body); root.appendChild(scr);
         CX.root = root; CX.scr = scr; CX.stEl = stEl; CX.body = body;
         var kp = cxH('div', 'cxk');
@@ -11922,14 +11922,14 @@ var CAS = (function () {
         // kéo thả
         var drag = null;
         hd.addEventListener('pointerdown', function (e) { if (e.target !== hd && e.target.tagName !== 'B') return; drag = { x: e.clientX - root.offsetLeft, y: e.clientY - root.offsetTop, id: e.pointerId }; try { hd.setPointerCapture(e.pointerId); } catch (er) { } });
-        hd.addEventListener('pointermove', function (e) { if (!drag || e.pointerId !== drag.id) return; root.style.left = Math.max(0, Math.min(S.W - 60, e.clientX - drag.x)) + 'px'; root.style.top = Math.max(0, Math.min(S.H - 40, e.clientY - drag.y)) + 'px'; });
+        hd.addEventListener('pointermove', function (e) { if (!drag || e.pointerId !== drag.id) return; root.style.left = Math.max(0, Math.min(HW() - 60, e.clientX - drag.x)) + 'px'; root.style.top = Math.max(0, Math.min(HH() - 40, e.clientY - drag.y)) + 'px'; });
         hd.addEventListener('pointerup', function () { drag = null; }); hd.addEventListener('pointercancel', function () { drag = null; });
         ['pointerdown', 'pointerup', 'pointermove', 'mousedown', 'touchstart', 'click', 'dblclick', 'wheel'].forEach(function (ev) { root.addEventListener(ev, function (e) { e.stopPropagation(); }); });
         root.addEventListener('keydown', cxKeyboard); root.addEventListener('pointerdown', function () { try { root.focus({ preventScroll: true }); } catch (er) { } });
-        S.stage.appendChild(root); CX.keep = true; cxRender(); try { root.focus({ preventScroll: true }); } catch (er) { }
+        HOST.appendChild(root); CX.keep = true; cxRender(); if (root.offsetHeight > HH() - 6) { var f = (HH() - 6) / root.offsetHeight; W = Math.max(250, Math.floor(W * f)); root.style.width = W + 'px'; root.style.fontSize = (W / 22) + 'px'; } try { root.focus({ preventScroll: true }); } catch (er) { }
     }
     function toggleCalc() {
-        if (CX && CX.root && CX.root.parentNode === S.stage) { var vis = CX.root.style.display !== 'none'; CX.root.style.display = vis ? 'none' : 'block'; if (!vis) { try { CX.root.focus({ preventScroll: true }); } catch (er) { } } return; }
+        if (CX && CX.root && CX.root.isConnected) { var vis = CX.root.style.display !== 'none'; CX.root.style.display = vis ? 'none' : 'block'; if (!vis) { try { CX.root.focus({ preventScroll: true }); } catch (er) { } } return; }
         buildCalc();
     }
 
