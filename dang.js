@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v266";
+window.__DANG_VER = "v271";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -1609,9 +1609,9 @@ window.__DANG_VER = "v266";
             var iv = function (l, r, o1, o2) { return o1 + l + ';' + r + o2; };
             var A = iv(a, b, '[', ')'), B = iv(c, d, '(', ']');
             var cap = '(' + c + ';' + b + ')', cup = '[' + a + ';' + d + ']', diff = '[' + a + ';' + c + ']', cA = '(-\\infty;' + a + ')\\cup[' + b + ';+\\infty)';
-            return { level: 'TH', q: 'Cho hai tập hợp $A=' + A + '$ và $B=' + B + '$.', parts: [
-                { t: 'Tìm $A\\cap B$ và $A\\cup B$.', p: 1, sol: '$A\\cap B=' + cap + '$; $A\\cup B=' + cup + '$.' },
-                { t: 'Tìm $A\\setminus B$ và $\\mathbb{R}\\setminus A$.', p: 1, sol: '$A\\setminus B=' + diff + '$; $\\mathbb{R}\\setminus A=' + cA + '$.' }] };
+            var cB = '(-\\infty;' + c + ']\\cup(' + d + ';+\\infty)', diff2 = '[' + b + ';' + d + ']';
+            var OPS = [['A\\cap B', cap], ['A\\cup B', cup], ['A\\setminus B', diff], ['B\\setminus A', diff2], ['\\mathbb{R}\\setminus A', cA], ['\\mathbb{R}\\setminus B', cB]], two = shuf(OPS).slice(0, 2);
+            return { level: 'TH', q: 'Cho hai tập hợp $A=' + A + '$ và $B=' + B + '$.', parts: two.map(function (o) { return { t: 'Tìm $' + o[0] + '$.', p: 1, sol: '$' + o[0] + '=' + o[1] + '$.' }; }) };
         });
         addES('l10_es_menhde', 10, D10 + ' › ' + G1, 'Tự luận: phủ định mệnh đề và xét tính đúng sai', 'TH', function () {
             var s = pick([[4, true], [9, true], [7, false], [11, false], [25, true], [10, false]]), n = s[0], r = Math.round(Math.sqrt(n));
