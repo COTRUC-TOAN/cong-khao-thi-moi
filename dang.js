@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v280";
+window.__DANG_VER = "v281";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -8858,6 +8858,23 @@ window.__DANG_VER = "v280";
             var oCT = nS('Anh An chèo thuyền từ điểm $A$ trên bờ một con sông thẳng rộng $' + w + '$ km, muốn đến điểm $B$ ở bờ đối diện, cách điểm $C$ (đối diện $A$) $' + d + '$ km về phía hạ lưu, càng nhanh càng tốt. Anh có thể chèo thuyền đến một điểm $D$ giữa $C$ và $B$ rồi chạy bộ đến $B$. Vận tốc chèo thuyền là $' + v1 + '$ km/h, vận tốc chạy bộ là $' + v2 + '$ km/h. Điểm $D$ cách $C$ bao nhiêu km (làm tròn đến hàng phần mười nếu cần) để anh đến $B$ sớm nhất?', xr, 1, 'Đặt $CD=x$. Thời gian $t(x)=\\dfrac{\\sqrt{' + w * w + '+x^2}}{' + v1 + '}+\\dfrac{' + d + '-x}{' + v2 + '}$. $t\'(x)=0\\Leftrightarrow \\dfrac{x}{' + v1 + '\\sqrt{' + w * w + '+x^2}}=\\dfrac1{' + v2 + '}\\Rightarrow x=\\dfrac{' + w * v1 + '}{\\sqrt{' + (v2 * v2 - v1 * v1) + '}}\\approx' + dd(x, 2) + '$ (thỏa $0<x<' + d + '$). Làm tròn: $' + dd(xr, 1) + '$.', 'VDC', [d, w, xr + 0.1, xr - 0.1]);
             oCT.fig = window.__geoFig('cheo_thuyen', { w: w, d: d }); return oCT;
         });
+        /* ---- Thầy chạy bộ: nhà → bờ biển (chạy dọc bờ) → chợ → nhà ---- */
+        add('l12_gk_sa_nha_cho_bien', 12, GA, 'Trả lời ngắn: thầy chạy bộ từ nhà ra bờ biển, chạy dọc bờ biển một đoạn, qua chợ rồi về nhà — quãng đường ngắn nhất (m)', 'VDC', function () {
+            var a = pick([800, 1000, 1200, 1500]), b = pick([300, 400, 500, 600]), d = pick([1000, 1200, 1500]), L = pick([300, 400, 500, 600]);
+            need(d > a - b + 100);
+            var h = Math.sqrt(d * d - (a - b) * (a - b)); need(h > L + 150);
+            var mn = Math.sqrt((h - L) * (h - L) + (a + b) * (a + b)), tot = mn + L + d, r = Math.round(tot);
+            need(Math.abs(tot - Math.floor(tot) - 0.5) > 0.08 && r < 10000);
+            var km = function (m) { return m % 1000 === 0 ? '$' + (m / 1000) + '$ km' : (m < 1000 ? '$' + m + '$ m' : '$' + dd(m / 1000, 1) + '$ km'); };
+            var wrong1 = Math.round(Math.sqrt(h * h + (a + b) * (a + b)) + L + d), wrong2 = Math.round(mn + d), wrong3 = Math.round(mn + L), wrong4 = Math.round(mn + L + d + L);
+            var o = nS('Nhà thầy Hùng cách bờ biển ' + km(a) + '. Mỗi buổi sáng thầy chạy bộ từ nhà ra bờ biển, sau đó chạy dọc bờ biển $' + L + '$ m rồi thầy chạy qua chợ hải sản để lấy thức ăn trong ngày, cuối cùng thầy chạy về nhà. Biết chợ hải sản cách bờ biển $' + b + '$ m và cách nhà thầy Hùng ' + km(d) + ', tính quãng đường ngắn nhất mà thầy Hùng đã chạy trong mỗi buổi sáng (đơn vị m và làm tròn đến hàng đơn vị).', r, 0,
+                'Gọi $A$ là nhà, $B$ là chợ; thầy chạy $A\\to P\\to Q\\to B\\to A$ với $P$, $Q$ nằm trên bờ biển và $PQ=' + L + '$ m. Quãng đường là $AP+PQ+QB+BA$, trong đó $PQ=' + L + '$ m và $BA=' + d + '$ m không đổi, nên cần tìm giá trị nhỏ nhất của $AP+QB$. ' +
+                '$A$, $B$ cách bờ biển $' + a + '$ m và $' + b + '$ m, $AB=' + d + '$ m nên hai hình chiếu của $A$, $B$ trên bờ cách nhau $h=\\sqrt{' + d + '^2-(' + a + '-' + b + ')^2}\\approx' + dd(h, 1) + '$ m. ' +
+                'Tịnh tiến $B$ theo $\\overrightarrow{QP}$ được $B\'$ thì $QB=PB\'$, nên $AP+QB=AP+PB\'$. Lấy $A\'$ đối xứng với $A$ qua bờ biển thì $AP+PB\'=A\'P+PB\'\\ge A\'B\'$, dấu bằng khi $P$ nằm trên $A\'B\'$. ' +
+                'Hai điểm $A\'$, $B\'$ lệch nhau $h-' + L + '$ theo phương bờ biển và $' + a + '+' + b + '$ theo phương vuông góc, nên $A\'B\'=\\sqrt{(' + dd(h, 1) + '-' + L + ')^2+(' + (a + b) + ')^2}\\approx' + dd(mn, 1) + '$ m. ' +
+                'Vậy quãng đường ngắn nhất là $' + dd(mn, 1) + '+' + L + '+' + d + '\\approx' + r + '$ m.', 'VDC', [wrong1, wrong2, wrong3, wrong4]);
+            o.fig = window.__geoFig('nha_cho', { a: a, b: b, h: h, L: L, d: d }); return o;
+        });
         add('l12_gk_sa_cuctri_can_bac2', 12, GA, 'Trả lời ngắn: hàm $y=\\sqrt{ax^2+bx+c}$ với $a<0$ — gọi $A$ là điểm cực đại, $B$ là giá trị cực đại, tính $A+B$', 'VD', function () {
             var k = pick([1, 2, 3]), pp = ri(-3, 3), h = pick([4, 9, 16, 25, 36]), a = -k, b = 2 * k * pp, c = h - k * pp * pp, r = Math.round(Math.sqrt(h)), S = pp + r;
             var f = '\\sqrt{' + ps([c, b, a]) + '}';
@@ -9110,7 +9127,7 @@ window.__DANG_VER = "v280";
             var ids = ('l10_menhde_dem l10_menhde_pdinh l10_menhde_dao l10_menhde_keotheo l10_menhde_dungsai l10_tap_lietke l10_tapcon_dem l10_tap_roirac l10_tap_khoang_nguyen l10_tap_phanbu l10_tap_kyhieu l10_tap_viet_khoang l10_tap_khangdinh l10_tap_hop l10_bpt2an_diem l10_hept_diem l10_bpt2an_mien l10_hept_nhandang l10_mien_hinh l10_gtlg_bu l10_gtlg_dau l10_gtlg_dangthuc l10_gtlg_goc_phu_bu l10_gtlg_biethuc l10_tg_congthuc l10_cosin_canh l10_cosin_goc l10_sin_R l10_dientich l10_tg_dientich_sin l10_tg_goc l10_tg_thucte l10_tg_thucte2 l10_bpt_lap_he l10_qhtt_thucte l10_qhtt_3rb ' +
                 'l10_tf_tg_gocgoc l10_tf_tg_bacanh l10_tf_hethuc l10_tf_hethuc_tg l10_tf_menhde l10_tf_tap l10_tf_bpt2an l10_tf_gtlg_dacbiet l10_tf_tap_hop l10_tf_bpt_hai_an_nghiem ' +
                 'l10_sa_menhde_dem_dung l10_sa_tap_dem l10_sa_tap_khoang_nguyen l10_sa_tap_khoang_nguyen_3 l10_sa_gtlg_biethuc l10_sa_cosin_canh l10_sa_heron l10_sa_dientich_sin l10_sa_ven_batap l10_sa_ven_haitap l10_sa_ven_batap_nguoc l10_es_tap l10_es_venn l10_es_qhtt l10_es_qhtt3 l10_es_thucte ' +
-                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron l12_ox_ijk_toado l12_ox_toado_ijk l12_ox_om_ijk_diem l12_ox_diem_om_ijk l12_ox_toado_ab l12_ox_ab_ijk l12_ox_diem_tu_vecto l12_ox_diem_dacbiet l12_gk_sa_ox_diem_m l12_gk_sa_cuctri_can_bac2 l12_gk_sa_gtln_can_bac2').split(' ');
+                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron l12_ox_ijk_toado l12_ox_toado_ijk l12_ox_om_ijk_diem l12_ox_diem_om_ijk l12_ox_toado_ab l12_ox_ab_ijk l12_ox_diem_tu_vecto l12_ox_diem_dacbiet l12_gk_sa_ox_diem_m l12_gk_sa_cuctri_can_bac2 l12_gk_sa_gtln_can_bac2 l12_gk_sa_nha_cho_bien').split(' ');
             window.__GK1 = window.__GK1 || {}; ids.forEach(function (i) { if (i) window.__GK1[i] = 1; });
         })();
     })(Q);
@@ -9284,6 +9301,14 @@ window.__DANG_VER = "v280";
                 bands.push([0, p.w, '#cfe8ff', p.band || 'sông']);
                 S('A', 'C', ext(G, { txt: p.w + ' km', side: -1, off: 16 })); S('C', 'B', ext(G, { txt: p.d + ' km', side: 1, off: 44 })); S('A', 'D', { col: '#1d4ed8', w: 4, txt: 'chèo thuyền', side: -1, off: 40 }); S('D', 'B', { col: '#16a34a', w: 4, txt: 'chạy bộ', side: -1, off: 14 });
                 note = p.note || 'Hình minh họa: vị trí điểm D chỉ mang tính minh họa';
+            } else if (k === 'nha_cho') {
+                var pxx = p.a / (p.a + p.b) * (p.h - p.L);
+                P.A = [0, p.a]; P.H = [0, 0]; P.B = [p.h, p.b]; P.K = [p.h, 0]; P.P = [pxx, 0]; P.Q = [pxx + p.L, 0]; lab.A = 'Nhà'; lab.B = 'Chợ'; lab.P = 'P'; lab.Q = 'Q';
+                bands.push([-0.3 * p.a, 0, '#cfe8ff', 'Biển']);
+                S('A', 'H', { col: '#94a3b8', w: 2, dash: 1, txt: p.a + ' m', side: 1, off: 16 }); S('B', 'K', { col: '#94a3b8', w: 2, dash: 1, txt: p.b + ' m', side: -1, off: 14 });
+                S('A', 'P', { col: '#dc2626', w: 3 }); S('P', 'Q', { col: '#1d4ed8', w: 5, txt: p.L + ' m', side: 1, off: 36 }); S('Q', 'B', { col: '#dc2626', w: 3 });
+                S('A', 'B', { col: '#475569', w: 3, txt: p.d + ' m', side: -1, off: 24 });
+                note = 'Hình minh họa: vị trí hai điểm P, Q chỉ mang tính minh họa';
             } else if (k === 'ap_phich') {
                 var Wd = p.w, Hd = p.h, u = p.u, v = p.v;
                 P.O1 = [0, 0]; P.O2 = [Wd, 0]; P.O3 = [Wd, Hd]; P.O4 = [0, Hd]; P.I1 = [v, u]; P.I2 = [Wd - v, u]; P.I3 = [Wd - v, Hd - u]; P.I4 = [v, Hd - u]; P.MT = [Wd / 2, Hd]; P.MU = [Wd / 2, Hd - u]; P.ML = [0, Hd / 2]; P.MV = [v, Hd / 2];
