@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v273] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v279] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6841,7 +6841,7 @@ window.addEventListener('popstate', function () {
    <label class="pp-f">Cỡ chữ<select id="pp-font"><option value="auto">Tự động (lớn nhất mà vẫn vừa)</option><option value="12">12</option><option value="11.5">11,5</option><option value="11">11</option><option value="10.5">10,5</option><option value="10">10</option><option value="9.5">9,5</option><option value="9">9</option></select></label>
   </div>
   <label class="pp-f" style="margin:6px 0">Kiểu phiếu trả lời
-   <select id="pp-smode"><option value="top">① Phiếu tô ở đầu trang 1 của đề (chấm bằng điện thoại)</option><option value="sep">② Đề chỉ có đề, phiếu tô in riêng ở trang sau (chấm bằng điện thoại)</option><option value="grid">③ Bảng ghi đáp án ở đầu đề (học sinh ghi tay, cô chấm tay, không chấm điện thoại)</option></select></label>
+   <select id="pp-smode"><option value="top">① Phiếu tô ở đầu trang 1 của đề (chấm bằng điện thoại)</option><option value="sep">② Đề chỉ có đề, phiếu tô in riêng ở trang sau (chấm bằng điện thoại)</option><option value="grid">③ Bảng ghi đáp án ở đầu đề (học sinh ghi tay, cô chấm tay, không chấm điện thoại)</option><option value="front">④ Tờ bài làm đặt trước (trang 1: phiếu tô + ô ly, trang 2: ô ly), tờ đề đặt sau; cả hai tờ đều có họ tên (chấm bằng điện thoại)</option></select></label>
   <label class="pp-f" style="max-width:560px">Phần tự luận khi có nhiều mã đề<select id="pp-esmode"><option value="alt" selected>Chỉ 2 phiên bản xen kẽ: mã lẻ giống nhau, mã chẵn giống nhau (xoay thứ tự câu) – dễ chấm</option><option value="half">Chỉ 2 phiên bản xen kẽ, chia đôi các câu tự luận (cần số câu chẵn): mã lẻ nửa đầu, mã chẵn nửa sau</option><option value="mix">Trộn riêng từng mã như các phần khác</option></select></label>
   <label class="pp-chk"><input type="checkbox" id="pp-shuf" checked> Đảo thứ tự câu và đáp án A, B, C, D giữa các mã (mã đầu giữ nguyên thứ tự gốc của đề cố định)</label>
   
@@ -7214,7 +7214,7 @@ window.addEventListener('popstate', function () {
             }
             await Promise.all(meas.concat(measW).map(typeset));
             // chiều cao phần đầu trang 1 (tiêu đề + phiếu)
-            const headHtml = set => '<div class="pp-hd pp-txt"><div class="l"><b>' + esc(o.school) + '</b><br>TỔ TOÁN</div><div class="m"><b>' + esc(o.exam || 'ĐỀ KIỂM TRA') + '</b><br>' + (o.year ? 'Năm học ' + esc(o.year) + '<br>' : '') + 'Môn: ' + esc(o.subj) + ' &nbsp;-&nbsp; Thời gian: ' + esc(o.time) + ' phút<br><i style="font-size:9.5pt">(Không kể thời gian phát đề)</i></div><div class="r"><span style="font-size:9pt">Mã đề</span><b>' + set.code + '</b></div></div><div class="pp-info pp-txt"><span>Họ và tên: ......................................................</span><span>Lớp: ...........</span><span>SBD: ............</span></div>' + (set.sheet && o.smode === 'top' ? set.sheet.html : '') + (set.grid || '');
+            const headHtml = (set, withSheet) => '<div class="pp-hd pp-txt"><div class="l"><b>' + esc(o.school) + '</b><br>TỔ TOÁN</div><div class="m"><b>' + esc(o.exam || 'ĐỀ KIỂM TRA') + '</b><br>' + (o.year ? 'Năm học ' + esc(o.year) + '<br>' : '') + 'Môn: ' + esc(o.subj) + ' &nbsp;-&nbsp; Thời gian: ' + esc(o.time) + ' phút<br><i style="font-size:9.5pt">(Không kể thời gian phát đề)</i></div><div class="r"><span style="font-size:9pt">Mã đề</span><b>' + set.code + '</b></div></div><div class="pp-info pp-txt"><span>Họ và tên: ......................................................</span><span>Lớp: ...........</span><span>SBD: ............</span></div>' + (set.sheet && (o.smode === 'top' || withSheet === 1) ? set.sheet.html : '') + (set.grid || '');
             const probe = document.createElement('div'); probe.style.cssText = 'position:absolute;left:-10000px;top:0;width:198mm'; probe.innerHTML = headHtml(SETS[0]); document.body.appendChild(probe);
             const headMax = Math.max.apply(null, SETS.map(s => { probe.innerHTML = headHtml(s); return probe.offsetHeight; })) / ratio + 2; probe.remove();
             const usable = 280, cap1 = usable - headMax - 2.5, capN = usable;
@@ -7229,14 +7229,33 @@ window.addEventListener('popstate', function () {
             // phase 3: dựng trang
             let maxPages = 0, miss = 0;
             const SP = o.smode === 'sep' ? 1 : 0;
+            const FR = o.smode === 'front';
             const GN = (SETS[0] && SETS[0].es.length) ? Math.max(0, Math.min(5, parseInt($('pp-grid').value) || 0)) : 0;
+            const FRN = FR ? 1 + GN : 0; // số trang của tờ bài làm khi chọn kiểu ④
+            let frTiny = false;
+            const gridPage = (set, num, tot) => {
+                const gp = document.createElement('div'); gp.className = 'pp-page pp-exampage';
+                gp.innerHTML = '<div style="font-size:10pt;margin-bottom:2mm"><b>BÀI LÀM PHẦN TỰ LUẬN</b> - Mã đề ' + set.code + '<span style="float:right">Họ và tên: ................................................ Lớp: ......... SBD: ..........</span></div><div style="height:262mm;border:0.3mm solid #7f8fa6;background-color:#fff;background-image:linear-gradient(#aebfd6 0.2mm,transparent 0.2mm),linear-gradient(90deg,#aebfd6 0.2mm,transparent 0.2mm);background-size:5mm 5mm"></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + num + '/' + tot + '</div>';
+                out.appendChild(gp);
+            };
             SETS.forEach((set, i) => {
                 const { r } = fitAt(set, meas[i], chosen, measW[i]);
                 const pages = r.nPages; set.pages = pages; maxPages = Math.max(maxPages, pages);
+                const OFF = FR ? FRN : 0, TOT = FR ? FRN + pages : pages + GN + SP;
+                if (FR) {
+                    // tờ bài làm: trang 1 = đầu phiếu (họ tên, mã đề) + phiếu tô + ô ly phần còn lại; các trang sau = ô ly cả trang
+                    const fp = document.createElement('div'); fp.className = 'pp-page pp-exampage'; fp.style.cssText = 'display:flex;flex-direction:column';
+                    const lyBg = 'border:0.3mm solid #7f8fa6;background-color:#fff;background-image:linear-gradient(#aebfd6 0.2mm,transparent 0.2mm),linear-gradient(90deg,#aebfd6 0.2mm,transparent 0.2mm);background-size:5mm 5mm';
+                    fp.innerHTML = '<div style="flex:none">' + headHtml(set, 1) + '</div>' + (set.es.length ? '<div style="flex:none;font-size:9.5pt;margin:1.5mm 0 1mm"><b>BÀI LÀM PHẦN TỰ LUẬN</b> <i>(viết vào ô ly bên dưới' + (GN ? ' và trang sau' : '') + ')</i></div><div class="pp-lyfill" style="flex:1 1 auto;min-height:0;margin-bottom:0.5mm;' + lyBg + '"></div>' : '') + '<div class="pp-foot">Mã đề ' + set.code + ' - Trang 1/' + TOT + '</div>';
+                    out.appendChild(fp);
+                    const ly = fp.querySelector('.pp-lyfill');
+                    if (ly && ly.offsetHeight / ratio < 30) { frTiny = true; }
+                    for (let gi = 0; gi < GN; gi++) gridPage(set, gi + 2, TOT);
+                }
                 for (let p = 0; p < pages; p++) {
                     const pg = document.createElement('div'); pg.className = 'pp-page pp-exampage'; pg.style.fontSize = chosen + 'pt';
                     const P = r.pages[p], hasCols = P.c[0].length + P.c[1].length > 0;
-                    pg.innerHTML = (p === 0 ? headHtml(set) : '') + (hasCols ? '<div class="pp-cols pp-txt" style="height:' + (Math.max(P.cu[0], P.cu[1]) / ratio + 0.5).toFixed(1) + 'mm;' + (p === 0 ? '' : 'margin-top:0') + '"><div class="pp-col"></div><div class="pp-col"></div></div>' : '') + '<div class="pp-wide pp-txt" style="width:198mm;' + (p === 0 && !hasCols ? 'margin-top:2.5mm' : '') + '"></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (p + 1) + '/' + (pages + GN + SP) + '</div>';
+                    pg.innerHTML = (p === 0 ? headHtml(set) : '') + (hasCols ? '<div class="pp-cols pp-txt" style="height:' + (Math.max(P.cu[0], P.cu[1]) / ratio + 0.5).toFixed(1) + 'mm;' + (p === 0 ? '' : 'margin-top:0') + '"><div class="pp-col"></div><div class="pp-col"></div></div>' : '') + '<div class="pp-wide pp-txt" style="width:198mm;' + (p === 0 && !hasCols ? 'margin-top:2.5mm' : '') + '"></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (OFF + p + 1) + '/' + TOT + '</div>';
                     out.appendChild(pg);
                     const cols = pg.querySelectorAll('.pp-col'), wd = pg.querySelector('.pp-wide');
                     P.c[0].forEach(k => cols[0].appendChild(set.items[k].el)); P.c[1].forEach(k => cols[1].appendChild(set.items[k].el));
@@ -7247,7 +7266,7 @@ window.addEventListener('popstate', function () {
                     sp.innerHTML = '<div style="text-align:center;font-weight:bold;font-size:12pt;margin-bottom:2mm">PHIẾU TRẢ LỜI - ' + esc(o.exam || 'ĐỀ KIỂM TRA') + ' - Mã đề ' + set.code + '</div><div style="font-size:10pt;margin-bottom:2mm">Họ và tên: ................................................ Lớp: ......... SBD: ..........</div>' + set.sheet.html + '<div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (pages + 1) + '/' + (pages + GN + SP) + '</div>';
                     out.appendChild(sp);
                 }
-                for (let gi = 0; gi < GN; gi++) {
+                for (let gi = 0; gi < (FR ? 0 : GN); gi++) {
                     const gp = document.createElement('div'); gp.className = 'pp-page pp-exampage';
                     gp.innerHTML = '<div style="font-size:10pt;margin-bottom:2mm"><b>BÀI LÀM PHẦN TỰ LUẬN</b> - Mã đề ' + set.code + '<span style="float:right">Họ và tên: ................................................ Lớp: ......... SBD: ..........</span></div><div style="height:262mm;border:0.3mm solid #7f8fa6;background-color:#fff;background-image:linear-gradient(#aebfd6 0.2mm,transparent 0.2mm),linear-gradient(90deg,#aebfd6 0.2mm,transparent 0.2mm);background-size:5mm 5mm"></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (pages + SP + gi + 1) + '/' + (pages + GN + SP) + '</div>';
                     out.appendChild(gp);
@@ -7284,6 +7303,7 @@ window.addEventListener('popstate', function () {
             html += '<br>Tổng điểm theo thang đã nhập: <b>' + fmt(total) + '</b>' + (Math.abs(total - 10) > 0.01 ? ' <span style="color:#b45309">(chưa bằng 10, cô kiểm tra lại điểm mỗi câu)</span>' : '') + '.';
             if (o.limit && maxPages > 2) html += '<br><span style="color:#dc2626">Đề dài hơn 2 trang ngay cả khi thu nhỏ chữ. Cô bớt câu, bớt hình, hoặc bỏ chọn "Cố gắng gọn trong 2 trang".</span>';
             else if (maxPages <= 2) html += ' <span style="color:#16a34a">Vừa 2 trang A4.</span>';
+            if (FR) html += '<br>Kiểu ④: tờ bài làm ' + FRN + ' trang (phiếu tô' + (s0.es.length ? ' + ô ly' : '') + '), rồi tờ đề ' + maxPages + ' trang. Mỗi mã đề ' + (FRN + maxPages) + ' trang.' + (frTiny ? ' <span style="color:#b45309">Phiếu tô chiếm gần hết trang 1 nên phần ô ly ở trang 1 rất ít, cô tăng "Số trang ô ly" lên.</span>' : '');
             if (miss) html += '<br><span style="color:#b45309">Có câu chưa có đáp án (hiện dấu ? ở trang đáp án). Cô bổ sung đáp án cho câu đó trước khi chấm.</span>';
             msg(html);
             $('pp-ov').scrollTop = ($('pp-out').offsetTop || 0) - 8;
