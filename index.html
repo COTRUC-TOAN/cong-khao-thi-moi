@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v281] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v283] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2300,6 +2300,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
         }
 
         async function loadQuestionBank() {
+            window.__bankLoading = true; try { renderMatrixTable(); } catch (e) { } /* v282 */
             const container = document.getElementById('bank-q-list');
             if (container) container.innerHTML = `<p style="color:#1d4ed8; text-align:center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải kết nối Ngân hàng...</p>`;
             try {
@@ -2329,12 +2330,13 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                     }).filter(q => q.id && q.id !== "");
                     // Sheet có thể có nhiều dòng cùng mã (do sửa câu nhiều lần): chỉ giữ bản mới nhất (dòng cuối)
                     { const byId = new Map(); questionBank.forEach(q => byId.set(q.id, q)); questionBank = Array.from(byId.values()); }
-                    
+                    window.__bankLoading = false; window.__bankFailed = false;
                     filterQuestionBankList(); 
                     renderMatrixTable();
-                }
+                } else { window.__bankLoading = false; window.__bankFailed = true; try { renderMatrixTable(); } catch (e2) { } }
             } catch (e) {
                 console.error("Lỗi tải ngân hàng:", e);
+                window.__bankLoading = false; window.__bankFailed = true; try { renderMatrixTable(); } catch (e2) { }
                 if (container) container.innerHTML = `<p style="color:#dc2626; text-align:center; padding: 20px;">Lỗi kết nối tải dữ liệu.</p>`;
             }
         }
@@ -2424,6 +2426,23 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
             renderMath(container);
         }
 
+      /* v282: liệt kê kho câu riêng của đề ma trận động (mỗi mục: lấy mấy câu / kho có mấy câu) */
+      function dynPoolHtml(cfg) {
+            const esc = x => String(x || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+            const plain = x => String(x || '').replace(/<[^>]*>/g, ' ').replace(/\[\[HINH[\s\S]*?\]\]/g, '[hình]').replace(/\s+/g, ' ').trim();
+            let all = []; try { all = [...(topicsConfig.general || []), ...(topicsConfig.g12 || []), ...(topicsConfig.g11 || []), ...(topicsConfig.g10 || [])]; } catch (e) { }
+            const TY = { MCQ: 'Trắc nghiệm', TF: 'Đúng/Sai', SA: 'Trả lời ngắn', ES: 'Tự luận' };
+            const shown = new Set(Array.from(document.querySelectorAll('.matrix-input')).map(i => i.dataset.topic));
+            const rows = (cfg.configs || []).map(c => {
+                const t = all.find(x => String(x.id) === String(c.topicId)); const name = t ? t.name : c.topicId;
+                const pool = c.pool || [], few = pool.length < c.count;
+                const off = shown.size && !shown.has(String(c.topicId)) ? ' <span style="color:#b45309">(chủ đề thuộc khối lớp khác, cô đổi ô Khối Lớp để thấy trong bảng)</span>' : '';
+                return '<details style="border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px;margin-top:6px;background:#fff"><summary style="cursor:pointer">📁 <b>' + esc(name) + '</b> · ' + (TY[c.qType] || c.qType) + ' · ' + c.qLvl + ' — lấy <b>' + c.count + '</b> / kho của đề có <b style="color:' + (few ? '#dc2626' : '#15803d') + '">' + pool.length + '</b> câu' + off + '</summary>'
+                    + '<ol style="margin:6px 0 2px 18px;font-size:.88rem;color:#334155">' + pool.map(q => '<li style="margin:3px 0">' + esc(plain(q.q).slice(0, 140)) + (plain(q.q).length > 140 ? '…' : '') + '</li>').join('') + '</ol></details>';
+            }).join('');
+            return '<div style="text-align:left;margin-top:10px"><div style="font-size:.9rem;color:#475569">Các câu đề này đang bốc (bấm từng mục để xem). Muốn đổi số câu: sửa ở bảng ma trận phía trên rồi bấm lại nút "Lưu Ma Trận Động".</div>' + rows + '</div>';
+      }
+
       function updateSelectedItemsDisplay() {
             const container = document.getElementById('selected-items-container');
             if (!container) return;
@@ -2434,7 +2453,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                 container.innerHTML = `<div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #16a34a; color: #166534; font-size: 1rem; line-height: 1.6; text-align: center;">
                     ✅ <strong>Đã thiết lập Khung Ma Trận Động (${selectedQuestions[0].totalCount} câu)</strong><br>
                     Hệ thống sẽ tự động bốc ngẫu nhiên và xáo trộn câu hỏi từ Ngân hàng cho từng học sinh. Mỗi em sẽ nhận một đề hoàn toàn khác nhau!
-                </div>`;
+                </div>` + dynPoolHtml(selectedQuestions[0]);
                 return;
             }
 
@@ -2568,6 +2587,11 @@ function removeQuestionFromSelected(qId) {
                 { type: 'ES',  label: '4. Tự luận (chỉ in đề giấy)' }
             ];
 
+            /* v282: giữ số cô đã nhập khi bảng vẽ lại (đổi khối, ngân hàng tải xong) */
+            const keep = {};
+            container.querySelectorAll('.matrix-input').forEach(i => { if (i.value !== '') keep[i.dataset.topic + '|' + i.dataset.type + '|' + i.dataset.lvl] = i.value; });
+            const bankEmpty = !questionBank || !questionBank.length;
+            const cnt = (top, ty, n) => (bankEmpty && window.__bankLoading) ? '…' : getQuestionCount(top, ty, n);
             const cardOf = top => `
                 <div class="matrix-topic-row" style="background:#fff; border:1px solid var(--border-color); border-radius:10px; padding:12px; margin-bottom:14px;">
                     <h5 style="color:#1e40af; margin-bottom:10px; font-size:1.05rem;"><i class="fa-solid fa-book-bookmark"></i> ${top.name}</h5>
@@ -2576,10 +2600,10 @@ function removeQuestionFromSelected(qId) {
                             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; display:grid; grid-template-columns: 180px 1fr; gap:10px; align-items:center;">
                                 <span style="font-size:0.95rem; font-weight:bold; color:#334155;">${t.label}</span>
                                 <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:6px;">
-                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">NB (${getQuestionCount(top, t.type, 1)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="NB" min="0" placeholder="0"></div>
-                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">TH (${getQuestionCount(top, t.type, 2)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="TH" min="0" placeholder="0"></div>
-                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">VD (${getQuestionCount(top, t.type, 3)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="VD" min="0" placeholder="0"></div>
-                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">VDC (${getQuestionCount(top, t.type, 4)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="VDC" min="0" placeholder="0"></div>
+                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">NB (${cnt(top, t.type, 1)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="NB" min="0" placeholder="0"></div>
+                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">TH (${cnt(top, t.type, 2)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="TH" min="0" placeholder="0"></div>
+                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">VD (${cnt(top, t.type, 3)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="VD" min="0" placeholder="0"></div>
+                                    <div><label style="font-size:0.8rem; color:#64748b; font-weight:bold;">VDC (${cnt(top, t.type, 4)})</label><input type="number" class="form-input matrix-input" data-topic="${top.id}" data-type="${t.type}" data-lvl="VDC" min="0" placeholder="0"></div>
                                 </div>
                             </div>
                         `).join('')}
@@ -2598,7 +2622,11 @@ function removeQuestionFromSelected(qId) {
                 else { if (open) { html += '</div></details>'; open = false; } html += cardOf(top); }
             });
             if (open) html += '</div></details>';
-            container.innerHTML = html;
+            let note = '';
+            if (bankEmpty && window.__bankLoading) note = '<div style="background:#eff6ff;border:1px solid #93c5fd;color:#1e40af;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:.9rem">⏳ Đang tải ngân hàng câu hỏi… Số câu trong ngoặc sẽ hiện khi tải xong.</div>';
+            else if (bankEmpty && window.__bankFailed) note = '<div style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:.9rem">⚠️ Chưa tải được ngân hàng (mạng yếu hoặc chưa đăng nhập quản lý) nên số câu trong ngoặc đang là 0. Câu của cô vẫn còn trong Sheet. <button type="button" onclick="loadQuestionBank()" style="margin-left:6px;cursor:pointer">Tải lại</button></div>';
+            container.innerHTML = note + html;
+            container.querySelectorAll('.matrix-input').forEach(i => { const k = i.dataset.topic + '|' + i.dataset.type + '|' + i.dataset.lvl; if (keep[k] !== undefined) i.value = keep[k]; });
         }
 
         // TẠO MA TRẬN ĐỘNG (CHUẨN K12)
@@ -3304,6 +3332,7 @@ let editingExamId = null;
             sv('new-exam-title', ''); sv('new-exam-time', 45); sv('new-exam-max-attempts', 0); sv('new-exam-pass', ''); sv('new-exam-start-time', ''); sv('new-exam-deadline', ''); sv('lecture-youtube-url', '');
             const md = g('new-exam-mode'); if (md) md.selectedIndex = 0; try { toggleExamPasswordField(); } catch (e) { }
             selectedQuestions = []; try { directParsedQuestions = []; directBatch = []; } catch (e) { } try { updateSelectedItemsDisplay(); } catch (e) { }
+            document.querySelectorAll('.matrix-input').forEach(i => { i.value = ''; }); /* v282 */
             const raw = g('direct-raw-text'); if (raw) raw.innerHTML = '';
             try { lecturePdfBase64 = ''; } catch (e) { }
             editingExamId = null; const bn = g('edit-banner'); if (bn) bn.style.display = 'none';
@@ -3377,6 +3406,14 @@ let editingExamId = null;
 
             if (selectedQuestions.length === 1 && selectedQuestions[0].isDynamicConfig) {
                 switchAddMethod('matrix');
+                /* v282: điền lại số câu cũ của đề vào bảng ma trận */
+                try {
+                    document.querySelectorAll('.matrix-input').forEach(i => { i.value = ''; });
+                    (selectedQuestions[0].configs || []).forEach(c => {
+                        const i = document.querySelector('.matrix-input[data-topic="' + String(c.topicId).replace(/"/g, '\\"') + '"][data-type="' + c.qType + '"][data-lvl="' + c.qLvl + '"]');
+                        if (i) i.value = c.count;
+                    });
+                } catch (e) { console.warn(e); }
             } else {
                 switchAddMethod('bank');
             }
@@ -7030,6 +7067,18 @@ window.addEventListener('popstate', function () {
             o._esV = o._esV || {}; const v = i % 2;
             if (!o._esV[v]) {
                 let L = by.ES.slice();
+                /* v283: đề ma trận động – phiên bản chẵn bắt buộc chọn câu KHÁC phiên bản lẻ ở mục nào kho có đủ câu */
+                if (dyn && v === 1 && o._esV[0]) {
+                    const used = new Set(o._esV[0].map(q => String(q.id)));
+                    L = [];
+                    base[0].configs.forEach(c => {
+                        if (String(c.qType).toUpperCase() !== 'ES') return;
+                        const pool = c.pool || [];
+                        const fresh = shuffle(pool.filter(q => !used.has(String(q.id)))), old = shuffle(pool.filter(q => used.has(String(q.id))));
+                        L.push.apply(L, fresh.concat(old).slice(0, c.count));
+                    });
+                    if (!L.length) L = by.ES.slice();
+                }
                 if (!dyn) {
                     if (esm === 'half' && L.length >= 2 && L.length % 2 === 0) { const h = L.length / 2; L = v === 0 ? L.slice(0, h) : L.slice(h); }
                     else if (v === 1 && L.length > 1) L = L.slice(1).concat(L.slice(0, 1));
