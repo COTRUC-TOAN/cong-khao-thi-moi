@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v279] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v280] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3810,7 +3810,26 @@ let editingExamId = null;
 
         document.getElementById('quiz-form').addEventListener('submit', function(e) { e.preventDefault(); submitQuiz(); });
 
+       // (v280) hộp xác nhận nằm ngay trong trang (trình duyệt trong Zalo/Facebook hay chặn hộp confirm làm máy đứng)
+       function askSubmitConfirm() {
+            return new Promise(res => {
+                const old = document.getElementById('submit-ask-ov'); if (old) old.remove();
+                const ov = document.createElement('div'); ov.id = 'submit-ask-ov';
+                ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px';
+                ov.innerHTML = '<div style="background:#fff;border-radius:14px;padding:20px;max-width:340px;width:100%;text-align:center;font-family:inherit"><div style="font-size:1.1rem;font-weight:700;color:#1e293b;margin-bottom:14px">Em có chắc chắn muốn nộp bài không?</div><div style="display:flex;gap:10px"><button type="button" id="sa-no" style="flex:1;padding:12px;border:0;border-radius:10px;background:#e2e8f0;font-weight:700;font-size:1rem">Làm tiếp</button><button type="button" id="sa-yes" style="flex:1;padding:12px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:700;font-size:1rem">Nộp bài</button></div></div>';
+                document.body.appendChild(ov);
+                const done = v => { try { ov.remove(); } catch (e) { } res(v); };
+                ov.querySelector('#sa-yes').onclick = () => done(true);
+                ov.querySelector('#sa-no').onclick = () => done(false);
+            });
+       }
+       function showSubmitMsg(t) {
+            let d = document.getElementById('submit-msg');
+            if (!d) { d = document.createElement('div'); d.id = 'submit-msg'; d.style.cssText = 'margin:10px 0;padding:10px 12px;border-radius:8px;background:#fef3c7;color:#92400e;font-weight:700;text-align:center'; const b = document.getElementById('btn-submit-quiz'); if (b && b.parentNode) b.parentNode.insertBefore(d, b); else document.body.appendChild(d); }
+            d.textContent = t; try { d.scrollIntoView({ block: 'center' }); } catch (e) { }
+       }
        async function submitQuiz() {
+            { const sm0 = document.getElementById('submit-msg'); if (sm0) sm0.remove(); }
             const checkName = document.getElementById('std-name').value.trim();
             const checkClass = document.getElementById('std-class').value.trim();
             if (!checkName) { alert("⚠️ Vui lòng nhập đầy đủ Họ và tên trước khi nộp bài!"); document.getElementById('std-name').focus(); return; }
@@ -3829,18 +3848,22 @@ let editingExamId = null;
             const serverPart = (t) => String(t).normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase().replace(/[/.#$\[\]]/g, "_");
             const serverKey = `${serverPart(checkName)}_${serverPart(checkClass)}`;
             let prevServerAttempts = 0;
+            const bEarly = document.getElementById('btn-submit-quiz'), bEarlyHtml = bEarly ? bEarly.innerHTML : '';
+            const bRestore = () => { if (bEarly) { bEarly.disabled = false; bEarly.innerHTML = bEarlyHtml; } };
             if (activeExam.mode === 'KIEMTRA' && maxAttempts > 0) {
                 if (submitCheckBusy) return;
                 submitCheckBusy = true;
+                if (bEarly) { bEarly.disabled = true; bEarly.textContent = '⏳ Đang kiểm tra, em chờ vài giây...'; }
                 try {
                     if (activeExam.hasKeys) {
                         // Đề đã có đáp án ở máy chủ: hỏi Apps Script (không dùng Firebase)
                         const ctl = new AbortController();
-                        const tm = setTimeout(() => ctl.abort(), 8000);
-                        const ar = await fetch(`${SCRIPT_URL}?action=get_attempt&examId=${encodeURIComponent(activeExam.id)}&name=${encodeURIComponent(checkName)}&class=${encodeURIComponent(checkClass)}`, { signal: ctl.signal });
-                        clearTimeout(tm);
-                        const aj = await ar.json();
-                        if (aj && aj.status === 'success') prevServerAttempts = parseInt(aj.attempts, 10) || 0;
+                        const tm = setTimeout(() => ctl.abort(), 8000); // (v280) đồng hồ chờ bao cả lúc đọc nội dung trả về
+                        try {
+                            const ar = await fetch(`${SCRIPT_URL}?action=get_attempt&examId=${encodeURIComponent(activeExam.id)}&name=${encodeURIComponent(checkName)}&class=${encodeURIComponent(checkClass)}`, { signal: ctl.signal });
+                            const aj = JSON.parse(await ar.text());
+                            if (aj && aj.status === 'success') prevServerAttempts = parseInt(aj.attempts, 10) || 0;
+                        } finally { clearTimeout(tm); }
                     } else {
                         const snap = await Promise.race([
                             db.ref(`exam_results_details/${activeExam.id}/${serverKey}`).once('value'),
@@ -3852,19 +3875,21 @@ let editingExamId = null;
                 } catch (e) { /* không đọc được thì cho qua */ }
                 submitCheckBusy = false;
                 if (prevServerAttempts >= maxAttempts) {
+                    bRestore();
                     alert(`⚠️ Hệ thống ghi nhận [${checkName} - ${checkClass}] đã nộp bài kiểm tra này ${prevServerAttempts}/${maxAttempts} lần cho phép nên không thể nộp thêm.\nNếu em chưa từng nộp bài này (có thể trùng tên và lớp với bạn khác), hãy báo giáo viên.`);
                     return;
                 }
             }
-            const confirmSubmit = examTimeUp ? true : confirm("Em có chắc chắn muốn nộp bài không?");
+            bRestore();
+            const confirmSubmit = examTimeUp ? true : await askSubmitConfirm();
             if (!confirmSubmit) return;
 
-            clearInterval(timerInterval);
-            try { localStorage.removeItem('exam_end_' + activeExam.id); } catch (e) {}
             const name = checkName;
             const sClass = checkClass;
             const btnSubmit = document.getElementById('btn-submit-quiz');
+            const btnOrigHtmlEarly = btnSubmit.innerHTML;
             btnSubmit.disabled = true;
+            btnSubmit.textContent = '⏳ Đang nộp bài, em chờ vài giây...';
 
             let totalWeightedScore = 0; 
             let maxPossibleScore = 0;
@@ -3872,9 +3897,22 @@ let editingExamId = null;
 
             let secretData = {};
             if (activeExam.mode === 'KIEMTRA' && !activeExam.hasKeys) {
-                const secretSnapshot = await db.ref(`exam_secure_keys/${activeExam.id}`).once('value');
-                secretData = secretSnapshot.val() || {};
+                btnSubmit.textContent = '⏳ Đang nộp bài, em chờ vài giây...';
+                try {
+                    const secretSnapshot = await Promise.race([
+                        db.ref(`exam_secure_keys/${activeExam.id}`).once('value'),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+                    ]);
+                    secretData = secretSnapshot.val() || {};
+                } catch (e) {
+                    // (v280) trước đây chờ mãi nên màn hình đứng; giờ báo rõ và cho bấm nộp lại
+                    btnSubmit.disabled = false; btnSubmit.innerHTML = btnOrigHtmlEarly;
+                    showSubmitMsg('⚠️ Mạng đang chậm nên chưa nộp được. Bài của em vẫn còn trên màn hình. Em đợi vài giây rồi bấm "Nộp bài" lại. Đừng tải lại trang.');
+                    return;
+                }
             }
+            clearInterval(timerInterval);
+            try { localStorage.removeItem('exam_end_' + activeExam.id); } catch (e) {}
 
             // LẤY BỘ CÂU HỎI HIỆN TẠI
             let rawQuestions = activeExam.currentDrawnQuestions || activeExam.questions || [];
@@ -3975,9 +4013,9 @@ let editingExamId = null;
                     serverRecorded = true;
                     outboxDelSame(activeExam.id, name, sClass);
                 } else {
-                    alert("⚠️ Chưa chấm được bài (có thể do mạng yếu). Bài của em đã được lưu trong máy. Em đợi vài giây rồi bấm Nộp bài lại. Nếu lỡ thoát trang thì lần sau mở web có mạng, bài sẽ tự được gửi.");
                     btnSubmit.disabled = false;
                     btnSubmit.innerHTML = btnOrigHtml;
+                    showSubmitMsg("⚠️ Chưa chấm được bài (có thể do mạng yếu). Bài của em đã được lưu trong máy. Em đợi vài giây rồi bấm Nộp bài lại. Nếu lỡ thoát trang thì lần sau mở web có mạng, bài sẽ tự được gửi.");
                     return;
                 }
             }
