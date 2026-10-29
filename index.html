@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v293] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v294] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7200,7 +7200,7 @@ window.addEventListener('popstate', function () {
     function buildSheet(set, o) {
         const W = SW - 2 * PADX; let best = null;
         // thử mã đề nằm ngang hoặc dọc, và mọi thứ tự xếp, lấy cách làm phiếu thấp nhất
-        const combos = []; [blkMa(set.code), blkMaV(set.code)].forEach(ma => [blkSbd(), blkSbdV()].forEach(sb => combos.push([ma, sb])));
+        const combos = []; [blkMa(set.code), blkMaV(set.code)].forEach(ma => [blkSbdV()].forEach(sb => combos.push([ma, sb]))); /* v294: số báo danh luôn tô theo cột (mỗi cột một chữ số, 0-9 từ trên xuống) */
         combos.forEach(cb => {
             const blocks = cb.slice();
             if (set.mcq.length) blocks.push(blkI(set.mcq.length));
