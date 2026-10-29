@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v283] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v293] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3865,7 +3865,21 @@ let editingExamId = null;
             if (!d) { d = document.createElement('div'); d.id = 'submit-msg'; d.style.cssText = 'margin:10px 0;padding:10px 12px;border-radius:8px;background:#fef3c7;color:#92400e;font-weight:700;text-align:center'; const b = document.getElementById('btn-submit-quiz'); if (b && b.parentNode) b.parentNode.insertBefore(d, b); else document.body.appendChild(d); }
             d.textContent = t; try { d.scrollIntoView({ block: 'center' }); } catch (e) { }
        }
+       // (v282) lớp bảo vệ: nộp bài bị lỗi ở bất kỳ bước nào thì bật lại nút và báo rõ, không để màn hình đứng im
        async function submitQuiz() {
+            const b0 = document.getElementById('btn-submit-quiz'), h0 = b0 ? b0.innerHTML : '';
+            try { await submitQuizInner(); }
+            catch (err) {
+                try { console.error('submitQuiz', err); } catch (e) { }
+                try { submitCheckBusy = false; } catch (e) { }
+                const rd = document.getElementById('quiz-result');
+                if (rd && rd.style.display === 'block') return; // bài đã nộp xong, lỗi chỉ ở bước hiển thị
+                if (b0) { b0.disabled = false; b0.innerHTML = h0; }
+                const code = String((err && (err.message || err)) || 'khong ro').replace(/[^\w .:\-]/g, '').slice(0, 60);
+                showSubmitMsg('⚠️ Có lỗi khi nộp bài (mã: ' + code + '). Em bấm "Nộp bài" lại. Nếu vẫn lỗi, em chụp màn hình dòng chữ này gửi cô.');
+            }
+       }
+       async function submitQuizInner() {
             { const sm0 = document.getElementById('submit-msg'); if (sm0) sm0.remove(); }
             const checkName = document.getElementById('std-name').value.trim();
             const checkClass = document.getElementById('std-class').value.trim();
@@ -6858,6 +6872,7 @@ window.addEventListener('popstate', function () {
 .pp-info{font-size:10.5pt;margin:2mm 0 2mm;display:flex;gap:5mm}
 .pp-sheet{position:relative;border:.35mm solid #000;box-sizing:border-box}
 .pp-sheet,.pp-sheet *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pp-page,.pp-page *{-webkit-print-color-adjust:exact;print-color-adjust:exact} /* v293: ô ly vẽ bằng nền, phải ép in nền thì giấy mới có ô ly */
 .pp-mk{position:absolute;width:5mm;height:5mm;background:#000;border:2.5mm solid #000;box-sizing:border-box}
 .pp-b{position:absolute;border:.28mm solid #000;border-radius:50%;box-sizing:border-box;text-align:center;font:2.5mm/3.3mm Arial,sans-serif;color:#000;overflow:hidden}
 .pp-b.f{background:#000;color:#000;border-width:1.95mm}
@@ -8083,7 +8098,7 @@ window.addEventListener('popstate', function () {
         const pend = JSON.parse(LS.get('cham_pending') || '[]');
         if (pend.length) h += '<div class="cg-pend">Có <b id="cg-pcount">' + pend.length + '</b> bài chưa gửi được lên Google Sheet (mất mạng?). <button type="button" id="cg-retry" style="padding:6px 10px;border:0;border-radius:6px;background:#d97706;color:#fff;font-weight:700">Gửi lại</button></div>';
         h += '<div class="cg-card"><b>Mã đề trên tờ bài làm</b><div class="cg-codes">' + DATA.s.map(r => '<button type="button" data-code="' + esc(r[0]) + '" class="' + (CUR && CUR.code === r[0] ? 'on' : '') + '">' + esc(r[0]) + '</button>').join('') + '</div></div>';
-        h += '<div class="cg-card"><details' + (LS.get('cham_roster') ? '' : '') + '><summary style="cursor:pointer"><b>Danh sách lớp (không bắt buộc)</b></summary><div class="cg-small">Dán mỗi dòng một em: số báo danh, dấu cách, họ tên. Ví dụ: 0101 Nguyễn Văn A. Có danh sách thì nhập hay chụp ra số báo danh, máy tự điền họ tên.</div><textarea id="cg-roster" rows="4" style="width:100%;box-sizing:border-box;margin-top:4px">' + esc(LS.get('cham_roster') || '') + '</textarea></details></div>';
+        h += '<div class="cg-card"><details' + (LS.get('cham_roster') ? '' : '') + '><summary style="cursor:pointer"><b>Danh sách lớp (không bắt buộc)</b></summary><div class="cg-small">Dán mỗi dòng một em: số báo danh rồi họ tên (0101 Nguyễn Văn A), hoặc họ tên rồi số báo danh (Nguyễn Văn A 0101). Có danh sách thì nhập hay chụp ra số báo danh, máy tự điền họ tên.</div><textarea id="cg-roster" rows="4" style="width:100%;box-sizing:border-box;margin-top:4px">' + esc(LS.get('cham_roster') || '') + '</textarea></details></div>';
         if (DATA.L) h += '<div class="cg-card"><b>📷 Chụp phiếu tô ô để máy chấm</b><div class="cg-small">Đặt tờ giấy phẳng, đủ sáng, chụp thấy rõ 4 ô vuông đen ở 4 góc phiếu. Không cần chọn mã đề, máy tự đọc. Nếu phiếu tô không đọc được thì cô nhập tay ở bên dưới.</div><button type="button" id="cg-livebtn" class="cg-camb" style="border:0;background:#16a34a;color:#fff;margin-right:6px">🎥 Camera chấm trực tiếp</button><button type="button" id="cg-filebtn" class="cg-camb" style="border:0;background:#2563eb;color:#fff">Chụp / chọn ảnh phiếu</button><input type="file" id="cg-file" accept="image/*" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"><label style="display:block;margin-top:6px;font-size:.92rem"><input type="checkbox" id="cg-auto" checked> Camera trực tiếp: <b>tự lưu và quét tờ tiếp</b> khi báo xanh (chưa có tên thì lưu "Chưa rõ tên 1, 2…", cô sửa tên sau trong Sheet; ảnh phiếu vẫn giữ để đối chiếu)</label><div id="cg-scanmsg" class="cg-small" style="margin-top:4px">' + esc(LASTMSG) + '</div><canvas id="cg-cv" style="width:100%;display:none;margin-top:6px;border-radius:8px"></canvas></div>';
         if (!CUR) { h += '<div class="cg-card cg-small">' + (DATA.L ? 'Chụp phiếu, hoặc chọn mã đề để nhập tay.' : 'Chọn mã đề trước, rồi nhập từng em.') + '</div>'; }
         else {
@@ -8201,7 +8216,12 @@ window.addEventListener('popstate', function () {
     function rosterName(sbd) {
         const key = String(sbd || '').replace(/^0+/, ''); if (!key) return '';
         const lines = (LS.get('cham_roster') || '').split(/\r?\n/);
-        for (const ln of lines) { const m = /^\s*(\d+)\s*[\t,;:.\-]*\s*(.+?)\s*$/.exec(ln); if (m && m[1].replace(/^0+/, '') === key) return m[2]; }
+        for (const ln of lines) {
+            let m = /^\s*(\d+)\s*[\t,;:.\-]*\s*(.+?)\s*$/.exec(ln); // số báo danh rồi họ tên
+            if (m && m[1].replace(/^0+/, '') === key) return m[2];
+            m = /^\s*(.*\D.*?)[\s,;:.\-]+(\d+)\s*$/.exec(ln); // (v284) họ tên rồi số báo danh (dán từ Excel: cột tên trước, cột số sau)
+            if (m && m[2].replace(/^0+/, '') === key) return m[1].replace(/[\s,;:.\-]+$/, '');
+        }
         return '';
     }
     function wireSbd() {
@@ -8574,9 +8594,10 @@ window.addEventListener('popstate', function () {
         try {
             const tr = stream.getVideoTracks()[0], caps = (tr.getCapabilities && tr.getCapabilities()) || {};
             if (caps.torch) tr.applyConstraints({ advanced: [{ torch: false }] }).catch(() => { });
+            if (caps.focusMode && caps.focusMode.indexOf('continuous') >= 0) tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => { }); /* v287: tự lấy nét liên tục cho chữ và ô tô nét hơn */
             const ec = caps.exposureCompensation;
             if (ec && ec.max > ec.min) {
-                const lv = [0.0, 0.3, 0.55, 0.8].map(f => ec.min + (ec.max - ec.min) * (0.5 - 0.5 * f)); let li = 1;
+                const lv = [0.0, 0.3, 0.55, 0.8].map(f => ec.min + (ec.max - ec.min) * (0.5 - 0.5 * f)); let li = 0; /* v287: mặc định sáng bình thường, chỉ bấm "Bớt chói" mới hạ sáng */
                 const setE = () => tr.applyConstraints({ advanced: [{ exposureMode: 'continuous', exposureCompensation: lv[li] }] }).catch(() => { });
                 setE();
                 const gb = document.createElement('button'); gb.type = 'button'; gb.style.cssText = 'padding:12px;border:0;border-radius:8px;font-weight:700;background:#e5e7eb;color:#111';
@@ -8615,7 +8636,7 @@ window.addEventListener('popstate', function () {
                         if (sig === LIVE.last) LIVE.same++; else { LIVE.same = 0; LIVE.last = sig; }
                         LIVE.frame = im; LIVE.res = res;
                         if (nflag === 0) { paint('g', LIVE.same >= 1 ? 'Đọc xong, đang lưu…' : 'Đọc được, giữ yên một chút…'); if (LIVE.same >= 1) { finish(true); return; } }
-                        else { paint('y', 'Đọc được nhưng ' + nflag + ' chỗ chưa chắc: giữ yên, thêm sáng, hoặc bấm "Chụp luôn"'); LIVE.yellowSame = LIVE.same; }
+                        else { const wh = []; const lst = (o, n) => { const k = Object.keys(o).map(x => +x + 1); if (k.length) wh.push(n + ' ' + k.slice(0, 6).join(', ') + (k.length > 6 ? '…' : '')); }; lst(res.flags.m, 'TN câu'); lst(res.flags.t, 'Đ/S câu'); lst(res.flags.s, 'TLN câu'); if (res.flags.code) wh.push('mã đề'); if (res.flags.sbd) wh.push('số báo danh'); paint('y', 'Chưa chắc: ' + wh.join(' · ') + '. Giữ yên, thêm sáng, hoặc bấm "Chụp luôn" rồi sửa tay chỗ vàng'); LIVE.yellowSame = LIVE.same; }
                     }
                 }
             } catch (e) { }
