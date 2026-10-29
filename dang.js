@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v289";
+window.__DANG_VER = "v290";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -9306,7 +9306,7 @@ window.__DANG_VER = "v289";
             var ids = ('l10_menhde_dem l10_menhde_pdinh l10_menhde_dao l10_menhde_keotheo l10_menhde_dungsai l10_tap_lietke l10_tapcon_dem l10_tap_roirac l10_tap_khoang_nguyen l10_tap_phanbu l10_tap_kyhieu l10_tap_viet_khoang l10_tap_khangdinh l10_tap_hop l10_bpt2an_diem l10_hept_diem l10_bpt2an_mien l10_hept_nhandang l10_mien_hinh l10_gtlg_bu l10_gtlg_dau l10_gtlg_dangthuc l10_gtlg_goc_phu_bu l10_gtlg_biethuc l10_tg_congthuc l10_cosin_canh l10_cosin_goc l10_sin_R l10_dientich l10_tg_dientich_sin l10_tg_goc l10_tg_thucte l10_tg_thucte2 l10_bpt_lap_he l10_qhtt_thucte l10_qhtt_3rb ' +
                 'l10_tf_tg_gocgoc l10_tf_tg_bacanh l10_tf_hethuc l10_tf_hethuc_tg l10_tf_menhde l10_tf_tap l10_tf_bpt2an l10_tf_gtlg_dacbiet l10_tf_tap_hop l10_tf_bpt_hai_an_nghiem ' +
                 'l10_sa_menhde_dem_dung l10_sa_tap_dem l10_sa_tap_khoang_nguyen l10_sa_tap_khoang_nguyen_3 l10_sa_gtlg_biethuc l10_sa_cosin_canh l10_sa_heron l10_sa_dientich_sin l10_sa_ven_batap l10_sa_ven_haitap l10_sa_ven_batap_nguoc l10_es_tap l10_es_venn l10_es_qhtt l10_es_qhtt3 l10_es_thucte ' +
-                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron l12_ox_ijk_toado l12_ox_toado_ijk l12_ox_om_ijk_diem l12_ox_diem_om_ijk l12_ox_toado_ab l12_ox_ab_ijk l12_ox_diem_tu_vecto l12_ox_diem_dacbiet l12_gk_sa_ox_diem_m l12_gk_sa_cuctri_can_bac2 l12_gk_sa_gtln_can_bac2 l12_gk_sa_nha_cho_bien').split(' ');
+                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron l12_ox_ijk_toado l12_ox_toado_ijk l12_ox_om_ijk_diem l12_ox_diem_om_ijk l12_ox_toado_ab l12_ox_ab_ijk l12_ox_diem_tu_vecto l12_ox_diem_dacbiet l12_gk_sa_ox_diem_m l12_gk_sa_cuctri_can_bac2 l12_gk_sa_gtln_can_bac2 l12_gk_sa_nha_cho_bien l12_tf_vt_langtru_tgvuong l12_tf_vt_chop_hcn_dangthuc').split(' ');
             window.__GK1 = window.__GK1 || {}; ids.forEach(function (i) { if (i) window.__GK1[i] = 1; });
         })();
     })(Q);
