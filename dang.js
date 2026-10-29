@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v290";
+window.__DANG_VER = "v292";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -4131,7 +4131,7 @@ window.__DANG_VER = "v290";
                 for (var a2 = 0; a2 < prs.length; a2++) for (var b2 = a2 + 1; b2 < prs.length; b2++) {
                     if (ln(V[a2]) < EPS || ln(V[b2]) < EPS) continue; var d = dt(V[a2], V[b2]); if (Math.abs(d) > 4.01) continue; var s1 = fmtK(d, 'a^2'); if (!s1) continue; dotL.push([a2, b2, d, s1]);
                 }
-                var tD = function () { need(dotL.length); var nz = dotL.filter(function (z) { return Math.abs(z[2]) > EPS; }), g = pick(Math.random() < 0.85 ? nz : dotL); return function (ok) { var other = fmtK(Math.abs(g[2]) < EPS ? 0.5 : -g[2], 'a^2'), shown = ok ? g[3] : other; return { t: 'Tích vô hướng $' + ovx(prs[g[0]]) + '\\cdot' + ovx(prs[g[1]]) + '=' + shown + '$.', why: 'Tính bằng tọa độ (đặt $a=1$): $' + ovx(prs[g[0]]) + '\\cdot' + ovx(prs[g[1]]) + '=' + g[3] + '$.' }; }; };
+                var tD = function () { var easy = dotL.filter(function (z) { return !/[MNO]/.test(prs[z[0]].join('') + prs[z[1]].join('')); }); if (easy.length >= 3) dotL = easy; need(dotL.length); var nz = dotL.filter(function (z) { return Math.abs(z[2]) > EPS; }), g = pick(Math.random() < 0.85 ? nz : dotL); return function (ok) { var other = fmtK(Math.abs(g[2]) < EPS ? 0.5 : -g[2], 'a^2'), shown = ok ? g[3] : other; return { t: 'Tích vô hướng $' + ovx(prs[g[0]]) + '\\cdot' + ovx(prs[g[1]]) + '=' + shown + '$.', why: 'Tính bằng tọa độ (đặt $a=1$): $' + ovx(prs[g[0]]) + '\\cdot' + ovx(prs[g[1]]) + '=' + g[3] + '$.' }; }; };
                 /* E: vectơ cùng phương, hệ số */
                 var KS = [[0.5, '\\dfrac12'], [2, '2'], [-0.5, '-\\dfrac12'], [-2, '-2'], [-1, '-1']], mulL = [];
                 for (var a3 = 0; a3 < prs.length; a3++) for (var b3 = 0; b3 < prs.length; b3++) {
@@ -4163,7 +4163,9 @@ window.__DANG_VER = "v290";
             addTF('l12_tf_vt_hinh_chop_hcn', 12, GVK, 'Hình chóp có đáy hình chữ nhật, cạnh bên vuông góc đáy: vectơ, góc, tích vô hướng (đúng – sai)', 'TH', function () {
                 var b = pick([2, 2, 3]), c = pick([1, 2, 3]), h = c === 1 ? 1 : Math.sqrt(c), P = { A: [0, 0, 0], B: [1, 0, 0], C: [1, b, 0], D: [0, b, 0], S: [0, 0, h], O: [0.5, b / 2, 0] };
                 var E = [['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'A'], ['S', 'A'], ['S', 'B'], ['S', 'C'], ['S', 'D']], ms = addMids(P, [['S', 'B'], ['S', 'C'], ['S', 'D']]);
-                return build({ P: P, edges: E, stem: 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=a$, $AD=' + b + 'a$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy $(ABCD)$ và $SA=a' + (c === 1 ? '' : SQ[c]) + '$. Gọi $M,N$ lần lượt là trung điểm của $' + ms[0][0] + ms[0][1] + '$ và $' + ms[1][0] + ms[1][1] + '$. Xét tính đúng sai của các mệnh đề sau:' });
+                var r0 = build({ P: P, edges: E, stem: 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=a$, $AD=' + b + 'a$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy $(ABCD)$ và $SA=a' + (c === 1 ? '' : SQ[c]) + '$. Gọi $M,N$ lần lượt là trung điểm của $' + ms[0][0] + ms[0][1] + '$ và $' + ms[1][0] + ms[1][1] + '$. Xét tính đúng sai của các mệnh đề sau:' });
+                try { r0.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { diag: true, mids: ms }), 360, 260) + '" style="max-width:360px">'; } catch (e) { }
+                return r0;
             });
             addTF('l12_tf_vt_hinh_chop_deu', 12, GVK, 'Hình chóp tứ giác đều: vectơ, góc, tổng vectơ, tích vô hướng (đúng – sai)', 'TH', function () {
                 var l = pick([1, 2]), h = Math.sqrt(l - 0.5), P = { A: [0, 0, 0], B: [1, 0, 0], C: [1, 1, 0], D: [0, 1, 0], O: [0.5, 0.5, 0], S: [0.5, 0.5, h] };
@@ -4228,7 +4230,7 @@ window.__DANG_VER = "v290";
                 }
                 function itB(ok) {
                     var rule = pick(['cong', 'tru', 'hbh']), o = mkB(rule), shown = o.tgt, rn = { cong: 'cộng (quy tắc ba điểm)', tru: 'trừ', hbh: 'hình bình hành' }[rule];
-                    if (!ok) { var cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res) && (rule === 'cong' ? z[0] === o.tgt[0] : (rule === 'tru' ? (z[0] === o.tgt[1] && z[1] === o.tgt[0]) || z[0] === o.tgt[0] || z[1] === o.tgt[1] : z[0] === o.tgt[0])); }); if (!cand.length) cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res); }); shown = pick(cand); }
+                    if (!ok) { var cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res) && !same(vec(z[0], z[1]), vec(o.pts[0], o.pts[1])) && !same(vec(z[0], z[1]), vec(o.pts[1], o.pts[2])) && !same(vec(z[0], z[1]), vec(o.pts[0], o.pts[2])) && (rule === 'cong' ? z[0] === o.tgt[0] : (rule === 'tru' ? (z[0] === o.tgt[1] && z[1] === o.tgt[0]) || z[0] === o.tgt[0] || z[1] === o.tgt[1] : z[0] === o.tgt[0])); }); if (!cand.length) cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res); }); shown = pick(cand); }
                     var good = rule === 'cong' ? 'Theo quy tắc ba điểm: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : rule === 'tru' ? 'Theo quy tắc hiệu: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : 'Vì tứ giác có hai cạnh kề tại ' + o.pts[0] + ' là hình bình hành nên theo quy tắc hình bình hành: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.';
                     var pre = rule === 'cong' ? 'Theo quy tắc cộng, ' : rule === 'tru' ? 'Theo quy tắc trừ, ' : 'Theo quy tắc hình bình hành, ';
                     return { t: pre + '$' + o.lhs + '=' + V(shown[0], shown[1]) + '$.', why: good + (ok ? '' : ' Vế phải đã cho là $' + V(shown[0], shown[1]) + '$ nên mệnh đề sai.') };
@@ -4258,25 +4260,26 @@ window.__DANG_VER = "v290";
                     var SA = [0, 30, 45, 60, 90, 120, 135, 150, 180], C2 = { 0: 1, 30: Math.sqrt(3) / 2, 45: Math.sqrt(2) / 2, 60: 0.5, 90: 0, 120: -0.5, 135: -Math.sqrt(2) / 2, 150: -Math.sqrt(3) / 2, 180: -1 };
                     var ang = [], dots = [];
                     prs.forEach(function (x) { prs.forEach(function (y) { if (x[0] >= y[0] && false) return; if (x[0] === y[0] && x[1] === y[1]) return; if (rev(x, y)) return; var u = vec(x[0], x[1]), w = vec(y[0], y[1]), d = dotv(u, w), c = d / Math.sqrt(nrm2(u) * nrm2(w)); dots.push([x, y, d]); for (var i = 0; i < SA.length; i++) if (SA[i] !== 0 && SA[i] !== 180 && Math.abs(C2[SA[i]] - c) < 1e-9) ang.push([x, y, SA[i], d]); }); });
+                    ang = ang.filter(function (z) { return z[2] !== 90; });
                     if (ang.length && Math.random() < 0.5) {
                         var g = pick(ang), a0 = g[2], shown = ok ? a0 : pick(SA.filter(function (z) { return z !== a0 && z !== 0 && z !== 180; })), u = vec(g[0][0], g[0][1]), w = vec(g[1][0], g[1][1]);
                         var cs = { 30: '\\dfrac{\\sqrt3}{2}', 45: '\\dfrac{\\sqrt2}{2}', 60: '\\dfrac12', 90: '0', 120: '-\\dfrac12', 135: '-\\dfrac{\\sqrt2}{2}', 150: '-\\dfrac{\\sqrt3}{2}' }[a0];
                         return { t: 'Góc giữa hai vectơ $' + V(g[0][0], g[0][1]) + '$ và $' + V(g[1][0], g[1][1]) + '$ bằng $' + shown + '^\\circ$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g[0][0], g[0][1]) + '=' + T(u) + '$, $' + V(g[1][0], g[1][1]) + '=' + T(w) + '$. Tích vô hướng bằng $' + g[3] + '$, độ dài lần lượt $\\sqrt{' + nrm2(u) + '}$ và $\\sqrt{' + nrm2(w) + '}$ nên $\\cos=' + cs + '$, suy ra góc bằng $' + a0 + '^\\circ$' + (ok ? '.' : ', không phải $' + shown + '^\\circ$.') };
                     }
-                    var nz = dots.filter(function (z) { return z[2] !== 0; }), g2 = pick(Math.random() < 0.8 ? nz : dots), d0 = g2[2], u2 = vec(g2[0][0], g2[0][1]), w2 = vec(g2[1][0], g2[1][1]);
+                    var nz = dots.filter(function (z) { return z[2] !== 0; }), g2 = pick(nz), d0 = g2[2], u2 = vec(g2[0][0], g2[0][1]), w2 = vec(g2[1][0], g2[1][1]);
                     var d1 = ok ? d0 : (d0 === 0 ? pick([-2, -1, 1, 2]) : pick([-d0, d0 + pick([-2, -1, 1, 2]), 0].filter(function (z) { return z !== d0; })));
                     return { t: '$' + V(g2[0][0], g2[0][1]) + '\\cdot' + V(g2[1][0], g2[1][1]) + '=' + d1 + '$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g2[0][0], g2[0][1]) + '=' + T(u2) + '$, $' + V(g2[1][0], g2[1][1]) + '=' + T(w2) + '$ nên tích vô hướng bằng $' + u2.map(function (z, i) { return z * w2[i]; }).map(function (z, i) { return i ? (z < 0 ? '(' + z + ')' : z) : z; }).join('+') + '=' + d0 + '$' + (ok ? '.' : ', khác $' + d1 + '$.') };
                 }
                 var stem = 'Cho hình lăng trụ đứng $ABC.A\'B\'C\'$ có đáy $ABC$ là tam giác vuông tại $' + rv + '$, $' + rv + X + '=' + p + '$, $' + rv + Y + '=' + q + '$ và cạnh bên $AA\'=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
                 var tfo = mkTF(stem, [itA, itB, itC, itD], 'VD');
-                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('lang_tru', { rv: rv, X: X, Y: Y, p: p, q: q, h: h }), 360, 250) + '" style="max-width:360px">'; } catch (e) { }
+                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('lang_tru', {}), 360, 250) + '" style="max-width:360px">'; } catch (e) { }
                 return tfo;
             });
             // ===== Hình chóp S.ABCD, đáy là hình chữ nhật: đẳng thức vectơ (đúng – sai)
             addTF('l12_tf_vt_chop_hcn_dangthuc', 12, GVK, 'Hình chóp S.ABCD đáy hình chữ nhật: vectơ bằng – đối – cùng phương, quy tắc cộng – trừ – hình bình hành, độ dài, tích vô hướng, góc (đúng – sai)', 'VD', function () {
-                var ctr = Math.random() < 0.4, p = ctr ? 2 * ri(1, 3) : ri(2, 6), q = ctr ? 2 * ri(1, 4) : ri(2, 7), h = ri(2, 7), rv = 'A';
-                var P = { A: [0, 0, 0], B: [p, 0, 0], D: [0, q, 0], C: [p, q, 0], S: ctr ? [p / 2, q / 2, h] : [0, 0, h] };
-                var N = ['S', 'A', 'B', 'C', 'D'], faces = [['A', 'B', 'C', 'D']];
+                var ctr = false, p = 2 * ri(1, 3), q = 2 * ri(1, 4), h = ri(2, 6), rv = 'A';
+                var P = { A: [0, 0, 0], B: [p, 0, 0], D: [0, q, 0], C: [p, q, 0], S: [0, 0, h], O: [p / 2, q / 2, 0] };
+                var N = ['S', 'A', 'B', 'C', 'D', 'O'], faces = [['A', 'B', 'C', 'D']];
                 function vec(a, b) { return vv(P, a, b); }
                 function V(a, b) { return '\\overrightarrow{' + a + b + '}'; }
                 function T(u) { return '(' + u.join(';') + ')'; }
@@ -4288,7 +4291,7 @@ window.__DANG_VER = "v290";
                 function rev(x, y) { return x[0] === y[1] && x[1] === y[0]; }
                 /* a) bằng nhau, đối nhau, cùng phương, cùng hướng */
                 function itA(ok) {
-                    var rel = pick(['bằng', 'đối', 'phuong', 'huong']);
+                    var rel = pick(['bằng', 'đối']);
                     function sat(x, y) { var u = vec(x[0], x[1]), w = vec(y[0], y[1]); if (rel === 'bằng') return same(u, w); if (rel === 'đối') return same(u, neg(w)); if (rel === 'phuong') return cross0(u, w); return cross0(u, w) && dotv(u, w) > 0; }
                     function near(x, y) { var u = vec(x[0], x[1]), w = vec(y[0], y[1]); if (rel === 'bằng') return nrm2(u) === nrm2(w); if (rel === 'đối') return nrm2(u) === nrm2(w); if (rel === 'phuong') return nrm2(u) === nrm2(w) || x[0] === y[0] || x[1] === y[1]; return cross0(u, w); }
                     var good = [], bad = [];
@@ -4345,19 +4348,83 @@ window.__DANG_VER = "v290";
                     var SA = [0, 30, 45, 60, 90, 120, 135, 150, 180], C2 = { 0: 1, 30: Math.sqrt(3) / 2, 45: Math.sqrt(2) / 2, 60: 0.5, 90: 0, 120: -0.5, 135: -Math.sqrt(2) / 2, 150: -Math.sqrt(3) / 2, 180: -1 };
                     var ang = [], dots = [];
                     prs.forEach(function (x) { prs.forEach(function (y) { if (x[0] >= y[0] && false) return; if (x[0] === y[0] && x[1] === y[1]) return; if (rev(x, y)) return; var u = vec(x[0], x[1]), w = vec(y[0], y[1]), d = dotv(u, w), c = d / Math.sqrt(nrm2(u) * nrm2(w)); dots.push([x, y, d]); for (var i = 0; i < SA.length; i++) if (SA[i] !== 0 && SA[i] !== 180 && Math.abs(C2[SA[i]] - c) < 1e-9) ang.push([x, y, SA[i], d]); }); });
-                    if (ang.length && Math.random() < 0.5) {
+                    var hasO = function (z) { return /O/.test(z[0].join('') + z[1].join('')); };
+                    ang = ang.filter(function (z) { return z[2] !== 90 && hasO(z); });
+                    if (ang.length && Math.random() < 0.4) {
                         var g = pick(ang), a0 = g[2], shown = ok ? a0 : pick(SA.filter(function (z) { return z !== a0 && z !== 0 && z !== 180; })), u = vec(g[0][0], g[0][1]), w = vec(g[1][0], g[1][1]);
                         var cs = { 30: '\\dfrac{\\sqrt3}{2}', 45: '\\dfrac{\\sqrt2}{2}', 60: '\\dfrac12', 90: '0', 120: '-\\dfrac12', 135: '-\\dfrac{\\sqrt2}{2}', 150: '-\\dfrac{\\sqrt3}{2}' }[a0];
                         return { t: 'Góc giữa hai vectơ $' + V(g[0][0], g[0][1]) + '$ và $' + V(g[1][0], g[1][1]) + '$ bằng $' + shown + '^\\circ$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g[0][0], g[0][1]) + '=' + T(u) + '$, $' + V(g[1][0], g[1][1]) + '=' + T(w) + '$. Tích vô hướng bằng $' + g[3] + '$, độ dài lần lượt $\\sqrt{' + nrm2(u) + '}$ và $\\sqrt{' + nrm2(w) + '}$ nên $\\cos=' + cs + '$, suy ra góc bằng $' + a0 + '^\\circ$' + (ok ? '.' : ', không phải $' + shown + '^\\circ$.') };
                     }
-                    var nz = dots.filter(function (z) { return z[2] !== 0; }), g2 = pick(Math.random() < 0.8 ? nz : dots), d0 = g2[2], u2 = vec(g2[0][0], g2[0][1]), w2 = vec(g2[1][0], g2[1][1]);
+                    var nz = dots.filter(function (z) { return z[2] !== 0; }), nzO = nz.filter(hasO), g2 = pick(nzO.length ? nzO : nz), d0 = g2[2], u2 = vec(g2[0][0], g2[0][1]), w2 = vec(g2[1][0], g2[1][1]);
                     var d1 = ok ? d0 : (d0 === 0 ? pick([-2, -1, 1, 2]) : pick([-d0, d0 + pick([-2, -1, 1, 2]), 0].filter(function (z) { return z !== d0; })));
                     return { t: '$' + V(g2[0][0], g2[0][1]) + '\\cdot' + V(g2[1][0], g2[1][1]) + '=' + d1 + '$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g2[0][0], g2[0][1]) + '=' + T(u2) + '$, $' + V(g2[1][0], g2[1][1]) + '=' + T(w2) + '$ nên tích vô hướng bằng $' + u2.map(function (z, i) { return z * w2[i]; }).map(function (z, i) { return i ? (z < 0 ? '(' + z + ')' : z) : z; }).join('+') + '=' + d0 + '$' + (ok ? '.' : ', khác $' + d1 + '$.') };
                 }
                 var stem = ctr ? 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SO$ vuông góc với mặt phẳng đáy và $SO=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:' : 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy và $SA=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
                 var tfo = mkTF(stem, [itA, itB, itC, itD], 'VD');
-                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { p: p, q: q, h: h, o: ctr }), 360, 260) + '" style="max-width:360px">'; } catch (e) { }
+                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { diag: true }), 360, 260) + '" style="max-width:360px">'; } catch (e) { }
                 return tfo;
+            });
+            // ===== Hàm số: nhất biến và bậc hai chia bậc nhất (đúng – sai, có cực trị, GTLN – GTNN)
+            function fvv(f) { return f.n / f.d; }
+            function altF(v, avoid) { var c = [fadd(v, F(1)), fsub(v, F(1)), fadd(v, F(2)), fsub(v, F(2)), fneg(v)].filter(function (z) { return !feq(z, v) && !(avoid || []).some(function (w) { return feq(w, z); }); }); return pick(c); }
+            addTF('l12_tf_hs_nhatbien_gtln', 12, 'Giải tích 12 › Ứng dụng đạo hàm (Chương I)', 'Hàm số $y=\\dfrac{ax+b}{cx+d}$: tiệm cận, đơn điệu, cực trị, GTLN – GTNN trên đoạn (đúng – sai)', 'VD', function () {
+                var a = ri(-4, 4), b = ri(-5, 5), c = pick([1, 2, 3]), d = ri(-5, 5), D = a * d - b * c;
+                need(a !== 0 && D !== 0); var xs = F(-d, c), ys = F(a, c), pole = -d / c;
+                var m, n; if (Math.random() < 0.5) { n = Math.ceil(pole) - 1 - ri(0, 3); m = n - ri(2, 5); } else { m = Math.floor(pole) + 1 + ri(0, 3); n = m + ri(2, 5); } need(pole < m || pole > n);
+                function yv(x) { return F(a * x + b, c * x + d); }
+                var v1 = yv(m), v2 = yv(n), inc = D > 0, mn = inc ? v1 : v2, mxv = inc ? v2 : v1, den = lnS(c, d, 'x');
+                var f = '\\dfrac{' + lnS(a, b, 'x') + '}{' + den + '}';
+                var itA = function (ok) {
+                    if (Math.random() < 0.5) { var v = ok ? xs : altF(xs); return { t: 'Đồ thị hàm số có tiệm cận đứng là đường thẳng $x=' + tex(v) + '$.', why: 'Tiệm cận đứng $x=-\\dfrac{d}{c}=' + tex(xs) + '$.', dbg: { k: 'tcd', v: fvv(v) } }; }
+                    var w = ok ? ys : altF(ys); return { t: 'Đồ thị hàm số có tiệm cận ngang là đường thẳng $y=' + tex(w) + '$.', why: 'Tiệm cận ngang $y=\\dfrac{a}{c}=' + tex(ys) + '$.', dbg: { k: 'tcn', v: fvv(w) } };
+                };
+                var itB = function (ok) {
+                    var left = Math.random() < 0.5, itv = left ? '(-\\infty;' + tex(xs) + ')' : '(' + tex(xs) + ';+\\infty)', claimInc = ok ? inc : !inc;
+                    return { t: 'Hàm số ' + (claimInc ? 'đồng biến' : 'nghịch biến') + ' trên khoảng $' + itv + '$.', why: '$y\'=\\dfrac{' + D + '}{(' + den + ')^2}' + (inc ? '>0' : '<0') + '$ với mọi $x\\ne' + tex(xs) + '$ nên hàm số ' + (inc ? 'đồng biến' : 'nghịch biến') + ' trên từng khoảng xác định.', dbg: { k: 'mono', left: left, inc: claimInc } };
+                };
+                var itC = function (ok) {
+                    var t = ok ? 'Hàm số không có cực trị.' : pick(['Hàm số có một điểm cực đại.', 'Hàm số có một điểm cực tiểu.', 'Hàm số có hai điểm cực trị.']);
+                    return { t: t, why: '$y\'=\\dfrac{' + D + '}{(' + den + ')^2}$ không đổi dấu và không bằng $0$ nên hàm số không có cực trị.', dbg: { k: 'cuctri0', claimNone: ok } };
+                };
+                var itD = function (ok) {
+                    var wantMax = Math.random() < 0.5, tv = wantMax ? mxv : mn, other = wantMax ? mn : mxv, shown = ok ? tv : pick([other, fadd(tv, F(1)), fsub(tv, F(1))].filter(function (z) { return !feq(z, tv); }));
+                    return { t: 'Giá trị ' + (wantMax ? 'lớn nhất' : 'nhỏ nhất') + ' của hàm số trên đoạn $[' + m + ';' + n + ']$ bằng $' + tex(shown) + '$.', why: 'Hàm số ' + (inc ? 'đồng biến' : 'nghịch biến') + ' trên $[' + m + ';' + n + ']$ nên GTNN bằng $y(' + (inc ? m : n) + ')=' + tex(mn) + '$ và GTLN bằng $y(' + (inc ? n : m) + ')=' + tex(mxv) + '$.', dbg: { k: 'minmax', max: wantMax, v: fvv(shown), m: m, n: n } };
+                };
+                var r = mkTF('Cho hàm số $y=' + f + '$. Xét tính đúng sai của các mệnh đề sau:', [itA, itB, itC, itD], 'VD');
+                r.dbg = { a: a, b: b, c: c, d: d, items: r.items.map(function (z) { return z.dbg; }) }; return r;
+            });
+            addTF('l12_tf_hs_bac2chia_bac1', 12, 'Giải tích 12 › Ứng dụng đạo hàm (Chương I)', 'Hàm số $y=\\dfrac{ax^2+bx+c}{x+n}$: tiệm cận, đơn điệu, cực trị, GTLN – GTNN trên đoạn (đúng – sai)', 'VD', function () {
+                var a = pick([1, 1, 2]), n = pick([-4, -3, -2, -1, 1, 2, 3, 4]), t = ri(1, 3), b = ri(-4, 4), r0 = a * t * t, k = b - a * n, c = r0 + n * b - a * n * n;
+                var x1 = -n - t, x2 = -n + t; function yv(x) { return F(a * x * x + b * x + c, x + n); }
+                var y1 = yv(x1), y2 = yv(x2), den = lnS(1, n, 'x'), num = trimP(cf(a, 'x^2') + cf(b, 'x') + cf(c, ''));
+                var f = '\\dfrac{' + num + '}{' + den + '}', slant = lnS(a, k, 'x');
+                var yp = '$y=' + slant + '+\\dfrac{' + r0 + '}{' + den + '}$, $y\'=' + a + '-\\dfrac{' + r0 + '}{(' + den + ')^2}=0\\Leftrightarrow x=' + x1 + '$ hoặc $x=' + x2 + '$.';
+                var itA = function (ok) {
+                    if (Math.random() < 0.5) { var vx = ok ? -n : -n + pick([-2, -1, 1, 2]); return { t: 'Đồ thị hàm số có tiệm cận đứng là đường thẳng $x=' + vx + '$.', why: 'Tiệm cận đứng $x=' + (-n) + '$ (nghiệm của mẫu).', dbg: { k: 'tcd', v: vx } }; }
+                    var kk = ok ? k : k + pick([-2, -1, 1, 2]); return { t: 'Đồ thị hàm số có tiệm cận xiên là đường thẳng $y=' + lnS(a, kk, 'x') + '$.', why: 'Chia đa thức: $y=' + slant + '+\\dfrac{' + r0 + '}{' + den + '}$ nên tiệm cận xiên là $y=' + slant + '$.', dbg: { k: 'tcx', a: a, kk: kk } };
+                };
+                var FACT = [['(-\\infty;' + x1 + ')', true], ['(' + x1 + ';' + (-n) + ')', false], ['(' + (-n) + ';' + x2 + ')', false], ['(' + x2 + ';+\\infty)', true]];
+                var itB = function (ok) {
+                    var g = pick(FACT), claimInc = ok ? g[1] : !g[1];
+                    return { t: 'Hàm số ' + (claimInc ? 'đồng biến' : 'nghịch biến') + ' trên khoảng $' + g[0] + '$.', why: yp + ' Bảng biến thiên: hàm số đồng biến trên $(-\\infty;' + x1 + ')$ và $(' + x2 + ';+\\infty)$, nghịch biến trên $(' + x1 + ';' + (-n) + ')$ và $(' + (-n) + ';' + x2 + ')$.', dbg: { k: 'mono', iv: g[0], inc: claimInc, lo: g[0] } };
+                };
+                var itC = function (ok) {
+                    var form = pick([1, 2, 3]);
+                    if (form === 1) { var maxClaim = ok; return { t: 'Hàm số đạt ' + (maxClaim ? 'cực đại' : 'cực tiểu') + ' tại $x=' + x1 + '$.', why: yp + ' Tại $x=' + x1 + '$ đạo hàm đổi dấu từ $+$ sang $-$ nên hàm số đạt cực đại (cực tiểu đạt tại $x=' + x2 + '$).', dbg: { k: 'ext1', at: x1, max: maxClaim } }; }
+                    if (form === 2) { var vv = ok ? y2 : y1; return { t: 'Giá trị cực tiểu của hàm số bằng $' + tex(vv) + '$.', why: yp + ' Cực tiểu tại $x=' + x2 + '$, giá trị cực tiểu $y(' + x2 + ')=' + tex(y2) + '$ (còn $y(' + x1 + ')=' + tex(y1) + '$ là giá trị cực đại).', dbg: { k: 'ext2', v: fvv(vv) } }; }
+                    var py = ok ? y1 : altF(y1, [y2]); return { t: 'Điểm cực đại của đồ thị hàm số là $(' + x1 + ';' + tex(py) + ')$.', why: yp + ' Cực đại tại $x=' + x1 + '$, $y(' + x1 + ')=' + tex(y1) + '$.', dbg: { k: 'ext3', x: x1, y: fvv(py) } };
+                };
+                var right = Math.random() < 0.5, m0, n0;
+                if (right) { m0 = -n + ri(1, t + 1); n0 = m0 + ri(2, 4); } else { n0 = -n - ri(1, t + 1); m0 = n0 - ri(2, 4); }
+                var cand = [yv(m0), yv(n0)]; if (x1 > m0 && x1 < n0) cand.push(y1); if (x2 > m0 && x2 < n0) cand.push(y2);
+                var mxv = cand.reduce(function (p, z) { return fvv(z) > fvv(p) ? z : p; }), mnv = cand.reduce(function (p, z) { return fvv(z) < fvv(p) ? z : p; });
+                need(!feq(mxv, mnv));
+                var itD = function (ok) {
+                    var wantMax = Math.random() < 0.5, tv = wantMax ? mxv : mnv, other = wantMax ? mnv : mxv, shown = ok ? tv : pick([other, fadd(tv, F(1)), fsub(tv, F(1))].filter(function (z) { return !feq(z, tv); }));
+                    return { t: 'Giá trị ' + (wantMax ? 'lớn nhất' : 'nhỏ nhất') + ' của hàm số trên đoạn $[' + m0 + ';' + n0 + ']$ bằng $' + tex(shown) + '$.', why: yp + ' Trên $[' + m0 + ';' + n0 + ']$ so sánh $y(' + m0 + ')=' + tex(yv(m0)) + '$, $y(' + n0 + ')=' + tex(yv(n0)) + '$' + ((x1 > m0 && x1 < n0) ? ', $y(' + x1 + ')=' + tex(y1) + '$' : '') + ((x2 > m0 && x2 < n0) ? ', $y(' + x2 + ')=' + tex(y2) + '$' : '') + '. GTLN bằng $' + tex(mxv) + '$, GTNN bằng $' + tex(mnv) + '$.', dbg: { k: 'minmax', max: wantMax, v: fvv(shown), m: m0, n: n0 } };
+                };
+                var r = mkTF('Cho hàm số $y=' + f + '$. Xét tính đúng sai của các mệnh đề sau:', [itA, itB, itC, itD], 'VD');
+                r.dbg = { a: a, b: b, c: c, n: n, items: r.items.map(function (z) { return z.dbg; }) }; return r;
             });
             function decS(v) { return String(Math.round(v * 100) / 100).replace('.', ','); }
             function tx(v) { return '$' + decS(v).replace(',', '{,}') + '$'; }
@@ -9306,7 +9373,7 @@ window.__DANG_VER = "v290";
             var ids = ('l10_menhde_dem l10_menhde_pdinh l10_menhde_dao l10_menhde_keotheo l10_menhde_dungsai l10_tap_lietke l10_tapcon_dem l10_tap_roirac l10_tap_khoang_nguyen l10_tap_phanbu l10_tap_kyhieu l10_tap_viet_khoang l10_tap_khangdinh l10_tap_hop l10_bpt2an_diem l10_hept_diem l10_bpt2an_mien l10_hept_nhandang l10_mien_hinh l10_gtlg_bu l10_gtlg_dau l10_gtlg_dangthuc l10_gtlg_goc_phu_bu l10_gtlg_biethuc l10_tg_congthuc l10_cosin_canh l10_cosin_goc l10_sin_R l10_dientich l10_tg_dientich_sin l10_tg_goc l10_tg_thucte l10_tg_thucte2 l10_bpt_lap_he l10_qhtt_thucte l10_qhtt_3rb ' +
                 'l10_tf_tg_gocgoc l10_tf_tg_bacanh l10_tf_hethuc l10_tf_hethuc_tg l10_tf_menhde l10_tf_tap l10_tf_bpt2an l10_tf_gtlg_dacbiet l10_tf_tap_hop l10_tf_bpt_hai_an_nghiem ' +
                 'l10_sa_menhde_dem_dung l10_sa_tap_dem l10_sa_tap_khoang_nguyen l10_sa_tap_khoang_nguyen_3 l10_sa_gtlg_biethuc l10_sa_cosin_canh l10_sa_heron l10_sa_dientich_sin l10_sa_ven_batap l10_sa_ven_haitap l10_sa_ven_batap_nguoc l10_es_tap l10_es_venn l10_es_qhtt l10_es_qhtt3 l10_es_thucte ' +
-                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron l12_ox_ijk_toado l12_ox_toado_ijk l12_ox_om_ijk_diem l12_ox_diem_om_ijk l12_ox_toado_ab l12_ox_ab_ijk l12_ox_diem_tu_vecto l12_ox_diem_dacbiet l12_gk_sa_ox_diem_m l12_gk_sa_cuctri_can_bac2 l12_gk_sa_gtln_can_bac2 l12_gk_sa_nha_cho_bien l12_tf_vt_langtru_tgvuong l12_tf_vt_chop_hcn_dangthuc').split(' ');
+                'l10_gk_es_tap l10_gk_es_venn l10_gk_es_nui l10_gk_sa_gtlg_tan l10_gk_sa_thap_mot_phia l10_gk_sa_thap_hai_phia l10_gk_sa_qua_song l10_gk_sa_cay_gay l10_gk_sa_hai_tau l10_gk_sa_may_bay l10_gk_sa_cay_doi l10_gk_sa_lat_gach l10_gk_sa_qhtt_max l10_gk_sa_qhtt_min l10_gk_mcq_nua_dtron l12_ox_ijk_toado l12_ox_toado_ijk l12_ox_om_ijk_diem l12_ox_diem_om_ijk l12_ox_toado_ab l12_ox_ab_ijk l12_ox_diem_tu_vecto l12_ox_diem_dacbiet l12_gk_sa_ox_diem_m l12_gk_sa_cuctri_can_bac2 l12_gk_sa_gtln_can_bac2 l12_gk_sa_nha_cho_bien l12_tf_vt_langtru_tgvuong l12_tf_vt_chop_hcn_dangthuc l12_tf_hs_nhatbien_gtln l12_tf_hs_bac2chia_bac1').split(' ');
             window.__GK1 = window.__GK1 || {}; ids.forEach(function (i) { if (i) window.__GK1[i] = 1; });
         })();
     })(Q);
@@ -9442,7 +9509,7 @@ window.__DANG_VER = "v290";
     (function () {
         var R = Math.PI / 180, sn = function (x) { return Math.sin(x * R); }, cs = function (x) { return Math.cos(x * R); }, tn = function (x) { return Math.tan(x * R); };
         window.__geoFig = function (k, p) {
-            var P = {}, lab = {}, segs = [], arcs = [], bands = [], note = '';
+            var P = {}, lab = {}, segs = [], arcs = [], bands = [], note = '', nodots = false;
             var S = function (a, b, o) { segs.push([a, b, o || {}]); };
             var G = { col: '#475569', w: 3 }, WOOD = { col: '#92400e', w: 5 }, LEAF = { col: '#16a34a', w: 5 }, THIN = { col: '#64748b', w: 2 };
             function ext(o, x) { var r = {}; for (var q in o) r[q] = o[q]; for (var q2 in x) r[q2] = x[q2]; return r; }
@@ -9527,29 +9594,27 @@ window.__DANG_VER = "v290";
                 S('A', 'B', ext(G, { txt: p.a + ' m', side: -1, off: 20 })); S('B', 'C', G); S('C', 'D', G); S('D', 'A', ext(G, { txt: p.d + ' m', side: -1, off: 20 })); S('A', 'C', { col: '#64748b', w: 2, dash: 1, txt: 'AC = ' + p.m + ' m', side: 1, off: 16 });
                 arcs.push(['A', 'C', 'B', p.al + '°', 24, [-30, -18]]); arcs.push(['A', 'C', 'D', p.de + '°', 24, [-30, 24]]);
             } else if (k === 'lang_tru') {
-                var mx = Math.max(p.p, p.q, p.h), sc3 = function (v) { return 0.75 + 0.45 * v / mx; }, lx = sc3(p.p), ly = 0.8 * sc3(p.q), lz = sc3(p.h), ox = 0.6, oy = 0.42;
+                var lx = 1.5, ly = 1.0, lz = 1.6, ox = 0.5, oy = 0.32;
                 function pj(x, y, z) { return [x + ox * y, z + oy * y]; }
-                var nR = p.rv, nX = p.X, nY = p.Y;
-                P.R = pj(0, 0, 0); P.X = pj(lx, 0, 0); P.Y = pj(0, ly, 0); P.R1 = pj(0, 0, lz); P.X1 = pj(lx, 0, lz); P.Y1 = pj(0, ly, lz);
-                lab.R = nR; lab.X = nX; lab.Y = nY; lab.R1 = nR + "'"; lab.X1 = nX + "'"; lab.Y1 = nY + "'";
+                P.C = pj(0, 0, 0); P.B = pj(lx, 0, 0); P.A = pj(0.5 * lx - ox * ly, ly, 0); P.C1 = pj(0, 0, lz); P.B1 = pj(lx, 0, lz); P.A1 = pj(0.5 * lx - ox * ly, ly, lz);
+                lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.A1 = "A'"; lab.B1 = "B'"; lab.C1 = "C'";
                 var SOL = { col: '#334155', w: 3 }, DSH = { col: '#64748b', w: 2, dash: 1 };
-                S('R', 'X', ext(SOL, { txt: String(p.p), side: 1, off: 22 })); S('X', 'Y', SOL); S('Y', 'R', ext(DSH, { txt: String(p.q), side: 1, off: 16 }));
-                S('R1', 'X1', SOL); S('X1', 'Y1', SOL); S('Y1', 'R1', SOL);
-                S('R', 'R1', ext(SOL, { txt: String(p.h), side: -1, off: 14 })); S('X', 'X1', SOL); S('Y', 'Y1', SOL);
-                note = 'Các số là độ dài cạnh; hình minh họa, không đúng tỉ lệ';
+                S('C', 'B', SOL); S('B', 'A', DSH); S('A', 'C', DSH);
+                S('C1', 'B1', SOL); S('B1', 'A1', SOL); S('A1', 'C1', SOL);
+                S('C', 'C1', SOL); S('B', 'B1', SOL); S('A', 'A1', DSH);
+                nodots = true; note = 'Hình minh họa';
             } else if (k === 'chop_hcn') {
-                var mx2 = Math.max(p.p, p.q, p.h), sc4 = function (v) { return 0.75 + 0.45 * v / mx2; }, bx = sc4(p.p), by = 0.8 * sc4(p.q), bz = sc4(p.h), qx = 0.6, qy = 0.42;
+                var qx = 0.5, qy = 0.34, W = 1.5, Dp = 1.35, H = 1.6;
                 function pj2(x, y, z) { return [x + qx * y, z + qy * y]; }
-                P.A = pj2(0, 0, 0); P.B = pj2(bx, 0, 0); P.D = pj2(0, by, 0); P.C = pj2(bx, by, 0); P.S = p.o ? pj2(bx / 2, by / 2, bz) : pj2(0, 0, bz);
+                P.D = pj2(0, 0, 0); P.C = pj2(W, 0, 0); P.A = pj2(0, Dp, 0); P.B = pj2(W, Dp, 0); P.S = pj2(0, Dp, H);
                 lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D'; lab.S = 'S';
                 var SO2 = { col: '#334155', w: 3 }, DS2 = { col: '#64748b', w: 2, dash: 1 };
-                S('A', 'B', ext(SO2, { txt: String(p.p), side: 1, off: 22 })); S('B', 'C', SO2); S('C', 'D', DS2); S('D', 'A', ext(DS2, { txt: String(p.q), side: 1, off: 16 }));
-                S('S', 'B', SO2); S('S', 'C', SO2); S('S', 'D', DS2);
-                if (p.o) { P.O = pj2(bx / 2, by / 2, 0); lab.O = 'O'; S('A', 'C', DS2); S('B', 'D', DS2); S('S', 'O', ext(DS2, { txt: String(p.h), side: 1, off: 14 })); S('S', 'A', SO2); }
-                else { S('S', 'A', ext(SO2, { txt: String(p.h), side: 1, off: 14 })); }
-                note = 'Các số là độ dài cạnh; hình minh họa, không đúng tỉ lệ';
+                S('D', 'C', SO2); S('C', 'B', SO2); S('B', 'A', DS2); S('A', 'D', DS2); S('S', 'D', SO2); S('S', 'C', SO2); S('S', 'B', SO2); S('S', 'A', DS2);
+                if (p.diag) { P.O = pj2(W / 2, Dp / 2, 0); lab.O = 'O'; S('A', 'C', DS2); S('B', 'D', DS2); }
+                if (p.mids) { var mm = ['M', 'N']; p.mids.forEach(function (e, i) { var u = P[e[0]], v = P[e[1]]; P[mm[i]] = [(u[0] + v[0]) / 2, (u[1] + v[1]) / 2]; lab[mm[i]] = mm[i]; }); }
+                nodots = true; note = 'Hình minh họa';
             }
-            return { t: 'geo', pts: P, lab: lab, segs: segs, arcs: arcs, bands: bands, note: note };
+            return { t: 'geo', pts: P, lab: lab, segs: segs, arcs: arcs, bands: bands, note: note, nodots: nodots };
         };
         window.__geoPng = function (f, w, h) {
             var Z = 2, c = document.createElement('canvas'); c.width = w * Z; c.height = h * Z; var g = c.getContext('2d'); g.scale(Z, Z); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
@@ -9572,7 +9637,7 @@ window.__DANG_VER = "v290";
                 var am = a1 + d / 2; g.fillStyle = '#dc2626'; g.font = '700 12px sans-serif'; g.textAlign = 'center'; if (!a[3]) { } else if (a[5]) g.fillText(a[3], vx + a[5][0], vy + a[5][1]); else g.fillText(a[3], vx + (r + 17) * Math.cos(am), vy + (r + 17) * Math.sin(am) + 4);
             });
             names.forEach(function (n) {
-                if (!f.lab[n]) return; var px = sx(n), py = sy(n); g.fillStyle = '#1e3a8a'; g.beginPath(); g.arc(px, py, 3.5, 0, 7); g.fill();
+                if (!f.lab[n]) return; var px = sx(n), py = sy(n); if (!f.nodots) { g.fillStyle = '#1e3a8a'; g.beginPath(); g.arc(px, py, 3.5, 0, 7); g.fill(); }
                 var dx = px - cx, dy = py - cy, ln = Math.hypot(dx, dy) || 1; g.fillStyle = '#0f172a'; g.font = 'italic 700 16px "Times New Roman", serif'; g.textAlign = 'center'; g.fillText(f.lab[n], px + dx / ln * 17, py + dy / ln * 17 + 5);
             });
             if (f.note) { g.fillStyle = '#64748b'; g.font = 'italic 11px sans-serif'; g.textAlign = 'center'; g.fillText(f.note, w / 2, h - 5); }
