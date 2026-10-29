@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v285";
+window.__DANG_VER = "v288";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -4268,7 +4268,9 @@ window.__DANG_VER = "v285";
                     return { t: '$' + V(g2[0][0], g2[0][1]) + '\\cdot' + V(g2[1][0], g2[1][1]) + '=' + d1 + '$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g2[0][0], g2[0][1]) + '=' + T(u2) + '$, $' + V(g2[1][0], g2[1][1]) + '=' + T(w2) + '$ nên tích vô hướng bằng $' + u2.map(function (z, i) { return z * w2[i]; }).map(function (z, i) { return i ? (z < 0 ? '(' + z + ')' : z) : z; }).join('+') + '=' + d0 + '$' + (ok ? '.' : ', khác $' + d1 + '$.') };
                 }
                 var stem = 'Cho hình lăng trụ đứng $ABC.A\'B\'C\'$ có đáy $ABC$ là tam giác vuông tại $' + rv + '$, $' + rv + X + '=' + p + '$, $' + rv + Y + '=' + q + '$ và cạnh bên $AA\'=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
-                return mkTF(stem, [itA, itB, itC, itD], 'VD');
+                var tfo = mkTF(stem, [itA, itB, itC, itD], 'VD');
+                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('lang_tru', { rv: rv, X: X, Y: Y, p: p, q: q, h: h }), 360, 250) + '" style="max-width:360px">'; } catch (e) { }
+                return tfo;
             });
             function decS(v) { return String(Math.round(v * 100) / 100).replace('.', ','); }
             function tx(v) { return '$' + decS(v).replace(',', '{,}') + '$'; }
@@ -9437,6 +9439,17 @@ window.__DANG_VER = "v285";
                 P.A = [0, 0]; P.C = [p.m, 0]; P.B = [p.a * cs(p.al), p.a * sn(p.al)]; P.D = [p.d * cs(p.de), -p.d * sn(p.de)]; lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D';
                 S('A', 'B', ext(G, { txt: p.a + ' m', side: -1, off: 20 })); S('B', 'C', G); S('C', 'D', G); S('D', 'A', ext(G, { txt: p.d + ' m', side: -1, off: 20 })); S('A', 'C', { col: '#64748b', w: 2, dash: 1, txt: 'AC = ' + p.m + ' m', side: 1, off: 16 });
                 arcs.push(['A', 'C', 'B', p.al + '°', 24, [-30, -18]]); arcs.push(['A', 'C', 'D', p.de + '°', 24, [-30, 24]]);
+            } else if (k === 'lang_tru') {
+                var mx = Math.max(p.p, p.q, p.h), sc3 = function (v) { return 0.75 + 0.45 * v / mx; }, lx = sc3(p.p), ly = 0.8 * sc3(p.q), lz = sc3(p.h), ox = 0.6, oy = 0.42;
+                function pj(x, y, z) { return [x + ox * y, z + oy * y]; }
+                var nR = p.rv, nX = p.X, nY = p.Y;
+                P.R = pj(0, 0, 0); P.X = pj(lx, 0, 0); P.Y = pj(0, ly, 0); P.R1 = pj(0, 0, lz); P.X1 = pj(lx, 0, lz); P.Y1 = pj(0, ly, lz);
+                lab.R = nR; lab.X = nX; lab.Y = nY; lab.R1 = nR + "'"; lab.X1 = nX + "'"; lab.Y1 = nY + "'";
+                var SOL = { col: '#334155', w: 3 }, DSH = { col: '#64748b', w: 2, dash: 1 };
+                S('R', 'X', ext(SOL, { txt: String(p.p), side: 1, off: 22 })); S('X', 'Y', SOL); S('Y', 'R', ext(DSH, { txt: String(p.q), side: 1, off: 16 }));
+                S('R1', 'X1', SOL); S('X1', 'Y1', SOL); S('Y1', 'R1', SOL);
+                S('R', 'R1', ext(SOL, { txt: String(p.h), side: -1, off: 14 })); S('X', 'X1', SOL); S('Y', 'Y1', SOL);
+                note = 'Các số là độ dài cạnh; hình minh họa, không đúng tỉ lệ';
             }
             return { t: 'geo', pts: P, lab: lab, segs: segs, arcs: arcs, bands: bands, note: note };
         };
