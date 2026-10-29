@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v292";
+window.__DANG_VER = "v296";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -4164,7 +4164,7 @@ window.__DANG_VER = "v292";
                 var b = pick([2, 2, 3]), c = pick([1, 2, 3]), h = c === 1 ? 1 : Math.sqrt(c), P = { A: [0, 0, 0], B: [1, 0, 0], C: [1, b, 0], D: [0, b, 0], S: [0, 0, h], O: [0.5, b / 2, 0] };
                 var E = [['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'A'], ['S', 'A'], ['S', 'B'], ['S', 'C'], ['S', 'D']], ms = addMids(P, [['S', 'B'], ['S', 'C'], ['S', 'D']]);
                 var r0 = build({ P: P, edges: E, stem: 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=a$, $AD=' + b + 'a$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy $(ABCD)$ và $SA=a' + (c === 1 ? '' : SQ[c]) + '$. Gọi $M,N$ lần lượt là trung điểm của $' + ms[0][0] + ms[0][1] + '$ và $' + ms[1][0] + ms[1][1] + '$. Xét tính đúng sai của các mệnh đề sau:' });
-                try { r0.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { diag: true, mids: ms }), 360, 260) + '" style="max-width:360px">'; } catch (e) { }
+                try { r0.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { diag: true, mids: ms }), 440, 310) + '" style="max-width:440px">'; } catch (e) { }
                 return r0;
             });
             addTF('l12_tf_vt_hinh_chop_deu', 12, GVK, 'Hình chóp tứ giác đều: vectơ, góc, tổng vectơ, tích vô hướng (đúng – sai)', 'TH', function () {
@@ -4233,7 +4233,7 @@ window.__DANG_VER = "v292";
                     if (!ok) { var cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res) && !same(vec(z[0], z[1]), vec(o.pts[0], o.pts[1])) && !same(vec(z[0], z[1]), vec(o.pts[1], o.pts[2])) && !same(vec(z[0], z[1]), vec(o.pts[0], o.pts[2])) && (rule === 'cong' ? z[0] === o.tgt[0] : (rule === 'tru' ? (z[0] === o.tgt[1] && z[1] === o.tgt[0]) || z[0] === o.tgt[0] || z[1] === o.tgt[1] : z[0] === o.tgt[0])); }); if (!cand.length) cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res); }); shown = pick(cand); }
                     var good = rule === 'cong' ? 'Theo quy tắc ba điểm: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : rule === 'tru' ? 'Theo quy tắc hiệu: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : 'Vì tứ giác có hai cạnh kề tại ' + o.pts[0] + ' là hình bình hành nên theo quy tắc hình bình hành: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.';
                     var pre = rule === 'cong' ? 'Theo quy tắc cộng, ' : rule === 'tru' ? 'Theo quy tắc trừ, ' : 'Theo quy tắc hình bình hành, ';
-                    return { t: pre + '$' + o.lhs + '=' + V(shown[0], shown[1]) + '$.', why: good + (ok ? '' : ' Vế phải đã cho là $' + V(shown[0], shown[1]) + '$ nên mệnh đề sai.') };
+                    return { t: '$' + o.lhs + '=' + V(shown[0], shown[1]) + '$.', why: good + (ok ? '' : ' Vế phải đã cho là $' + V(shown[0], shown[1]) + '$ nên mệnh đề sai.') };
                 }
                 /* c) độ dài sau khi rút gọn */
                 function itC(ok) {
@@ -4272,7 +4272,7 @@ window.__DANG_VER = "v292";
                 }
                 var stem = 'Cho hình lăng trụ đứng $ABC.A\'B\'C\'$ có đáy $ABC$ là tam giác vuông tại $' + rv + '$, $' + rv + X + '=' + p + '$, $' + rv + Y + '=' + q + '$ và cạnh bên $AA\'=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
                 var tfo = mkTF(stem, [itA, itB, itC, itD], 'VD');
-                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('lang_tru', {}), 360, 250) + '" style="max-width:360px">'; } catch (e) { }
+                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('lang_tru', {}), 440, 310) + '" style="max-width:440px">'; } catch (e) { }
                 return tfo;
             });
             // ===== Hình chóp S.ABCD, đáy là hình chữ nhật: đẳng thức vectơ (đúng – sai)
@@ -4321,7 +4321,7 @@ window.__DANG_VER = "v292";
                     if (!ok) { var cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res) && (rule === 'cong' ? z[0] === o.tgt[0] : (rule === 'tru' ? (z[0] === o.tgt[1] && z[1] === o.tgt[0]) || z[0] === o.tgt[0] || z[1] === o.tgt[1] : z[0] === o.tgt[0])); }); if (!cand.length) cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res); }); shown = pick(cand); }
                     var good = rule === 'cong' ? 'Theo quy tắc ba điểm: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : rule === 'tru' ? 'Theo quy tắc hiệu: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : 'Vì tứ giác có hai cạnh kề tại ' + o.pts[0] + ' là hình bình hành nên theo quy tắc hình bình hành: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.';
                     var pre = rule === 'cong' ? 'Theo quy tắc cộng, ' : rule === 'tru' ? 'Theo quy tắc trừ, ' : 'Theo quy tắc hình bình hành, ';
-                    return { t: pre + '$' + o.lhs + '=' + V(shown[0], shown[1]) + '$.', why: good + (ok ? '' : ' Vế phải đã cho là $' + V(shown[0], shown[1]) + '$ nên mệnh đề sai.') };
+                    return { t: '$' + o.lhs + '=' + V(shown[0], shown[1]) + '$.', why: good + (ok ? '' : ' Vế phải đã cho là $' + V(shown[0], shown[1]) + '$ nên mệnh đề sai.') };
                 }
                 /* c) độ dài sau khi rút gọn */
                 function itC(ok) {
@@ -4359,9 +4359,9 @@ window.__DANG_VER = "v292";
                     var d1 = ok ? d0 : (d0 === 0 ? pick([-2, -1, 1, 2]) : pick([-d0, d0 + pick([-2, -1, 1, 2]), 0].filter(function (z) { return z !== d0; })));
                     return { t: '$' + V(g2[0][0], g2[0][1]) + '\\cdot' + V(g2[1][0], g2[1][1]) + '=' + d1 + '$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g2[0][0], g2[0][1]) + '=' + T(u2) + '$, $' + V(g2[1][0], g2[1][1]) + '=' + T(w2) + '$ nên tích vô hướng bằng $' + u2.map(function (z, i) { return z * w2[i]; }).map(function (z, i) { return i ? (z < 0 ? '(' + z + ')' : z) : z; }).join('+') + '=' + d0 + '$' + (ok ? '.' : ', khác $' + d1 + '$.') };
                 }
-                var stem = ctr ? 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SO$ vuông góc với mặt phẳng đáy và $SO=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:' : 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy và $SA=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
+                var stem = ctr ? 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SO$ vuông góc với mặt phẳng đáy và $SO=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:' : 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy và $SA=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
                 var tfo = mkTF(stem, [itA, itB, itC, itD], 'VD');
-                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { diag: true }), 360, 260) + '" style="max-width:360px">'; } catch (e) { }
+                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { diag: true }), 440, 310) + '" style="max-width:440px">'; } catch (e) { }
                 return tfo;
             });
             // ===== Hàm số: nhất biến và bậc hai chia bậc nhất (đúng – sai, có cực trị, GTLN – GTNN)
@@ -9509,7 +9509,7 @@ window.__DANG_VER = "v292";
     (function () {
         var R = Math.PI / 180, sn = function (x) { return Math.sin(x * R); }, cs = function (x) { return Math.cos(x * R); }, tn = function (x) { return Math.tan(x * R); };
         window.__geoFig = function (k, p) {
-            var P = {}, lab = {}, segs = [], arcs = [], bands = [], note = '', nodots = false;
+            var P = {}, lab = {}, segs = [], arcs = [], bands = [], note = '', nodots = false, labOff = {};
             var S = function (a, b, o) { segs.push([a, b, o || {}]); };
             var G = { col: '#475569', w: 3 }, WOOD = { col: '#92400e', w: 5 }, LEAF = { col: '#16a34a', w: 5 }, THIN = { col: '#64748b', w: 2 };
             function ext(o, x) { var r = {}; for (var q in o) r[q] = o[q]; for (var q2 in x) r[q2] = x[q2]; return r; }
@@ -9604,17 +9604,17 @@ window.__DANG_VER = "v292";
                 S('C', 'C1', SOL); S('B', 'B1', SOL); S('A', 'A1', DSH);
                 nodots = true; note = 'Hình minh họa';
             } else if (k === 'chop_hcn') {
-                var qx = 0.5, qy = 0.34, W = 1.5, Dp = 1.35, H = 1.6;
+                var qx = 0.6, qy = 0.45, W = 1.6, Dp = 1.5, H = 1.7;
                 function pj2(x, y, z) { return [x + qx * y, z + qy * y]; }
                 P.D = pj2(0, 0, 0); P.C = pj2(W, 0, 0); P.A = pj2(0, Dp, 0); P.B = pj2(W, Dp, 0); P.S = pj2(0, Dp, H);
                 lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D'; lab.S = 'S';
                 var SO2 = { col: '#334155', w: 3 }, DS2 = { col: '#64748b', w: 2, dash: 1 };
                 S('D', 'C', SO2); S('C', 'B', SO2); S('B', 'A', DS2); S('A', 'D', DS2); S('S', 'D', SO2); S('S', 'C', SO2); S('S', 'B', SO2); S('S', 'A', DS2);
-                if (p.diag) { P.O = pj2(W / 2, Dp / 2, 0); lab.O = 'O'; S('A', 'C', DS2); S('B', 'D', DS2); }
+                if (p.diag) { P.O = pj2(W / 2, Dp / 2, 0); lab.O = 'O'; S('A', 'C', DS2); S('B', 'D', DS2); labOff.O = [-4, 20]; }
                 if (p.mids) { var mm = ['M', 'N']; p.mids.forEach(function (e, i) { var u = P[e[0]], v = P[e[1]]; P[mm[i]] = [(u[0] + v[0]) / 2, (u[1] + v[1]) / 2]; lab[mm[i]] = mm[i]; }); }
                 nodots = true; note = 'Hình minh họa';
             }
-            return { t: 'geo', pts: P, lab: lab, segs: segs, arcs: arcs, bands: bands, note: note, nodots: nodots };
+            return { t: 'geo', pts: P, lab: lab, segs: segs, arcs: arcs, bands: bands, note: note, nodots: nodots, labOff: labOff };
         };
         window.__geoPng = function (f, w, h) {
             var Z = 2, c = document.createElement('canvas'); c.width = w * Z; c.height = h * Z; var g = c.getContext('2d'); g.scale(Z, Z); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
@@ -9638,7 +9638,7 @@ window.__DANG_VER = "v292";
             });
             names.forEach(function (n) {
                 if (!f.lab[n]) return; var px = sx(n), py = sy(n); if (!f.nodots) { g.fillStyle = '#1e3a8a'; g.beginPath(); g.arc(px, py, 3.5, 0, 7); g.fill(); }
-                var dx = px - cx, dy = py - cy, ln = Math.hypot(dx, dy) || 1; g.fillStyle = '#0f172a'; g.font = 'italic 700 16px "Times New Roman", serif'; g.textAlign = 'center'; g.fillText(f.lab[n], px + dx / ln * 17, py + dy / ln * 17 + 5);
+                var dx = px - cx, dy = py - cy, ln = Math.hypot(dx, dy) || 1; g.fillStyle = '#0f172a'; g.font = 'italic 700 16px "Times New Roman", serif'; g.textAlign = 'center'; if (f.labOff && f.labOff[n]) g.fillText(f.lab[n], px + f.labOff[n][0], py + f.labOff[n][1]); else g.fillText(f.lab[n], px + dx / ln * 17, py + dy / ln * 17 + 5);
             });
             if (f.note) { g.fillStyle = '#64748b'; g.font = 'italic 11px sans-serif'; g.textAlign = 'center'; g.fillText(f.note, w / 2, h - 5); }
             return c.toDataURL('image/jpeg', 0.85);
