@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v288";
+window.__DANG_VER = "v289";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -4251,7 +4251,7 @@ window.__DANG_VER = "v288";
                     need(wr.length);
                     var m = ok ? n : pick(wr), show = function (z) { return Rt(z); };
                     var rn = rule === 'tru' ? 'quy tắc hiệu' : rule === 'hbh' ? 'quy tắc hình bình hành' : 'quy tắc ba điểm';
-                    return { t: '$\\left|' + lhs + '\\right|=' + show(m) + '$.', why: 'Theo ' + rn + ', $' + lhs + '=' + V(tgt[0], tgt[1]) + '$ nên $\\left|' + lhs + '\\right|=' + tgt[0] + tgt[1] + '$. Với hệ trục gốc ' + rv + ', $' + V(tgt[0], tgt[1]) + '=' + T(res) + '$ nên $' + tgt[0] + tgt[1] + '=\\sqrt{' + n + '}=' + show(n) + '$' + (ok ? '.' : ', khác $' + show(m) + '$.') };
+                    return { t: '$\\left|' + lhs + '\\right|=' + show(m) + '$.', why: 'Theo ' + rn + ', $' + lhs + '=' + V(tgt[0], tgt[1]) + '$ nên $\\left|' + lhs + '\\right|=' + tgt[0] + tgt[1] + '$. Với hệ trục gốc ' + rv + ', $' + V(tgt[0], tgt[1]) + '=' + T(res) + '$ nên $' + tgt[0] + tgt[1] + '=\\sqrt{' + n + '}' + (show(n) === '\\sqrt{' + n + '}' ? '' : '=' + show(n)) + '$' + (ok ? '.' : ', khác $' + show(m) + '$.') };
                 }
                 /* d) tích vô hướng hoặc góc */
                 function itD(ok) {
@@ -4270,6 +4270,93 @@ window.__DANG_VER = "v288";
                 var stem = 'Cho hình lăng trụ đứng $ABC.A\'B\'C\'$ có đáy $ABC$ là tam giác vuông tại $' + rv + '$, $' + rv + X + '=' + p + '$, $' + rv + Y + '=' + q + '$ và cạnh bên $AA\'=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
                 var tfo = mkTF(stem, [itA, itB, itC, itD], 'VD');
                 try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('lang_tru', { rv: rv, X: X, Y: Y, p: p, q: q, h: h }), 360, 250) + '" style="max-width:360px">'; } catch (e) { }
+                return tfo;
+            });
+            // ===== Hình chóp S.ABCD, đáy là hình chữ nhật: đẳng thức vectơ (đúng – sai)
+            addTF('l12_tf_vt_chop_hcn_dangthuc', 12, GVK, 'Hình chóp S.ABCD đáy hình chữ nhật: vectơ bằng – đối – cùng phương, quy tắc cộng – trừ – hình bình hành, độ dài, tích vô hướng, góc (đúng – sai)', 'VD', function () {
+                var ctr = Math.random() < 0.4, p = ctr ? 2 * ri(1, 3) : ri(2, 6), q = ctr ? 2 * ri(1, 4) : ri(2, 7), h = ri(2, 7), rv = 'A';
+                var P = { A: [0, 0, 0], B: [p, 0, 0], D: [0, q, 0], C: [p, q, 0], S: ctr ? [p / 2, q / 2, h] : [0, 0, h] };
+                var N = ['S', 'A', 'B', 'C', 'D'], faces = [['A', 'B', 'C', 'D']];
+                function vec(a, b) { return vv(P, a, b); }
+                function V(a, b) { return '\\overrightarrow{' + a + b + '}'; }
+                function T(u) { return '(' + u.join(';') + ')'; }
+                function neg(u) { return [-u[0], -u[1], -u[2]]; }
+                function same(u, w) { return u[0] === w[0] && u[1] === w[1] && u[2] === w[2]; }
+                function cross0(u, w) { return u[1] * w[2] - u[2] * w[1] === 0 && u[2] * w[0] - u[0] * w[2] === 0 && u[0] * w[1] - u[1] * w[0] === 0; }
+                function Rt(n) { return sqT(n); }
+                var prs = []; N.forEach(function (a) { N.forEach(function (b) { if (a !== b) prs.push([a, b]); }); });
+                function rev(x, y) { return x[0] === y[1] && x[1] === y[0]; }
+                /* a) bằng nhau, đối nhau, cùng phương, cùng hướng */
+                function itA(ok) {
+                    var rel = pick(['bằng', 'đối', 'phuong', 'huong']);
+                    function sat(x, y) { var u = vec(x[0], x[1]), w = vec(y[0], y[1]); if (rel === 'bằng') return same(u, w); if (rel === 'đối') return same(u, neg(w)); if (rel === 'phuong') return cross0(u, w); return cross0(u, w) && dotv(u, w) > 0; }
+                    function near(x, y) { var u = vec(x[0], x[1]), w = vec(y[0], y[1]); if (rel === 'bằng') return nrm2(u) === nrm2(w); if (rel === 'đối') return nrm2(u) === nrm2(w); if (rel === 'phuong') return nrm2(u) === nrm2(w) || x[0] === y[0] || x[1] === y[1]; return cross0(u, w); }
+                    var good = [], bad = [];
+                    prs.forEach(function (x) { prs.forEach(function (y) { if (x[0] === y[0] && x[1] === y[1]) return; if (rev(x, y)) return; (sat(x, y) ? good : (near(x, y) ? bad : [])).push([x, y]); }); });
+                    need(good.length && bad.length);
+                    var g = ok ? pick(good) : pick(bad), nameR = { 'bằng': 'bằng nhau', 'đối': 'đối nhau', 'phuong': 'cùng phương', 'huong': 'cùng hướng' }[rel];
+                    var u = vec(g[0][0], g[0][1]), w = vec(g[1][0], g[1][1]);
+                    var why = 'Chọn hệ trục $Axyz$ có $B$ trên tia $Ax$, $D$ trên tia $Ay$, tia $Az$ cùng hướng với $' + (ctr ? '\\overrightarrow{OS}' : '\\overrightarrow{AS}') + '$. Khi đó $' + V(g[0][0], g[0][1]) + '=' + T(u) + '$, $' + V(g[1][0], g[1][1]) + '=' + T(w) + '$. ';
+                    var rel2 = same(u, w) ? 'hai vectơ bằng nhau' : same(u, neg(w)) ? 'hai vectơ đối nhau' : cross0(u, w) ? (dotv(u, w) > 0 ? 'hai vectơ cùng phương, cùng hướng' : 'hai vectơ cùng phương, ngược hướng') : 'hai vectơ không cùng phương';
+                    return { t: 'Hai vectơ $' + V(g[0][0], g[0][1]) + '$ và $' + V(g[1][0], g[1][1]) + '$ ' + nameR + '.', why: why + 'Đây là ' + rel2 + (ok ? ', nên mệnh đề đúng.' : ', nên mệnh đề sai.') };
+                }
+                /* b) quy tắc cộng, trừ, hình bình hành */
+                function mkB(rule) {
+                    for (var tr = 0; tr < 200; tr++) {
+                        var a, b, c, lhs, tgt, ok0;
+                        if (rule === 'cong') { var s = shuf(N); a = s[0]; b = s[1]; c = s[2]; lhs = V(a, b) + '+' + V(b, c); tgt = [a, c]; }
+                        else if (rule === 'tru') { var s2 = shuf(N); a = s2[0]; b = s2[1]; c = s2[2]; lhs = V(a, b) + '-' + V(a, c); tgt = [c, b]; }
+                        else { var f = pick(faces), st = ri(0, 3), d1 = pick([1, -1]); a = f[st]; b = f[(st + d1 + 4) % 4]; c = f[(st + 2) % 4]; var dd = f[(st - d1 + 4) % 4]; lhs = V(a, b) + '+' + V(a, dd); tgt = [a, c]; }
+                        var res = rule === 'cong' ? vadd(vec(a, b), vec(b, c)) : rule === 'tru' ? vsub(vec(a, c), vec(a, b)) : vadd(vec(a, b), vec(a, dd));
+                        if (!same(res, vec(tgt[0], tgt[1]))) continue;
+                        return { lhs: lhs, tgt: tgt, rule: rule, res: res, pts: [a, b, c] };
+                    }
+                    need(false);
+                }
+                function itB(ok) {
+                    var rule = pick(['cong', 'tru', 'hbh']), o = mkB(rule), shown = o.tgt, rn = { cong: 'cộng (quy tắc ba điểm)', tru: 'trừ', hbh: 'hình bình hành' }[rule];
+                    if (!ok) { var cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res) && (rule === 'cong' ? z[0] === o.tgt[0] : (rule === 'tru' ? (z[0] === o.tgt[1] && z[1] === o.tgt[0]) || z[0] === o.tgt[0] || z[1] === o.tgt[1] : z[0] === o.tgt[0])); }); if (!cand.length) cand = prs.filter(function (z) { return !same(vec(z[0], z[1]), o.res); }); shown = pick(cand); }
+                    var good = rule === 'cong' ? 'Theo quy tắc ba điểm: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : rule === 'tru' ? 'Theo quy tắc hiệu: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.' : 'Vì tứ giác có hai cạnh kề tại ' + o.pts[0] + ' là hình bình hành nên theo quy tắc hình bình hành: $' + o.lhs + '=' + V(o.tgt[0], o.tgt[1]) + '$.';
+                    var pre = rule === 'cong' ? 'Theo quy tắc cộng, ' : rule === 'tru' ? 'Theo quy tắc trừ, ' : 'Theo quy tắc hình bình hành, ';
+                    return { t: pre + '$' + o.lhs + '=' + V(shown[0], shown[1]) + '$.', why: good + (ok ? '' : ' Vế phải đã cho là $' + V(shown[0], shown[1]) + '$ nên mệnh đề sai.') };
+                }
+                /* c) độ dài sau khi rút gọn */
+                function itC(ok) {
+                    var rule = pick(['cong', 'tru', 'hbh', 'cong3']), a, b, c, d, lhs, tgt, res;
+                    for (var tr = 0; tr < 300; tr++) {
+                        var s = shuf(N);
+                        if (rule === 'cong') { a = s[0]; b = s[1]; c = s[2]; lhs = V(a, b) + '+' + V(b, c); tgt = [a, c]; res = vadd(vec(a, b), vec(b, c)); }
+                        else if (rule === 'cong3') { a = s[0]; b = s[1]; c = s[2]; d = s[3]; lhs = V(a, b) + '+' + V(b, c) + '+' + V(c, d); tgt = [a, d]; res = vadd(vadd(vec(a, b), vec(b, c)), vec(c, d)); }
+                        else if (rule === 'tru') { a = s[0]; b = s[1]; c = s[2]; lhs = V(a, b) + '-' + V(a, c); tgt = [c, b]; res = vsub(vec(a, c), vec(a, b)); }
+                        else { var f = pick(faces), st = ri(0, 3), d1 = pick([1, -1]); a = f[st]; b = f[(st + d1 + 4) % 4]; c = f[(st + 2) % 4]; d = f[(st - d1 + 4) % 4]; lhs = V(a, b) + '+' + V(a, d); tgt = [a, c]; res = vadd(vec(a, b), vec(a, d)); }
+                        if (!same(res, vec(tgt[0], tgt[1])) || nrm2(res) === 0) continue; break;
+                    }
+                    need(same(res, vec(tgt[0], tgt[1])));
+                    var n = nrm2(res), parts = []; if (rule === 'cong') parts = [vec(a, b), vec(b, c)]; else if (rule === 'cong3') parts = [vec(a, b), vec(b, c), vec(c, d)]; else if (rule === 'tru') parts = [vec(a, c), vec(a, b)]; else parts = [vec(a, b), vec(a, d)];
+                    var sumL = Math.sqrt(0), lensum = parts.reduce(function (s0, z) { return s0 + Math.sqrt(nrm2(z)); }, 0);
+                    var wr = [n + pick([1, 2, 3]), n - pick([1, 2]), p * p + q * q + h * h, parts.reduce(function (s0, z) { return s0 + nrm2(z); }, 0), Math.round(lensum * lensum)].filter(function (z, i, ar) { return z > 0 && z !== n && ar.indexOf(z) === i; });
+                    need(wr.length);
+                    var m = ok ? n : pick(wr), show = function (z) { return Rt(z); };
+                    var rn = rule === 'tru' ? 'quy tắc hiệu' : rule === 'hbh' ? 'quy tắc hình bình hành' : 'quy tắc ba điểm';
+                    return { t: '$\\left|' + lhs + '\\right|=' + show(m) + '$.', why: 'Theo ' + rn + ', $' + lhs + '=' + V(tgt[0], tgt[1]) + '$ nên $\\left|' + lhs + '\\right|=' + tgt[0] + tgt[1] + '$. Với hệ trục gốc ' + rv + ', $' + V(tgt[0], tgt[1]) + '=' + T(res) + '$ nên $' + tgt[0] + tgt[1] + '=\\sqrt{' + n + '}' + (show(n) === '\\sqrt{' + n + '}' ? '' : '=' + show(n)) + '$' + (ok ? '.' : ', khác $' + show(m) + '$.') };
+                }
+                /* d) tích vô hướng hoặc góc */
+                function itD(ok) {
+                    var SA = [0, 30, 45, 60, 90, 120, 135, 150, 180], C2 = { 0: 1, 30: Math.sqrt(3) / 2, 45: Math.sqrt(2) / 2, 60: 0.5, 90: 0, 120: -0.5, 135: -Math.sqrt(2) / 2, 150: -Math.sqrt(3) / 2, 180: -1 };
+                    var ang = [], dots = [];
+                    prs.forEach(function (x) { prs.forEach(function (y) { if (x[0] >= y[0] && false) return; if (x[0] === y[0] && x[1] === y[1]) return; if (rev(x, y)) return; var u = vec(x[0], x[1]), w = vec(y[0], y[1]), d = dotv(u, w), c = d / Math.sqrt(nrm2(u) * nrm2(w)); dots.push([x, y, d]); for (var i = 0; i < SA.length; i++) if (SA[i] !== 0 && SA[i] !== 180 && Math.abs(C2[SA[i]] - c) < 1e-9) ang.push([x, y, SA[i], d]); }); });
+                    if (ang.length && Math.random() < 0.5) {
+                        var g = pick(ang), a0 = g[2], shown = ok ? a0 : pick(SA.filter(function (z) { return z !== a0 && z !== 0 && z !== 180; })), u = vec(g[0][0], g[0][1]), w = vec(g[1][0], g[1][1]);
+                        var cs = { 30: '\\dfrac{\\sqrt3}{2}', 45: '\\dfrac{\\sqrt2}{2}', 60: '\\dfrac12', 90: '0', 120: '-\\dfrac12', 135: '-\\dfrac{\\sqrt2}{2}', 150: '-\\dfrac{\\sqrt3}{2}' }[a0];
+                        return { t: 'Góc giữa hai vectơ $' + V(g[0][0], g[0][1]) + '$ và $' + V(g[1][0], g[1][1]) + '$ bằng $' + shown + '^\\circ$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g[0][0], g[0][1]) + '=' + T(u) + '$, $' + V(g[1][0], g[1][1]) + '=' + T(w) + '$. Tích vô hướng bằng $' + g[3] + '$, độ dài lần lượt $\\sqrt{' + nrm2(u) + '}$ và $\\sqrt{' + nrm2(w) + '}$ nên $\\cos=' + cs + '$, suy ra góc bằng $' + a0 + '^\\circ$' + (ok ? '.' : ', không phải $' + shown + '^\\circ$.') };
+                    }
+                    var nz = dots.filter(function (z) { return z[2] !== 0; }), g2 = pick(Math.random() < 0.8 ? nz : dots), d0 = g2[2], u2 = vec(g2[0][0], g2[0][1]), w2 = vec(g2[1][0], g2[1][1]);
+                    var d1 = ok ? d0 : (d0 === 0 ? pick([-2, -1, 1, 2]) : pick([-d0, d0 + pick([-2, -1, 1, 2]), 0].filter(function (z) { return z !== d0; })));
+                    return { t: '$' + V(g2[0][0], g2[0][1]) + '\\cdot' + V(g2[1][0], g2[1][1]) + '=' + d1 + '$.', why: 'Với hệ trục gốc ' + rv + ': $' + V(g2[0][0], g2[0][1]) + '=' + T(u2) + '$, $' + V(g2[1][0], g2[1][1]) + '=' + T(w2) + '$ nên tích vô hướng bằng $' + u2.map(function (z, i) { return z * w2[i]; }).map(function (z, i) { return i ? (z < 0 ? '(' + z + ')' : z) : z; }).join('+') + '=' + d0 + '$' + (ok ? '.' : ', khác $' + d1 + '$.') };
+                }
+                var stem = ctr ? 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật tâm $O$, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SO$ vuông góc với mặt phẳng đáy và $SO=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:' : 'Cho hình chóp $S.ABCD$ có đáy $ABCD$ là hình chữ nhật, $AB=' + p + '$, $AD=' + q + '$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy và $SA=' + h + '$ (cùng đơn vị độ dài). Xét tính đúng sai của các mệnh đề sau:';
+                var tfo = mkTF(stem, [itA, itB, itC, itD], 'VD');
+                try { tfo.q += '<br><img src="' + window.__geoPng(window.__geoFig('chop_hcn', { p: p, q: q, h: h, o: ctr }), 360, 260) + '" style="max-width:360px">'; } catch (e) { }
                 return tfo;
             });
             function decS(v) { return String(Math.round(v * 100) / 100).replace('.', ','); }
@@ -9449,6 +9536,17 @@ window.__DANG_VER = "v288";
                 S('R', 'X', ext(SOL, { txt: String(p.p), side: 1, off: 22 })); S('X', 'Y', SOL); S('Y', 'R', ext(DSH, { txt: String(p.q), side: 1, off: 16 }));
                 S('R1', 'X1', SOL); S('X1', 'Y1', SOL); S('Y1', 'R1', SOL);
                 S('R', 'R1', ext(SOL, { txt: String(p.h), side: -1, off: 14 })); S('X', 'X1', SOL); S('Y', 'Y1', SOL);
+                note = 'Các số là độ dài cạnh; hình minh họa, không đúng tỉ lệ';
+            } else if (k === 'chop_hcn') {
+                var mx2 = Math.max(p.p, p.q, p.h), sc4 = function (v) { return 0.75 + 0.45 * v / mx2; }, bx = sc4(p.p), by = 0.8 * sc4(p.q), bz = sc4(p.h), qx = 0.6, qy = 0.42;
+                function pj2(x, y, z) { return [x + qx * y, z + qy * y]; }
+                P.A = pj2(0, 0, 0); P.B = pj2(bx, 0, 0); P.D = pj2(0, by, 0); P.C = pj2(bx, by, 0); P.S = p.o ? pj2(bx / 2, by / 2, bz) : pj2(0, 0, bz);
+                lab.A = 'A'; lab.B = 'B'; lab.C = 'C'; lab.D = 'D'; lab.S = 'S';
+                var SO2 = { col: '#334155', w: 3 }, DS2 = { col: '#64748b', w: 2, dash: 1 };
+                S('A', 'B', ext(SO2, { txt: String(p.p), side: 1, off: 22 })); S('B', 'C', SO2); S('C', 'D', DS2); S('D', 'A', ext(DS2, { txt: String(p.q), side: 1, off: 16 }));
+                S('S', 'B', SO2); S('S', 'C', SO2); S('S', 'D', DS2);
+                if (p.o) { P.O = pj2(bx / 2, by / 2, 0); lab.O = 'O'; S('A', 'C', DS2); S('B', 'D', DS2); S('S', 'O', ext(DS2, { txt: String(p.h), side: 1, off: 14 })); S('S', 'A', SO2); }
+                else { S('S', 'A', ext(SO2, { txt: String(p.h), side: 1, off: 14 })); }
                 note = 'Các số là độ dài cạnh; hình minh họa, không đúng tỉ lệ';
             }
             return { t: 'geo', pts: P, lab: lab, segs: segs, arcs: arcs, bands: bands, note: note };
