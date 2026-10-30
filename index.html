@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v297] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v298] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8492,6 +8492,8 @@ window.addEventListener('popstate', function () {
             const rs = keys.map(k => bub[k] || 0), on = rs.map((r, i) => r >= THR ? i : -1).filter(i => i >= 0);
             if (on.length === 1) return on[0];
             if (on.length > 1) { const mx = Math.max(...rs), top = on.filter(i => rs[i] >= mx - 0.08); if (top.length === 1) return top[0]; qf(); return -1; }
+            const ord = rs.map((r, i) => i).sort((x, y) => rs[y] - rs[x]); /* tô nhạt (bút chì/ảnh mờ): nếu có ĐÚNG một ô nổi hẳn lên thì nhận */
+            if (rs[ord[0]] >= LOW && rs[ord[0]] - rs[ord[1]] >= 0.12) return ord[0];
             return -1;
         };
         // mã đề
