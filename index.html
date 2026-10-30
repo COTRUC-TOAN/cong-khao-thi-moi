@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v298] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v299] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8271,7 +8271,14 @@ window.addEventListener('popstate', function () {
         }
         else if (!name || !cl) { alert('Cô nhập họ tên và lớp của học sinh trước khi lưu.'); return false; }
         if (!DATA.u) { if (!auto) alert('Link này thiếu địa chỉ Google Sheet. Cô tạo lại link từ máy tính.'); return false; }
-        if (!auto && SAVED.some(x => x.name.toLowerCase() === name.toLowerCase() && x.cls === cl) && !confirm('Em ' + name + ' (' + cl + ') đã được lưu điểm rồi. Lưu thêm một dòng nữa?')) return false;
+        if (!auto) { // (v299) chấm lại em đã lưu: hỏi THAY điểm cũ (không thêm dòng mới)
+            const pr = SAVED.filter(x => (SBD && SBD.indexOf('?') < 0 && x.sbd === SBD && x.cls === cl) || (x.name.toLowerCase() === name.toLowerCase() && x.cls === cl));
+            if (pr.length) {
+                const c1 = calc();
+                if (!confirm('Em ' + name + ' (' + cl + ') đã lưu điểm ' + pr.map(x => fmt(+x.s)).join(', ') + ' rồi.\nLần này ra ' + fmt(c1.s10) + ' điểm.\n\nBấm OK để THAY điểm cũ bằng ' + fmt(c1.s10) + ' (dòng cũ trong Sheet được thay, không thêm dòng).\nBấm Hủy để không lưu.')) return false;
+                rescan = pr[pr.length - 1];
+            }
+        }
         const c = calc(), btn = $('cg-save'); if (btn) btn.disabled = true;
         if (cl !== 'CHƯA RÕ LỚP') LS.set('cham_class', cl);
         const b = body(name + (SBD ? ' (SBD ' + SBD + ')' : ''), cl, CUR.code, c.s10); if (SBD) b.sbd = SBD; if (rescan) b.replace = true;
@@ -8574,10 +8581,10 @@ window.addEventListener('popstate', function () {
             res.marks.forEach(m => { if (m[2] >= (res.thr || 0.55) && !/^MA/.test(m[3])) { cx.beginPath(); cx.arc(m[0], m[1], 7, 0, 7); cx.lineWidth = 3; cx.strokeStyle = '#16a34a'; cx.stroke(); } });
             cx.strokeStyle = '#2563eb'; cx.lineWidth = 3; cx.beginPath(); res.corners.forEach((p, i) => { const q = res.corners[[0, 1, 3, 2][i]]; cx.lineTo(q.cx, q.cy); }); cx.closePath(); cx.stroke();
             LASTCV = cv;
-            LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + (res.glare ? ' ⚠️ Ảnh còn LÓA ở ' + res.glare + ' câu (các câu tô vàng, cô kiểm tra bằng tay hoặc nghiêng phiếu chụp lại).' : '') + (blanks ? ' Có ' + blanks + ' câu để trống (cô xem lại nếu học sinh có làm).' : '') + ' Vòng xanh trên ảnh là ô máy thấy được tô.';
+            LASTMSG = '✅ Đã đọc mã đề ' + found[0] + (res.flags.code ? ' (mã đề hơi mờ, cô kiểm tra lại)' : '') + '. ' + (res.sbd ? 'Số báo danh đọc được: ' + res.sbd + (res.flags.sbd ? ' (chưa chắc, cô kiểm tra ô số báo danh màu vàng). ' : '. ') : (res.sbd === '' ? 'Học sinh chưa tô số báo danh, cô gõ tay. ' : '')) + (nflag ? 'Có ' + nflag + ' câu máy chưa chắc (tô nền vàng ở số câu), cô xem lại rồi sửa tay nếu cần.' : 'Không có câu nào đáng ngờ.') + (res.glare ? ' ⚠️ Ảnh còn LÓA ở ' + res.glare + ' câu (các câu tô vàng, cô kiểm tra bằng tay hoặc nghiêng phiếu chụp lại).' : '') + (blanks ? ' Có ' + blanks + ' câu để trống (cô xem lại nếu học sinh có làm).' : '') + ' Vòng xanh trên ảnh là ô máy thấy được tô.' + (CUR && CUR.es > 0 ? ' 👉 Bài có tự luận: cô nhập điểm tự luận bên dưới rồi bấm Lưu (máy không tự lưu).' : '');
             DIRTY = true;
             render(); const a = $('cg-name'); if (a) { a.value = nm; if (!nm.trim() && SBD && SBD.indexOf('?') < 0) { const rn = rosterName(SBD); if (rn) { a.value = rn; a.dataset.auto = '1'; } } } const b = $('cg-class'); if (b && cl) b.value = cl;
-            if (mode === 'auto' && LS.get('cham_auto') !== '0' && nflag === 0 && !res.glare) { LIVE_IGN = { sbd: res.sbd || '', sig: sigOf(res), gone: 0 }; const okA = await save(true); if (okA || LASTDUP) setTimeout(() => { if (!LIVE) liveStart(); }, 700); }
+            if (mode === 'auto' && LS.get('cham_auto') !== '0' && nflag === 0 && !res.glare && !(CUR && CUR.es > 0)) { LIVE_IGN = { sbd: res.sbd || '', sig: sigOf(res), gone: 0 }; const okA = await save(true); if (okA || LASTDUP) setTimeout(() => { if (!LIVE) liveStart(); }, 700); }
         } catch (e) { LASTCV = null; LASTMSG = '⚠️ Không đọc được ảnh (' + (e && e.message || e) + '). Cô chụp lại hoặc nhập tay bên dưới.'; render(); }
     }
 
@@ -8643,7 +8650,7 @@ window.addEventListener('popstate', function () {
                         const sig = res.code + '|' + res.mcq.join('') + '|' + res.tf.map(r => r.join('')).join(',') + '|' + res.sa.join(',') + '|' + (res.sbd || '');
                         if (sig === LIVE.last) LIVE.same++; else { LIVE.same = 0; LIVE.last = sig; }
                         LIVE.frame = im; LIVE.res = res;
-                        if (nflag === 0) { paint('g', LIVE.same >= 1 ? 'Đọc xong, đang lưu…' : 'Đọc được, giữ yên một chút…'); if (LIVE.same >= 1) { finish(true); return; } }
+                        if (nflag === 0) { paint('g', LIVE.same >= 1 ? (s0[4] > 0 ? 'Đọc xong. Cô nhập điểm tự luận rồi bấm Lưu' : 'Đọc xong, đang lưu…') : 'Đọc được, giữ yên một chút…'); if (LIVE.same >= 1) { finish(true); return; } }
                         else { const wh = []; const lst = (o, n) => { const k = Object.keys(o).map(x => +x + 1); if (k.length) wh.push(n + ' ' + k.slice(0, 6).join(', ') + (k.length > 6 ? '…' : '')); }; lst(res.flags.m, 'TN câu'); lst(res.flags.t, 'Đ/S câu'); lst(res.flags.s, 'TLN câu'); if (res.flags.code) wh.push('mã đề'); if (res.flags.sbd) wh.push('số báo danh'); paint('y', 'Chưa chắc: ' + wh.join(' · ') + '. Giữ yên, thêm sáng, hoặc bấm "Chụp luôn" rồi sửa tay chỗ vàng'); LIVE.yellowSame = LIVE.same; }
                     }
                 }
