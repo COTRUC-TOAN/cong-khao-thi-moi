@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v294] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v297] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8488,15 +8488,21 @@ window.addEventListener('popstate', function () {
             if (mx >= LOW) { let e2 = 0; rs.forEach((r, i) => { if (r >= LOW && ex[i] > e2) e2 = ex[i]; }); if (e2 >= 0.2) qf(); }
             return -1;
         };
+        const pickS = (keys, qf) => { // số báo danh: chỉ báo vàng khi 2 ô cùng đậm thật sự (ô mờ/chữ in không làm vàng)
+            const rs = keys.map(k => bub[k] || 0), on = rs.map((r, i) => r >= THR ? i : -1).filter(i => i >= 0);
+            if (on.length === 1) return on[0];
+            if (on.length > 1) { const mx = Math.max(...rs), top = on.filter(i => rs[i] >= mx - 0.08); if (top.length === 1) return top[0]; qf(); return -1; }
+            return -1;
+        };
         // mã đề
         let code = '', cols = 0; L.b.forEach(b => { const m = /^MA:(\d+):/.exec(b[0]); if (m) cols = Math.max(cols, +m[1] + 1); });
         const codeArr = []; for (let c = 0; c < cols; c++) { const keys = []; for (let d = 0; d < 10; d++) keys.push('MA:' + c + ':' + d); const i = pick(keys, () => { flags.code = true; }); code += i >= 0 ? String(i) : '?'; codeArr.push(i >= 0 ? String(i) : '?'); }
         let sbd = null, scols = 0, sbdArr = []; L.b.forEach(b => { const m = /^SBD:(\d+):/.exec(b[0]); if (m) scols = Math.max(scols, +m[1] + 1); });
         if (scols) {
-            const arr = []; for (let c = 0; c < scols; c++) { const keys = []; for (let d = 0; d < 10; d++) keys.push('SBD:' + c + ':' + d); const i = pick(keys, () => { flags.sbd = true; }); arr.push(i >= 0 ? String(i) : ''); }
+            const arr = []; for (let c = 0; c < scols; c++) { const keys = []; for (let d = 0; d < 10; d++) keys.push('SBD:' + c + ':' + d); const i = pickS(keys, () => { flags.sbd = true; }); arr.push(i >= 0 ? String(i) : ''); }
             sbdArr = arr.slice();
             while (arr.length && arr[0] === '') arr.shift();
-            sbd = arr.map(x => x === '' ? '?' : x).join(''); if (sbd.indexOf('?') >= 0) flags.sbd = true;
+            sbd = arr.map(x => x === '' ? '?' : x).join(''); if (arr.length && arr.length < scols && arr.length < 4) flags.sbd = true; /* chỉ vàng khi tô quá ít số; ô trống giữa chừng hiện ? để sửa tay */
         }
         const mcq = [], tf = [], sa = [];
         for (let q = 1; q <= nMcq; q++) { const i = pick(['A', 'B', 'C', 'D'].map(l => 'I:' + q + ':' + l), () => { flags.m[q - 1] = 1; }); mcq.push(i < 0 ? '' : 'ABCD'[i]); }
