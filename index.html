@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v300] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v301] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7070,7 +7070,11 @@ window.addEventListener('popstate', function () {
     function makeSet(i, o) {
         const base = selectedQuestions || [], dyn = base.length === 1 && base[0].isDynamicConfig;
         let list = [];
-        if (dyn) base[0].configs.forEach(c => { list.push.apply(list, shuffle(c.pool || []).slice(0, c.count)); });
+        if (dyn) base[0].configs.forEach((c, ci) => { /* v301: mỗi mục xáo kho MỘT lần cho cả đợt in, mã đề thứ i lấy đoạn kế tiếp => các mã đề có câu KHÁC nhau (kho đủ câu thì không trùng) */
+            o._dynOrd = o._dynOrd || {}; if (!o._dynOrd[ci]) o._dynOrd[ci] = shuffle((c.pool || []).slice());
+            const ord = o._dynOrd[ci], cnt = Math.min(+c.count || 0, ord.length);
+            for (let k = 0; k < cnt; k++) list.push(ord[(i * cnt + k) % ord.length]);
+        });
         else list = base.slice();
         const by = { MCQ: [], TF: [], SA: [], ES: [] };
         list.forEach(q => { if (q && by[q.type]) by[q.type].push(q); });
