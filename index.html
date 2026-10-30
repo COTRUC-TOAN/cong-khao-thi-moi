@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v299] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v300] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8099,6 +8099,7 @@ window.addEventListener('popstate', function () {
         if (pend.length) h += '<div class="cg-pend">Có <b id="cg-pcount">' + pend.length + '</b> bài chưa gửi được lên Google Sheet (mất mạng?). <button type="button" id="cg-retry" style="padding:6px 10px;border:0;border-radius:6px;background:#d97706;color:#fff;font-weight:700">Gửi lại</button></div>';
         h += '<div class="cg-card"><b>Mã đề trên tờ bài làm</b><div class="cg-codes">' + DATA.s.map(r => '<button type="button" data-code="' + esc(r[0]) + '" class="' + (CUR && CUR.code === r[0] ? 'on' : '') + '">' + esc(r[0]) + '</button>').join('') + '</div></div>';
         h += '<div class="cg-card"><details' + (LS.get('cham_roster') ? '' : '') + '><summary style="cursor:pointer"><b>Danh sách lớp (không bắt buộc)</b></summary><div class="cg-small">Dán mỗi dòng một em: số báo danh rồi họ tên (0101 Nguyễn Văn A), hoặc họ tên rồi số báo danh (Nguyễn Văn A 0101). Có danh sách thì nhập hay chụp ra số báo danh, máy tự điền họ tên.</div><textarea id="cg-roster" rows="4" style="width:100%;box-sizing:border-box;margin-top:4px">' + esc(LS.get('cham_roster') || '') + '</textarea></details></div>';
+        h += '<div class="cg-card"><b>Lớp đang chấm</b> <input type="text" id="cg-class0" placeholder="Ví dụ 12A3" autocomplete="off" value="' + esc(String(LS.get('cham_class') || '')) + '" style="width:8em;margin-left:6px"><div class="cg-small">Cô gõ lớp ở đây trước khi chụp. Máy tự ghi lớp này vào mọi bài lưu, đổi lớp thì gõ lại.</div></div>';
         if (DATA.L) h += '<div class="cg-card"><b>📷 Chụp phiếu tô ô để máy chấm</b><div class="cg-small">Đặt tờ giấy phẳng, đủ sáng, chụp thấy rõ 4 ô vuông đen ở 4 góc phiếu. Không cần chọn mã đề, máy tự đọc. Nếu phiếu tô không đọc được thì cô nhập tay ở bên dưới.</div><button type="button" id="cg-livebtn" class="cg-camb" style="border:0;background:#16a34a;color:#fff;margin-right:6px">🎥 Camera chấm trực tiếp</button><button type="button" id="cg-filebtn" class="cg-camb" style="border:0;background:#2563eb;color:#fff">Chụp / chọn ảnh phiếu</button><input type="file" id="cg-file" accept="image/*" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"><label style="display:block;margin-top:6px;font-size:.92rem"><input type="checkbox" id="cg-auto" checked> Camera trực tiếp: <b>tự lưu và quét tờ tiếp</b> khi báo xanh (chưa có tên thì lưu "Chưa rõ tên 1, 2…", cô sửa tên sau trong Sheet; ảnh phiếu vẫn giữ để đối chiếu)</label><div id="cg-scanmsg" class="cg-small" style="margin-top:4px">' + esc(LASTMSG) + '</div><canvas id="cg-cv" style="width:100%;display:none;margin-top:6px;border-radius:8px"></canvas></div>';
         if (!CUR) { h += '<div class="cg-card cg-small">' + (DATA.L ? 'Chụp phiếu, hoặc chọn mã đề để nhập tay.' : 'Chọn mã đề trước, rồi nhập từng em.') + '</div>'; }
         else {
@@ -8198,7 +8199,7 @@ window.addEventListener('popstate', function () {
         });
         const fi = $('cg-file'), fb = $('cg-filebtn'); if (fb && fi) fb.onclick = () => { try { fi.value = ''; } catch (e) { } fi.click(); }; if (fi) fi.onchange = () => { const f0 = fi.files && fi.files[0]; if (f0) { const m0 = $('cg-scanmsg'); if (m0) m0.textContent = 'Đã nhận ảnh, đang đọc…'; scanFile(f0); } }; const lbtn = $('cg-livebtn'); if (lbtn) lbtn.onclick = liveStart;
         const cl = $('cg-close'); if (cl) cl.onclick = close;
-        const sv = $('cg-save'); if (sv) sv.onclick = () => save(false); const au = $('cg-auto'); if (au) { au.checked = LS.get('cham_auto') !== '0'; au.onchange = () => LS.set('cham_auto', au.checked ? '1' : '0'); }
+        const c0e = $('cg-class0'); if (c0e) c0e.oninput = () => { const v0 = c0e.value.trim().toUpperCase(); LS.set('cham_class', v0); const c1e = $('cg-class'); if (c1e) c1e.value = v0; }; const sv = $('cg-save'); if (sv) sv.onclick = () => save(false); const au = $('cg-auto'); if (au) { au.checked = LS.get('cham_auto') !== '0'; au.onchange = () => LS.set('cham_auto', au.checked ? '1' : '0'); }
         const rt = $('cg-retry'); if (rt) rt.onclick = retry;
         wireSbd(); const hb = $('cg-hist-btn'); if (hb) hb.onclick = histOpen;
     }
