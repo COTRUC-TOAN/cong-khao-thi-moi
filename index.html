@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v301] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v302] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7410,6 +7410,18 @@ window.addEventListener('popstate', function () {
             if (o.limit && maxPages > 2) html += '<br><span style="color:#dc2626">Đề dài hơn 2 trang ngay cả khi thu nhỏ chữ. Cô bớt câu, bớt hình, hoặc bỏ chọn "Cố gắng gọn trong 2 trang".</span>';
             else if (maxPages <= 2) html += ' <span style="color:#16a34a">Vừa 2 trang A4.</span>';
             if (FR) html += '<br>Kiểu ④: tờ bài làm ' + FRN + ' trang (phiếu tô' + (s0.es.length ? ' + ô ly' : '') + '), rồi tờ đề ' + maxPages + ' trang. Mỗi mã đề ' + (FRN + maxPages) + ' trang.' + (frTiny ? ' <span style="color:#b45309">Phiếu tô chiếm gần hết trang 1 nên phần ô ly ở trang 1 rất ít, cô tăng "Số trang ô ly" lên.</span>' : '');
+            try { /* v302: cảnh báo kho thiếu câu so với số mã đề */
+                const bs = selectedQuestions || [];
+                if (bs.length === 1 && bs[0].isDynamicConfig) {
+                    const lk = [], tn = { MCQ: 'trắc nghiệm', TF: 'đúng/sai', SA: 'trả lời ngắn' };
+                    bs[0].configs.forEach((c, ci) => {
+                        const t = String(c.qType).toUpperCase(); if (t === 'ES') return;
+                        const need = o.n * (+c.count || 0), have = (c.pool || []).length;
+                        if (have && have < need) lk.push('mục ' + (ci + 1) + ' (' + (tn[t] || t) + (c.qLvl ? ', mức ' + esc(String(c.qLvl)) : '') + '): kho có ' + have + ' câu, cần ' + need + ' câu');
+                    });
+                    if (lk.length) html += '<br><span style="color:#b45309">⚠️ Kho không đủ câu để các mã đề khác hẳn nhau, nên một số mã sẽ trùng câu: ' + lk.join('; ') + '. Cô thêm câu vào kho hoặc chấp nhận trùng.</span>';
+                }
+            } catch (e) { }
             if (miss) html += '<br><span style="color:#b45309">Có câu chưa có đáp án (hiện dấu ? ở trang đáp án). Cô bổ sung đáp án cho câu đó trước khi chấm.</span>';
             msg(html);
             $('pp-ov').scrollTop = ($('pp-out').offsetTop || 0) - 8;
