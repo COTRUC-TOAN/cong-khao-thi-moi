@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v303] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v304] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13204,7 +13204,7 @@ var QGEN = (function () {
         p.innerHTML = '<div class="gnx-hero"><div><h3>✨ Tạo câu tương tự</h3><p>Chọn dạng toán, web tự sinh nhiều câu cùng dạng, tự tính đáp án và lời giải. Mỗi lần bấm là một bộ số khác, nên mỗi học sinh một câu riêng mà vẫn công bằng.</p></div><div><span class="gnx-chip">📚 ' + nAll + ' dạng</span><span class="gnx-chip" id="gnx-cnt"></span></div></div>' +
             '<div class="gnx-card"><div class="gnx-step"><i>1</i>Chọn nội dung</div>' +
             '<div class="gnx-seg" id="gnx-grade"></div>' +
-            '<div class="gnx-grid"><label><span class="gnx-lbl">Chương / nhóm</span><select id="gn-group"></select></label><label><span class="gnx-lbl">Dạng toán</span><select id="gn-type"></select></label></div>' +
+            '<div class="gnx-grid"><label><span class="gnx-lbl">Bài / nhóm</span><select id="gn-group"></select></label><label><span class="gnx-lbl">Dạng toán</span><select id="gn-type"></select></label></div>' +
             '<select id="gn-grade" style="display:none"></select><select id="gn-kind" style="display:none"><option value="MCQ">Trắc nghiệm 4 đáp án</option><option value="TF">Đúng/Sai (4 ý a, b, c, d)</option><option value="SA">Trả lời ngắn</option><option value="ES">Tự luận (in đề giấy; lớp 10: 1–2 ý, lớp 11: 3 ý)</option></select></div>' +
             '<div class="gnx-card"><div class="gnx-step"><i>2</i>Kiểu câu hỏi</div><div class="gnx-seg" id="gnx-kind"></div>' +
             '<div class="gnx-grid"><label><span class="gnx-lbl">Số câu (tối đa 30)</span><input type="number" id="gn-n" value="10" min="1" max="30"></label><label><span class="gnx-lbl">Bài / chương lưu vào (mục lục)</span><select id="gn-topic"></select></label></div>' +
@@ -13277,8 +13277,9 @@ var QGEN = (function () {
         if (String(g) === '11') { var mm = /\(Bài\s*(\d+)/.exec(String(raw)); if (mm) { var n = +mm[1]; for (var i = 0; i < CH11.length; i++) if (CH11[i][2].indexOf(n) >= 0) return [CH11[i][0], CH11[i][1]]; } }
         return [999, raw];
     }
+    function GB(g, x) { return (x && x.bai) ? [x.baiK, x.bai] : GP(g, x.group); }
     var GK1G = '🏫 Đề giữa kỳ 1 (GK1) – bám sát đề của trường';
-    function inGr(g, x, gr) { return gr === GK1G ? !!(window.__GK1 && window.__GK1[x.id] && String(x.grade) === g) : GP(g, x.group)[1] === gr; }
+    function inGr(g, x, gr) { return gr === GK1G ? !!(window.__GK1 && window.__GK1[x.id] && String(x.grade) === g) : GB(g, x)[1] === gr; }
     function gnFillTopic() {
         var sel = $('gn-topic'); if (!sel) return; var old = sel.value, g = ($('gn-grade') || {}).value || '12', tl = []; try { tl = getTopicsForGrade(String(g)); } catch (e) { }
         sel.innerHTML = '<option value="">(chưa chọn) - chỉ hiện bài của Lớp ' + esc(g) + '</option>' + tl.map(function (t) { return t.id ? '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>' : ''; }).join('');
@@ -13288,7 +13289,7 @@ var QGEN = (function () {
     function gnGroups() {
         gnFillTopic();
         var g = $('gn-grade').value, s = [], om = {};
-        LST().forEach(function (x) { if (String(x.grade) !== g) return; var q = GP(g, x.group); if (s.indexOf(q[1]) < 0) { s.push(q[1]); om[q[1]] = q[0]; } });
+        LST().forEach(function (x) { if (String(x.grade) !== g) return; var q = GB(g, x); if (s.indexOf(q[1]) < 0) { s.push(q[1]); om[q[1]] = q[0]; } });
         s.sort(function (a, b) { return om[a] - om[b] || (a < b ? -1 : 1); });
         if (window.__GK1 && LST().some(function (x) { return String(x.grade) === g && window.__GK1[x.id]; })) s.unshift(GK1G);
         $('gn-group').innerHTML = s.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join(''); gnTypes();
@@ -13330,10 +13331,11 @@ var QGEN = (function () {
         function baiOf(x) { var m = /\(Bài\s*(\d+)/.exec(String(x.group || '')); return m ? +m[1] : 0; }
         lb.forEach(function (o) { o.b = baiOf(o.x); o.s = subOf(o.x); });
         if (g === '12') lb.forEach(function (o) { var c = GP('12', o.x.group); if (c[0] !== 999) { o.b = c[0]; o.s = c[1]; } }); /* lớp 12: gom theo chương, mỗi chương hiện 1 lần */
+        lb.forEach(function (o) { if (o.x.bai) { o.b = 0; o.s = ''; } });
         var sFirst = {}; lb.forEach(function (o) { if (!(o.s in sFirst)) sFirst[o.s] = o.i; });
         lb.sort(function (a, b) { return (ord[a.t.k] - ord[b.t.k]) || (a.b - b.b) || (sFirst[a.s] - sFirst[b.s]) || (a.l - b.l) || (a.i - b.i); });
         var html = '', lastKey = null, LVT = ['NB', 'TH', 'VD', 'VDC'];
-        lb.forEach(function (o) { var key = o.t.k + '|' + o.b + '|' + o.s; if (key !== lastKey) { if (lastKey !== null) html += '</optgroup>'; html += '<optgroup label="' + esc(o.t.k + ' · ' + o.s) + '">'; lastKey = key; } html += '<option value="' + o.x.id + '">' + esc((window.__GK1 && window.__GK1[o.x.id] ? '🏫GK1 · ' : '') + o.t.k + ' [' + LVT[o.l] + ']: ' + o.t.n) + '</option>'; });
+        lb.forEach(function (o) { var key = o.t.k + '|' + o.b + '|' + o.s; if (key !== lastKey) { if (lastKey !== null) html += '</optgroup>'; html += '<optgroup label="' + esc(o.t.k + (o.s ? ' · ' + o.s : '')) + '">'; lastKey = key; } html += '<option value="' + o.x.id + '">' + esc((window.__GK1 && window.__GK1[o.x.id] ? '🏫GK1 · ' : '') + o.t.k + ' [' + LVT[o.l] + ']: ' + o.t.n) + '</option>'; });
         if (lastKey !== null) html += '</optgroup>';
         $('gn-type').innerHTML = (l.length > 1 ? '<option value="*">🔀 Trộn tất cả dạng trong nhóm này</option>' : '') + html;
         try { gnSync(); } catch (e) { }
@@ -13477,7 +13479,7 @@ var QGEN = (function () {
         var h = (memNote ? '<div style="background:#faf5ff;border:1px solid #c4b5fd;border-radius:8px;padding:6px 8px;margin-bottom:8px;color:#6d28d9">' + memNote + '</div>' : '') + '<div style="margin-bottom:8px">Web nhận ra đây là câu <b>' + KIND_NAME[kind] + '</b>. ' + (good ? '<span style="color:#16a34a;font-weight:700">Web có dạng giống câu này:</span>' : '<span style="color:#b45309;font-weight:700">Web chưa có dạng nào giống rõ. Cô thử nhờ AI bên dưới.</span>') + '</div>';
         top.forEach(function (x, i) {
             if (x.score < 0.2) return;
-            h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid ' + (i === 0 && good ? '#16a34a' : '#e2e8f0') + ';border-radius:8px;padding:8px;margin-bottom:6px;background:#fff"><div><b>' + esc(x.g.name) + '</b><div style="font-size:.8rem;color:#64748b">' + esc(GP(String(x.g.grade), x.g.group)[1]) + ' · giống ' + Math.round(Math.min(1, x.score) * 100) + '%</div></div><button class="btn-start" style="background:#16a34a;white-space:nowrap" onclick="gsWeb(' + i + ')">✅ Dùng dạng này</button></div>';
+            h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid ' + (i === 0 && good ? '#16a34a' : '#e2e8f0') + ';border-radius:8px;padding:8px;margin-bottom:6px;background:#fff"><div><b>' + esc(x.g.name) + '</b><div style="font-size:.8rem;color:#64748b">' + esc(GB(String(x.g.grade), x.g)[1]) + ' · giống ' + Math.round(Math.min(1, x.score) * 100) + '%</div></div><button class="btn-start" style="background:#16a34a;white-space:nowrap" onclick="gsWeb(' + i + ')">✅ Dùng dạng này</button></div>';
         });
         last = { text: t, kind: kind, top: top };
         h += '<div style="border:1px solid #fde68a;background:#fffbeb;border-radius:8px;padding:8px;margin-top:8px"><b>Không có dạng nào đúng?</b><div style="font-size:.85rem;color:#92400e;margin:4px 0">AI sẽ viết câu mới tương tự câu mẫu rồi giải lại lần nữa để đối chiếu đáp án. Câu AI soạn luôn được đánh dấu ⚠️, cô cần xem kỹ.</div>' +
@@ -13490,7 +13492,7 @@ var QGEN = (function () {
         $('gn-grade').value = String(g.grade); $('gn-grade').onchange();
         $('gn-kind').value = kind; $('gn-kind').onchange();
         $('gn-grade').value = String(g.grade); $('gn-grade').onchange();
-        $('gn-group').value = GP(String(g.grade), g.group)[1]; $('gn-group').onchange();
+        $('gn-group').value = GB(String(g.grade), g)[1]; $('gn-group').onchange();
         $('gn-type').value = g.id; $('gn-n').value = $('gs-n').value; window.gnRun();
         window.gnBanner('Dạng: <b>' + esc(g.name) + '</b> (web tự giải, từ câu mẫu của cô). Chưa ưng thì quay lại tab "G. Từ câu mẫu" chọn dạng khác hoặc nhờ AI.');
     };
