@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v302] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v303] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13320,7 +13320,7 @@ var QGEN = (function () {
     function gnKeep(x) { var kd = $('gn-kind').value; if (kd !== 'MCQ' && kd !== 'SA') return true; var sa = /^\s*Trả lời ngắn\s*[:：]/i.test(String(x.name || '')); return kd === 'SA' ? sa : !sa; }
     function gnTypes() {
         var g = $('gn-grade').value, gr = $('gn-group').value;
-        var l = LST().filter(function (x) { return String(x.grade) === g && inGr(g, x, gr) && gnKeep(x); });
+        var l = LST().filter(function (x) { return !x.hide && String(x.grade) === g && inGr(g, x, gr) && gnKeep(x); });
         var kd = $('gn-kind').value, ord = { 'Trắc nghiệm': 0, 'Đúng sai': 1, 'Trả lời ngắn': 2, 'Tự luận': 3 };
         var lb = l.map(function (x, i) { return { x: x, i: i, t: gnLabel(x, kd) }; });
         var LVO = { NB: 0, TH: 1, VD: 2, VDC: 3 }, LVN = ['Nhận biết', 'Thông hiểu', 'Vận dụng', 'Vận dụng cao'];
@@ -13340,7 +13340,7 @@ var QGEN = (function () {
     }
     function pool() {
         var g = $('gn-grade').value, gr = $('gn-group').value, t = $('gn-type').value;
-        return LST().filter(function (x) { return String(x.grade) === g && inGr(g, x, gr) && gnKeep(x) && (t === '*' || x.id === t); });
+        return LST().filter(function (x) { return String(x.grade) === g && inGr(g, x, gr) && gnKeep(x) && (t === '*' ? !x.hide : x.id === t); });
     }
     function fixLt(o) {
         if (typeof o === 'string') return o.replace(/<(?=[A-Za-z])(?!br\b|img\b|b>|i>|span\b|details\b|summary\b|div\b)/g, '\\lt ');

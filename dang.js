@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v296";
+window.__DANG_VER = "v303";
 // ===== Các dạng toán =====
 (function (Q) {
     'use strict';
@@ -9690,4 +9690,6 @@ window.__DANG_VER = "v296";
     };
 })(QGEN);
 /* hiện phiên bản file dạng ở tên tab */
+/* v303: gom dạng trùng — ẩn khỏi menu, vẫn giữ để đề cũ mở được */
+(function(){try{var H={'l10_tf_dtron_pt':1,'l10_sa_newton_tonghesso':1,'l11_hh_vuonggoc_dt_mp_chop':1,'l11_hh_giao_tuyen':1,'l10_tg_dientich_sin':1,'l10_tf_gtlg_dacbiet':1,'l10_tf_tke_mau7':1,'l12_sa_tk_trungbinh_ghep':1,'daohammu':1,'l12_tk_tuphanvi':1,'l12_log_theo_ab':1,'l12_sa_tk_tansuat_thieu_tb':1,'l12_sa_goc_hinhlapphuong':1,'l12_thetich_chop_goc':1,'l12_tk_trungbinh':1,'ptmu1':1,'tapxd':1,'tieptuyen':1};var Q=window.QGEN;if(!Q)return;[].concat(Q.GEN||[],Q.TF||[],Q.ES||[]).forEach(function(g){if(H[g.id])g.hide=1;});}catch(e){}})();
 (function(){var f=function(){try{if(document.title.indexOf("dạng")<0)document.title=document.title.replace(/^\[(v\d+)\]/,function(m,v){return "["+v+" · dạng "+window.__DANG_VER+"]";});}catch(e){}};if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",f);else f();window.addEventListener("load",f);})();
