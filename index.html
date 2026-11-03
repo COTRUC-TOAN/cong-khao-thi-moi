@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v305] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v306] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6859,6 +6859,9 @@ window.addEventListener('popstate', function () {
 .pp-txt{font-family:'Times New Roman',Times,'Noto Serif',serif;line-height:1.36;word-break:break-word;color:#000}
 .pp-it{margin:0 0 2.2mm 0}
 .pp-it img{max-width:100%!important;width:auto!important;height:auto!important;max-height:40mm!important;object-fit:contain;vertical-align:middle}
+.pp-p1 img,.pp-p2 img{max-width:82%!important;max-height:30mm!important}
+.pp-p3 img,.pp-p4 img{min-height:34mm!important;max-height:50mm!important}
+.pp-txt span.MathJax,.pp-page span.MathJax{font-size:100%!important}
 .pp-exampage{padding:6mm 6mm 8mm!important}
 .pp-it .pp-sec{font-size:1em}
 .pp-o4{display:grid;grid-template-columns:repeat(4,1fr);gap:0 2mm}.pp-o2{display:grid;grid-template-columns:1fr 1fr;gap:0 2mm}.pp-o1{display:block}
@@ -7243,7 +7246,7 @@ window.addEventListener('popstate', function () {
     let JL_RE; try { JL_RE = new RegExp('(?<!<img[^>]*>)' + JL_BODY, 'gi'); } catch (e) { JL_RE = new RegExp(JL_BODY, 'gi'); }
     const joinL = h => String(h == null ? '' : h).replace(JL_RE, ' ');
     function buildItems(set, o) {
-        const out = [], lay = o.lay || 'A', mk = (html, keep, part) => { const d = document.createElement('div'); d.className = 'pp-it'; d.innerHTML = html; out.push({ el: d, keep: !!keep, wide: lay === 'C' || (lay === 'A' && part !== 1) }); };
+        const out = [], lay = o.lay || 'A', mk = (html, keep, part) => { const d = document.createElement('div'); d.className = 'pp-it pp-p' + part; d.innerHTML = html; out.push({ el: d, keep: !!keep, wide: lay === 'C' || (lay === 'A' && part !== 1) }); };
         if (set.mcq.length) {
             mk('<div class="pp-sec"><b>PHẦN I. Câu trắc nghiệm nhiều phương án lựa chọn.</b> <i>Thí sinh trả lời từ câu 1 đến câu ' + set.mcq.length + '. Mỗi câu hỏi thí sinh chỉ chọn một phương án. (' + fmt(set.mcq.length * o.pm) + ' điểm)</i></div>', 1, 1);
             set.mcq.forEach((q, i) => mk('<div><b>Câu ' + (i + 1) + '.</b> ' + clean(joinL(q.stem)) + '</div><div class="' + optLayout(q.opts) + '">' + q.opts.map((t, j) => '<div><b>' + 'ABCD'.charAt(j) + '.</b> ' + clean(t) + '</div>').join('') + '</div>', 0, 1));
@@ -7325,7 +7328,11 @@ window.addEventListener('popstate', function () {
             const headMax = Math.max.apply(null, SETS.map(s => { probe.innerHTML = headHtml(s); return probe.offsetHeight; })) / ratio + 2; probe.remove();
             const usable = 280, cap1 = usable - headMax - 2.5, capN = usable;
                         const gap = 2.2 * ratio;
-            const fitAt = (set, m, f, mw) => { m.style.fontSize = f + 'pt'; mw.style.fontSize = f + 'pt'; const hs = set.items.map(it => it.el.offsetHeight + gap); const r = paginate(set.items, hs, cap1 * ratio, capN * ratio); r.hs = hs; return { r, hs }; };
+            const fixOpts = set => set.items.forEach(it => it.el.querySelectorAll('.pp-o4,.pp-o2,.pp-o1').forEach(c => {
+                if (!c.dataset.o) c.dataset.o = c.className; c.className = c.dataset.o;
+                for (const nx of ['pp-o2', 'pp-o1']) { if (c.className !== 'pp-o4' && c.className !== 'pp-o2') break; const n = c.className === 'pp-o4' ? 4 : 2, sh = (c.clientWidth - (n - 1) * 8) / n; if (c.scrollWidth > c.clientWidth + 1 || Array.prototype.some.call(c.children, x => x.scrollWidth > sh + 1)) c.className = nx; }
+            }));
+            const fitAt = (set, m, f, mw) => { m.style.fontSize = f + 'pt'; mw.style.fontSize = f + 'pt'; fixOpts(set); const hs = set.items.map(it => it.el.offsetHeight + gap); const r = paginate(set.items, hs, cap1 * ratio, capN * ratio); r.hs = hs; return { r, hs }; };
             const FONTS = o.font === 'auto' ? [12, 11.75, 11.5, 11.25, 11, 10.75, 10.5, 10.25, 10, 9.75, 9.5, 9.25, 9, 8.75, 8.5] : [parseFloat(o.font)];
             let chosen = FONTS[FONTS.length - 1];
             for (const f of FONTS) {

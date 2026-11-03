@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>[dh3] Toán cô Trúc · Dạy học</title>
+<style>
+
+:root{--bg:#070a1f;--card:#12163a;--line:#2a3070;--tx:#eef1ff;--mut:#9aa3d6;--c1:#6ee7ff;--c2:#c084fc;--c3:#f472b6;--ok:#34d399;--no:#fb7185;--ye:#fde047}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 700px at 20% -10%,#1b1f5a,transparent),var(--bg);color:var(--tx);font:17px/1.7 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:12px 14px 40px}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 2px}
+.logo b{background:linear-gradient(90deg,var(--c1),var(--c3));-webkit-background-clip:text;background-clip:text;color:transparent;font-size:20px}
+.logo small{display:block;color:var(--mut);font-size:12px;letter-spacing:.5px}
+.draft{font-size:12px;color:var(--ok)}
+.crumb{color:var(--mut);font-size:13px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+h1{font-size:26px;margin:2px 0 12px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#0c1030;border:1px solid var(--line);border-radius:18px;padding:5px;margin-bottom:14px}
+.tabs button{background:none;border:0;color:var(--mut);font:700 14px inherit;padding:9px 4px;border-radius:14px;cursor:pointer}
+.tabs button span{display:block;font-size:20px}
+.tabs button.on{background:linear-gradient(135deg,var(--c1),var(--c2) 60%,var(--c3));color:#0b0d26}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px;margin-bottom:14px}
+.card.l1{border-left:5px solid var(--c2)}.card.l2{border-left:5px solid var(--c1)}.card.l3{border-left:5px solid var(--c3)}
+.card h3{margin:0 0 6px;font-size:18px}
+.card ul{margin:6px 0;padding-left:20px}
+.v{display:inline-block;position:relative;font-style:italic;padding:0 1px}
+.v::after{content:"";position:absolute;left:0;right:-1px;top:.12em;border-top:1.5px solid currentColor}
+.v::before{content:"";position:absolute;right:-2px;top:.06em;width:5px;height:5px;border-top:1.5px solid currentColor;border-right:1.5px solid currentColor;transform:rotate(45deg)}
+.v.t{margin-right:3px}
+.box{background:#0d1135;border:1px dashed var(--c1);border-radius:12px;padding:8px 12px;margin:8px 0;text-align:center;font-size:18px}
+.tag{display:inline-block;font-size:12px;font-weight:800;padding:1px 9px;border-radius:99px;color:#111;margin-right:6px}
+.t1{background:#34d399}.t2{background:#fde047}.t3{background:#f9a8d4}
+canvas{width:100%;max-width:640px;height:auto;aspect-ratio:1/1;background:#0a0d2b;border:1px solid var(--line);border-radius:14px;touch-action:none;display:block;margin:8px auto}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills button,.btn{background:#1b2050;border:1px solid var(--line);color:var(--tx);border-radius:99px;padding:7px 14px;font:700 14px inherit;cursor:pointer}
+.pills button.on{background:#3a3490;border-color:var(--c2)}
+.btn.main{background:linear-gradient(135deg,var(--c1),var(--c2),var(--c3));color:#0b0d26;border:0;border-radius:14px;padding:11px 18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.row .btn{flex:1}
+.step{display:flex;gap:10px;background:#0d1135;border-radius:12px;padding:8px 12px;margin:6px 0}
+.step i{flex:none;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--c1),var(--c2));color:#0b0d26;font-style:normal;font-weight:800;display:grid;place-items:center}
+.opt{display:block;width:100%;text-align:left;background:#0d1135;border:1px solid var(--line);color:var(--tx);border-radius:12px;padding:9px 12px;margin:6px 0;font:inherit;cursor:pointer}
+.opt.ok{background:#0f3b2c;border-color:var(--ok)}.opt.no{background:#431826;border-color:var(--no)}
+.fb{margin-top:8px;padding:8px 12px;border-radius:12px;background:#0d1135}
+.bar{height:8px;background:#0d1135;border-radius:9px;overflow:hidden;margin-bottom:10px}.bar div{height:100%;background:linear-gradient(90deg,var(--c1),var(--c3));width:0;transition:width .3s}
+.info{color:var(--mut);font-size:15px}
+#gate{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:9;padding:20px}
+#gate div{max-width:340px;width:100%;text-align:center}
+#gate input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0d1135;color:var(--tx);font:inherit;text-align:center;margin:12px 0}
+@media (max-width:520px){h1{font-size:21px}.tabs button{font-size:12px}}
+
+.fr{display:inline-block;vertical-align:middle;text-align:center;margin:0 2px;line-height:1.25}
+.fr>i{display:block;font-style:normal;padding:0 3px}.fr>i:first-child{border-bottom:1.5px solid currentColor}
+.lessons a{display:block;background:#12163a;border:1px solid var(--line);border-radius:14px;padding:11px 14px;margin:8px 0;color:var(--tx);text-decoration:none;font-weight:700;cursor:pointer}
+.lessons a small{display:block;color:var(--mut);font-weight:400}
+.lessons h2{font-size:18px;margin:18px 0 2px;color:var(--c1)}
+.lessons h4{margin:10px 0 0;color:var(--mut);font-size:13px;letter-spacing:.6px;text-transform:uppercase}
+.back{background:none;border:0;color:var(--mut);font:700 14px inherit;cursor:pointer;padding:0;margin-bottom:4px}
+input[type=range]{width:100%;accent-color:#c084fc}
+.sl{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:15px}.sl b{min-width:70px}
+
+.card td{padding:5px 8px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div id="gate"><div>
+  <div class="logo"><b>TOÁN CÔ TRÚC</b><small>THPT LONG THỚI · KHU DẠY HỌC</small></div>
+  <p class="info">Trang dành riêng cho cô. Nhập mã để vào.</p>
+  <input id="pw" type="password" placeholder="Mã vào" autocomplete="off">
+  <button class="btn main" id="pwgo" style="width:100%">Vào</button>
+  <p id="pwerr" class="info" style="color:var(--no)"></p>
+</div></div>
+
+<div class="wrap" id="app" style="display:none">
+<header>
+  <div class="logo"><b>TOÁN CÔ TRÚC</b><small>THPT LONG THỚI · DẠY HỌC</small></div>
+  <div class="draft">✅ BẢN NHÁP — cô duyệt trước khi dùng</div>
+</header>
+<div id="home" class="lessons"></div>
+<div id="lesson" style="display:none">
+  <button class="back" id="back">‹ Danh sách bài</button>
+  <div class="crumb" id="lcrumb"></div>
+  <h1 id="ltitle"></h1>
+  <div class="tabs" id="tabs">
+    <button data-t="ts" class="on"><span>📘</span>Tóm tắt</button>
+    <button data-t="mp"><span>🧪</span>Mô phỏng</button>
+    <button data-t="vd"><span>✏️</span>Ví dụ</button>
+    <button data-t="lt"><span>🎯</span>Luyện tập</button>
+  </div>
+  <section id="ts"></section>
+  <section id="mp" style="display:none"></section>
+  <section id="vd" style="display:none"></section>
+  <section id="lt" style="display:none"></section>
+</div>
+</div>
+<script>
+/* ===== Khung dùng chung ===== */
+/* Đổi mã: mở Console gõ  sha("mã mới")  rồi dán kết quả vào HASH */
+var HASH = "e382690dbadb94e39d65ae46bb99c5b351a2067a2ffe1a2d742d750a89153c21";
+function v(s){return '<span class="v">'+s+'</span>'}
+function fr(n,d){return '<span class="fr"><i>'+n+'</i><i>'+d+'</i></span>'}
+async function sha(s){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("")}
+var $=function(i){return document.getElementById(i)};
+var LESSONS=[]; /* mỗi bài: {id,grade,chap,no,title,ts,sim(box),ex[],qs[]} */
+
+function openApp(){$("gate").style.display="none";$("app").style.display="block";route()}
+async function tryPw(){
+  var h=await sha($("pw").value.trim());
+  if(h===HASH){try{sessionStorage.setItem("dh_ok","1")}catch(e){}openApp()}
+  else $("pwerr").textContent="Sai mã, cô thử lại nhé."
+}
+$("pwgo").onclick=tryPw;$("pw").onkeydown=function(e){if(e.key==="Enter")tryPw()};
+
+function home(){
+  $("lesson").style.display="none";$("home").style.display="block";
+  var h='<h1 style="margin-top:8px">Chọn bài dạy</h1>',lastG="",lastC="";
+  LESSONS.forEach(function(L){
+    if(L.grade!==lastG){h+='<h2>Lớp '+L.grade+'</h2>';lastG=L.grade;lastC=""}
+    if(L.chap!==lastC){h+='<h4>'+L.chap+'</h4>';lastC=L.chap}
+    h+='<a data-id="'+L.id+'">Bài '+L.no+'. '+L.title+'<small>Tóm tắt · Mô phỏng · Ví dụ · Luyện tập</small></a>'
+  });
+  $("home").innerHTML=h;
+  document.title="[dh3] Toán cô Trúc · Dạy học"
+}
+$("home").onclick=function(e){var a=e.target.closest("a");if(a)location.hash=a.dataset.id};
+$("back").onclick=function(){location.hash=""};
+
+function showTab(t){
+  [].forEach.call($("tabs").children,function(x){x.classList.toggle("on",x.dataset.t===t)});
+  ["ts","mp","vd","lt"].forEach(function(id){$(id).style.display=id===t?"block":"none"})
+}
+$("tabs").onclick=function(e){var b=e.target.closest("button");if(b)showTab(b.dataset.t)};
+
+function openLesson(L){
+  $("home").style.display="none";$("lesson").style.display="block";
+  $("lcrumb").textContent="Lớp "+L.grade+" · "+L.chap+" · Bài "+L.no;$("ltitle").textContent=L.title;
+  $("ts").innerHTML=L.ts;
+  $("mp").innerHTML="";L.sim($("mp"));
+  buildEx(L.ex);buildQ(L.qs);showTab("ts");window.scrollTo(0,0);
+  document.title="[dh3] "+L.title
+}
+function route(){
+  var id=(location.hash||"").slice(1),L=LESSONS.filter(function(x){return x.id===id})[0];
+  if(L)openLesson(L);else home()
+}
+window.addEventListener("hashchange",function(){if($("app").style.display!=="none")route()});
+
+function buildEx(EX){
+  var h="";
+  EX.forEach(function(e,i){h+='<div class="card"><div class="crumb">Ví dụ '+(i+1)+'</div><p><b>'+e.t+'</b></p><div id="st'+i+'"></div><div class="row"><button class="btn main" data-i="'+i+'" data-a="next"></button><button class="btn" data-i="'+i+'" data-a="all">Hiện hết</button></div></div>'});
+  var el=$("vd");el.innerHTML=h;var cnt=EX.map(function(){return 0});
+  function show(i,n){var e=EX[i],o="";for(var k=0;k<n;k++)o+='<div class="step"><i>'+(k+1)+'</i><div>'+e.s[k]+'</div></div>';$("st"+i).innerHTML=o;cnt[i]=n;var b=el.querySelector('[data-i="'+i+'"][data-a="next"]');b.textContent=n>=e.s.length?"✔ Xong":"👉 Bước tiếp ("+(n+1)+"/"+e.s.length+")";b.disabled=n>=e.s.length}
+  el.onclick=function(ev){var b=ev.target.closest("button");if(!b)return;var i=+b.dataset.i;show(i,b.dataset.a==="next"?Math.min(cnt[i]+1,EX[i].s.length):EX[i].s.length)};
+  EX.forEach(function(e,i){show(i,0)})
+}
+function buildQ(QS){
+  var el=$("lt"),i=0,ok=0,order=[];
+  function shuf(a){a=a.slice();for(var k=a.length-1;k>0;k--){var j=Math.floor(Math.random()*(k+1));var t=a[k];a[k]=a[j];a[j]=t}return a}
+  function start(){i=0;ok=0;order=shuf(QS.map(function(_,k){return k}));render()}
+  function render(){
+    if(i>=order.length){el.innerHTML='<div class="card" style="text-align:center"><div style="font-size:48px">🎯</div><h3>Xong rồi!</h3><p>Đúng <b>'+ok+'/'+order.length+'</b> câu.</p><button class="btn main" id="again">Làm lại</button></div>';$("again").onclick=start;return}
+    var Q=QS[order[i]],idx=shuf(Q.o.map(function(_,k){return k}));
+    var h='<div class="card"><div class="bar"><div style="width:'+(i/order.length*100)+'%"></div></div><span class="tag t'+Q.l+'">'+["","Nhận biết","Thông hiểu","Vận dụng"][Q.l]+'</span> Câu '+(i+1)+'/'+order.length+'<p><b>'+Q.q+'</b></p><div id="ops">';
+    idx.forEach(function(k,p){h+='<button class="opt" data-k="'+k+'"><b>'+"ABCD"[p]+".</b> "+Q.o[k]+'</button>'});
+    h+='</div><div id="fb"></div></div>';el.innerHTML=h;
+    $("ops").onclick=function(e){var b=e.target.closest(".opt");if(!b||this.dataset.d)return;this.dataset.d=1;var good=+b.dataset.k===Q.a;if(good)ok++;
+      [].forEach.call(this.children,function(x){if(+x.dataset.k===Q.a)x.classList.add("ok");else if(x===b)x.classList.add("no")});
+      $("fb").innerHTML='<div class="fb">'+(good?"✅ Đúng! ":"❌ Chưa đúng. ")+Q.e+'</div><div class="row"><button class="btn main" id="nx">'+(i+1>=order.length?"Xem kết quả":"Câu tiếp ➜")+'</button></div>';
+      $("nx").onclick=function(){i++;render()}}
+  }
+  start()
+}
+
+function simVec(box){
+ box.innerHTML=`<div class="card"><h3>🧪 Cộng và trừ hai vectơ trên lưới</h3>
+    <p class="info">Kéo <b style="color:#6ee7ff">chấm nhỏ ở đầu mút</b> của <span class="v">a</span> (xanh) và <span class="v">b</span> (vàng) để thay đổi. Điểm tự bám vào ô lưới.</p>
+    <div class="pills" id="modes">
+      <button data-m="tri" class="on">Tổng · quy tắc ba điểm</button>
+      <button data-m="par">Tổng · hình bình hành</button>
+      <button data-m="dif">Hiệu <span class="v">a</span> − <span class="v">b</span> = <span class="v">a</span> + (−<span class="v">b</span>)</button>
+    </div>
+    <canvas id="cv" width="640" height="640"></canvas>
+    <div class="box" id="mpres"></div>
+    <div class="info" id="mpnote"></div>
+  </div>
+`;
+
+var cv,cx,S=40,N=16,O={x:0,y:0},A={x:5,y:1},B={x:2,y:4},mode="tri",drag=null;
+function P(p){return {x:cv.width/2+p.x*S,y:cv.height/2-p.y*S}}
+function arrow(p,q,col,w,dash){
+  var a=P(p),b=P(q);cx.strokeStyle=col;cx.fillStyle=col;cx.lineWidth=w||4;cx.lineCap="round";
+  var L=Math.hypot(b.x-a.x,b.y-a.y);if(L<2)return;
+  var an=Math.atan2(b.y-a.y,b.x-a.x),hl=Math.min(24,L*.5),hw=.42;
+  var bx=b.x-hl*.8*Math.cos(an),by=b.y-hl*.8*Math.sin(an);
+  cx.setLineDash(dash||[]);cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(bx,by);cx.stroke();cx.setLineDash([]);
+  cx.beginPath();cx.moveTo(b.x,b.y);cx.lineTo(b.x-hl*Math.cos(an-hw),b.y-hl*Math.sin(an-hw));cx.lineTo(b.x-hl*Math.cos(an+hw),b.y-hl*Math.sin(an+hw));cx.closePath();cx.fill()
+}
+/* nhãn vectơ: chữ có mũi tên nhỏ ở trên */
+function lab(p,t,col,dx,dy){
+  var a=P(p),x=a.x+(dx||8),y=a.y+(dy||-8);cx.fillStyle=col;cx.strokeStyle=col;cx.font="bold 22px Segoe UI";
+  var w=cx.measureText(t).width;cx.fillText(t,x,y);cx.lineWidth=2;cx.lineCap="butt";
+  cx.beginPath();cx.moveTo(x,y-22);cx.lineTo(x+w,y-22);cx.stroke();
+  cx.beginPath();cx.moveTo(x+w+1,y-22);cx.lineTo(x+w-6,y-26);cx.lineTo(x+w-6,y-18);cx.closePath();cx.fill()
+}
+function draw(){
+  if(!cx)return;
+  var W=cv.width,H=cv.height;cx.clearRect(0,0,W,H);
+  cx.lineWidth=1;cx.strokeStyle="#1d2360";
+  for(var i=-N/2;i<=N/2;i++){var a=P({x:i,y:-N/2}),b=P({x:i,y:N/2});cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke();a=P({x:-N/2,y:i});b=P({x:N/2,y:i});cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}
+  cx.strokeStyle="#4a52a8";cx.lineWidth=1.5;var o1=P({x:-N/2,y:0}),o2=P({x:N/2,y:0}),o3=P({x:0,y:-N/2}),o4=P({x:0,y:N/2});
+  cx.beginPath();cx.moveTo(o1.x,o1.y);cx.lineTo(o2.x,o2.y);cx.moveTo(o3.x,o3.y);cx.lineTo(o4.x,o4.y);cx.stroke();
+  var note,txt,CA="#6ee7ff",CB="#fde047",CR="#f472b6",CN="#fb923c";
+  var mid=function(p,q){return {x:(p.x+q.x)/2,y:(p.y+q.y)/2}};
+  var T={x:A.x+B.x,y:A.y+B.y};
+  if(mode==="tri"){
+    arrow(O,A,CA);arrow(A,T,CB);arrow(O,T,CR,5);
+    lab(mid(O,A),"a",CA,-24,16);lab(mid(A,T),"b",CB,10,6);lab(mid(O,T),"a+b",CR,-62,-8);
+    txt=v("a")+" = ("+A.x+"; "+A.y+"), "+v("b")+" = ("+B.x+"; "+B.y+") ⇒ "+v("a")+" + "+v("b")+" = ("+T.x+"; "+T.y+")";
+    note="Đặt <b>đầu</b> của b vào <b>cuối</b> của a. Tổng nối từ gốc của a đến cuối của b — chính là quy tắc ba điểm."
+  }else if(mode==="par"){
+    arrow(O,A,CA);arrow(O,B,CB);arrow(A,T,CB,2.5,[7,6]);arrow(B,T,CA,2.5,[7,6]);arrow(O,T,CR,5);
+    lab(mid(O,A),"a",CA,10,24);lab(mid(O,B),"b",CB,-30,-6);lab(mid(O,T),"a+b",CR,-62,-8);
+    txt=v("a")+" + "+v("b")+" = ("+T.x+"; "+T.y+")";
+    note="Hai vectơ chung gốc: tổng là <b>đường chéo</b> của hình bình hành dựng trên a và b."
+  }else{
+    var nB={x:-B.x,y:-B.y},D={x:A.x-B.x,y:A.y-B.y};
+    arrow(O,B,CB,2.5,[7,6]);arrow(O,nB,CN,4);arrow(O,A,CA);arrow(A,D,CN,4);arrow(O,D,CR,5);
+    lab(mid(O,B),"b",CB,10,24);lab(mid(O,nB),"−b",CN,-58,10);lab(mid(O,A),"a",CA,6,28);lab(mid(A,D),"−b",CN,10,-4);lab(mid(O,D),"a−b",CR,-64,-8);
+    txt=v("a")+" − "+v("b")+" = "+v("a")+" + (−"+v("b")+") = ("+A.x+"; "+A.y+") + ("+nB.x+"; "+nB.y+") = ("+D.x+"; "+D.y+")";
+    note="<b>Bước 1:</b> vẽ vectơ đối −b (cam): cùng độ dài, ngược hướng với b (vàng nét đứt). <b>Bước 2:</b> đặt −b nối vào cuối a. <b>Bước 3:</b> a + (−b) chính là a − b (hồng)."
+  }
+  [[A,CA],[B,CB]].forEach(function(z){var q=P(z[0]);cx.fillStyle=z[1];cx.beginPath();cx.arc(q.x,q.y,5.5,0,7);cx.fill();cx.strokeStyle="#fff";cx.lineWidth=1.5;cx.stroke()});
+  document.getElementById("mpres").innerHTML=txt;document.getElementById("mpnote").innerHTML=note
+}
+function initCanvas(){
+  cv=document.getElementById("cv");cx=cv.getContext("2d");
+  S=cv.width/N;
+  function pos(e){var r=cv.getBoundingClientRect(),k=cv.width/r.width;var x=(e.clientX-r.left)*k,y=(e.clientY-r.top)*k;return {x:(x-cv.width/2)/S,y:-(y-cv.height/2)/S}}
+  cv.onpointerdown=function(e){var p=pos(e);var dA=Math.hypot(p.x-A.x,p.y-A.y),dB=Math.hypot(p.x-B.x,p.y-B.y);drag=dA<=dB?A:B;if(Math.min(dA,dB)>1.2)drag=null;if(drag){cv.setPointerCapture(e.pointerId);e.preventDefault()}};
+  cv.onpointermove=function(e){if(!drag)return;var p=pos(e);drag.x=Math.max(-7,Math.min(7,Math.round(p.x)));drag.y=Math.max(-7,Math.min(7,Math.round(p.y)));draw()};
+  cv.onpointerup=function(){drag=null};
+  document.getElementById("modes").onclick=function(e){var b=e.target.closest("button");if(!b)return;mode=b.dataset.m;[].forEach.call(this.children,function(x){x.classList.toggle("on",x===b)});draw()};
+  draw()
+}
+
+
+ initCanvas();
+}
+
+var EX_V=[
+ {t:"Rút gọn biểu thức "+v("AB")+" + "+v("CD")+" + "+v("BC")+" + "+v("DA")+".",s:[
+  "Sắp xếp lại cho nối đuôi nhau: "+v("AB")+" + "+v("BC")+" + "+v("CD")+" + "+v("DA")+".",
+  "Quy tắc ba điểm: "+v("AB")+" + "+v("BC")+" = "+v("AC")+".",
+  v("AC")+" + "+v("CD")+" = "+v("AD")+".",
+  v("AD")+" + "+v("DA")+" = "+v("AA")+" = "+v("0")+". <b>Kết quả: "+v("0")+"</b>."]},
+ {t:"Cho hình bình hành ABCD. Chứng minh "+v("AB")+" − "+v("AD")+" = "+v("DB")+".",s:[
+  "Dùng quy tắc hiệu với gốc chung A: "+v("AB")+" − "+v("AD")+" = "+v("DB")+" (đích B trừ đầu D).",
+  "Cách khác: "+v("AB")+" − "+v("AD")+" = "+v("AB")+" + "+v("DA")+" = "+v("DA")+" + "+v("AB")+" = "+v("DB")+".",
+  "Vậy "+v("AB")+" − "+v("AD")+" = "+v("DB")+" (đpcm). Ý nghĩa: đây là đường chéo BD."]},
+ {t:"Cho tam giác ABC đều cạnh a. Tính |"+v("AB")+" + "+v("AC")+"| và |"+v("AB")+" − "+v("AC")+"|.",s:[
+  "Dựng hình bình hành ABDC. Theo quy tắc hình bình hành: "+v("AB")+" + "+v("AC")+" = "+v("AD")+".",
+  "Gọi M là trung điểm BC. AM là đường cao: AM = a√3/2, và M là trung điểm AD nên AD = 2·AM = a√3.",
+  "Vậy |"+v("AB")+" + "+v("AC")+"| = a√3.",
+  "Hiệu: "+v("AB")+" − "+v("AC")+" = "+v("CB")+" nên |"+v("AB")+" − "+v("AC")+"| = CB = a."]}
+];
+var QS_V=[
+ {l:1,q:"Với ba điểm A, B, C bất kì, "+v("AB")+" + "+v("BC")+" bằng:",o:[v("AC"),v("CA"),v("BA"),v("AB")],a:0,e:"Quy tắc ba điểm."},
+ {l:1,q:"ABCD là hình bình hành. Khi đó "+v("AB")+" + "+v("AD")+" bằng:",o:[v("AC"),v("BD"),v("DB"),v("CA")],a:0,e:"Quy tắc hình bình hành: đường chéo AC."},
+ {l:1,q:"Vectơ đối của "+v("AB")+" là:",o:[v("BA"),v("AB"),v("AA"),v("0")],a:0,e:"Đổi đầu và cuối."},
+ {l:2,q:"Với ba điểm M, N, P bất kì, "+v("MN")+" − "+v("MP")+" bằng:",o:[v("PN"),v("NP"),v("MN"),v("NM")],a:0,e:"Đích N trừ đầu P → "+v("PN")+"."},
+ {l:2,q:"I là trung điểm đoạn AB. Khẳng định đúng là:",o:[v("IA")+" + "+v("IB")+" = "+v("0"),v("IA")+" = "+v("IB"),v("IA")+" − "+v("IB")+" = "+v("0"),v("AI")+" + "+v("IB")+" = "+v("0")],a:0,e:"IA và IB đối nhau. (AI + IB = AB ≠ 0)."},
+ {l:2,q:"G là trọng tâm tam giác ABC. Khẳng định đúng là:",o:[v("GA")+" + "+v("GB")+" + "+v("GC")+" = "+v("0"),v("GA")+" + "+v("GB")+" = "+v("GC"),v("AG")+" = "+v("BG"),v("GA")+" + "+v("GB")+" + "+v("GC")+" = "+v("AB")],a:0,e:"Tính chất trọng tâm."},
+ {l:3,q:"Tam giác ABC vuông tại A, AB = 3, AC = 4. Giá trị |"+v("AB")+" − "+v("AC")+"| là:",o:["5","7","1","25"],a:0,e:v("AB")+" − "+v("AC")+" = "+v("CB")+", CB = √(9+16) = 5."},
+ {l:3,q:"Tam giác ABC đều cạnh 2. Giá trị |"+v("AB")+" + "+v("AC")+"| là:",o:["2√3","4","2","√3"],a:0,e:"AB + AC = AD (đường chéo hình thoi) = 2·AM = 2·√3."}
+];
+LESSONS.push({id:"l10-tonghieu",grade:10,chap:"Chương IV · Vectơ",no:8,title:"Tổng và hiệu của hai vectơ",sim:simVec,ts:`
+  <div class="card l1"><h3>📐 Tổng của hai vectơ</h3>
+    <ul>
+      <li><b>Quy tắc ba điểm:</b> với ba điểm A, B, C bất kì:</li>
+    </ul>
+    <div class="box"><span class="v">AB</span> + <span class="v">BC</span> = <span class="v">AC</span></div>
+    <ul>
+      <li><b>Quy tắc hình bình hành:</b> nếu ABCD là hình bình hành thì</li>
+    </ul>
+    <div class="box"><span class="v">AB</span> + <span class="v">AD</span> = <span class="v">AC</span></div>
+    <ul>
+      <li><b>Tính chất:</b> giao hoán <span class="v">a</span> + <span class="v">b</span> = <span class="v">b</span> + <span class="v">a</span>; kết hợp (<span class="v">a</span> + <span class="v">b</span>) + <span class="v">c</span> = <span class="v">a</span> + (<span class="v">b</span> + <span class="v">c</span>); <span class="v">a</span> + <span class="v">0</span> = <span class="v">a</span>.</li>
+    </ul>
+  </div>
+  <div class="card l2"><h3>🔄 Vectơ đối</h3>
+    <ul>
+      <li>Vectơ đối của <span class="v">a</span> kí hiệu −<span class="v">a</span>: cùng độ dài, ngược hướng với <span class="v">a</span>.</li>
+      <li><span class="v">a</span> + (−<span class="v">a</span>) = <span class="v">0</span>.</li>
+      <li>Vectơ đối của <span class="v">AB</span> là <span class="v">BA</span>.</li>
+    </ul>
+  </div>
+  <div class="card l3"><h3>➖ Hiệu của hai vectơ</h3>
+    <ul>
+      <li><span class="v">a</span> − <span class="v">b</span> = <span class="v">a</span> + (−<span class="v">b</span>).</li>
+      <li><b>Quy tắc hiệu:</b> với ba điểm O, A, B bất kì:</li>
+    </ul>
+    <div class="box"><span class="v">AB</span> = <span class="v">OB</span> − <span class="v">OA</span></div>
+    <p class="info">Mẹo nhớ: "đích trừ đầu" — lấy chung một gốc O.</p>
+  </div>
+  <div class="card l1"><h3>⭐ Hai kết quả hay dùng</h3>
+    <ul>
+      <li>I là <b>trung điểm</b> của AB ⟺ <span class="v">IA</span> + <span class="v">IB</span> = <span class="v">0</span>.</li>
+      <li>G là <b>trọng tâm</b> tam giác ABC ⟺ <span class="v">GA</span> + <span class="v">GB</span> + <span class="v">GC</span> = <span class="v">0</span>.</li>
+    </ul>
+  </div>
+`,ex:EX_V,qs:QS_V});
+
+/* ===== Lớp 12 · Nguyên hàm ===== */
+function simNH(box){
+  box.innerHTML='<div class="card"><h3>🧪 Họ nguyên hàm F(x) + C</h3>'
+   +'<p class="info">Chọn hàm số f(x). Kéo thanh <b>C</b>: đồ thị F(x) + C tịnh tiến lên xuống. Kéo thanh <b>x₀</b>: các tiếp tuyến tại x₀ của mọi đường cong trong họ luôn <b>song song</b> (cùng hệ số góc f(x₀)).</p>'
+   +'<div class="pills" id="nhf"></div>'
+   +'<canvas id="nhc" width="640" height="560" style="aspect-ratio:640/560"></canvas>'
+   +'<div class="sl"><b>C = <span id="nhCv">1</span></b><input id="nhC" type="range" min="-3" max="3" step="0.5" value="1"></div>'
+   +'<div class="sl"><b>x₀ = <span id="nhXv">1</span></b><input id="nhX" type="range" min="-2.5" max="2.5" step="0.1" value="1"></div>'
+   +'<div class="box" id="nhres"></div><div class="info" id="nhnote"></div></div>';
+  var FS=[
+   {n:"f(x) = 2x",f:function(x){return 2*x},F:function(x){return x*x},Fs:"x²"},
+   {n:"f(x) = 3x² − 3",f:function(x){return 3*x*x-3},F:function(x){return x*x*x-3*x},Fs:"x³ − 3x"},
+   {n:"f(x) = cos x",f:Math.cos,F:Math.sin,Fs:"sin x"},
+   {n:"f(x) = eˣ",f:Math.exp,F:Math.exp,Fs:"eˣ"}
+  ],k=0,C=1,x0=1;
+  var cv=$("nhc"),cx=cv.getContext("2d"),SC=80,W=cv.width,H=cv.height;
+  var X=function(x){return W/2+x*SC},Y=function(y){return H/2-y*SC};
+  function curve(c,col,w){
+    cx.strokeStyle=col;cx.lineWidth=w;cx.beginPath();var on=false;
+    for(var px=0;px<=W;px+=2){var x=(px-W/2)/SC,y=FS[k].F(x)+c,py=Y(y);
+      if(py<-20||py>H+20){on=false;continue}
+      if(!on){cx.moveTo(px,py);on=true}else cx.lineTo(px,py)}
+    cx.stroke()
+  }
+  function fmt(n){return (Math.round(n*100)/100).toString().replace(".",",")}
+  function draw(){
+    var F=FS[k];cx.clearRect(0,0,W,H);
+    cx.lineWidth=1;cx.strokeStyle="#1d2360";
+    for(var i=-4;i<=4;i++){cx.beginPath();cx.moveTo(X(i),0);cx.lineTo(X(i),H);cx.stroke()}
+    for(var j=-3;j<=3;j++){cx.beginPath();cx.moveTo(0,Y(j));cx.lineTo(W,Y(j));cx.stroke()}
+    cx.strokeStyle="#4a52a8";cx.lineWidth=1.5;cx.beginPath();cx.moveTo(0,Y(0));cx.lineTo(W,Y(0));cx.moveTo(X(0),0);cx.lineTo(X(0),H);cx.stroke();
+    cx.fillStyle="#9aa3d6";cx.font="14px Segoe UI";cx.fillText("x",W-14,Y(0)-6);cx.fillText("y",X(0)+6,14);
+    var cs=[-3,-2,-1,0,1,2,3];
+    cs.forEach(function(c){curve(c,"rgba(154,163,214,.35)",1.5)});
+    curve(C,"#f472b6",4);
+    var s=F.f(x0),d=.9;
+    cs.concat([C]).forEach(function(c){
+      var y=F.F(x0)+c;if(Math.abs(y)>3.4)return;
+      var sel=(c===C);cx.strokeStyle=sel?"#fde047":"rgba(253,224,71,.45)";cx.lineWidth=sel?3.5:2;
+      cx.beginPath();cx.moveTo(X(x0-d),Y(y-d*s));cx.lineTo(X(x0+d),Y(y+d*s));cx.stroke();
+      cx.fillStyle=sel?"#fde047":"rgba(253,224,71,.6)";cx.beginPath();cx.arc(X(x0),Y(y),sel?6:4,0,7);cx.fill()
+    });
+    cx.strokeStyle="rgba(253,224,71,.5)";cx.setLineDash([5,5]);cx.lineWidth=1.5;cx.beginPath();cx.moveTo(X(x0),0);cx.lineTo(X(x0),H);cx.stroke();cx.setLineDash([]);
+    $("nhCv").textContent=fmt(C);$("nhXv").textContent=fmt(x0);
+    $("nhres").innerHTML="F(x) = "+F.Fs+(C>0?" + "+fmt(C):C<0?" − "+fmt(-C):"")+" &nbsp;⇒&nbsp; F′(x) = f(x) &nbsp;|&nbsp; hệ số góc tại x₀ = f("+fmt(x0)+") = <b>"+fmt(s)+"</b>";
+    $("nhnote").innerHTML="Đường <b style=\"color:#f472b6\">hồng</b> là F(x) + C đang chọn; các đường mờ là F(x) + C với C nguyên khác. Tiếp tuyến (vàng) tại cùng x₀ đều song song → <b>các nguyên hàm chỉ khác nhau một hằng số C</b>."
+  }
+  var pf=$("nhf");FS.forEach(function(F,i){var b=document.createElement("button");b.textContent=F.n;if(i===0)b.className="on";b.onclick=function(){k=i;[].forEach.call(pf.children,function(x){x.classList.toggle("on",x===b)});draw()};pf.appendChild(b)});
+  $("nhC").oninput=function(){C=parseFloat(this.value);draw()};
+  $("nhX").oninput=function(){x0=parseFloat(this.value);draw()};
+  draw()
+}
+LESSONS.push({
+ id:"l12-nguyenham",grade:12,chap:"Chương IV · Nguyên hàm và tích phân",no:11,title:"Nguyên hàm",sim:simNH,
+ ts:
+ '<div class="card l1"><h3>📐 Nguyên hàm</h3><ul>'
+ +'<li>Cho hàm số f(x) xác định trên K. Hàm số F(x) gọi là <b>nguyên hàm</b> của f(x) trên K nếu <b>F′(x) = f(x)</b> với mọi x ∈ K.</li>'
+ +'<li>Ví dụ: x² là một nguyên hàm của 2x vì (x²)′ = 2x. Cũng vậy x² + 5, x² − 1 đều là nguyên hàm của 2x.</li></ul></div>'
+ +'<div class="card l2"><h3>🧩 Họ nguyên hàm</h3><ul>'
+ +'<li>Nếu F(x) là một nguyên hàm của f(x) thì mọi nguyên hàm của f(x) đều có dạng F(x) + C (C là hằng số).</li></ul>'
+ +'<div class="box">∫ f(x) dx = F(x) + C</div>'
+ +'<p class="info">Nguyên hàm là phép toán <b>ngược của đạo hàm</b>. Tính xong, cứ đạo hàm kết quả để kiểm tra.</p></div>'
+ +'<div class="card l3"><h3>⚙️ Tính chất</h3><ul>'
+ +'<li>(∫ f(x) dx)′ = f(x).</li>'
+ +'<li>∫ k·f(x) dx = k·∫ f(x) dx (k ≠ 0).</li>'
+ +'<li>∫ [f(x) ± g(x)] dx = ∫ f(x) dx ± ∫ g(x) dx.</li></ul></div>'
+ +'<div class="card l1"><h3>📋 Bảng nguyên hàm cơ bản</h3>'
+ +'<table style="width:100%;border-collapse:collapse;font-size:16px">'
+ +'<tr><td>∫ 0 dx = C</td><td>∫ dx = x + C</td></tr>'
+ +'<tr><td colspan="2">∫ x<sup>α</sup> dx = '+fr('x<sup>α+1</sup>','α + 1')+' + C &nbsp;(α ≠ −1)</td></tr>'
+ +'<tr><td>∫ '+fr('1','x')+' dx = ln|x| + C</td><td>∫ eˣ dx = eˣ + C</td></tr>'
+ +'<tr><td colspan="2">∫ aˣ dx = '+fr('aˣ','ln a')+' + C &nbsp;(0 &lt; a ≠ 1)</td></tr>'
+ +'<tr><td>∫ cos x dx = sin x + C</td><td>∫ sin x dx = <b>−</b>cos x + C</td></tr>'
+ +'<tr><td>∫ '+fr('1','cos²x')+' dx = tan x + C</td><td>∫ '+fr('1','sin²x')+' dx = <b>−</b>cot x + C</td></tr>'
+ +'</table><p class="info">Cẩn thận dấu: (−cos x)′ = sin x nên ∫ sin x dx = −cos x + C.</p></div>',
+ ex:[
+  {t:"Tìm ∫ (3x² − 2x + 1) dx.",s:[
+   "Tách từng số hạng: ∫3x² dx − ∫2x dx + ∫1 dx.",
+   "∫3x² dx = 3·"+fr("x³","3")+" = x³; ∫2x dx = 2·"+fr("x²","2")+" = x²; ∫1 dx = x.",
+   "<b>Kết quả: x³ − x² + x + C.</b> Kiểm tra: (x³ − x² + x)′ = 3x² − 2x + 1 ✓."]},
+  {t:"Tìm ∫ (√x + "+fr("1","x²")+") dx với x &gt; 0.",s:[
+   "Viết dạng luỹ thừa: √x = x<sup>1/2</sup>; "+fr("1","x²")+" = x<sup>−2</sup>.",
+   "∫x<sup>1/2</sup> dx = "+fr("x<sup>3/2</sup>","3/2")+" = "+fr("2","3")+"x√x; ∫x<sup>−2</sup> dx = "+fr("x<sup>−1</sup>","−1")+" = −"+fr("1","x")+".",
+   "<b>Kết quả: "+fr("2","3")+"x√x − "+fr("1","x")+" + C.</b>"]},
+  {t:"Tìm ∫ (sin x + 2eˣ) dx.",s:[
+   "∫sin x dx = −cos x (nhớ dấu trừ).",
+   "∫2eˣ dx = 2eˣ.",
+   "<b>Kết quả: −cos x + 2eˣ + C.</b>"]},
+  {t:"Tìm nguyên hàm F(x) của f(x) = 2x + 1 thoả F(1) = 5.",s:[
+   "Họ nguyên hàm: F(x) = ∫(2x + 1)dx = x² + x + C.",
+   "Thay điều kiện: F(1) = 1 + 1 + C = 5 ⇒ C = 3.",
+   "<b>Vậy F(x) = x² + x + 3.</b>"]}
+ ],
+ qs:[
+  {l:1,q:"Nguyên hàm của f(x) = x² là:",o:[fr("x³","3")+" + C","2x + C","x³ + C",fr("x²","3")+" + C"],a:0,e:"∫x²dx = x³/3 + C."},
+  {l:1,q:"∫ cos x dx bằng:",o:["sin x + C","−sin x + C","−cos x + C","cos x + C"],a:0,e:"(sin x)′ = cos x."},
+  {l:1,q:"∫ eˣ dx bằng:",o:["eˣ + C","x·eˣ⁻¹ + C","eˣ⁺¹ + C","ln x + C"],a:0,e:"(eˣ)′ = eˣ."},
+  {l:1,q:"Với x &gt; 0, ∫ "+fr("1","x")+" dx bằng:",o:["ln x + C","−"+fr("1","x²")+" + C",fr("1","x²")+" + C","x + C"],a:0,e:"(ln x)′ = 1/x với x &gt; 0."},
+  {l:2,q:"∫ (2x + 3) dx bằng:",o:["x² + 3x + C","2x² + 3x + C","x² + 3 + C","2 + C"],a:0,e:"∫2x dx = x², ∫3 dx = 3x."},
+  {l:2,q:"∫ (3x² − 4) dx bằng:",o:["x³ − 4x + C","6x − 4 + C","x³ − 4 + C","3x³ − 4x + C"],a:0,e:"∫3x²dx = x³, ∫4dx = 4x."},
+  {l:2,q:"Hàm số F(x) = x³ là một nguyên hàm của hàm số nào?",o:["f(x) = 3x²","f(x) = "+fr("x⁴","4"),"f(x) = x²","f(x) = 3x³"],a:0,e:"(x³)′ = 3x²."},
+  {l:2,q:"∫ (sin x + cos x) dx bằng:",o:["−cos x + sin x + C","cos x − sin x + C","cos x + sin x + C","−cos x − sin x + C"],a:0,e:"∫sin x = −cos x; ∫cos x = sin x."},
+  {l:2,q:"Nguyên hàm F(x) của f(x) = 4x − 3 thoả F(0) = 1 là:",o:["2x² − 3x + 1","2x² − 3x","4x² − 3x + 1","2x² − 3x − 1"],a:0,e:"F = 2x² − 3x + C; F(0) = C = 1."},
+  {l:3,q:"Nguyên hàm F(x) của f(x) = eˣ + 2x thoả F(0) = 3 là:",o:["eˣ + x² + 2","eˣ + x² + 3","eˣ + x² + 1","eˣ + 2x² + 2"],a:0,e:"F = eˣ + x² + C; F(0) = 1 + C = 3 ⇒ C = 2."},
+  {l:3,q:"∫ (x + 1)² dx bằng:",o:[fr("(x + 1)³","3")+" + C","(x + 1)³ + C",fr("(x + 1)²","2")+" + C","2(x + 1) + C"],a:0,e:"Đạo hàm của (x+1)³/3 là (x+1)². (Hoặc khai triển (x+1)² = x² + 2x + 1 rồi lấy nguyên hàm.)"},
+  {l:3,q:"Một vật chuyển động có vận tốc v(t) = 3t² − 2t (m/s), vị trí ban đầu s(0) = 0. Vị trí của vật tại t = 2 là:",o:["4 m","8 m","6 m","2 m"],a:0,e:"s(t) = t³ − t² + C, s(0) = 0 ⇒ C = 0; s(2) = 8 − 4 = 4."}
+ ]
+});
+
+LESSONS.sort(function(a,b){return a.grade-b.grade||a.no-b.no});
+try{if(sessionStorage.getItem("dh_ok")==="1")openApp()}catch(e){}
+</script>
+</body>
+</html>
