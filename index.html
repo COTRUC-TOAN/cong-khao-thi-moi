@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v314] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v316] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -9271,7 +9271,7 @@ window.addEventListener('popstate', function () {
         });
         bar.appendChild(prB);
         var lsB = btn('📚 Bài giảng ▾', 'Bài giảng mẫu: máy tự giải và hiện từng bước', null); toolBtns.lesson = lsB;
-        dropdown(lsB, function (m) { m.appendChild(el('div', 'font:600 12px system-ui;color:#64748b;margin:2px 2px 0;', 'Khảo sát hàm số')); mItem(m, '📈 Hàm bậc 3 (ax³+bx²+cx+d)…', 'Tập xác định, y′, giới hạn, bảng biến thiên, kết luận, đồ thị', lessonCubicDialog); });
+        dropdown(lsB, function (m) { m.appendChild(el('div', 'font:600 12px system-ui;color:#64748b;margin:2px 2px 0;', 'Khảo sát hàm số')); mItem(m, '📈 Hàm bậc 3 (ax³+bx²+cx+d)…', 'Tập xác định, y′, giới hạn, bảng biến thiên, kết luận, đồ thị', lessonCubicDialog); mItem(m, '📈 Hàm trùng phương (ax⁴+bx²+c)…', '', lessonQuarticDialog); mItem(m, '📈 Hàm phân thức (ax+b)/(cx+d)…', 'Có tiệm cận đứng, tiệm cận ngang', lessonFracDialog); m.appendChild(el('div', 'font:600 12px system-ui;color:#64748b;margin:6px 2px 0;', 'Vectơ (lớp 10)')); mItem(m, '➡ Tích của một số với một vectơ…', 'Tọa độ, độ dài, hướng và hình vẽ', lessonVecScaleDialog); });
         bar.appendChild(lsB);
         var tsel = el('select', 'min-height:40px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font:600 14px system-ui;padding:0 4px;'); tsel.title = 'Cỡ chữ';
         [[22, 'Chữ 22'], [30, 'Chữ 30'], [36, 'Chữ 36'], [48, 'Chữ 48'], [64, 'Chữ 64'], [90, 'Chữ 90']].forEach(function (z) { var op = el('option', '', z[1]); op.value = z[0]; tsel.appendChild(op); }); tsel.value = 36;
@@ -13327,6 +13327,134 @@ var CAS = (function () {
             S.pages.splice(S.pi + 1, 0, np); gotoPage(S.pi + 1); stepStart();
             note('Đã tạo. Bấm Tiếp ▶ (hoặc Space) để hiện từng bước. Bấm ✕ để thoát và sửa');
         }, 'background:#2563eb;color:#fff;border-color:#1d4ed8;'));
+    }
+
+    // ---------- dùng chung cho các bài giảng khác ----------
+    function lsFrame(title) {
+        var Z = { W: S.W, items: [], ty: 14, X0: 22 }; Z.size = Math.max(17, Math.min(23, Math.round(Z.W / 62))); Z.lw = Math.floor(Z.W * 0.5);
+        Z.T = function (text, step, col, sz, wrapW) {
+            var o = { uid: uid(), kind: 'text', text: wrapW ? lsWrap(text, sz || Z.size, wrapW) : text, size: sz || Z.size, color: col || '#111827', x: 0, y: 0, rot: 0 }; measureText(o);
+            o.x = Z.X0 + o.w / 2; o.y = Z.ty + o.h / 2; if (step) o.step = step; Z.items.push(o); Z.ty += o.h + 6; return o;
+        };
+        Z.T(title, 0, '#1d4ed8', Z.size + 4); Z.ty += 4; return Z;
+    }
+    function lsBbt(Z, nodes, iv, step) {
+        var bw = Math.min(Z.lw, Math.max(380, 90 * nodes.length + 120)), bh = Math.round(Math.min(230, bw * 0.46));
+        Z.items.push({ uid: uid(), kind: 'bbt', nodes: nodes, iv: iv, color: '#111827', x: Z.X0 + bw / 2, y: Z.ty + bh / 2, w: bw, h: bh, rot: 0, step: step }); Z.ty += bh + 10;
+    }
+    function lsGraph(Z, fe, xr, pts, step, label) {
+        var need = Z.ty + 120, gx0 = Z.lw + 30, gw = Z.W - gx0 - 20, gh = Math.min(Math.max(300, need - 60), 460);
+        var gt = { uid: uid(), kind: 'text', text: label || '5) Đồ thị', size: Z.size, color: '#111827', x: 0, y: 0, rot: 0, step: step }; measureText(gt); gt.x = gx0 + gt.w / 2; gt.y = 54 + gt.h / 2; Z.items.push(gt);
+        if (xr[1] - xr[0] < 5) { var m = (xr[0] + xr[1]) / 2; xr = [m - 2.6, m + 2.6]; }
+        Z.items.push({ uid: uid(), kind: 'fgraph', fns: [{ e: fe, c: FN_COLORS[0] }], xr: xr, yr: null, opt: { grid: true, ext: false, icpt: false, asym: true, lab: false }, color: '#111827', ineq: [], rverts: false, pts: pts, ptOpt: { coord: true, proj: true }, area: null, x: gx0 + gw / 2, y: 54 + gt.h + 6 + gh / 2, w: gw, h: gh, rot: 0, step: step });
+        return { items: Z.items, need: Math.max(need, 54 + gt.h + 6 + gh + 24) };
+    }
+    function lsAsk(cfg) {
+        var M = modal(cfg.title, 580), card = M.card;
+        card.appendChild(el('div', 'font-size:13px;color:#475569;margin-bottom:8px;', cfg.intro));
+        var row = el('div', 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;font:italic 16px ' + FONT + ';'), ins = [];
+        cfg.fields.forEach(function (z) { row.appendChild(el('span', '', z[0] + ' =')); var i = numInp(z[1], z[0], 56); ins.push(i); row.appendChild(i); }); card.appendChild(row);
+        var pv = el('div', 'font:600 17px ' + FONT + ';color:#1d4ed8;min-height:26px;margin-bottom:6px;'), er = el('div', 'color:#b91c1c;font-size:13px;min-height:18px;'); card.appendChild(pv); card.appendChild(er);
+        function read() { var v = ins.map(function (i) { return Number(String(i.value).replace(',', '.').trim()); }); er.textContent = ''; if (v.some(function (x) { return !isFinite(x) || Math.round(x) !== x || Math.abs(x) > 99; })) { er.textContent = 'Nhập số nguyên (không quá 99).'; return null; } var e = cfg.check(v); if (e) { er.textContent = e; return null; } return v; }
+        function upd() { var v = read(); pv.textContent = v ? cfg.preview(v) : ''; }
+        ins.forEach(function (i) { i.addEventListener('input', upd); }); upd();
+        var pr = el('div', 'display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px;');
+        cfg.presets.forEach(function (z) { pr.appendChild(btn(cfg.preview(z), '', function () { ins.forEach(function (i, k) { i.value = z[k]; }); upd(); }, 'font-size:13px;min-height:32px;padding:2px 8px;')); });
+        card.appendChild(el('div', 'font:600 12px system-ui;color:#64748b;', 'Ví dụ có sẵn (bấm để điền):')); card.appendChild(pr);
+        var foot = el('div', 'display:flex;gap:8px;justify-content:flex-end;'); card.appendChild(foot); foot.appendChild(btn('Hủy', '', M.close));
+        foot.appendChild(btn('Tạo bài giảng', '', function () { var v = read(); if (!v) return; var L = cfg.build(v); M.close(); lsMake(L); }, 'background:#2563eb;color:#fff;border-color:#1d4ed8;'));
+    }
+    function lsMake(L) {
+        var np = newPage(); np.items = L.items; np.hist = [L.items.slice()]; np.hi = 0; np.fmt = 'screen'; np.ext = Math.max(0, Math.round(L.need - S.VH));
+        S.pages.splice(S.pi + 1, 0, np); gotoPage(S.pi + 1); stepStart(); note('Đã tạo. Bấm Tiếp ▶ (hoặc Space) để hiện từng bước. Bấm ✕ để thoát và sửa');
+    }
+    // ---------- hàm trùng phương ----------
+    function buildQuartic(a, b, c) {
+        var ycsn = polyStr([a, 0, b, 0, c]), Z = lsFrame('KHẢO SÁT HÀM SỐ  y = ' + ycsn), T = Z.T, sz = Z.size, ww = Z.lw - 30;
+        T('1) Tập xác định: D = ℝ. Hàm số chẵn nên đồ thị đối xứng qua trục Oy.', 1, '#111827', sz, ww);
+        var three = a * b < 0, inner = polyStr([2 * a, 0, b]), t2 = Fr(-b, 2 * a), tv = three ? Math.sqrt(t2.n / t2.d) : 0, rn = Math.round(Math.sqrt(Math.abs(t2.n))), rd = Math.round(Math.sqrt(t2.d)), ratT = three && rn * rn === t2.n && rd * rd === t2.d;
+        var tTxt = ratT ? fTxt(Fr(rn, rd)) : dTxt(tv), y1 = Fr(4 * a * c - b * b, 4 * a), y1v = c - b * b / (4 * a), y1Txt = fTxt(y1);
+        var l2 = '2) y′ = ' + polyStr([4 * a, 0, 2 * b, 0]) + (b === 0 ? '\n    y′ = 0 ⇔ x = 0' : '\n    y′ = 2x(' + inner + ') = 0 ⇔ x = 0' + (three ? ' hoặc x² = ' + fTxt(t2) + (ratT ? ' ⇔ x = ±' + tTxt : ' ⇔ x = ±√' + '(' + fTxt(t2) + ') ≈ ±' + dTxt(tv)) : '  (vì ' + inner + ' = 0 vô nghiệm)'));
+        T(l2, 2, '#111827', sz, ww);
+        var inf = a > 0 ? '+∞' : '−∞'; T('3) Giới hạn: lim(x→+∞) y = ' + inf + ' ;  lim(x→−∞) y = ' + inf, 3, '#111827', sz, ww);
+        var nodes, iv, inc = a > 0 ? 'đồng biến' : 'nghịch biến', dec = a > 0 ? 'nghịch biến' : 'đồng biến', kl, pts = [], xr;
+        if (three) {
+            nodes = [{ x: '−∞', d: '', y: inf, y2: '' }, { x: '−' + tTxt, d: '0', y: y1Txt, y2: '' }, { x: '0', d: '0', y: minusFix(String(c)), y2: '' }, { x: tTxt, d: '0', y: y1Txt, y2: '' }, { x: '+∞', d: '', y: inf, y2: '' }]; iv = a > 0 ? ['−', '+', '−', '+'] : ['+', '−', '+', '−'];
+            var mxX = a > 0 ? '0' : '±' + tTxt, mxY = a > 0 ? minusFix(String(c)) : y1Txt, mnX = a > 0 ? '±' + tTxt : '0', mnY = a > 0 ? y1Txt : minusFix(String(c));
+            kl = '4) Hàm số ' + inc + ' trên (−' + tTxt + '; 0) và (' + tTxt + '; +∞), ' + dec + ' trên (−∞; −' + tTxt + ') và (0; ' + tTxt + ').\n    Cực đại: x = ' + mxX + ', yCĐ = ' + mxY + '.  Cực tiểu: x = ' + mnX + ', yCT = ' + mnY + '.';
+            if (a < 0) kl = '4) Hàm số ' + dec + ' trên (−∞; −' + tTxt + ') và (0; ' + tTxt + '), ' + inc + ' trên (−' + tTxt + '; 0) và (' + tTxt + '; +∞).\n    Cực đại: x = ' + mxX + ', yCĐ = ' + mxY + '.  Cực tiểu: x = ' + mnX + ', yCT = ' + mnY + '.';
+            if (a > 0) kl = '4) Hàm số ' + dec + ' trên (−∞; −' + tTxt + ') và (0; ' + tTxt + '), ' + inc + ' trên (−' + tTxt + '; 0) và (' + tTxt + '; +∞).\n    Cực đại: x = ' + mxX + ', yCĐ = ' + mxY + '.  Cực tiểu: x = ' + mnX + ', yCT = ' + mnY + '.';
+            var nmE = a > 0 ? 'CT' : 'CĐ', nmM = a > 0 ? 'CĐ' : 'CT'; pts = [{ n: nmE, x: -tv, y: y1v }, { n: nmM, x: 0, y: c }, { n: nmE, x: tv, y: y1v }]; xr = [-(tv + 1.6), tv + 1.6];
+        } else {
+            nodes = [{ x: '−∞', d: '', y: inf, y2: '' }, { x: '0', d: '0', y: minusFix(String(c)), y2: '' }, { x: '+∞', d: '', y: inf, y2: '' }]; iv = a > 0 ? ['−', '+'] : ['+', '−'];
+            kl = '4) Hàm số ' + dec + ' trên (−∞; 0), ' + inc + ' trên (0; +∞).\n    ' + (a > 0 ? 'Cực tiểu' : 'Cực đại') + ': x = 0, ' + (a > 0 ? 'yCT' : 'yCĐ') + ' = ' + minusFix(String(c)) + '. Hàm số chỉ có một cực trị.';
+            pts = [{ n: a > 0 ? 'CT' : 'CĐ', x: 0, y: c }]; xr = [-3, 3];
+        }
+        lsBbt(Z, nodes, iv, 4); T(kl, 5, '#047857', sz, ww);
+        var fe = '(' + a + ')*x^4+(' + b + ')*x^2+(' + c + ')'; return lsGraph(Z, fe, xr, pts, 6);
+    }
+    // ---------- hàm phân thức bậc nhất / bậc nhất ----------
+    function buildFrac(a, b, c, d) {
+        var num = polyStr([a, b]), den = polyStr([c, d]), Z = lsFrame('KHẢO SÁT HÀM SỐ  y = (' + num + ')/(' + den + ')'), T = Z.T, sz = Z.size, ww = Z.lw - 30;
+        var x0 = Fr(-d, c), ac = Fr(a, c), k = a * d - b * c, x0v = x0.n / x0.d, acv = ac.n / ac.d, up = k > 0;
+        T('1) Tập xác định: D = ℝ \\ {' + fTxt(x0) + '}', 1, '#111827', sz, ww);
+        T('2) y′ = (ad − bc)/(' + den + ')² = ' + minusFix(String(k)) + '/(' + den + ')²\n    ' + (up ? 'y′ > 0' : 'y′ < 0') + ' với mọi x ∈ D', 2, '#111827', sz, ww);
+        var xs = fTxt(x0), pl = (up ? '+∞' : '−∞'), mi = (up ? '−∞' : '+∞');
+        T('3) lim(x→±∞) y = ' + fTxt(ac) + '  ⇒ tiệm cận ngang y = ' + fTxt(ac) + '\n    lim(x→' + xs + '⁻) y = ' + pl + ' ;  lim(x→' + xs + '⁺) y = ' + mi + '  ⇒ tiệm cận đứng x = ' + xs, 3, '#111827', sz, ww);
+        var nodes = [{ x: '−∞', d: '', y: fTxt(ac), y2: '' }, { x: xs, d: '||', y: pl, y2: mi }, { x: '+∞', d: '', y: fTxt(ac), y2: '' }], iv = [up ? '+' : '−', up ? '+' : '−'];
+        lsBbt(Z, nodes, iv, 4);
+        var kind = up ? 'đồng biến' : 'nghịch biến';
+        T('4) Hàm số ' + kind + ' trên (−∞; ' + xs + ') và (' + xs + '; +∞), không có cực trị.', 5, '#047857', sz, ww);
+        var pts = []; if (d !== 0) pts.push({ n: '', x: 0, y: b / d }); if (a !== 0 && b !== 0) pts.push({ n: '', x: -b / a, y: 0 });
+        var lo = Math.min(x0v, 0, a ? -b / a : 0), hi = Math.max(x0v, 0, a ? -b / a : 0);
+        return lsGraph(Z, '(' + a + '*x+(' + b + '))/(' + c + '*x+(' + d + '))', [lo - 3, hi + 3], pts, 6);
+    }
+    function lessonQuarticDialog() {
+        lsAsk({ title: '📚 Bài giảng: Khảo sát hàm trùng phương', intro: 'Gõ các hệ số của <b>y = ax⁴ + bx² + c</b> (số nguyên). Máy tự giải và hiện từng bước.', fields: [['a', 1], ['b', -2], ['c', -3]],
+            presets: [[1, -2, -3], [-1, 2, 3], [1, 2, -1], [-1, -2, 1], [1, 0, -4], [1, -4, 0]], check: function (v) { return v[0] === 0 ? 'Hệ số a phải khác 0.' : null; }, preview: function (v) { return 'y = ' + polyStr([v[0], 0, v[1], 0, v[2]]); }, build: function (v) { return buildQuartic(v[0], v[1], v[2]); } });
+    }
+    function lessonFracDialog() {
+        lsAsk({ title: '📚 Bài giảng: Khảo sát hàm phân thức bậc nhất', intro: 'Gõ các hệ số của <b>y = (ax + b)/(cx + d)</b> (số nguyên, c ≠ 0, ad − bc ≠ 0). Máy tự giải và hiện từng bước.', fields: [['a', 2], ['b', 1], ['c', 1], ['d', -1]],
+            presets: [[2, 1, 1, -1], [1, -2, 1, 1], [-1, 3, 2, 1], [3, -1, 1, 2], [1, 1, 1, -2], [2, -3, 1, 0]], check: function (v) { return v[2] === 0 ? 'Hệ số c phải khác 0.' : (v[0] * v[3] - v[1] * v[2] === 0 ? 'Với ad − bc = 0 thì hàm số rút gọn thành hằng số.' : null); }, preview: function (v) { return 'y = (' + polyStr([v[0], v[1]]) + ')/(' + polyStr([v[2], v[3]]) + ')'; }, build: function (v) { return buildFrac(v[0], v[1], v[2], v[3]); } });
+    }
+
+    // ---------- Vectơ lớp 10: tích của một số với một vectơ ----------
+    function vecFig(x, y, kx, ky, step) {
+        var R = Math.max(3, Math.ceil(Math.max(Math.abs(x), Math.abs(y), Math.abs(kx), Math.abs(ky))) + 1), SZ = 360, d = 2, mk = function () { var c = document.createElement('canvas'); c.width = c.height = SZ * d; var g = c.getContext('2d'); g.scale(d, d); return [c, g]; };
+        var u = SZ / (2 * R), cx = SZ / 2, cy = SZ / 2, P = function (a, b) { return [cx + a * u, cy - b * u]; };
+        function arrow(g, a, b, col, lab, off) {
+            var p0 = P(0, 0), p1 = P(a, b), dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+            g.strokeStyle = g.fillStyle = col; g.lineWidth = 3; g.lineCap = 'round'; g.beginPath(); g.moveTo(p0[0], p0[1]); g.lineTo(p1[0] - ux * 9, p1[1] - uy * 9); g.stroke();
+            g.beginPath(); g.moveTo(p1[0], p1[1]); g.lineTo(p1[0] - ux * 14 - uy * 6, p1[1] - uy * 14 + ux * 6); g.lineTo(p1[0] - ux * 14 + uy * 6, p1[1] - uy * 14 - ux * 6); g.closePath(); g.fill();
+            g.font = 'italic 700 19px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; var nx = -uy * off, ny = ux * off; g.fillText(lab, (p0[0] + p1[0]) / 2 + nx, (p0[1] + p1[1]) / 2 + ny);
+        }
+        var A = mk(), ga = A[1]; ga.fillStyle = '#fff'; ga.fillRect(0, 0, SZ, SZ); ga.strokeStyle = '#d6e3f0'; ga.lineWidth = 1;
+        for (var t = -R; t <= R; t++) { var q = P(t, 0), r = P(0, t); ga.beginPath(); ga.moveTo(q[0], 0); ga.lineTo(q[0], SZ); ga.moveTo(0, r[1]); ga.lineTo(SZ, r[1]); ga.stroke(); }
+        ga.strokeStyle = '#111827'; ga.lineWidth = 2; ga.beginPath(); ga.moveTo(0, cy); ga.lineTo(SZ, cy); ga.moveTo(cx, 0); ga.lineTo(cx, SZ); ga.stroke();
+        ga.fillStyle = '#111827'; ga.font = '14px ' + FONT; ga.textAlign = 'center'; ga.textBaseline = 'top'; for (t = -R + 1; t < R; t++) { if (!t) continue; var q2 = P(t, 0); ga.fillText(String(t).replace('-', '−'), q2[0], cy + 4); ga.textAlign = 'right'; ga.textBaseline = 'middle'; var r2 = P(0, t); ga.fillText(String(t).replace('-', '−'), cx - 5, r2[1]); ga.textAlign = 'center'; ga.textBaseline = 'top'; }
+        ga.font = 'italic 16px ' + FONT; ga.fillText('x', SZ - 10, cy + 6); ga.fillText('y', cx + 12, 4); ga.fillText('O', cx - 10, cy + 5);
+        var B = mk(); arrow(B[1], x, y, '#2563eb', 'a', 16); var C = mk(); arrow(C[1], kx, ky, '#dc2626', 'k·a', -18);
+        return [A[0], B[0], C[0]];
+    }
+    function buildVecScale(x, y, p, q) {
+        var va = '→a', k = Fr(p, q), kv = p / q, kx = Fr(p * x, q), ky = Fr(p * y, q), kt = fTxt(k), N = x * x + y * y, sN = Math.round(Math.sqrt(N)), perfect = sN * sN === N, len = Math.sqrt(N), lk = Math.abs(kv), lkk = lk * len;
+        var Z = lsFrame('TÍCH CỦA MỘT SỐ VỚI MỘT VECTƠ'), T = Z.T, sz = Z.size, ww = Z.lw - 30, X = minusFix(String(x)), Y = minusFix(String(y));
+        T('Cho ' + va + ' = (' + X + '; ' + Y + ') và k = ' + kt + '. Tìm k·' + va + '.', 0, '#111827', sz, ww);
+        T('1) Định nghĩa: k·' + va + ' là một vectơ\n    • k > 0: cùng hướng với ' + va + '\n    • k < 0: ngược hướng với ' + va + '\n    • độ dài |k|·|' + va + '|', 1, '#111827', sz, ww);
+        T('2) Tọa độ: k·' + va + ' = (k·x; k·y)\n    = (' + kt + '·' + (x < 0 ? '(' + X + ')' : X) + '; ' + kt + '·' + (y < 0 ? '(' + Y + ')' : Y) + ') = (' + fTxt(kx) + '; ' + fTxt(ky) + ')', 2, '#111827', sz, ww);
+        T('3) Độ dài: |' + va + '| = √(x² + y²) = √' + N + (perfect ? ' = ' + sN : ' ≈ ' + dTxt(len)) + '\n    |k·' + va + '| = |k|·|' + va + '| = ' + fTxt(Fr(Math.abs(p), q)) + '·' + (perfect ? sN : '√' + N) + ' ≈ ' + dTxt(lkk), 3, '#111827', sz, ww);
+        T('4) Vì k = ' + kt + (kv > 0 ? ' > 0 nên k·' + va + ' cùng hướng với ' + va : ' < 0 nên k·' + va + ' ngược hướng với ' + va) + '.\n    k·' + va + ' và ' + va + ' luôn cùng phương.', 4, '#047857', sz, ww);
+        T('Nhận xét: ' + va + ' và →b (→b ≠ →0) cùng phương ⇔ có số k để ' + va + ' = k·→b.', 7, '#7c3aed', sz, ww);
+        var gx0 = Z.lw + 40, gt = { uid: uid(), kind: 'text', text: '5) Biểu diễn trên mặt phẳng', size: sz, color: '#111827', x: 0, y: 0, rot: 0, step: 5 }; measureText(gt); gt.x = gx0 + gt.w / 2; gt.y = 54 + gt.h / 2; Z.items.push(gt);
+        var figs = vecFig(x, y, kv * x, kv * y, 5), fy = 54 + gt.h + 8, fs = Math.min(360, Z.W - gx0 - 20); [0, 1, 2].forEach(function (i) { Z.items.push({ uid: uid(), kind: 'img', img: figs[i], x: gx0 + fs / 2, y: fy + fs / 2, w: fs, h: fs, rot: 0, step: i === 0 ? 0 : (i === 1 ? 5 : 6) }); });
+        var lg = { uid: uid(), kind: 'text', text: '(xanh: ' + va + ';  đỏ: k·' + va + ')', size: sz - 3, color: '#475569', x: 0, y: 0, rot: 0, step: 6 }; measureText(lg); lg.x = gx0 + lg.w / 2; lg.y = fy + fs + 6 + lg.h / 2; Z.items.push(lg);
+        return { items: Z.items, need: Math.max(Z.ty + 120, fy + fs + 70) };
+    }
+    function lessonVecScaleDialog() {
+        lsAsk({ title: '📚 Bài giảng: Tích của một số với một vectơ (lớp 10)', intro: 'Cho vectơ <b>a = (x; y)</b> và số <b>k = p/q</b> (số nguyên, q > 0). Máy tính k·a, độ dài, hướng và vẽ hình, hiện từng bước.', fields: [['x', 2], ['y', 1], ['p', -2], ['q', 1]],
+            presets: [[2, 1, 2, 1], [2, 1, -2, 1], [3, -2, 1, 2], [-4, 2, -3, 2], [1, 3, 3, 1], [4, -2, -1, 2]],
+            check: function (v) { return (v[0] === 0 && v[1] === 0) ? 'Vectơ a không được là vectơ 0.' : (v[2] === 0 ? 'k phải khác 0.' : (v[3] <= 0 ? 'q phải là số dương.' : null)); },
+            preview: function (v) { return 'a = (' + v[0] + '; ' + v[1] + '),  k = ' + (v[3] === 1 ? v[2] : v[2] + '/' + v[3]); }, build: function (v) { return buildVecScale(v[0], v[1], v[2], v[3]); } });
     }
 
     window.openWhiteboard = open;
