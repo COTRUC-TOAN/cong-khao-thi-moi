@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v306] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v308] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1148,14 +1148,14 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                         <!-- 2. CHỌN TỪ NGÂN HÀNG CÂU HỎI -->
                         <div id="add-method-bank" style="display: none;">
                             <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 8px; margin-bottom: 8px;">
-                                <select class="form-input" id="bank-filter-grade" onchange="updateBankFilterTopics(); filterQuestionBankList();"><option value="all">-- Khối --</option><option value="12">12</option><option value="11">11</option><option value="10">10</option></select>
-                                <select class="form-input" id="bank-filter-topic" onchange="filterQuestionBankList()"><option value="all">-- Bài / Chương --</option></select>
+                                <select class="form-input" id="bank-filter-grade" onchange="window.__bankLimit=30; updateBankFilterTopics(); filterQuestionBankList();"><option value="all">-- Khối --</option><option value="12">12</option><option value="11">11</option><option value="10">10</option></select>
+                                <select class="form-input" id="bank-filter-topic" onchange="window.__bankLimit=30; filterQuestionBankList()"><option value="all">-- Bài / Chương --</option></select>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                                <select class="form-input" id="bank-filter-level" onchange="filterQuestionBankList()"><option value="all">-- Mức Độ --</option><option value="NB">NB</option><option value="TH">TH</option><option value="VD">VD</option><option value="VDC">VDC</option></select>
-                                <select class="form-input" id="bank-filter-type" onchange="filterQuestionBankList()"><option value="all">-- Dạng --</option><option value="MCQ">MCQ</option><option value="TF">Đúng/Sai</option><option value="SA">Ngắn</option></select>
+                                <select class="form-input" id="bank-filter-level" onchange="window.__bankLimit=30; filterQuestionBankList()"><option value="all">-- Mức Độ --</option><option value="NB">NB</option><option value="TH">TH</option><option value="VD">VD</option><option value="VDC">VDC</option></select>
+                                <select class="form-input" id="bank-filter-type" onchange="window.__bankLimit=30; filterQuestionBankList()"><option value="all">-- Dạng --</option><option value="MCQ">MCQ</option><option value="TF">Đúng/Sai</option><option value="SA">Ngắn</option></select>
                             </div>
-                            <div style="margin-bottom: 10px;"><input type="text" class="form-input" id="bank-search-text" placeholder="🔍 Tìm từ khóa..." oninput="filterQuestionBankList()"></div>
+                            <div style="margin-bottom: 10px;"><input type="text" class="form-input" id="bank-search-text" placeholder="🔍 Tìm từ khóa..." oninput="window.__bankLimit=30; filterQuestionBankList()"></div>
                             <div id="bank-q-list" style="max-height: 400px; overflow-y: auto;"></div>
                         </div>
 
@@ -1570,6 +1570,8 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
         let kahootTimer = null; let kahootTimeLeft = 20;
         let lecturePdfBase64 = "";
 
+        /* v308: mã câu trong Ngân hàng không bao giờ trùng (giờ đầy đủ + số ngẫu nhiên) */
+        window.__uid = function () { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); };
         let topicsConfig = { general: [], g12: [], g11: [], g10: [], thpt: [] };
 
         function processTopicsData(rawTopics) {
@@ -2057,7 +2059,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                 if ((esFrom >= 0 && idx >= esFrom) || esTag.test(block)) {
                     const qc = block.replace(esTag, '').replace(/^(?:C[âa]u|B[àa]i|C)\s*\d+[\s:.]?\s*/i, '').trim();
                     parsedArr.push({
-                        id: `CH${grade}_${(topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_')}_${Date.now().toString().slice(-4)}_${idx + 1}`,
+                        id: `CH${grade}_${(topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_')}_${__uid()}_${idx + 1}`,
                         grade: String(grade), topic: topic, level: 'TH', type: 'ES',
                         q: restoreAllImages(qc).replace(/\n/g, '<br>'), options: ['', '', '', ''], ans: '', ansOptions: [],
                         explanation: restoreAllImages(explanation)
@@ -2126,7 +2128,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                 }
 
                 const safeTopicId = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
-                const qId = `CH${grade}_${safeTopicId}_${Date.now().toString().slice(-4)}_${idx + 1}`;
+                const qId = `CH${grade}_${safeTopicId}_${__uid()}_${idx + 1}`;
                 if (ansGuessed || (detectedType === 'SA' && !ans)) ANS_GUESSED.add(qId);
 
                 parsedArr.push({
@@ -2373,6 +2375,19 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
             document.body.style.cursor = 'default';
         }
 
+        /* v307: chọn thư mục (chương) thì lấy cả các bài con; so khớp theo mã hoặc tên bài */
+        function bankTopicSet(id) {
+            const low = x => String(x == null ? '' : x).trim().toLowerCase(), want = low(id), set = new Set([want]);
+            ['general', 'g12', 'g11', 'g10', 'thpt'].forEach(k => {
+                const arr = topicsConfig[k] || [];
+                arr.forEach((it, i) => {
+                    if (it.type === 'header' || low(it.id) !== want) return;
+                    set.add(low(it.name));
+                    if (it.type === 'folder') for (let j = i + 1; j < arr.length; j++) { const c = arr[j]; if (c.type !== 'sub') break; set.add(low(c.id)); set.add(low(c.name)); }
+                });
+            });
+            return set;
+        }
         function filterQuestionBankList() {
             const container = document.getElementById('bank-q-list');
             if (!container) return;
@@ -2386,9 +2401,10 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
             const fType = document.getElementById('bank-filter-type').value;
             const fText = document.getElementById('bank-search-text').value.toLowerCase();
 
+            const tset = fTopic !== 'all' ? bankTopicSet(fTopic) : null;
             const filtered = questionBank.filter(q => {
                 if (fGrade !== 'all' && q.grade !== fGrade) return false;
-                if (fTopic !== 'all' && q.topic.toLowerCase() !== fTopic.toLowerCase()) return false;
+                if (tset && !tset.has(String(q.topic).trim().toLowerCase())) return false;
                 if (fLevel !== 'all' && q.level.toUpperCase() !== fLevel.toUpperCase()) return false;
                 if (fType !== 'all' && q.type.toUpperCase() !== fType.toUpperCase()) return false;
                 if (fText && !q.q.toLowerCase().includes(fText)) return false;
@@ -2396,17 +2412,25 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<p style="color:#94a3b8; text-align:center; padding: 20px;">Không tìm thấy câu hỏi phù hợp.</p>`; 
+                let why = '';
+                if (tset) {
+                    const base = questionBank.filter(q => (fGrade === 'all' || q.grade === fGrade) && tset.has(String(q.topic).trim().toLowerCase()));
+                    if (base.length) { const by = {}; base.forEach(q => { const k = String(q.type).toUpperCase() + ' ' + String(q.level).toUpperCase(); by[k] = (by[k] || 0) + 1; }); why = '<br><span style="font-size:.9rem">Bài này có <b>' + base.length + '</b> câu nhưng không khớp ô Mức độ / Dạng / Từ khóa đang chọn. Hiện có: ' + Object.keys(by).map(k => k + ': ' + by[k]).join(', ') + '. Cô thử chọn lại ô Mức độ và Dạng về "--".</span>'; }
+                    else why = '<br><span style="font-size:.9rem">Bài này chưa có câu nào trong Ngân hàng (khối đang chọn: ' + (fGrade === 'all' ? 'tất cả' : fGrade) + '). Nếu đây là chương có nhiều bài, cô bấm mũi tên ▸ để chọn bài con.</span>';
+                }
+                container.innerHTML = `<p style="color:#94a3b8; text-align:center; padding: 20px;">Không tìm thấy câu hỏi phù hợp.${why}</p>`;
                 return;
             }
 
+            const lim = window.__bankLimit || 30, shown = filtered.slice(0, lim);
+            const more = filtered.length > shown.length ? `<div style="text-align:center;padding:10px"><div style="color:#64748b;margin-bottom:6px">Đang hiện ${shown.length}/${filtered.length} câu. Cô lọc theo bài để thu hẹp.</div><button type="button" onclick="window.__bankLimit=(window.__bankLimit||30)+30;filterQuestionBankList()" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:8px 14px;border-radius:8px;font-weight:bold;cursor:pointer">Hiện thêm 30 câu</button></div>` : '';
             const nBad = questionBank.filter(q => q.bad).length;
             const tb = `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px;margin-bottom:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:.92rem">
-                <label style="cursor:pointer"><input type="checkbox" onchange="bankDelAll(this.checked)"> Tick xóa tất cả câu đang hiện (${filtered.length})</label>
+                <label style="cursor:pointer"><input type="checkbox" onchange="bankDelAll(this.checked)"> Tick xóa tất cả câu đang hiện (${shown.length})</label>
                 <button type="button" onclick="bankDeleteSelected()" style="background:#dc2626;color:#fff;border:0;border-radius:6px;padding:6px 10px;font-weight:bold;cursor:pointer"><i class="fa-solid fa-trash"></i> Xóa các câu đã tick (<span id="bank-del-n">${bankDelSel.size}</span>)</button>
                 ${nBad ? `<span style="color:#b91c1c;font-weight:bold">⚠️ ${nBad} câu bị lỗi dữ liệu (có nhãn đỏ), cô xóa hoặc sửa lại câu đó.</span>` : ''}</div>`;
-            window.__bankFiltered = filtered.map(q => q.id);
-            container.innerHTML = tb + filtered.map(q => `
+            window.__bankFiltered = shown.map(q => q.id);
+            container.innerHTML = tb + shown.map(q => `
                 <div class="bank-q-select-card">
                     <input type="checkbox" style="margin-top: 4px; transform: scale(1.3);" onchange="toggleSelectQ('${q.id}', this)" ${selectedQuestions.some(sq => sq.id === q.id) ? 'checked' : ''}>
                     <div style="flex-grow: 1;">
@@ -2422,7 +2446,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                         <div style="margin-top: 6px; font-size: 0.95rem; color: #16a34a; font-weight: bold;">Đáp án: ${q.ans}</div>
                     </div>
                 </div>
-            `).join('');
+            `).join('') + more;
             renderMath(container);
         }
 
@@ -13399,10 +13423,10 @@ var QGEN = (function () {
     function toQ(r, i) {
         var grade = $('gn-grade').value, topic = $('gn-topic').value, safe = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
         var ex = r.exp;
-        if (r.kind === 'TF') return { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'TF', q: r.q, options: r.options.slice(), ans: r.ans, ansOptions: r.ans.split(''), explanation: ex };
-        if (r.kind === 'ES') return { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_' + (i + 1) + '_ES', grade: grade, topic: topic, level: r.level, type: 'ES', q: r.q, options: ['', '', '', ''], ans: '', ansOptions: [], explanation: ex };
-        if (r.kind === 'SA') return { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'SA', q: r.q, options: ['', '', '', ''], ans: r.sa, ansOptions: [], explanation: ex };
-        return { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'MCQ', q: r.q, options: r.options.slice(), ans: r.ans, ansOptions: [], explanation: ex };
+        if (r.kind === 'TF') return { id: 'CH' + grade + '_' + safe + '_' + __uid() + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'TF', q: r.q, options: r.options.slice(), ans: r.ans, ansOptions: r.ans.split(''), explanation: ex };
+        if (r.kind === 'ES') return { id: 'CH' + grade + '_' + safe + '_' + __uid() + '_' + (i + 1) + '_ES', grade: grade, topic: topic, level: r.level, type: 'ES', q: r.q, options: ['', '', '', ''], ans: '', ansOptions: [], explanation: ex };
+        if (r.kind === 'SA') return { id: 'CH' + grade + '_' + safe + '_' + __uid() + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'SA', q: r.q, options: ['', '', '', ''], ans: r.sa, ansOptions: [], explanation: ex };
+        return { id: 'CH' + grade + '_' + safe + '_' + __uid() + '_' + (i + 1), grade: grade, topic: topic, level: r.level, type: 'MCQ', q: r.q, options: r.options.slice(), ans: r.ans, ansOptions: [], explanation: ex };
     }
     window.gnAddExam = function () {
         if (!cur.length) return;
@@ -13637,7 +13661,7 @@ window.aiLayout = function () {
         S.save = async function (toBank) {
             var b = S.build(); if (!g('stem').value.trim() && !S.parts.some(function (x) { return x.t.trim(); })) { alert('Cô chưa nhập nội dung câu.'); return; }
             var grade = g('grade').value, topic = g('topic').value, safe = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
-            var q = { id: 'CH' + grade + '_' + safe + '_' + Date.now().toString().slice(-6) + '_ES', grade: grade, topic: topic, level: 'TH', type: 'ES', q: b.html, options: ['', '', '', ''], ans: '', ansOptions: [], explanation: '' };
+            var q = { id: 'CH' + grade + '_' + safe + '_' + __uid() + '_ES', grade: grade, topic: topic, level: 'TH', type: 'ES', q: b.html, options: ['', '', '', ''], ans: '', ansOptions: [], explanation: '' };
             if (!toBank) { if (selectedQuestions.length === 1 && selectedQuestions[0].isDynamicConfig) { alert('Đề đang là đề ma trận động.'); return; } selectedQuestions = selectedQuestions.concat([q]); updateSelectedItemsDisplay(); alert('Đã thêm câu tự luận (' + b.tot + ' điểm) vào đề đang soạn. Cô xem ở danh sách "Đã chọn" ở Bước 3.'); S.parts = [{ t: '', p: '' }, { t: '', p: '' }, { t: '', p: '' }]; g('stem').value = ''; S.draw(); return; }
             try { var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) }); var j = await r.json(); if (j && j.status === 'success') { alert('🎉 Đã lưu vào Ngân hàng.'); loadQuestionBank(); } else alert('Chưa lưu được: ' + ((j && (j.message || j.error)) || '')); } catch (e) { alert('Không kết nối được máy chủ.'); }
         };
