@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v316] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v317] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5086,16 +5086,43 @@ function closeEditQuestionModal() { document.getElementById('edit-question-modal
             }
         }
    // ĐẾM SỐ LẦN RỜI TRANG KHI ĐANG LÀM ĐỀ KIỂM TRA (chỉ ghi nhận, không tự nộp bài)
-        document.addEventListener('visibilitychange', function () {
-            if (!document.hidden) return;
+        // Bắt 3 kiểu: (1) chuyển tab / thu nhỏ trình duyệt, (2) bấm sang cửa sổ nổi / chia đôi màn hình / ứng dụng khác (trang mất tiêu điểm),
+        // (3) thu nhỏ khung trình duyệt để mở thêm cửa sổ bên cạnh. Mỗi lần rời chỉ đếm 1 lần cho tới khi học sinh quay lại.
+        let awayFlag = false, resizeFlag = false, baseW = 0, baseH = 0, awayTimer = null;
+        function isDoingKiemTra() {
             const quizView = document.getElementById('quiz-view');
             const quizContent = document.getElementById('quiz-content');
             const doing = quizView && quizView.style.display === 'block' && quizContent && quizContent.style.display !== 'none';
-            if (!doing || !activeExam || activeExam.mode !== 'KIEMTRA' || examTimeUp) return;
-            cheatWarnings++;
+            return !!(doing && activeExam && activeExam.mode === 'KIEMTRA' && !examTimeUp);
+        }
+        function markAway() {
+            if (awayFlag || !isDoingKiemTra()) return;
+            awayFlag = true; cheatWarnings++;
             document.getElementById('cheat-count').innerText = cheatWarnings;
             document.getElementById('cheat-warning').style.display = 'block';
+        }
+        function backFromAway() { if (!document.hidden && document.hasFocus()) awayFlag = false; }
+        document.addEventListener('visibilitychange', function () { if (document.hidden) markAway(); else backFromAway(); });
+        window.addEventListener('blur', function () {
+            clearTimeout(awayTimer);
+            awayTimer = setTimeout(function () {
+                if (document.hasFocus()) return;
+                const ae = document.activeElement; if (ae && ae.tagName === 'IFRAME') return; // bấm vào khung nhúng của chính trang thì không tính
+                markAway();
+            }, 700);
         });
+        window.addEventListener('focus', function () { clearTimeout(awayTimer); setTimeout(backFromAway, 50); });
+        window.addEventListener('resize', function () {
+            if (!isDoingKiemTra()) { baseW = 0; resizeFlag = false; return; }
+            const w = window.innerWidth, h = window.innerHeight, ae = document.activeElement;
+            if (!baseW) { baseW = w; baseH = h; return; }
+            if (Math.abs(w - baseH) < baseH * 0.15 && Math.abs(h - baseW) < baseW * 0.15) { baseW = w; baseH = h; resizeFlag = false; return; } // xoay màn hình thì lấy mốc mới
+            if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return; // bàn phím ảo hiện lên
+            const small = w < baseW * 0.82 || h < baseH * 0.68;
+            if (small && !resizeFlag) { resizeFlag = true; markAway(); }
+            else if (!small && w >= baseW * 0.92 && h >= baseH * 0.85) resizeFlag = false;
+        });
+        setInterval(function () { if (isDoingKiemTra()) { if (!baseW) { baseW = window.innerWidth; baseH = window.innerHeight; } } else { baseW = 0; resizeFlag = false; } }, 1000);
         // CẢNH BÁO CHỐNG THOÁT TRANG KHI ĐANG THI KIỂM TRA
         window.addEventListener('beforeunload', function (e) {
             const quizView = document.getElementById('quiz-view');
