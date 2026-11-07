@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v317] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v318] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2988,7 +2988,8 @@ function removeQuestionFromSelected(qId) {
                 
                 renderExams();
                 try { newExamReset(false); } catch (e) { }
-                showPortalView();
+                // v318: xuất bản xong ở lại giao diện giáo viên (mục Đề của tôi). Muốn sang góc học sinh thì cô bấm nút chuyển.
+                try { switchTeacherTab('exams'); window.scrollTo(0, 0); } catch (e) { showPortalView(); }
             } catch (err) {
                 document.body.style.cursor = 'default';
                 if (pubOk) { alert("✅ Đề ĐÃ được xuất bản lên Google Sheet. Nhưng màn hình cập nhật danh sách bị lỗi nhỏ: " + (err && err.message ? err.message : err) + "\nCô tải lại trang để thấy đề trong danh sách."); return; }
@@ -3271,13 +3272,15 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
             if (method === 'bank') updateBankFilterTopics();
         }
 
-        function renderTeacherExamList() {
+        function renderTeacherExamList(useCache) {
             const container = document.getElementById('teacher-exam-list-container');
             if (!container) return;
             if (examBank.length === 0) { container.innerHTML = `<p style="color: #94a3b8;">Chưa có đề thi nào trên hệ thống.</p>`; return; }
-            
-            getAllReviewPerms().then(perms => {
-                container.innerHTML = examBank.map(ex => {
+            const rowsBox = tlEnsureControls(container);
+            const tlRun = perms => {
+                const shown = tlFilter(examBank); tlFillIndex(shown);
+                if (!shown.length) { rowsBox.innerHTML = '<p style="color:#94a3b8;padding:14px;">Không có đề nào khớp. Cô xóa bớt ô tìm hoặc đổi bộ lọc.</p>'; return; }
+                rowsBox.innerHTML = shown.map(ex => {
                     const isAllowed = perms[ex.id] === true;
                     const isKiemTra = ex.mode === 'KIEMTRA';
                     
@@ -3293,8 +3296,9 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                     let timeDisplay = `<span style="color: #0284c7;"><i class="fa-regular fa-clock"></i> ${ex.timeLimit || 45} phút</span>`;
                     let dateDisplay = (ex.startTime || ex.deadline) ? `<span style="color: #ea580c;"><i class="fa-regular fa-calendar-days"></i> ${ex.startTime ? fmtDT(ex.startTime) : 'Mở luôn'} ➔ ${ex.deadline ? fmtDT(ex.deadline) : 'Không hạn'}</span>` : '';
 
+                    const stuUrl = `${window.location.origin}${window.location.pathname}?exam=${encodeURIComponent(ex.id)}&t=${encodeURIComponent(currentTeacherId || 'trucnt')}`;
                     return `
-                    <div class="exam-manage-row" style="flex-wrap: wrap; gap: 10px; align-items: stretch;">
+                    <div class="exam-manage-row" id="tel-${String(ex.id).replace(/[^A-Za-z0-9_-]/g, '_')}" style="flex-wrap: wrap; gap: 10px; align-items: stretch;">
                         <div style="flex-grow: 1;">
                             <div style="font-size: 1.05rem; margin-bottom: 6px;"><strong>[Khối ${ex.grade}] ${ex.title}</strong></div>
                             <div style="font-size:0.9rem; color:#64748b; margin-bottom: 8px;">
@@ -3306,6 +3310,11 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                                 <span style="color: #cbd5e1;">|</span>
                                 ${passDisplay}
                                 ${dateDisplay ? `<span style="color: #cbd5e1;">|</span> ${dateDisplay}` : ''}
+                            </div>
+                            <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap;">
+                                <span style="font-size:0.85rem;color:#64748b;">🔗 Link cho học sinh:</span>
+                                <input readonly value="${stuUrl}" onclick="this.select()" style="flex:1;min-width:200px;max-width:520px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.82rem;color:#334155;background:#fff;">
+                                <button type="button" class="btn-start" style="background:#0d9488;padding:5px 10px;font-size:0.85rem;" onclick="copyExamLink('${ex.id}')"><i class="fa-regular fa-copy"></i> Sao chép link</button>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; align-content: center;">
@@ -3325,7 +3334,51 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                     </div>`;
 
                 }).join('');
+            };
+            if (useCache && window.__tlPerms) tlRun(window.__tlPerms); else getAllReviewPerms().then(perms => { window.__tlPerms = perms; tlRun(perms); });
+        }
+        // ---- v318: mục lục + tìm + lọc cho danh sách "Đề của tôi" ----
+        window.__tlf = window.__tlf || { q: '', g: 'all', m: 'all' };
+        function tlNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd'); }
+        function tlFilter(list) {
+            const f = window.__tlf, q = tlNorm(f.q);
+            return list.filter(ex => {
+                if (f.g !== 'all' && String(ex.grade || '') !== f.g) return false;
+                if (f.m !== 'all' && (ex.mode || 'LUYENTAP') !== f.m) return false;
+                if (q && (tlNorm(ex.title) + ' ' + tlNorm(ex.id) + ' ' + tlNorm(ex.topic)).indexOf(q) < 0) return false;
+                return true;
             });
+        }
+        function tlEnsureControls(container) {
+            let box = document.getElementById('tel-rows');
+            if (box && container.contains(box)) return box;
+            const grades = Array.from(new Set(examBank.map(e => String(e.grade || '')).filter(Boolean))).sort();
+            const modes = [['LUYENTAP', 'Luyện tập'], ['KIEMTRA', 'Kiểm tra'], ['KAHOOT', 'Kahoot'], ['BAIGIANG', 'Bài giảng'], ['KHAOSAT', 'Khảo sát']];
+            const f = window.__tlf;
+            container.innerHTML = `
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                <input id="tel-q" type="search" placeholder="🔎 Tìm đề theo tên, mã hoặc chuyên đề…" value="${String(f.q).replace(/"/g, '&quot;')}" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.95rem;">
+                <select id="tel-g" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;"><option value="all">Mọi khối</option>${grades.map(g => `<option value="${g}"${f.g === g ? ' selected' : ''}>Khối ${g}</option>`).join('')}</select>
+                <select id="tel-m" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;"><option value="all">Mọi loại</option>${modes.map(m => `<option value="${m[0]}"${f.m === m[0] ? ' selected' : ''}>${m[1]}</option>`).join('')}</select>
+                <button type="button" class="btn-start" style="background:#7c3aed;padding:8px 14px;font-size:0.9rem;" onclick="showPortalView()"><i class="fa-solid fa-graduation-cap"></i> Chuyển sang góc học sinh</button>
+              </div>
+              <details id="tel-index" open style="margin-bottom:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;padding:8px 12px;">
+                <summary style="cursor:pointer;font-weight:700;color:#1e40af;">📑 Mục lục <span id="tel-count" style="font-weight:400;color:#64748b;"></span></summary>
+                <div id="tel-idx" style="margin-top:8px;max-height:220px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 14px;"></div>
+              </details>
+              <div id="tel-rows"></div>`;
+            const again = () => { window.__tlf = { q: document.getElementById('tel-q').value, g: document.getElementById('tel-g').value, m: document.getElementById('tel-m').value }; renderTeacherExamList(true); };
+            document.getElementById('tel-q').addEventListener('input', again); document.getElementById('tel-g').onchange = again; document.getElementById('tel-m').onchange = again;
+            return document.getElementById('tel-rows');
+        }
+        function tlFillIndex(shown) {
+            const idx = document.getElementById('tel-idx'), cn = document.getElementById('tel-count'); if (!idx) return;
+            if (cn) cn.textContent = '(' + shown.length + '/' + examBank.length + ' đề)';
+            idx.innerHTML = shown.map(ex => `<a href="#tel-${String(ex.id).replace(/[^A-Za-z0-9_-]/g, '_')}" onclick="tlJump(event,'${String(ex.id).replace(/[^A-Za-z0-9_-]/g, '_')}')" style="color:#1d4ed8;text-decoration:none;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${String(ex.title).replace(/"/g, '&quot;')}">• [${ex.grade || ''}] ${ex.title}</a>`).join('');
+        }
+        function tlJump(ev, id) {
+            ev.preventDefault(); const r = document.getElementById('tel-' + id); if (!r) return;
+            r.scrollIntoView({ behavior: 'smooth', block: 'center' }); r.style.transition = 'background .3s'; r.style.background = '#fef9c3'; setTimeout(() => { r.style.background = ''; }, 1600);
         }
 
         function toggleAllowReview(examId, newStatus) {
