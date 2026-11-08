@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v322] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v323] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7008,6 +7008,12 @@ window.addEventListener('popstate', function () {
 .pp-cols{display:flex;gap:8mm;position:relative;overflow:hidden;margin-top:2.5mm}
 .pp-cols::before{content:'';position:absolute;left:99mm;top:0;bottom:0;border-left:.2mm solid #bbb}
 .pp-col{width:95mm;flex:none;overflow:hidden}
+.pp-a5{width:148mm!important;height:209mm!important}
+.pp-a5 .pp-hd{font-size:9pt;gap:2mm}.pp-a5 .pp-hd .l{width:36mm}.pp-a5 .pp-hd .r{width:17mm}.pp-a5 .pp-hd .r b{font-size:15pt}.pp-a5 .pp-hd .m i{font-size:8pt!important}
+.pp-sh5{width:296mm;height:209mm;display:flex;margin:10px auto;background:#fff;box-shadow:0 1px 8px rgba(0,0,0,.25);position:relative;overflow:hidden;break-after:page;page-break-after:always}
+.pp-sh5 .pp-page{margin:0!important;box-shadow:none!important;break-after:auto!important;page-break-after:auto!important;break-before:auto!important;page-break-before:auto!important;flex:none}
+.pp-sh5::after{content:'';position:absolute;left:148mm;top:0;bottom:0;border-left:.2mm dashed #999}
+.pp-sh5:last-child{break-after:auto;page-break-after:auto}
 .pp-foot{position:absolute;left:6mm;right:6mm;bottom:3.5mm;text-align:center;font:8pt Arial,sans-serif;color:#555}
 .pp-hd{display:flex;gap:4mm;align-items:stretch;font-size:10.5pt}
 .pp-hd .l{width:62mm;text-align:center}.pp-hd .m{flex:1;text-align:center}.pp-hd .r{width:26mm;border:.5mm solid #000;text-align:center;display:flex;flex-direction:column;justify-content:center}
@@ -7031,8 +7037,9 @@ window.addEventListener('popstate', function () {
  #pp-ov .pp-dlg{display:none!important}
  .pp-page{margin:0!important;box-shadow:none!important;break-after:auto!important;page-break-after:auto!important}
  .pp-page+.pp-page{break-before:page;page-break-before:always}
+ .pp-sh5{margin:0!important;box-shadow:none!important}
  body.pp-only-exam .pp-keypage{display:none!important}
- body.pp-only-key .pp-exampage{display:none!important}
+ body.pp-only-key .pp-exampage,body.pp-only-key .pp-sh5{display:none!important}
 }`;
     const DLG = `
 <div class="pp-dlg">
@@ -7068,7 +7075,8 @@ window.addEventListener('popstate', function () {
  </div>
  <label class="pp-f">Điểm từng câu tự luận (không bắt buộc)<input id="pp-pel" placeholder="Ví dụ: 1,5; 1; 0,5 (cách nhau bằng dấu chấm phẩy). Để trống thì các câu bằng nhau."></label>
  <div id="pp-tot"></div>
- <div class="pp-grid" style="margin-top:8px"><label class="pp-f">Cách dàn trang<select id="pp-lay"><option value="A">Phần I chia 2 cột, các phần còn lại 1 cột (đề nghị)</option><option value="B">Cả đề chia 2 cột</option><option value="C">Cả đề 1 cột</option></select></label></div>
+ <div class="pp-grid" style="margin-top:8px"><label class="pp-f">Cách dàn trang<select id="pp-lay"><option value="A">Phần I chia 2 cột, các phần còn lại 1 cột (đề nghị)</option><option value="B">Cả đề chia 2 cột</option><option value="C">Cả đề 1 cột</option></select></label><label class="pp-f">Khổ giấy in<select id="pp-a5"><option value="A4">A4 như hiện nay (mỗi học sinh một tờ A4)</option><option value="A5">Tiết kiệm giấy: đề khổ A5, 2 đề trên một tờ A4 ngang, in 2 mặt rồi cắt đôi (không có phiếu tô)</option></select></label></div>
+ <label class="pp-chk"><input type="checkbox" id="pp-a5grid"> Khi chọn khổ A5: in bảng ghi đáp án ở đầu đề (không chọn thì học sinh khoanh hoặc ghi ngay vào đề, tiết kiệm chỗ hơn)</label>
  <details class="pp-more"><summary>Tùy chọn thêm (cỡ chữ, in phiếu tô ô, đảo câu, gọn 2 trang)</summary>
   <div class="pp-grid" style="margin-top:6px">
    <label class="pp-f">Cỡ chữ<select id="pp-font"><option value="auto">Tự động (lớn nhất mà vẫn vừa)</option><option value="12">12</option><option value="11.5">11,5</option><option value="11">11</option><option value="10.5">10,5</option><option value="10">10</option><option value="9.5">9,5</option><option value="9">9</option></select></label>
@@ -7339,14 +7347,15 @@ window.addEventListener('popstate', function () {
         for (let q = 0; q < n; q++) els.push({ k: 'r', x: (q % per) * (bw + 2), y: 4.8 + Math.floor(q / per) * 10.5, w: bw, h: 8.5, s: 'Câu ' + (q + 1) + ' (/' + fmt(peList[q] == null ? 0 : peList[q]) + ')' });
         return { w: Math.max(Math.min(n, per) * (bw + 2) - 2, 34), h: 4.8 + rows * 10.5 - 2, els };
     }
-    function buildGrid(set) {
-        const cs = 'border:0.3mm solid #000;text-align:center;height:6.2mm;padding:0;font-size:9pt', th = cs + ';background:#eef2f7;font-weight:bold;width:11mm';
+    function buildGrid(set, a5) {
+        const cs = 'border:0.3mm solid #000;text-align:center;height:' + (a5 ? 5 : 6.2) + 'mm;padding:0;font-size:' + (a5 ? 8 : 9) + 'pt', th = cs + ';background:#eef2f7;font-weight:bold;width:11mm';
         const tb = (h, b) => '<table style="border-collapse:collapse;table-layout:fixed;margin:0 0 1.2mm 0">' + h + b + '</table>';
         let g = '<div style="border:0.35mm solid #000;padding:1.5mm 2mm;margin:2mm 0 2mm 0;font-size:9pt"><b>BẢNG TRẢ LỜI</b> <i>(thí sinh ghi đáp án vào ô trống)</i>';
         const rowsOf = (n, per, lab) => { let h = ''; for (let k = 0; k < n; k += per) { const m = Math.min(per, n - k), idx = Array.from({ length: m }, (_, i) => k + i + 1); h += tb('<tr><td style="' + th + ';width:16mm">' + lab + '</td>' + idx.map(i => '<td style="' + th + '">' + i + '</td>').join('') + '</tr>', '<tr><td style="' + cs + ';font-size:8pt">Đáp án</td>' + idx.map(() => '<td style="' + cs + '"></td>').join('') + '</tr>'); } return h; };
-        if (set.mcq.length) g += '<div style="margin-top:1mm"><b>Phần I</b></div>' + rowsOf(set.mcq.length, 15, 'Câu');
-        if (set.tf.length) { g += '<div><b>Phần II</b> <i>(ghi Đ hoặc S)</i></div>' + tb('<tr><td style="' + th + ';width:16mm">Câu</td>' + ['a', 'b', 'c', 'd'].map(x => '<td style="' + th + ';width:14mm">' + x + '</td>').join('') + '</tr>', set.tf.map((q, i) => '<tr><td style="' + cs + '">' + (i + 1) + '</td>' + '<td style="' + cs + '"></td>'.repeat(4) + '</tr>').join('')); }
-        if (set.sa.length) g += '<div><b>Phần III</b></div>' + (function () { let h = ''; for (let k = 0; k < set.sa.length; k += 6) { const m = Math.min(6, set.sa.length - k), idx = Array.from({ length: m }, (_, i) => k + i + 1); h += tb('<tr>' + idx.map(i => '<td style="' + th + ';width:30mm">Câu ' + i + '</td>').join('') + '</tr>', '<tr>' + idx.map(() => '<td style="' + cs + ';height:7mm"></td>').join('') + '</tr>'); } return h; })();
+        if (set.mcq.length) g += '<div style="margin-top:1mm"><b>Phần I</b></div>' + rowsOf(set.mcq.length, a5 ? 10 : 15, 'Câu');
+        if (set.tf.length && a5) { /* A5: mỗi câu một cột, bốn hàng a b c d cho gọn */ g += '<div><b>Phần II</b> <i>(ghi Đ hoặc S)</i></div>'; for (let k = 0; k < set.tf.length; k += 8) { const m = Math.min(8, set.tf.length - k), idx = Array.from({ length: m }, (_, i) => k + i + 1); g += tb('<tr><td style="' + th + ';width:16mm">Câu</td>' + idx.map(i => '<td style="' + th + ';width:13mm">' + i + '</td>').join('') + '</tr>', ['a', 'b', 'c', 'd'].map(x => '<tr><td style="' + cs + ';font-weight:bold">' + x + '</td>' + idx.map(() => '<td style="' + cs + '"></td>').join('') + '</tr>').join('')); } }
+        else if (set.tf.length) { g += '<div><b>Phần II</b> <i>(ghi Đ hoặc S)</i></div>' + tb('<tr><td style="' + th + ';width:16mm">Câu</td>' + ['a', 'b', 'c', 'd'].map(x => '<td style="' + th + ';width:14mm">' + x + '</td>').join('') + '</tr>', set.tf.map((q, i) => '<tr><td style="' + cs + '">' + (i + 1) + '</td>' + ('<td style="' + cs + '"></td>').repeat(4) + '</tr>').join('')); }
+        if (set.sa.length) g += '<div><b>Phần III</b></div>' + (function () { let h = ''; for (let k = 0; k < set.sa.length; k += (a5 ? 4 : 6)) { const m = Math.min(a5 ? 4 : 6, set.sa.length - k), idx = Array.from({ length: m }, (_, i) => k + i + 1); h += tb('<tr>' + idx.map(i => '<td style="' + th + ';width:30mm">Câu ' + i + '</td>').join('') + '</tr>', '<tr>' + idx.map(() => '<td style="' + cs + ';height:' + (a5 ? 5.5 : 7) + 'mm"></td>').join('') + '</tr>'); } return h; })();
         return g + '</div>';
     }
     function buildSheet(set, o) {
@@ -7449,7 +7458,8 @@ window.addEventListener('popstate', function () {
     async function generate() {
         const btn = $('pp-go'); btn.disabled = true; saveCfg();
         try {
-            const o = { n: Math.max(1, Math.min(30, Math.round(num('pp-n', 4)))), code0: Math.max(100, Math.min(997, Math.round(num('pp-code', 101)))), pm: 0, pt: 0, ps: 0, pe: 0, peList: [], smode: $('pp-smode').value, sheet: $('pp-smode').value !== 'grid', shuf: $('pp-shuf').checked, esmode: ($('pp-esmode') || {}).value || 'alt', limit: $('pp-limit').checked, lay: ($('pp-lay') || {}).value || 'A', font: $('pp-font').value, school: $('pp-school').value, exam: $('pp-exam').value, year: $('pp-year').value, subj: $('pp-subj').value, time: $('pp-time').value };
+            const o = { n: Math.max(1, Math.min(30, Math.round(num('pp-n', 4)))), code0: Math.max(100, Math.min(997, Math.round(num('pp-code', 101)))), pm: 0, pt: 0, ps: 0, pe: 0, peList: [], smode: $('pp-smode').value, sheet: $('pp-smode').value !== 'grid', shuf: $('pp-shuf').checked, esmode: ($('pp-esmode') || {}).value || 'alt', limit: $('pp-limit').checked, lay: ($('pp-lay') || {}).value || 'A', font: $('pp-font').value, school: $('pp-school').value, exam: $('pp-exam').value, year: $('pp-year').value, subj: $('pp-subj').value, time: $('pp-time').value, a5: (($('pp-a5') || {}).value === 'A5'), a5grid: !!(($('pp-a5grid') || {}).checked) };
+            if (o.a5) { o.smode = 'grid'; o.sheet = false; o.lay = 'C'; }
             msg('Đang tạo mã đề, xin cô chờ vài giây...', '#1d4ed8');
             OPT = o; SETS = []; for (let i = 0; i < o.n; i++) SETS.push(makeSet(i, o));
             { const pr = ptsRead({ MCQ: SETS[0].mcq.length, TF: SETS[0].tf.length, SA: SETS[0].sa.length, ES: SETS[0].es.length }); o.pm = pr.pm; o.pt = pr.pt; o.ps = pr.ps; o.pe = pr.pe; o.peList = pr.esList; o.ptWarn = pr.warn;
@@ -7457,28 +7467,28 @@ window.addEventListener('popstate', function () {
             const tot = SETS[0].mcq.length + SETS[0].tf.length + SETS[0].sa.length + SETS[0].es.length;
             if (!tot) { msg('Đề không có câu nào thuộc các dạng trắc nghiệm, đúng/sai, trả lời ngắn, tự luận.', '#dc2626'); return; }
             const out = $('pp-out'); out.innerHTML = '';
-            const ratio = pxPerMm();
+            const ratio = pxPerMm(), WW = o.a5 ? 136 : 198;
             // phase 1: dựng khối và dàn chữ công thức một lần
             const meas = [], measW = [];
             for (const set of SETS) {
                 set.items = buildItems(set, o);
-                const m = document.createElement('div'); m.className = 'pp-txt'; m.style.cssText = 'position:absolute;left:-10000px;top:0;width:95mm;font-size:11pt';
-                const mw = document.createElement('div'); mw.className = 'pp-txt'; mw.style.cssText = 'position:absolute;left:-10000px;top:0;width:198mm;font-size:11pt'; set.items.forEach(it => (it.wide ? mw : m).appendChild(it.el)); document.body.appendChild(m); document.body.appendChild(mw); meas.push(m); measW.push(mw);
-                set.sheet = o.sheet ? buildSheet(set, o) : null; set.grid = o.smode === 'grid' ? buildGrid(set) : '';
+                const m = document.createElement('div'); m.className = 'pp-txt'; m.style.cssText = 'position:absolute;left:-10000px;top:0;width:' + (o.a5 ? 62 : 95) + 'mm;font-size:11pt';
+                const mw = document.createElement('div'); mw.className = 'pp-txt'; mw.style.cssText = 'position:absolute;left:-10000px;top:0;width:' + WW + 'mm;font-size:11pt'; set.items.forEach(it => (it.wide ? mw : m).appendChild(it.el)); document.body.appendChild(m); document.body.appendChild(mw); meas.push(m); measW.push(mw);
+                set.sheet = o.sheet ? buildSheet(set, o) : null; set.grid = o.smode === 'grid' && (!o.a5 || o.a5grid) ? buildGrid(set, o.a5) : '';
             }
             await Promise.all(meas.concat(measW).map(typeset));
             // chiều cao phần đầu trang 1 (tiêu đề + phiếu)
             const headHtml = (set, withSheet) => '<div class="pp-hd pp-txt"><div class="l"><b>' + esc(o.school) + '</b><br>TỔ TOÁN</div><div class="m"><b>' + esc(o.exam || 'ĐỀ KIỂM TRA') + '</b><br>' + (o.year ? 'Năm học ' + esc(o.year) + '<br>' : '') + 'Môn: ' + esc(o.subj) + ' &nbsp;-&nbsp; Thời gian: ' + esc(o.time) + ' phút<br><i style="font-size:9.5pt">(Không kể thời gian phát đề)</i></div><div class="r"><span style="font-size:9pt">Mã đề</span><b>' + set.code + '</b></div></div><div class="pp-info pp-txt"><span>Họ và tên: ......................................................</span><span>Lớp: ...........</span><span>SBD: ............</span></div>' + (set.sheet && (o.smode === 'top' || withSheet === 1) ? set.sheet.html : '') + (set.grid || '');
-            const probe = document.createElement('div'); probe.style.cssText = 'position:absolute;left:-10000px;top:0;width:198mm'; probe.innerHTML = headHtml(SETS[0]); document.body.appendChild(probe);
-            const headMax = Math.max.apply(null, SETS.map(s => { probe.innerHTML = headHtml(s); return probe.offsetHeight; })) / ratio + 2; probe.remove();
-            const usable = 280, cap1 = usable - headMax - 2.5, capN = usable;
+            const probe = document.createElement('div'); probe.style.cssText = 'position:absolute;left:-10000px;top:0;width:' + WW + 'mm'; probe.innerHTML = headHtml(SETS[0]); const probeWrap = document.createElement('div'); if (o.a5) probeWrap.className = 'pp-a5'; probeWrap.style.cssText = 'position:absolute;left:-10000px;top:0;height:auto!important'; probeWrap.appendChild(probe); document.body.appendChild(probeWrap);
+            const headMax = Math.max.apply(null, SETS.map(s => { probe.innerHTML = headHtml(s); return probe.offsetHeight; })) / ratio + 2; probeWrap.remove();
+            const usable = o.a5 ? 188 : 280, cap1 = usable - headMax - 2.5, capN = usable;
                         const gap = 2.2 * ratio;
             const fixOpts = set => set.items.forEach(it => it.el.querySelectorAll('.pp-o4,.pp-o2,.pp-o1').forEach(c => {
                 if (!c.dataset.o) c.dataset.o = c.className; c.className = c.dataset.o;
                 for (const nx of ['pp-o2', 'pp-o1']) { if (c.className !== 'pp-o4' && c.className !== 'pp-o2') break; const n = c.className === 'pp-o4' ? 4 : 2, sh = (c.clientWidth - (n - 1) * 8) / n; if (c.scrollWidth > c.clientWidth + 1 || Array.prototype.some.call(c.children, x => x.scrollWidth > sh + 1)) c.className = nx; }
             }));
             const fitAt = (set, m, f, mw) => { m.style.fontSize = f + 'pt'; mw.style.fontSize = f + 'pt'; fixOpts(set); const hs = set.items.map(it => it.el.offsetHeight + gap); const r = paginate(set.items, hs, cap1 * ratio, capN * ratio); r.hs = hs; return { r, hs }; };
-            const FONTS = o.font === 'auto' ? [12, 11.75, 11.5, 11.25, 11, 10.75, 10.5, 10.25, 10, 9.75, 9.5, 9.25, 9, 8.75, 8.5] : [parseFloat(o.font)];
+            const FONTS = o.font === 'auto' ? (o.a5 ? [11, 10.75, 10.5, 10.25, 10, 9.75, 9.5, 9.25, 9, 8.75, 8.5] : [12, 11.75, 11.5, 11.25, 11, 10.75, 10.5, 10.25, 10, 9.75, 9.5, 9.25, 9, 8.75, 8.5]) : [parseFloat(o.font)];
             let chosen = FONTS[FONTS.length - 1];
             for (const f of FONTS) {
                 const ok = SETS.every((s, i) => { const x = fitAt(s, meas[i], f, measW[i]); return !o.limit || x.r.nPages <= 2; });
@@ -7488,7 +7498,7 @@ window.addEventListener('popstate', function () {
             let maxPages = 0, miss = 0;
             const SP = o.smode === 'sep' ? 1 : 0;
             const FR = o.smode === 'front';
-            const GN = (SETS[0] && SETS[0].es.length) ? Math.max(0, Math.min(5, parseInt($('pp-grid').value) || 0)) : 0;
+            const GN = (!o.a5 && SETS[0] && SETS[0].es.length) ? Math.max(0, Math.min(5, parseInt($('pp-grid').value) || 0)) : 0;
             const FRN = FR ? 1 + GN : 0; // số trang của tờ bài làm khi chọn kiểu ④
             let frTiny = false;
             const gridPage = (set, num, tot) => {
@@ -7510,14 +7520,18 @@ window.addEventListener('popstate', function () {
                     if (ly && ly.offsetHeight / ratio < 30) { frTiny = true; }
                     for (let gi = 0; gi < GN; gi++) gridPage(set, gi + 2, TOT);
                 }
+                const a5List = [];
                 for (let p = 0; p < pages; p++) {
-                    const pg = document.createElement('div'); pg.className = 'pp-page pp-exampage'; pg.style.fontSize = chosen + 'pt';
+                    const pg = document.createElement('div'); pg.className = 'pp-page pp-exampage' + (o.a5 ? ' pp-a5' : ''); pg.style.fontSize = chosen + 'pt';
                     const P = r.pages[p], hasCols = P.c[0].length + P.c[1].length > 0;
-                    pg.innerHTML = (p === 0 ? headHtml(set) : '') + (hasCols ? '<div class="pp-cols pp-txt" style="height:' + (Math.max(P.cu[0], P.cu[1]) / ratio + 0.5).toFixed(1) + 'mm;' + (p === 0 ? '' : 'margin-top:0') + '"><div class="pp-col"></div><div class="pp-col"></div></div>' : '') + '<div class="pp-wide pp-txt" style="width:198mm;' + (p === 0 && !hasCols ? 'margin-top:2.5mm' : '') + '"></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (OFF + p + 1) + '/' + TOT + '</div>';
-                    out.appendChild(pg);
+                    pg.innerHTML = (p === 0 ? headHtml(set) : '') + (hasCols ? '<div class="pp-cols pp-txt" style="height:' + (Math.max(P.cu[0], P.cu[1]) / ratio + 0.5).toFixed(1) + 'mm;' + (p === 0 ? '' : 'margin-top:0') + '"><div class="pp-col"></div><div class="pp-col"></div></div>' : '') + '<div class="pp-wide pp-txt" style="width:' + WW + 'mm;' + (p === 0 && !hasCols ? 'margin-top:2.5mm' : '') + '"></div><div class="pp-foot">Mã đề ' + set.code + ' - Trang ' + (OFF + p + 1) + '/' + TOT + '</div>';
+                    if (o.a5) a5List.push(pg); else out.appendChild(pg);
                     const cols = pg.querySelectorAll('.pp-col'), wd = pg.querySelector('.pp-wide');
                     P.c[0].forEach(k => cols[0].appendChild(set.items[k].el)); P.c[1].forEach(k => cols[1].appendChild(set.items[k].el));
                     P.w.forEach(k => wd.appendChild(set.items[k].el));
+                }
+                if (o.a5) { /* mỗi tờ A4 ngang: nửa trái và nửa phải giống nhau, mặt trước = trang lẻ, mặt sau = trang chẵn */
+                    for (let k = 0; k < a5List.length; k += 2) for (let side = 0; side < 2; side++) { const pgx = a5List[k + side]; if (!pgx) continue; const sh = document.createElement('div'); sh.className = 'pp-sh5 pp-exsheet'; sh.appendChild(pgx); sh.appendChild(pgx.cloneNode(true)); out.appendChild(sh); }
                 }
                 if (SP && set.sheet) {
                     const sp = document.createElement('div'); sp.className = 'pp-page pp-exampage';
@@ -7560,7 +7574,8 @@ window.addEventListener('popstate', function () {
             const total = s0.mcq.length * o.pm + s0.tf.length * o.pt + s0.sa.length * o.ps + sumL(o.peList);
             html += '<br>Tổng điểm theo thang đã nhập: <b>' + fmt(total) + '</b>' + (Math.abs(total - 10) > 0.01 ? ' <span style="color:#b45309">(chưa bằng 10, cô kiểm tra lại điểm mỗi câu)</span>' : '') + '.';
             if (o.limit && maxPages > 2) html += '<br><span style="color:#dc2626">Đề dài hơn 2 trang ngay cả khi thu nhỏ chữ. Cô bớt câu, bớt hình, hoặc bỏ chọn "Cố gắng gọn trong 2 trang".</span>';
-            else if (maxPages <= 2) html += ' <span style="color:#16a34a">Vừa 2 trang A4.</span>';
+            else if (maxPages <= 2) html += o.a5 ? ' <span style="color:#16a34a">Vừa 2 mặt A5 (1 tờ A4 in 2 mặt cho 2 học sinh).</span>' : ' <span style="color:#16a34a">Vừa 2 trang A4.</span>';
+            if (o.a5) html += '<br><b>Tiết kiệm giấy:</b> mỗi mã đề in ' + Math.ceil(maxPages / 2) + ' tờ A4 ngang, mỗi tờ cắt đôi theo nét đứt giữa tờ thành 2 đề giống nhau. Khi in: chọn <b>A4, ngang</b>, in <b>2 mặt</b>, chọn <b>Lật theo cạnh ngắn</b>. Cô in thử 1 tờ: nếu mặt sau bị ngược thì đổi sang <b>Lật theo cạnh dài</b>.' + (s0.es.length ? ' Phần tự luận: học sinh làm vào giấy riêng.' : '');
             if (FR) html += '<br>Kiểu ④: tờ bài làm ' + FRN + ' trang (phiếu tô' + (s0.es.length ? ' + ô ly' : '') + '), rồi tờ đề ' + maxPages + ' trang. Mỗi mã đề ' + (FRN + maxPages) + ' trang.' + (frTiny ? ' <span style="color:#b45309">Phiếu tô chiếm gần hết trang 1 nên phần ô ly ở trang 1 rất ít, cô tăng "Số trang ô ly" lên.</span>' : '');
             try { /* v302: cảnh báo kho thiếu câu so với số mã đề */
                 const bs = selectedQuestions || [];
@@ -8131,7 +8146,8 @@ window.addEventListener('popstate', function () {
         if (mode === 'key') { try { document.querySelectorAll('.pp-keyfile').forEach(e => { e.textContent = (window.chamFileName && window.chamFileName()) || 'dap-an-cham-bai-....txt'; }); if (window.chamAutoSave) window.chamAutoSave(); } catch (e) { } }
         document.body.classList.add('pp-printing', mode === 'key' ? 'pp-only-key' : 'pp-only-exam');
         const oldTitle = document.title; try { document.title = ppBase() + ' - mã ' + SETS.map(s => s.code).join('-') + (mode === 'key' ? ' - đáp án' : ' - đề'); } catch (e) { }
-        const done = () => { document.title = oldTitle; document.body.classList.remove('pp-printing', 'pp-only-key', 'pp-only-exam'); window.removeEventListener('afterprint', done); };
+        let ps = null; if (mode !== 'key' && OPT && OPT.a5) { ps = document.createElement('style'); ps.textContent = '@page{size:A4 landscape;margin:0}'; document.head.appendChild(ps); }
+        const done = () => { document.title = oldTitle; document.body.classList.remove('pp-printing', 'pp-only-key', 'pp-only-exam'); if (ps) { ps.remove(); ps = null; } window.removeEventListener('afterprint', done); };
         window.addEventListener('afterprint', done);
         setTimeout(() => { try { window.print(); } catch (e) { done(); } }, 150);
         setTimeout(done, 60000);
