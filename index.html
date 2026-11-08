@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v321] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v322] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13916,18 +13916,29 @@ var QGEN = (function () {
         if (o && typeof o === 'object') { var n = {}; for (var k in o) n[k] = fixLt(o[k]); return n; }
         return o;
     }
+    /* hình kèm câu hỏi (dùng chung cho trắc nghiệm, đúng–sai, tự luận) */
+    function figHtml(f, geoW) {
+        if (!f) return '';
+        try {
+            if (f.t === 'geo') { if (!window.__geoPng) return ''; var gw = geoW || 360; return '<br><img src="' + window.__geoPng(f, gw, geoW ? 270 : 230) + '" style="max-width:' + gw + 'px">'; }
+            if (f.t === 'mien') { return window.__regionPng ? '<br><img src="' + window.__regionPng(f, 300, 225) + '" style="max-width:300px">' : ''; }
+            if (!window.__solidPng) return '';
+            var pl = f.t === 'bbt' || f.t === 'plot' || f.t === 'hist', w = f.t === 'bbt' ? 440 : 300;
+            return '<br><img src="' + (pl ? window.__plotPng(f, w, f.t === 'bbt' ? (f.sign ? 72 : 165) : 225) : window.__solidPng(f, 300, 225)) + '" style="max-width:' + w + 'px">';
+        } catch (e) { return ''; }
+    }
     function one(P, kind, seen) {
         for (var k = 0; k < 60; k++) {
             var g = P[Math.floor(Math.random() * P.length)];
             try {
                 var r = fixLt(g.make(2));
-                if (kind === 'TF') { var ans = r.items.map(function (it) { return it.ok ? 'D' : 'S'; }).join(''), key = r.q + '|' + r.items.map(function (it) { return it.t; }).join('|'); if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'TF', q: r.q, options: r.items.map(function (it) { return it.t; }), ans: ans, exp: r.exp, fig: false }; }
-                if (kind === 'ES') { var pts = r.parts, tot = 0, h = r.q; if (r.fig && r.fig.t === 'geo' && window.__geoPng) { try { h += '<br><img src="' + window.__geoPng(r.fig, 420, 270) + '" style="max-width:420px">'; } catch (e) { } } pts.forEach(function (x, i) { tot += x.p; h += '<br>' + (pts.length > 1 ? 'abc'[i] + ') ' : '') + x.t + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }); var key = h; if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'ES', q: h, options: [], ans: '', exp: pts.map(function (x, i) { return (pts.length > 1 ? '<b>' + 'abc'[i] + ')</b> ' : '') + x.sol + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }).join('<br>'), fig: false, tot: tot }; }
+                if (kind === 'TF') { var ans = r.items.map(function (it) { return it.ok ? 'D' : 'S'; }).join(''), key = r.q + '|' + r.items.map(function (it) { return it.t; }).join('|'); if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'TF', q: r.q + figHtml(r.fig), options: r.items.map(function (it) { return it.t; }), ans: ans, exp: r.exp, fig: false }; }
+                if (kind === 'ES') { var pts = r.parts, tot = 0, h = r.q + figHtml(r.fig, 420); pts.forEach(function (x, i) { tot += x.p; h += '<br>' + (pts.length > 1 ? 'abc'[i] + ') ' : '') + x.t + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }); var key = h; if (seen[key]) continue; seen[key] = 1; return { gen: g.id, name: g.name, level: r.level || g.lv, kind: 'ES', q: h, options: [], ans: '', exp: pts.map(function (x, i) { return (pts.length > 1 ? '<b>' + 'abc'[i] + ')</b> ' : '') + x.sol + ' <i>(' + String(x.p).replace('.', ',') + ' điểm)</i>'; }).join('<br>'), fig: false, tot: tot }; }
                 if (kind === 'SA' && (!r.sa || String(r.sa).replace(/\s/g, '').length > 4 || /[\\a-zA-Z]/.test(String(r.sa)))) continue; /* phiếu trả lời ngắn chỉ có 4 ô: tối đa 4 ký tự, gồm dấu - và dấu phẩy */
                 var b = Q.build4(r.correct, r.wrongs), key = r.q + '|' + r.correct;
                 if (seen[key]) continue; seen[key] = 1;
                 var q = r.q;
-                if (r.fig && r.fig.t === 'geo') { try { q += '<br><img src="' + window.__geoPng(r.fig, 360, 230) + '" style="max-width:360px">'; } catch (e) { } } else if (r.fig && window.__solidPng) { try { var _pl = r.fig.t === 'bbt' || r.fig.t === 'plot'; if (r.fig.t === 'mien') { q += '<br><img src="' + window.__regionPng(r.fig, 300, 225) + '" style="max-width:300px">'; } else q += '<br><img src="' + (_pl ? window.__plotPng(r.fig, r.fig.t === 'bbt' ? 440 : 300, r.fig.t === 'bbt' ? (r.fig.sign ? 72 : 165) : 225) : window.__solidPng(r.fig, 300, 225)) + '" style="max-width:' + (r.fig.t === 'bbt' ? 440 : 300) + 'px">'; } catch (e) { } }
+                q += figHtml(r.fig);
                 return { gen: g.id, name: g.name, level: r.level || g.lv, kind: kind, q: q, options: b.options, ans: b.ans, sa: r.sa, exp: r.exp, fig: !!r.fig };
             } catch (e) { if (!e.retry) console.warn(g.id, e); }
         }
