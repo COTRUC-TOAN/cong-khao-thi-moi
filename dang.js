@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v309";
+window.__DANG_VER = "v310";
 window.__NE = function (x, y) { return y === 0 ? "\\ \\text{và hệ số tự do }" + x + "\\ne0" : "\\ne\\dfrac{" + x + "}{" + y + "}"; };
 // ===== Các dạng toán =====
 (function (Q) {
@@ -10209,11 +10209,38 @@ g.make=function(d){var o,i;for(i=0;i<40;i++){o=mk.call(g,d);if(o&&o.wrongs){var 
                 ['Lô nào có chiều cao đồng đều hơn? Vì sao?', 'Vì $s_' + more + '\\approx' + dd(more === 'A' ? sA : sB, 2) + '>' + dd(more === 'A' ? sB : sA, 2) + '\\approx s_' + less + '$ nên lô $' + less + '$ có độ phân tán nhỏ hơn, tức chiều cao đồng đều hơn.']]) };
         });
 
+        addTF('l12_tf_tk_dactrung', 12, G12, 'Đúng – sai: mẫu ghép nhóm — a) khoảng biến thiên, giá trị đại diện, đầu mút trái, nhóm chứa tứ phân vị; b) số trung bình, phương sai, độ lệch chuẩn; c) tứ phân vị, trung vị; d) khoảng tứ phân vị', 'VD', function () {
+            var d = gd(pick([4, 5])), m = gMean(d), v = gVar(d), sd = Math.sqrt(v), qs = { 1: gQ(d, 1), 2: gQ(d, 2), 3: gQ(d, 3) }, dq = qs[3].v - qs[1].v;
+            need(v > 0 && nt(m, v, sd, qs[1].v, qs[2].v, qs[3].v, dq));
+            function bad(x) { var y = x + pick([0.1, 0.2, 0.3, 0.5, 1, -0.1, -0.2, -0.3, -0.5, -1]); need(y > 0 && dd(y, 2) !== dd(x, 2)); return y; }
+            var QN = { 1: 'tứ phân vị thứ nhất $Q_1$', 2: 'tứ phân vị thứ hai $Q_2$ (trung vị)', 3: 'tứ phân vị thứ ba $Q_3$' };
+            return mkTF('Cho mẫu số liệu ghép nhóm sau:\n' + gTab(d) + '\nXét tính đúng sai của các mệnh đề sau:', [
+                function (ok) {
+                    var kind = pick(['R', 'dd', 'mut', 'nhom']), p = pick([1, 2, 3]), r = qs[p];
+                    if (kind === 'R') { var R = d.w * d.k, x = ok ? R : R + pick([-1, 1]) * d.w; need(x > 0); return { t: 'Khoảng biến thiên của mẫu số liệu là $' + x + '$.', why: '$R=' + (d.s0 + d.w * d.k) + '-' + d.s0 + '=' + R + '$.' }; }
+                    if (kind === 'dd') { var i = ri(0, d.k - 1), x2 = ok ? gMid(d, i) : gMid(d, i) + pick([-1, 1]) * d.w / 2; return { t: 'Giá trị đại diện của nhóm $' + gLab(d, i) + '$ là $' + nd(x2) + '$.', why: 'Giá trị đại diện là trung điểm của nhóm: $\\dfrac{' + (d.s0 + d.w * i) + '+' + (d.s0 + d.w * (i + 1)) + '}{2}=' + nd(gMid(d, i)) + '$.' }; }
+                    if (kind === 'mut') { var j = ok ? r.i : (r.i + ri(1, d.k - 1)) % d.k; return { t: 'Đầu mút trái của nhóm chứa ' + QN[p] + ' là $' + (d.s0 + d.w * j) + '$.', why: 'Cỡ mẫu $n=' + d.N + '$. Nhóm chứa ' + QN[p] + ' là $' + gLab(d, r.i) + '$ nên đầu mút trái là $' + r.l + '$.' }; }
+                    var j2 = ok ? r.i : (r.i + ri(1, d.k - 1)) % d.k; return { t: 'Nhóm chứa ' + QN[p] + ' là $' + gLab(d, j2) + '$.', why: 'Cỡ mẫu $n=' + d.N + '$, tần số tích lũy đầu tiên không nhỏ hơn $' + nd(r.t) + '$ ứng với nhóm $' + gLab(d, r.i) + '$.' };
+                },
+                function (ok) {
+                    var kind = pick(['tb', 'ps', 'dlc']), tv = kind === 'tb' ? m : kind === 'ps' ? v : sd, x = ok ? tv : bad(tv), nm = kind === 'tb' ? 'Số trung bình $\\bar x$' : kind === 'ps' ? 'Phương sai $s^{2}$' : 'Độ lệch chuẩn $s$';
+                    return { t: nm + ' của mẫu số liệu là $' + dd(x, 2) + '$ (làm tròn đến hàng phần trăm).', why: '$\\bar x\\approx' + dd(m, 2) + '$, $s^{2}\\approx' + dd(v, 2) + '$, $s=\\sqrt{s^{2}}\\approx' + dd(sd, 2) + '$.' };
+                },
+                function (ok) {
+                    var p = pick([1, 2, 3]), tv = qs[p].v, x = ok ? tv : bad(tv);
+                    return { t: 'Giá trị của ' + QN[p] + ' là $' + dd(x, 2) + '$ (làm tròn đến hàng phần trăm).', why: qSol(d, p, QN[p]) };
+                },
+                function (ok) {
+                    var x = ok ? dq : bad(dq);
+                    return { t: 'Khoảng tứ phân vị của mẫu số liệu là $\\Delta_Q\\approx' + dd(x, 2) + '$.', why: '$Q_1\\approx' + dd(qs[1].v, 2) + '$, $Q_3\\approx' + dd(qs[3].v, 2) + '$ nên $\\Delta_Q=Q_3-Q_1\\approx' + dd(dq, 2) + '$.' };
+                }
+            ], 'VD');
+        });
         // ===== gắn vào danh sách bài của web =====
         var BAI = {
             l10_tke_tantuongdoi: [513, 'Bài 13–14 · Các số đặc trưng của mẫu số liệu'], l10_tke_lythuyet: [513, 'Bài 13–14 · Các số đặc trưng của mẫu số liệu'], l10_tf_tke_batthuong: [513, 'Bài 13–14 · Các số đặc trưng của mẫu số liệu'], l10_es_tke_mau: [513, 'Bài 13–14 · Các số đặc trưng của mẫu số liệu'], l10_es_tke_bangtanso: [513, 'Bài 13–14 · Các số đặc trưng của mẫu số liệu'],
             l11_tkgn_bieudo: [508, 'Bài 8–9 · Thống kê ghép nhóm'], l11_tkgn_congthuc: [508, 'Bài 8–9 · Thống kê ghép nhóm'], l11_tf_tkgn_tichluy: [508, 'Bài 8–9 · Thống kê ghép nhóm'], l11_es_tkgn_trungvi_tuphanvi: [508, 'Bài 8–9 · Thống kê ghép nhóm'], l11_es_tkgn_hailop: [508, 'Bài 8–9 · Thống kê ghép nhóm'],
-            l12_es_tk_phantan_mot: [399, 'Ôn chương III · Mẫu số liệu ghép nhóm'], l12_es_tk_phantan_hai: [399, 'Ôn chương III · Mẫu số liệu ghép nhóm']
+            l12_tf_tk_dactrung: [399, 'Ôn chương III · Mẫu số liệu ghép nhóm'], l12_es_tk_phantan_mot: [399, 'Ôn chương III · Mẫu số liệu ghép nhóm'], l12_es_tk_phantan_hai: [399, 'Ôn chương III · Mẫu số liệu ghép nhóm']
         };
         [].concat(Q.GEN, Q.TF, Q.ES).forEach(function (g) { var b = BAI[g.id]; if (b) { g.baiK = b[0]; g.bai = b[1]; } });
     } catch (e) { if (window.console) console.warn('dang thong ke moi', e); }
