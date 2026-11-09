@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v323] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v324] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13927,7 +13927,7 @@ var QGEN = (function () {
         return LST().filter(function (x) { return String(x.grade) === g && inGr(g, x, gr) && gnKeep(x) && (t === '*' ? !x.hide : x.id === t); });
     }
     function fixLt(o) {
-        if (typeof o === 'string') return o.replace(/<(?=[A-Za-z])(?!br\b|img\b|b>|i>|span\b|details\b|summary\b|div\b)/g, '\\lt ');
+        if (typeof o === 'string') return o.replace(/<(?=[A-Za-z])(?!br\b|img\b|b>|i>|u>|span\b|details\b|summary\b|div\b|table\b|tr\b|td\b|th\b|thead\b|tbody\b|sub>|sup>|strong\b|em\b)/g, '\\lt ');
         if (Array.isArray(o)) return o.map(fixLt);
         if (o && typeof o === 'object') { var n = {}; for (var k in o) n[k] = fixLt(o[k]); return n; }
         return o;
