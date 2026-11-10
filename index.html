@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v331] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v332] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -959,7 +959,7 @@ body .exam-card .btn-share:hover{ background:#eef2f9 !important; color:#1d3f8f !
             <div id="sec-t-scores">
                 <div class="stats-grid">
                     <div class="stat-card"><h4>Tổng Số Bài Nộp</h4><div class="stat-val" id="stat-total-submissions">0</div></div>
-                    <div class="stat-card"><h4>Điểm Trung Bình</h4><div class="stat-val" id="stat-avg-score">0.0</div></div>
+                    <div class="stat-card"><h4>Điểm Trung Bình</h4><div class="stat-val" id="stat-avg-score">0.0</div><div id="stat-avg-note" style="font-size:.78rem;opacity:.85;margin-top:2px"></div></div>
                 </div>
                 
                 <div style="display: flex; gap: 12px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
@@ -2841,7 +2841,23 @@ function removeQuestionFromSelected(qId) {
             // Mã đề MỚI tự gắn mã giáo viên ở đầu, để không trùng với đề của giáo viên khác trên Firebase dùng chung.
             // Đề đã có sẵn trong danh sách của cô (hoặc đã có mã giáo viên) thì giữ nguyên mã để ghi đè cập nhật như cũ.
             const idPrefix = currentTeacherId ? (currentTeacherId + '-') : '';
-            const examId = (!typedExamId || !idPrefix || typedExamId.startsWith(idPrefix) || examBank.some(e => String(e.id) === typedExamId)) ? typedExamId : (idPrefix + typedExamId);
+            // (v332) Mã đề mới được tự thêm KHỐI (K12, K11, K10, THPT) để hai khối không trùng mã.
+            // Đề cũ và đề đang sửa giữ nguyên mã, không đụng tới, để điểm và bài làm đã lưu không lạc.
+            const gradeSel = String((document.getElementById('new-exam-grade') || {}).value || '').trim();
+            const gTag = !gradeSel ? '' : (gradeSel.toLowerCase() === 'thpt' ? 'THPT' : 'K' + gradeSel);
+            const idHasGrade = (code) => {
+                if (!gTag) return true;
+                const core = (gradeSel.toLowerCase() === 'thpt') ? 'THPT' : ('K?' + gradeSel);
+                try { return new RegExp('(^|[^0-9])' + core + '([^0-9]|$)', 'i').test(String(code)); } catch (e) { return true; }
+            };
+            const keepAsIs = !typedExamId || !!editingExamId
+                || (idPrefix && typedExamId.startsWith(idPrefix))
+                || examBank.some(e => String(e.id) === typedExamId);
+            let examId = typedExamId;
+            if (!keepAsIs) {
+                if (!idHasGrade(examId)) examId = gTag + '-' + examId;
+                if (idPrefix) examId = idPrefix + examId;
+            }
             const title = document.getElementById('new-exam-title').value.trim();
             const mode = document.getElementById('new-exam-mode').value;
             const timeLimit = parseInt(document.getElementById('new-exam-time').value) || 45;
@@ -2857,7 +2873,7 @@ function removeQuestionFromSelected(qId) {
               } }
             if (examId !== typedExamId) {
                 document.getElementById('new-exam-id').value = examId;
-                alert("ℹ️ Mã đề được tự thêm mã giáo viên: " + examId + "\n(để không trùng với đề của giáo viên khác)");
+                alert("ℹ️ Mã đề đầy đủ của đề này là:\n" + examId + "\n\nWeb tự thêm mã giáo viên và khối để không trùng với đề khác. Tên đề giữ nguyên như cô đặt.");
             }
             if (mode !== 'BAIGIANG' && (!selectedQuestions || selectedQuestions.length === 0)) {
                 alert("⚠️️ Bạn chưa có câu hỏi nào trong đề! Hãy bấm 'Phân tích đề' hoặc chọn từ Ngân hàng/Ma trận.");
@@ -3205,11 +3221,15 @@ function removeQuestionFromSelected(qId) {
 
             const avgEl = document.getElementById('stat-avg-score');
             if (displayList.length > 0) {
-                let sum = 0, count = 0;
+                // (v332) chỉ tính các bài có điểm từ 0 đến 10; bỏ qua dòng thang điểm khác để số trung bình không bị sai
+                let sum = 0, count = 0, skipped = 0;
                 displayList.forEach(r => {
                     let num = parseFloat(String(r.totalScore).replace(',', '.'));
-                    if (!isNaN(num)) { sum += num; count++; }
+                    if (isNaN(num)) return;
+                    if (num >= 0 && num <= 10) { sum += num; count++; } else { skipped++; }
                 });
+                { const nt = document.getElementById('stat-avg-note');
+                  if (nt) nt.innerText = 'của ' + count + ' bài' + (skipped ? ' · bỏ qua ' + skipped + ' bài không theo thang 10' : ''); }
                 if (avgEl) avgEl.innerText = count > 0 ? (sum / count).toFixed(2) : '0.0';
 
                 tbody.innerHTML = displayList.map((r, index) => {
