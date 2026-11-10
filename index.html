@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v333] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v335] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -865,6 +865,63 @@ table.tel-tb th.tel-act,table.tel-tb td.tel-act{ text-align:right; white-space:n
   #portal-view .sidebar{ position:static !important; max-height:none !important; }
   #mode-chips{ gap:6px !important } #mode-chips .mc{ padding:6px 11px !important; font-size:.86rem !important }
 }
+</style>
+<style id="skin-flat-teacher-v335">
+/* (v335) Khu giáo viên dùng chung một kiểu với trang học sinh: nền trắng, một màu chính, bỏ nút nổi 3D */
+
+/* --- menu bên trái --- */
+html body #teacher-view > .teacher-nav{ background:#fff !important; border:1px solid #e2e7f0 !important; border-radius:14px !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.05) !important; padding:10px !important; gap:2px !important; }
+html body #teacher-view .tn-title{ color:#7a8699 !important; font-size:.72rem !important; font-weight:700 !important; letter-spacing:.07em; padding:6px 10px 8px !important; }
+html body #teacher-view .tn-sep{ background:#e2e7f0 !important; margin:8px 4px !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab{ background:transparent !important; border:1px solid transparent !important; color:#3c4761 !important;
+  border-radius:10px !important; padding:9px 10px !important; box-shadow:none !important; text-shadow:none !important; transform:none !important;
+  font-family:'Be Vietnam Pro',system-ui,sans-serif !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab:hover{ background:#eef2f9 !important; border-color:transparent !important; transform:none !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-ic{ width:30px !important; height:30px !important; font-size:1rem !important; background:#f1f4f9 !important; border-radius:8px !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-tx b{ color:#16203a !important; font-size:.95rem !important; font-weight:600 !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-tx small{ color:#7a8699 !important; font-size:.75rem !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab.active{ background:#e8eefb !important; border:1px solid #cdd9f2 !important; box-shadow:inset 3px 0 0 #1d3f8f !important; transform:none !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-ic{ background:#fff !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx b{ color:#1d3f8f !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx small{ color:#5b6880 !important; }
+
+/* --- ô số liệu ở Sổ điểm --- */
+#teacher-view .stat-card,#portal-view .stat-card,
+#teacher-view .stat-card:nth-child(4n+1),#teacher-view .stat-card:nth-child(4n+2),
+#teacher-view .stat-card:nth-child(4n+3),#teacher-view .stat-card:nth-child(4n+4),
+#portal-view .stat-card:nth-child(4n+1),#portal-view .stat-card:nth-child(4n+2),
+#portal-view .stat-card:nth-child(4n+3),#portal-view .stat-card:nth-child(4n+4){
+  background:#fff !important; color:#16203a !important; border:1px solid #e2e7f0 !important; box-shadow:none !important; text-shadow:none !important; border-radius:12px !important; }
+#teacher-view .stat-card h4,#portal-view .stat-card h4{ color:#7a8699 !important; font-size:.76rem !important; font-weight:600 !important; letter-spacing:.04em; text-shadow:none !important; }
+#teacher-view .stat-card .stat-val,#portal-view .stat-card .stat-val,#teacher-view #sec-t-scores .stats-grid .stat-card .stat-val{ color:#1d3f8f !important; -webkit-text-fill-color:#1d3f8f !important; text-shadow:none !important; font-family:'Be Vietnam Pro',system-ui,sans-serif !important; font-variant-numeric:tabular-nums; }
+#teacher-view #stat-avg-note{ color:#7a8699 !important; }
+
+/* --- nút trong khu giáo viên: xanh đậm cho việc chính --- */
+#teacher-view .btn-start{ background:#1d3f8f !important; border:1px solid #1d3f8f !important; color:#fff !important;
+  box-shadow:none !important; text-shadow:none !important; border-radius:10px !important; font-weight:600 !important;
+  font-family:'Be Vietnam Pro',system-ui,sans-serif !important; }
+#teacher-view .btn-start:active{ transform:none !important; box-shadow:none !important; filter:brightness(.95) }
+#teacher-view .btn-start:hover{ filter:brightness(1.07) }
+/* việc phụ: trắng viền xám (các nút đang tô tím, cam, xám) */
+#teacher-view .btn-start[style*="7c3aed"],#teacher-view .btn-start[style*="8b5cf6"],
+#teacher-view .btn-start[style*="ea580c"],#teacher-view .btn-start[style*="64748b"]{
+  background:#fff !important; color:#1d3f8f !important; border-color:#cfd8e8 !important; }
+#teacher-view .btn-start[style*="7c3aed"]:hover,#teacher-view .btn-start[style*="ea580c"]:hover{ background:#eef2f9 !important; }
+#teacher-view #st-btn{ background:#fff !important; color:#1d3f8f !important; border-color:#cfd8e8 !important; }
+#teacher-view #st-btn:hover{ background:#eef2f9 !important; }
+/* xóa: viền đỏ */
+#teacher-view .btn-del-exam{ background:#fff !important; color:#b91c1c !important; border:1px solid #f0c4c4 !important; box-shadow:none !important; border-radius:10px !important; font-weight:600 !important; }
+#teacher-view .btn-del-exam:hover{ background:#fdecec !important; }
+
+/* --- thẻ, tiêu đề mục --- */
+#sec-t-creator .creator-card{ border:1px solid #e2e7f0 !important; box-shadow:0 1px 2px rgba(16,24,40,.05) !important; border-radius:14px !important; }
+#sec-t-creator .creator-card > h3,#teacher-view [id^="sec-t-"] > h3{ border-bottom:1px solid #e2e7f0 !important; color:#16203a !important; }
+#teacher-view .add-cards > .btn-t-tab{ border-width:1px !important; border-color:#e2e7f0 !important; background:#fff !important; }
+#teacher-view .add-cards > .btn-t-tab:hover{ border-color:#cdd9f2 !important; background:#f8fafd !important; }
+#teacher-view .add-cards > .btn-t-tab.active{ background:#e8eefb !important; border-color:#1d3f8f !important; box-shadow:none !important; }
+#teacher-view .add-cards > .btn-t-tab.active::after{ color:#1d3f8f !important; }
+#teacher-view .add-cards{ border-bottom:1px solid #e2e7f0 !important; }
 </style>
 </head>
 <body>
@@ -3244,14 +3301,26 @@ function removeQuestionFromSelected(qId) {
             const avgEl = document.getElementById('stat-avg-score');
             if (displayList.length > 0) {
                 // (v332) chỉ tính các bài có điểm từ 0 đến 10; bỏ qua dòng thang điểm khác để số trung bình không bị sai
-                let sum = 0, count = 0, skipped = 0;
+                let sum = 0, count = 0, skipped = 0, maxBad = 0; const badBy = {};
                 displayList.forEach(r => {
                     let num = parseFloat(String(r.totalScore).replace(',', '.'));
                     if (isNaN(num)) return;
-                    if (num >= 0 && num <= 10) { sum += num; count++; } else { skipped++; }
+                    if (num >= 0 && num <= 10) { sum += num; count++; return; }
+                    skipped++; if (num > maxBad) maxBad = num;
+                    const k = String(r.examTitle || 'không rõ đề'); badBy[k] = (badBy[k] || 0) + 1;
                 });
                 { const nt = document.getElementById('stat-avg-note');
-                  if (nt) nt.innerText = 'của ' + count + ' bài' + (skipped ? ' · bỏ qua ' + skipped + ' bài không theo thang 10' : ''); }
+                  if (nt) {
+                    if (!skipped) { nt.innerText = 'của ' + count + ' bài'; nt.title = ''; }
+                    else {
+                      const top = Object.keys(badBy).sort((x, y) => badBy[y] - badBy[x]);
+                      const ten = top.slice(0, 2).map(k => k + ' (' + badBy[k] + ')').join(', ');
+                      nt.innerText = 'của ' + count + ' bài · bỏ qua ' + skipped + ' bài điểm ngoài thang 10';
+                      nt.title = 'Điểm lớn nhất gặp phải: ' + maxBad + '\nCác đề có điểm ngoài thang 10: ' + ten + (top.length > 2 ? ' và ' + (top.length - 2) + ' đề khác' : '');
+                      nt.style.cursor = 'help';
+                      nt.innerText += ' ⓘ';
+                    }
+                  } }
                 if (avgEl) avgEl.innerText = count > 0 ? (sum / count).toFixed(2) : '0.0';
 
                 tbody.innerHTML = displayList.map((r, index) => {
