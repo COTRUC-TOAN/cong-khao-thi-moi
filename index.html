@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v335] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v337] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -923,6 +923,118 @@ html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx small{ color:#
 #teacher-view .add-cards > .btn-t-tab.active::after{ color:#1d3f8f !important; }
 #teacher-view .add-cards{ border-bottom:1px solid #e2e7f0 !important; }
 </style>
+<style id="skin-flat-room-v336">
+/* (v336) Phòng dạy, Quản lý lớp, cửa sổ Soi chấm: cùng một kiểu với các phần đã sửa */
+
+/* --- Phòng dạy --- */
+#sec-t-room-old > div > h3{ background:#fff !important; color:#16203a !important; border:1px solid #e2e7f0 !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.05) !important; text-shadow:none !important; border-radius:14px !important;
+  font-family:'Be Vietnam Pro',system-ui,sans-serif !important; font-size:1.25rem !important; padding:16px 20px !important; }
+#sec-t-room-old > div > h3 i{ color:#1d3f8f !important; }
+#sec-t-room-old .room-tool,#sec-t-room-old .room-tool:last-child{ border:1px solid #e2e7f0 !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.05) !important; border-radius:14px !important; background:#fff !important; }
+#sec-t-room-old .room-tool:hover{ transform:none !important; box-shadow:0 6px 18px rgba(16,24,40,.08) !important; }
+#sec-t-room-old .room-tool > div b{ font-family:'Be Vietnam Pro',system-ui,sans-serif !important; font-size:1.1rem !important; font-weight:700 !important; color:#16203a !important; }
+#sec-t-room-old .room-tool .btn-start,#sec-t-room-old .room-tool:last-child .btn-start{
+  background:#1d3f8f !important; border:1px solid #1d3f8f !important; color:#fff !important;
+  box-shadow:none !important; text-shadow:none !important; border-radius:10px !important; font-size:.95rem !important; padding:9px 16px !important; }
+#sec-t-room-old .room-tool .btn-start:active{ transform:none !important; box-shadow:none !important; filter:brightness(.95) }
+
+/* --- Quản lý lớp: hàng nút --- */
+#teacher-view #sec-t-class button[data-a],#teacher-view [id^="sec-t-"] button[data-a]{
+  font-family:'Be Vietnam Pro',system-ui,sans-serif !important; border:1px solid #cfd8e8 !important; background:#fff !important;
+  color:#3c4761 !important; border-radius:9px !important; font-weight:600 !important; }
+#teacher-view button[data-a]:hover{ background:#eef2f9 !important; color:#1d3f8f !important; }
+#teacher-view button[data-a="delcls"]{ color:#b91c1c !important; border-color:#f0c4c4 !important; }
+#teacher-view button[data-a="delcls"]:hover{ background:#fdecec !important; color:#991b1b !important; }
+#teacher-view button[data-a="addcls"]{ background:#1d3f8f !important; border-color:#1d3f8f !important; color:#fff !important; }
+#teacher-view button[data-a="addcls"]:hover{ filter:brightness(1.07); color:#fff !important; }
+
+/* --- cửa sổ Soi chấm điểm --- */
+#soi-modal .btn-start{ background:#1d3f8f !important; border:1px solid #1d3f8f !important; color:#fff !important;
+  box-shadow:none !important; text-shadow:none !important; border-radius:10px !important; font-weight:600 !important;
+  font-family:'Be Vietnam Pro',system-ui,sans-serif !important; }
+#soi-modal .btn-start[style*="7c3aed"],#soi-modal .btn-start[style*="rgb(124, 58, 237)"]{
+  background:#fff !important; color:#1d3f8f !important; border-color:#cfd8e8 !important; }
+#soi-modal .btn-start[style*="d97706"],#soi-modal .btn-start[style*="rgb(217, 119, 6)"]{
+  background:#fff !important; color:#b45309 !important; border-color:#f0d7a8 !important; }
+#soi-modal .btn-start[style*="d97706"]:hover{ background:#fff7ea !important; }
+#soi-modal > div{ border-radius:14px !important; border:1px solid #e2e7f0; }
+
+/* --- Phòng dạy (bản mới) --- */
+#teacher-view .rm-main,#teacher-view .rm-side{ border:1px solid #e2e7f0 !important; border-radius:14px !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.05) !important; }
+#teacher-view .rm-head h3{ font-family:'Be Vietnam Pro',system-ui,sans-serif !important; color:#16203a !important; font-size:1.25rem !important; }
+#teacher-view .rm-go,#teacher-view .rm-go.alt{ background:#1d3f8f !important; border:1px solid #1d3f8f !important; color:#fff !important;
+  box-shadow:none !important; text-shadow:none !important; border-radius:10px !important; font-weight:600 !important; font-size:.95rem !important;
+  padding:10px 18px !important; font-family:'Be Vietnam Pro',system-ui,sans-serif !important; }
+#teacher-view .rm-go:hover{ filter:brightness(1.07) }
+#teacher-view .rm-feat > div{ border-color:#e2e7f0 !important; background:#fff !important; }
+#teacher-view .rm-feat > div:hover{ background:#f8fafd !important; }
+</style>
+<style id="skin-art-v337">
+/* (v337) Đậm lên và viền có nét riêng: vạch màu ở đầu thẻ, gáy màu bên trái, tiêu đề có gạch chân ngắn */
+:root{ --a-navy:#1b3a7a; --a-navy2:#2f6fd0; --a-cyan:#17a2b8; --a-line:#dde4ef; --a-ink:#101a2e; }
+
+/* viền có nét: thẻ lớn mang một vạch màu mảnh ở mép trên */
+#teacher-view .creator-card,#teacher-view .rm-main,#teacher-view .rm-side,
+#teacher-view > .teacher-nav,.tel-wrap,#portal-view .sidebar{
+  position:relative; border:1px solid var(--a-line) !important; border-radius:16px !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.06),0 10px 24px rgba(16,24,40,.05) !important; overflow:hidden; }
+#teacher-view .creator-card::before,#teacher-view .rm-main::before,#teacher-view .rm-side::before,
+#teacher-view > .teacher-nav::before,.tel-wrap::before,#portal-view .sidebar::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:3px;
+  background:linear-gradient(90deg,var(--a-navy) 0%,var(--a-navy2) 45%,var(--a-cyan) 100%); }
+
+/* thanh trên: viền dưới đậm hơn */
+body nav.navbar{ border:1px solid var(--a-line) !important; border-bottom:2px solid #c9d6ec !important; border-radius:14px !important; }
+body nav.navbar .brand,body nav.navbar .brand i{ color:var(--a-navy) !important; -webkit-text-fill-color:var(--a-navy); }
+
+/* tiêu đề mục: chữ đen, gạch chân ngắn màu xanh */
+#teacher-view [id^="sec-t-"] > h3,#sec-t-creator .creator-card > h3,#teacher-view .rm-head h3{
+  color:var(--a-ink) !important; font-weight:700 !important; border-bottom:0 !important;
+  padding-bottom:10px !important; position:relative; }
+#teacher-view [id^="sec-t-"] > h3::after,#sec-t-creator .creator-card > h3::after,#teacher-view .rm-head h3::after{
+  content:""; position:absolute; left:0; bottom:0; width:52px; height:3px; border-radius:2px;
+  background:linear-gradient(90deg,var(--a-navy),var(--a-cyan)); }
+
+/* menu trái: chữ đậm hơn, mục đang chọn rõ hơn */
+html body #teacher-view > .teacher-nav{ padding:14px 10px 10px !important; }
+html body #teacher-view .tn-title{ color:var(--a-navy) !important; font-weight:800 !important; font-size:.74rem !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-tx b{ color:var(--a-ink) !important; font-weight:700 !important; font-size:.97rem !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-tx small{ color:#67748c !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab .tn-ic{ background:#eaf0fa !important; border:1px solid #dbe4f4 !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab.active{ background:#eaf0fa !important; border:1px solid #c3d3ee !important;
+  box-shadow:inset 5px 0 0 var(--a-navy) !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-ic{ background:#fff !important; border-color:#b9cbea !important; }
+html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx b{ color:var(--a-navy) !important; }
+
+/* ô số liệu: gáy màu bên trái, số to */
+#teacher-view .stat-card,#portal-view .stat-card{ border:1px solid var(--a-line) !important; border-left:4px solid var(--a-navy) !important;
+  border-radius:12px !important; background:#f9fbff !important; }
+#teacher-view #sec-t-scores .stats-grid .stat-card:nth-child(2){ border-left-color:var(--a-cyan) !important; }
+#teacher-view .stat-card h4,#portal-view .stat-card h4{ color:#5b6880 !important; font-weight:700 !important; }
+#teacher-view .stat-card .stat-val,#portal-view .stat-card .stat-val,
+#teacher-view #sec-t-scores .stats-grid .stat-card .stat-val{ font-size:1.6rem !important; font-weight:800 !important; }
+
+/* bảng: đầu bảng đậm, kẻ dưới xanh */
+#teacher-view table thead th,table.tel-tb thead th{ color:var(--a-ink) !important; font-weight:700 !important; font-size:.84rem !important;
+  background:#eef3fb !important; border-bottom:2px solid #c3d3ee !important; }
+#teacher-view table tbody td{ border-bottom:1px solid #e9eef7 !important; }
+table.tel-tb tbody tr:hover,#teacher-view #sec-t-scores tbody tr:hover{ background:#f6f9ff !important; }
+
+/* điểm lỗi */
+.badge-bad{ background:#fff4e5 !important; color:#b45309 !important; border:1px solid #f0d7a8; font-weight:700 }
+
+/* chọn lớp và chip ở trang học sinh: đậm hơn một chút */
+#portal-view .grade-bar .grade-pill{ border-color:#c3d3ee !important; color:#33415c !important; font-weight:700 !important; }
+#portal-view .grade-bar .grade-pill.active{ background:var(--a-navy) !important; border-color:var(--a-navy) !important; }
+#mode-chips .mc{ border-color:#c3d3ee !important; color:#33415c !important; font-weight:700 !important; }
+#portal-view .sidebar-title{ color:var(--a-ink) !important; font-weight:800 !important; }
+#portal-view .topic-group-title{ color:var(--a-ink) !important; font-weight:700 !important; }
+#portal-view .topic-item{ color:#33415c !important; }
+body .exam-card{ border:1px solid var(--a-line) !important; }
+</style>
 </head>
 <body>
 
@@ -1036,6 +1148,7 @@ html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx small{ color:#
 
             <!-- TAB 1: SỔ ĐIỂM -->
             <div id="sec-t-scores">
+                <h3><i class="fa-solid fa-chart-simple"></i> Sổ điểm</h3>
                 <div class="stats-grid">
                     <div class="stat-card"><h4>Tổng Số Bài Nộp</h4><div class="stat-val" id="stat-total-submissions">0</div></div>
                     <div class="stat-card"><h4>Điểm Trung Bình</h4><div class="stat-val" id="stat-avg-score">0.0</div><div id="stat-avg-note" style="font-size:.78rem;opacity:.85;margin-top:2px"></div></div>
@@ -3325,7 +3438,13 @@ function removeQuestionFromSelected(qId) {
 
                 tbody.innerHTML = displayList.map((r, index) => {
                     let num = parseFloat(String(r.totalScore).replace(',', '.'));
-                    let badgeClass = (!isNaN(num) && num >= 5) ? 'badge-pass' : 'badge-fail';
+                    // (v337) điểm không phải số 0–10 (ví dụ Sheet ghi nhầm ngày tháng) thì báo lỗi, không hiện như điểm thật
+                    const badScore = isNaN(num) || num < 0 || num > 10;
+                    let badgeClass = badScore ? 'badge-bad' : ((num >= 5) ? 'badge-pass' : 'badge-fail');
+                    const scoreTxt = badScore
+                        ? '⚠ lỗi điểm'
+                        : r.totalScore;
+                    const scoreTip = badScore ? ' title="Ô Điểm số trong Sheet không phải số từ 0 đến 10. Giá trị đang lưu: ' + String(r.totalScore).replace(/"/g, '') + '"' : '';
                     
                     let matchedExam = examBank.find(ex => String(ex.title || '').trim().toLowerCase() === String(r.examTitle || '').trim().toLowerCase());
                     let examIdParam = matchedExam ? matchedExam.id : '';
@@ -3336,7 +3455,7 @@ function removeQuestionFromSelected(qId) {
                         <td><strong>${r.name}</strong></td>
                         <td style="text-align: center;">${r.sClass}</td>
                         <td>${r.examTitle}</td>
-                        <td style="text-align: center;"><span class="badge-score ${badgeClass}">${r.totalScore}</span>${r.note ? ' <span title="' + String(r.note).replace(/"/g, '') + ' - điểm có thể sai, cô dùng nút Soi để khôi phục đáp án và chấm lại" style="color:#dc2626;font-weight:700;font-size:.8rem;white-space:nowrap">⚠️ ' + String(r.note).replace(/</g, '') + '</span>' : ''}</td>
+                        <td style="text-align: center;"><span class="badge-score ${badgeClass}"${scoreTip}>${scoreTxt}</span>${r.note ? ' <span title="' + String(r.note).replace(/"/g, '') + ' - điểm có thể sai, cô dùng nút Soi để khôi phục đáp án và chấm lại" style="color:#dc2626;font-weight:700;font-size:.8rem;white-space:nowrap">⚠️ ' + String(r.note).replace(/</g, '') + '</span>' : ''}</td>
                         <td style="text-align: center;">
                             ${examIdParam ? `<button type="button" onclick="viewStudentDetails('${examIdParam}', '${String(r.name).replace(/'/g, "\\'")}', '${r.sClass}')" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:5px 12px; border-radius:6px; cursor:pointer; font-weight:bold;"><i class="fa-solid fa-eye"></i> Xem</button>` : `<span style="color:#94a3b8; font-size:0.85rem;">---</span>`}
                         </td>
