@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v329] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v331] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -798,8 +798,10 @@ body nav.navbar .btn-nav-primary:hover,body nav.navbar .btn-nav-outline:hover{ f
 #portal-view .sidebar{ box-shadow:0 1px 2px rgba(16,24,40,.05) !important; border:1px solid #e2e7f0 !important; border-radius:14px !important; }
 #portal-view .sidebar-title{ background:none !important; color:#16203a !important; border:0 !important; border-bottom:1px solid #e2e7f0 !important; box-shadow:none !important; text-shadow:none !important; border-radius:0 !important; font-weight:700 !important; font-size:.98rem !important; padding:0 6px 10px !important; }
 #portal-view .sidebar-title i{ color:#1d3f8f !important; }
-#portal-view .topic-group-title{ background:none !important; color:#7a8699 !important; border:0 !important; box-shadow:none !important; text-shadow:none !important; border-radius:0 !important;
-  font-size:.74rem !important; font-weight:700 !important; letter-spacing:.06em; text-transform:uppercase; padding:14px 8px 4px !important; margin:0 !important; }
+#portal-view .topic-group-title{ background:none !important; color:#16203a !important; box-shadow:none !important; text-shadow:none !important; border-radius:0 !important;
+  border:0 !important; border-top:1px solid #e2e7f0 !important;
+  font-size:.95rem !important; font-weight:700 !important; letter-spacing:0; text-transform:none; padding:14px 6px 6px !important; margin:8px 0 2px !important; line-height:1.35 !important; }
+#portal-view .topic-list > .topic-group-title:first-child, #portal-view .sidebar .topic-group-title:first-of-type{ border-top:0 !important; margin-top:0 !important; padding-top:4px !important; }
 #portal-view .topic-item{ color:#3c4761 !important; font-weight:500 !important; border-radius:8px !important; }
 #portal-view .topic-item:hover{ background:#eef2f9 !important; color:#1d3f8f !important; }
 #portal-view .topic-item.active{ background:#e8eefb !important; color:#1d3f8f !important; border:0 !important; box-shadow:none !important; text-shadow:none !important; font-weight:700 !important; }
@@ -2032,35 +2034,6 @@ body .exam-card .btn-share:hover{ background:#eef2f9 !important; color:#1d3f8f !
             }
         }
 
-        // (v329) Hiện tên đề cho dễ đọc: bỏ chữ trùng với nhãn, tên viết hoa hết thì đổi về chữ thường, giữ nguyên mã đề. Dữ liệu trong Sheet không đổi.
-        var EXAM_CODES = ['THPT','QG','KNTT','GK','CK','HK','KTTX','NDT','PLD','MP','SGK','GTLN','GTNN','BPT','PT','HPT','VDC','VD','NB','TH','TN','TL','AI','PDF','HSG','TX'];
-        function examHasDia(w) { return /[đĐăâêôơưĂÂÊÔƠƯ]/.test(w) || /[̀-ͯ]/.test(w.normalize('NFD')); }
-        function examIsCode(w, grpHasNum) {
-            var L = w.replace(/[^\p{L}\p{N}]/gu, ''); if (!L) return true;
-            if (/\p{N}/u.test(L)) return true;
-            if (/^[IVX]+$/.test(L)) return true;
-            if (EXAM_CODES.indexOf(L.toUpperCase()) >= 0) return true;
-            return !!(grpHasNum && !examHasDia(L) && L.length <= 5);
-        }
-        function prettyExamTitle(t) {
-            try {
-                var raw = String(t == null ? '' : t).trim(), s = raw;
-                s = s.replace(/^(luyện\s*tập|kiểm\s*tra|bài\s*giảng|kahoot|khảo\s*sát|đề\s*thi)\s*[:\-–—]?\s*/i, '');
-                if (!s) s = raw;
-                if (/\p{Ll}/u.test(s)) return s;
-                s = s.split(/(\s+)/).map(function (tok) {
-                    if (!/[\p{L}\p{N}]/u.test(tok)) return tok;
-                    var g = /\p{N}/u.test(tok);
-                    return tok.split(/([\-–—/.]+)/).map(function (p) {
-                        if (!/[\p{L}\p{N}]/u.test(p)) return p;
-                        return examIsCode(p, g) ? p : p.toLowerCase();
-                    }).join('');
-                }).join('');
-                if (/^\p{L}/u.test(s)) s = s.charAt(0).toUpperCase() + s.slice(1);
-                s = s.replace(/([.·–—-]\s+)(\p{Ll})/gu, function (m, a, b) { return a + b.toUpperCase(); });
-                return s;
-            } catch (e) { return t; }
-        }
         function renderExams() {
             const grid = document.getElementById('exam-grid');
             if (!grid) return;
@@ -2107,7 +2080,7 @@ body .exam-card .btn-share:hover{ background:#eef2f9 !important; color:#1d3f8f !
                         <div class="card-mode-badge" style="color: ${isSurvey ? '#ea580c' : (isKahoot ? '#7c3aed' : (isExamMode ? '#dc2626' : (isLecture ? '#0284c7' : '#16a34a')))};">${isSurvey ? '📊 KHẢO SÁT' : (isKahoot ? '⚡ KAHOOT' : (isExamMode ? '🔴 KIỂM TRA' : (isLecture ? '📘 BÀI GIẢNG' : '🟢 LUYỆN TẬP')))}</div>
                     </div>
                     <div class="card-body">
-                        <div><h3 class="card-title" title="${String(ex.title||'').replace(/"/g,'&quot;')}">${prettyExamTitle(ex.title)}</h3>
+                        <div><h3 class="card-title">${ex.title}</h3>
                             <div class="card-meta">
                                 <span><i class="fa-regular fa-circle-question"></i> ${qCount} câu ${ex.questions && ex.questions[0] && ex.questions[0].isDynamicConfig ? '<span style="color:#ea580c;">[Đề Động]</span>' : ''}</span>
                                 <span><i class="fa-regular fa-clock"></i> ${isLecture ? 'Tự học' : ex.timeLimit + ' phút'}</span>
