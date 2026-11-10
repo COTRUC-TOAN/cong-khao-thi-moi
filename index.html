@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v332] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v333] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -836,6 +836,28 @@ body .exam-card:has(.exam-mode) .btn-start{ background:#c42121 !important; borde
 body .exam-card .btn-share{ background:#fff !important; border:1px solid #cfd8e8 !important; color:#68748c !important; box-shadow:none !important; border-radius:10px !important; }
 body .exam-card .btn-share:hover{ background:#eef2f9 !important; color:#1d3f8f !important; }
 .exam-grid{ gap:16px !important; }
+/* (v333) "Đề của tôi": mỗi đề một dòng trong bảng, nút cùng một kiểu */
+.tel-wrap{ overflow-x:auto; border:1px solid #e2e7f0; border-radius:12px; background:#fff }
+table.tel-tb{ width:100%; border-collapse:collapse; font-family:'Be Vietnam Pro',system-ui,sans-serif; font-size:.92rem; min-width:720px }
+table.tel-tb th{ text-align:left; font-weight:600; font-size:.8rem; letter-spacing:.02em; color:#5b6880; background:#f6f8fc; padding:10px 12px; border-bottom:1px solid #e2e7f0; white-space:nowrap }
+table.tel-tb td{ padding:10px 12px; border-bottom:1px solid #eef1f6; vertical-align:middle; color:#16203a }
+table.tel-tb tr:last-child td{ border-bottom:0 }
+table.tel-tb tbody tr:hover{ background:#f8fafd }
+table.tel-tb .tel-c{ text-align:center; white-space:nowrap }
+table.tel-tb .tel-num{ font-variant-numeric:tabular-nums }
+table.tel-tb .tel-t{ font-weight:600; line-height:1.35; color:#16203a }
+table.tel-tb .tel-sub{ font-size:.78rem; color:#7a8699; line-height:1.4; word-break:break-all }
+table.tel-tb .tel-han{ white-space:nowrap; word-break:normal }
+table.tel-tb .tel-chip{ display:inline-block; font-size:.76rem; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap }
+table.tel-tb .tel-dyn{ font-size:.72rem; color:#c2410c; margin-top:3px }
+table.tel-tb th.tel-act,table.tel-tb td.tel-act{ text-align:right; white-space:nowrap; width:1% }
+.tel-btns{ display:inline-flex; gap:6px; flex-wrap:nowrap; justify-content:flex-end }
+.tel-b{ font:600 .82rem/1.2 'Be Vietnam Pro',system-ui,sans-serif; background:#fff; color:#3c4761; border:1px solid #cfd8e8; border-radius:8px; padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; white-space:nowrap }
+.tel-b:hover{ background:#eef2f9; color:#1d3f8f }
+.tel-b.tel-pri{ background:#1d3f8f; border-color:#1d3f8f; color:#fff } .tel-b.tel-pri:hover{ filter:brightness(1.08); color:#fff }
+.tel-b.tel-del{ color:#b91c1c; border-color:#f0c4c4 } .tel-b.tel-del:hover{ background:#fdecec; color:#991b1b }
+.tel-b.tel-open{ color:#15803d; border-color:#bfe3c9; background:#f0fdf4 } .tel-b.tel-lock{ color:#5b6880 }
+@media(max-width:700px){ table.tel-tb{ font-size:.88rem } .tel-b{ padding:6px 8px } }
 /* (v329) điện thoại: cột chủ đề nằm trên, danh sách đề một cột (trước đây bị ép hai cột nên tràn ngang) */
 @media (max-width:900px){
   #portal-view .portal-layout{ grid-template-columns:1fr !important; }
@@ -3408,60 +3430,37 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
             const tlRun = perms => {
                 const shown = tlFilter(examBank); tlFillIndex(shown);
                 if (!shown.length) { rowsBox.innerHTML = '<p style="color:#94a3b8;padding:14px;">Không có đề nào khớp. Cô xóa bớt ô tìm hoặc đổi bộ lọc.</p>'; return; }
-                rowsBox.innerHTML = shown.map(ex => {
+                const MODE_VN = { LUYENTAP: ['Luyện tập', '#15803d', '#dcfce7'], KIEMTRA: ['Kiểm tra', '#b91c1c', '#fee2e2'], KAHOOT: ['Kahoot', '#b45309', '#fef3c7'], BAIGIANG: ['Bài giảng', '#1d4ed8', '#dbeafe'], KHAOSAT: ['Khảo sát', '#c2410c', '#ffedd5'] };
+                rowsBox.innerHTML = '<div class="tel-wrap"><table class="tel-tb"><thead><tr>'
+                    + '<th>Đề thi</th><th>Khối</th><th>Loại</th><th>Số câu · thời gian</th><th class="tel-act">Việc</th>'
+                    + '</tr></thead><tbody>' + shown.map(ex => {
                     const isAllowed = perms[ex.id] === true;
                     const isKiemTra = ex.mode === 'KIEMTRA';
-                    
                     let qCount = ex.questions ? ex.questions.length : 0;
                     let isDynamic = false;
                     if (ex.questions && ex.questions.length > 0 && ex.questions[0].isDynamicConfig) {
                         qCount = ex.questions[0].totalCount || 0;
                         isDynamic = true;
                     }
-
-                   // --- ĐOẠN XỬ LÝ TRÍCH XUẤT THỜI GIAN VÀ MẬT KHẨU ---
-                    let passDisplay = (isKiemTra && ex.examPass) ? `<span style="color: #dc2626; font-weight: bold;"><i class="fa-solid fa-key"></i> MK: ${ex.examPass}</span>` : `<span style="color: #16a34a;"><i class="fa-solid fa-lock-open"></i> Không MK</span>`;
-                    let timeDisplay = `<span style="color: #0284c7;"><i class="fa-regular fa-clock"></i> ${ex.timeLimit || 45} phút</span>`;
-                    let dateDisplay = (ex.startTime || ex.deadline) ? `<span style="color: #ea580c;"><i class="fa-regular fa-calendar-days"></i> ${ex.startTime ? fmtDT(ex.startTime) : 'Mở luôn'} ➔ ${ex.deadline ? fmtDT(ex.deadline) : 'Không hạn'}</span>` : '';
-
-                    const stuUrl = `${window.location.origin}${window.location.pathname}?exam=${encodeURIComponent(ex.id)}&t=${encodeURIComponent(currentTeacherId || 'trucnt')}`;
-                    return `
-                    <div class="exam-manage-row" id="tel-${String(ex.id).replace(/[^A-Za-z0-9_-]/g, '_')}" style="flex-wrap: wrap; gap: 10px; align-items: stretch;">
-                        <div style="flex-grow: 1;">
-                            <div style="font-size: 1.05rem; margin-bottom: 6px;"><strong>[Khối ${ex.grade}] ${ex.title}</strong></div>
-                            <div style="font-size:0.9rem; color:#64748b; margin-bottom: 8px;">
-                                Mã: <strong>${ex.id}</strong> | Loại: ${ex.mode || 'Tự do'} | ${qCount} câu ${isDynamic ? '<span style="color:#ea580c; font-weight:bold;">[Ma Trận Động]</span>' : ''}
-                            </div>
-                            <!-- KHUNG HIỂN THỊ THỜI GIAN & MẬT KHẨU -->
-                            <div style="display: inline-flex; gap: 15px; font-size: 0.9rem; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
-                                ${timeDisplay}
-                                <span style="color: #cbd5e1;">|</span>
-                                ${passDisplay}
-                                ${dateDisplay ? `<span style="color: #cbd5e1;">|</span> ${dateDisplay}` : ''}
-                            </div>
-                            <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap;">
-                                <span style="font-size:0.85rem;color:#64748b;">🔗 Link cho học sinh:</span>
-                                <input readonly value="${stuUrl}" onclick="this.select()" style="flex:1;min-width:200px;max-width:520px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.82rem;color:#334155;background:#fff;">
-                                <button type="button" class="btn-start" style="background:#0d9488;padding:5px 10px;font-size:0.85rem;" onclick="copyExamLink('${ex.id}')"><i class="fa-regular fa-copy"></i> Sao chép link</button>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; align-content: center;">
-                            ${isKiemTra ? `
-                                <button type="button" class="btn-start" 
-                                        style="background: ${isAllowed ? '#16a34a' : '#64748b'}; padding: 6px 12px; font-size: 0.9rem;" 
-                                        onclick="toggleAllowReview('${ex.id}',${!isAllowed})">
-                                    <i class="fa-solid ${isAllowed ? 'fa-eye' : 'fa-eye-slash'}"></i> 
-                                    ${isAllowed ? 'Đang MỞ xem bài' : 'Đang KHÓA xem bài'}
-                                </button>
-                            ` : ''}
-                            
-                            ${ex.mode === 'KHAOSAT' ? `<button class="btn-start" style="background: #ea580c; padding: 6px 14px; font-size: 0.95rem;" onclick="openSurveyStats('${ex.id}')"><i class="fa-solid fa-chart-pie"></i> Xem Thống Kê</button>` : ''}
-                            <button type="button" class="btn-start" style="background: #2563eb; padding: 6px 12px; font-size: 0.9rem;" onclick="loadExamToEdit('${ex.id}')"><i class="fa-solid fa-pen-to-square"></i> Sửa Đề</button>
-                            <button class="btn-del-exam" onclick="deleteExamFromSystem('${ex.id}')"><i class="fa-solid fa-trash"></i> Xóa Đề</button>
-                        </div>
-                    </div>`;
-
-                }).join('');
+                    const md = MODE_VN[ex.mode] || ['Tự do', '#475569', '#eef2f7'];
+                    const lockIco = (isKiemTra && ex.examPass) ? ' <i class="fa-solid fa-key" title="Đề có mật khẩu: ' + String(ex.examPass).replace(/"/g, '') + '" style="color:#b91c1c;font-size:.8rem"></i>' : '';
+                    const hanTxt = (ex.startTime || ex.deadline)
+                        ? '<span class="tel-han"><i class="fa-regular fa-calendar-days"></i> ' + (ex.startTime ? fmtDT(ex.startTime) : 'mở luôn') + ' → ' + (ex.deadline ? fmtDT(ex.deadline) : 'không hạn') + '</span>' : '';
+                    return '<tr id="tel-' + String(ex.id).replace(/[^A-Za-z0-9_-]/g, '_') + '">'
+                      + '<td><div class="tel-t">' + ex.title + lockIco + '</div>'
+                      + '<div class="tel-sub">' + ex.id + (hanTxt ? ' · ' + hanTxt : '') + '</div></td>'
+                      + '<td class="tel-c">' + (ex.grade || '—') + '</td>'
+                      + '<td><span class="tel-chip" style="color:' + md[1] + ';background:' + md[2] + '">' + md[0] + '</span>'
+                      + (isDynamic ? '<div class="tel-dyn">đề động</div>' : '') + '</td>'
+                      + '<td class="tel-c tel-num">' + qCount + ' câu<br><span class="tel-sub">' + (ex.timeLimit || 45) + ' phút</span></td>'
+                      + '<td class="tel-act"><div class="tel-btns">'
+                      + (isKiemTra ? '<button type="button" class="tel-b ' + (isAllowed ? 'tel-open' : 'tel-lock') + '" onclick="toggleAllowReview(\'' + ex.id + '\',' + (!isAllowed) + ')" title="Cho học sinh xem lại bài hay không"><i class="fa-solid ' + (isAllowed ? 'fa-eye' : 'fa-eye-slash') + '"></i> ' + (isAllowed ? 'Mở xem bài' : 'Khóa xem bài') + '</button>' : '')
+                      + (ex.mode === 'KHAOSAT' ? '<button type="button" class="tel-b" onclick="openSurveyStats(\'' + ex.id + '\')"><i class="fa-solid fa-chart-pie"></i> Thống kê</button>' : '')
+                      + '<button type="button" class="tel-b tel-pri" onclick="loadExamToEdit(\'' + ex.id + '\')"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>'
+                      + '<button type="button" class="tel-b" onclick="copyExamLink(\'' + ex.id + '\')"><i class="fa-regular fa-copy"></i> Chép link</button>'
+                      + '<button type="button" class="tel-b tel-del" onclick="deleteExamFromSystem(\'' + ex.id + '\')"><i class="fa-solid fa-trash"></i> Xóa</button>'
+                      + '</div></td></tr>';
+                }).join('') + '</tbody></table></div>';
             };
             if (useCache && window.__tlPerms) tlRun(window.__tlPerms); else getAllReviewPerms().then(perms => { window.__tlPerms = perms; tlRun(perms); });
         }
@@ -3489,18 +3488,16 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
                 <select id="tel-g" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;"><option value="all">Mọi khối</option>${grades.map(g => `<option value="${g}"${f.g === g ? ' selected' : ''}>Khối ${g}</option>`).join('')}</select>
                 <select id="tel-m" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;"><option value="all">Mọi loại</option>${modes.map(m => `<option value="${m[0]}"${f.m === m[0] ? ' selected' : ''}>${m[1]}</option>`).join('')}</select>
               </div>
-              <details id="tel-index" open style="margin-bottom:12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;padding:8px 12px;">
-                <summary style="cursor:pointer;font-weight:700;color:#1e40af;">📑 Mục lục <span id="tel-count" style="font-weight:400;color:#64748b;"></span></summary>
-                <div id="tel-idx" style="margin-top:8px;max-height:220px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 14px;"></div>
-              </details>
+              <div id="tel-count" style="font-size:.88rem;color:#64748b;margin:0 2px 8px;"></div>
               <div id="tel-rows"></div>`;
             const again = () => { window.__tlf = { q: document.getElementById('tel-q').value, g: document.getElementById('tel-g').value, m: document.getElementById('tel-m').value }; renderTeacherExamList(true); };
             document.getElementById('tel-q').addEventListener('input', again); document.getElementById('tel-g').onchange = again; document.getElementById('tel-m').onchange = again;
             return document.getElementById('tel-rows');
         }
         function tlFillIndex(shown) {
-            const idx = document.getElementById('tel-idx'), cn = document.getElementById('tel-count'); if (!idx) return;
-            if (cn) cn.textContent = '(' + shown.length + '/' + examBank.length + ' đề)';
+            const cn = document.getElementById('tel-count');
+            if (cn) cn.textContent = 'Đang hiện ' + shown.length + ' / ' + examBank.length + ' đề';
+            const idx = document.getElementById('tel-idx'); if (!idx) return;
             idx.innerHTML = shown.map(ex => `<a href="#tel-${String(ex.id).replace(/[^A-Za-z0-9_-]/g, '_')}" onclick="tlJump(event,'${String(ex.id).replace(/[^A-Za-z0-9_-]/g, '_')}')" style="color:#1d4ed8;text-decoration:none;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${String(ex.title).replace(/"/g, '&quot;')}">• [${ex.grade || ''}] ${ex.title}</a>`).join('');
         }
         function tlJump(ev, id) {
