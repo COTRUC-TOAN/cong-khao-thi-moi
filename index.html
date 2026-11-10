@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v326] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v328] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -998,7 +998,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
 
                         <!-- 1. TẠO ĐỀ NHANH ALL-IN-ONE THÔNG MINH -->
                         <div id="add-method-paste" data-m="paste">
-                            <p class="m-paste" style="font-size: .92rem; color: #475569; margin-bottom: 8px;">Dán đề từ Word hoặc PDF vào khung dưới rồi bấm <b>Phân tích đề</b>. Trắc nghiệm, đúng/sai, trả lời ngắn để lẫn nhau đều được. Mỗi đáp án một dòng, ví dụ <code>Đáp án: B</code>, <code>Đáp án: ĐSĐS</code>, <code>Đáp án: 2,5</code>.</p>
+                            <p class="m-paste" style="font-size: .95rem; color: #1e3a8a; background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #2563eb; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px; line-height: 1.5;"><b>Cách làm:</b> sao chép đề từ Word, dán vào khung dưới rồi bấm <b>Phân tích đề</b>. Trắc nghiệm, đúng/sai, trả lời ngắn để lẫn nhau đều được. Mỗi đáp án một dòng, ví dụ <code>Đáp án: B</code>, <code>Đáp án: ĐSĐS</code>, <code>Đáp án: 2,5</code>.</p>
                             <div class="rich-textarea m-paste" id="direct-raw-text" contenteditable="true" style="height: auto; min-height: 200px; max-height: 55vh;" placeholder="Dán văn bản đề thi..."></div>
                             
                             <button class="btn-start m-paste" id="btn-parse-main" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Phân tích đề</button>
@@ -1007,10 +1007,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                                     <button type="button" id="btn-lock-batch" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt phần này, dán phần tiếp</button>
                                     <span class="pt-note">Đề dài thì dán từng phần: mỗi phần bấm Phân tích đề rồi Chốt, sau đó dán phần kế.</span>
                                 </div>
-                                <details><summary>Dán mã hình (đồ thị, hình chóp, bảng biến thiên...) lấy từ AI khác</summary>
-                                <div style="font-size:.88rem; color:#475569; margin-top:4px;">Cô có thể nhờ Gemini, ChatGPT hay Claude ở ngoài cho <b>mã hình</b>, rồi dán mã vào ngay vị trí cần hình trong câu, dạng <code>[[HINH {...}]]</code>. Bấm "Phân tích đề" thì web đổi mã thành hình ngay trong câu. Các dạng hình: đồ thị hàm số, hình chóp/lăng trụ/hộp/tứ diện, bảng biến thiên, hình phẳng (viết bằng SVG). Cô cũng gửi được <b>ảnh chụp</b> hình hoặc bảng biến thiên cho AI đó, nhờ AI phân tích ảnh rồi tạo mã. Mã LaTeX/TikZ của Overleaf thì web chưa vẽ được.</div>
-                                <button type="button" class="rv-btn" style="margin-top:6px;" onclick="rvCopyFigGuide()">📋 Sao chép hướng dẫn để dán cho AI khác</button> <span id="fig-guide-msg" style="font-size:.85rem;"></span>
-                            </details>
+                                
                             </div>
                             <div class="rv-panel">
                                 <button type="button" class="btn-start" id="rv-toggle-btn" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Nhờ AI: soạn đề, đọc PDF, rà soát đáp án</button>
