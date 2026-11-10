@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v328] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v329] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -751,6 +751,96 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
 .s3a .s3btn{color:#1d4ed8}.s3b .s3btn{color:#0f766e}.s3c .s3btn{color:#b45309}
 .s3btn:hover{filter:brightness(.96)}
 @media(min-width:900px){.s3grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+<style id="skin-flat-v329">
+/* (v329) Giao diện phẳng cho trang học sinh: một màu chính, bỏ nền ca-rô và nút nổi 3D */
+:root{ --f-navy:#1d3f8f; --f-navy-d:#16306e; --f-navy-s:#e8eefb; --f-line:#e2e7f0; --f-bg:#f5f7fb; --f-ink:#16203a; --f-mute:#68748c }
+body{ background-color:#f5f7fb !important; background-image:none !important; }
+
+/* thanh trên */
+body nav.navbar{ background:#fff !important; border:1px solid #e2e7f0 !important; box-shadow:0 1px 2px rgba(16,24,40,.05) !important; border-radius:14px !important; }
+body nav.navbar .brand,body nav.navbar .brand i{ color:#1d3f8f !important; -webkit-text-fill-color:#1d3f8f; font-weight:700 !important; }
+body nav.navbar .btn-nav-primary,body nav.navbar .btn-nav-outline{ box-shadow:none !important; text-shadow:none !important; border-radius:10px !important; font-weight:600 !important; }
+body nav.navbar .btn-nav-primary{ background:#1d3f8f !important; border:1px solid #1d3f8f !important; color:#fff !important; }
+body nav.navbar .btn-nav-outline{ background:#fff !important; border:1px solid #cfd8e8 !important; color:#1d3f8f !important; }
+body nav.navbar .btn-nav-primary:active,body nav.navbar .btn-nav-outline:active{ transform:none !important; box-shadow:none !important; filter:brightness(.95); }
+body nav.navbar .btn-nav-primary:hover,body nav.navbar .btn-nav-outline:hover{ filter:brightness(.97); }
+
+/* chọn lớp: cùng một màu, chỉ cái đang chọn mới tô đậm */
+#portal-view .grade-bar .grade-pill,
+#portal-view .grade-bar .grade-pill:nth-child(1),#portal-view .grade-bar .grade-pill:nth-child(2),
+#portal-view .grade-bar .grade-pill:nth-child(3),#portal-view .grade-bar .grade-pill:nth-child(4){
+  background:#fff !important; color:#3c4761 !important; border:1px solid #cfd8e8 !important;
+  box-shadow:none !important; text-shadow:none !important; border-radius:10px !important; font-weight:600 !important; font-size:.96rem !important; transform:none !important; }
+#portal-view .grade-bar .grade-pill:hover{ background:#e8eefb !important; color:#1d3f8f !important; filter:none !important; }
+#portal-view .grade-bar .grade-pill.active,
+#portal-view .grade-bar .grade-pill:nth-child(1).active,#portal-view .grade-bar .grade-pill:nth-child(2).active,
+#portal-view .grade-bar .grade-pill:nth-child(3).active,#portal-view .grade-bar .grade-pill:nth-child(4).active{
+  background:#1d3f8f !important; border-color:#1d3f8f !important; color:#fff !important; transform:none !important; filter:none !important; font-size:.96rem !important; }
+#portal-view .grade-bar .grade-pill:active{ transform:none !important; box-shadow:none !important; }
+
+/* chip lọc loại đề: bỏ hình cảm xúc, thay bằng chấm tròn màu */
+#mode-chips .mc{ border:1px solid #cfd8e8 !important; font-weight:600 !important; font-size:.92rem !important; padding:7px 14px !important; font-family:'Be Vietnam Pro',system-ui,sans-serif !important; display:inline-flex; align-items:center; gap:7px; }
+#mode-chips .mc>span{ display:none !important; }
+#mode-chips .mc::before{ content:""; width:8px; height:8px; border-radius:50%; background:#94a3b8; flex:none; }
+#mode-chips .mc-LUYENTAP::before{ background:#16a34a } #mode-chips .mc-KIEMTRA::before{ background:#dc2626 }
+#mode-chips .mc-KAHOOT::before{ background:#d97706 } #mode-chips .mc-BAIGIANG::before{ background:#2563eb }
+#mode-chips .mc-KHAOSAT::before{ background:#ea580c } #mode-chips .mc-all::before{ background:#1d3f8f }
+#mode-chips .mc.on::before{ background:#fff }
+#mode-chips .mc.on{ background:#1d3f8f !important; border-color:#1d3f8f !important; color:#fff !important; }
+#mode-chips .mc-KIEMTRA.on{ background:#c42121 !important; border-color:#c42121 !important; }
+#mode-chips .mc-LUYENTAP.on{ background:#15803d !important; border-color:#15803d !important; }
+#mode-chips .mc-KAHOOT.on{ background:#b45309 !important; border-color:#b45309 !important; }
+#mode-chips .mc i{ background:#eef2f7 !important; color:#5b6880 !important; font-weight:700 }
+#mode-chips .mc.on i{ background:rgba(255,255,255,.22) !important; color:#fff !important }
+
+/* cột chủ đề bên trái */
+#portal-view .sidebar{ box-shadow:0 1px 2px rgba(16,24,40,.05) !important; border:1px solid #e2e7f0 !important; border-radius:14px !important; }
+#portal-view .sidebar-title{ background:none !important; color:#16203a !important; border:0 !important; border-bottom:1px solid #e2e7f0 !important; box-shadow:none !important; text-shadow:none !important; border-radius:0 !important; font-weight:700 !important; font-size:.98rem !important; padding:0 6px 10px !important; }
+#portal-view .sidebar-title i{ color:#1d3f8f !important; }
+#portal-view .topic-group-title{ background:none !important; color:#7a8699 !important; border:0 !important; box-shadow:none !important; text-shadow:none !important; border-radius:0 !important;
+  font-size:.74rem !important; font-weight:700 !important; letter-spacing:.06em; text-transform:uppercase; padding:14px 8px 4px !important; margin:0 !important; }
+#portal-view .topic-item{ color:#3c4761 !important; font-weight:500 !important; border-radius:8px !important; }
+#portal-view .topic-item:hover{ background:#eef2f9 !important; color:#1d3f8f !important; }
+#portal-view .topic-item.active{ background:#e8eefb !important; color:#1d3f8f !important; border:0 !important; box-shadow:none !important; text-shadow:none !important; font-weight:700 !important; }
+#portal-view .topic-item>i.fa-solid:not(.fa-chevron-down){ display:none !important; }
+#portal-view .topic-item[data-folder]{ background:#f6f8fc !important; border-left:3px solid #1d3f8f !important; font-weight:700 !important; color:#16203a !important; }
+
+/* thẻ đề */
+body .exam-card{ border:1px solid #e2e7f0 !important; border-radius:14px !important;
+  box-shadow: inset 5px 0 0 #1d3f8f, 0 1px 2px rgba(16,24,40,.05), 0 8px 20px rgba(16,24,40,.06) !important; }
+body .exam-card:has(.exam-mode){ box-shadow: inset 5px 0 0 #dc2626, 0 1px 2px rgba(16,24,40,.05), 0 8px 20px rgba(16,24,40,.06) !important; }
+body .exam-card:has(.kahoot-mode){ box-shadow: inset 5px 0 0 #d97706, 0 1px 2px rgba(16,24,40,.05), 0 8px 20px rgba(16,24,40,.06) !important; }
+body .exam-card:has(.lecture-mode){ box-shadow: inset 5px 0 0 #2563eb, 0 1px 2px rgba(16,24,40,.05), 0 8px 20px rgba(16,24,40,.06) !important; }
+body .exam-card:hover{ transform:translateY(-2px); box-shadow: inset 5px 0 0 #1d3f8f, 0 10px 26px rgba(16,24,40,.12) !important; }
+body .exam-card:has(.exam-mode):hover{ box-shadow: inset 5px 0 0 #dc2626, 0 10px 26px rgba(16,24,40,.12) !important; }
+body .exam-card .card-banner{ padding:14px 16px 0 20px !important; }
+body #portal-view .exam-card .card-title,body .exam-card .card-title{
+  font-family:'Be Vietnam Pro',system-ui,sans-serif !important; font-size:1.06rem !important; font-weight:700 !important;
+  line-height:1.4 !important; color:#16203a !important; margin:6px 0 8px !important; }
+body .exam-card .card-body{ padding:6px 16px 16px 20px !important; }
+body .exam-card .card-meta{ font-size:.85rem !important; }
+body .exam-card .card-meta{ color:#68748c !important; }
+body .exam-card .card-badge{ background:#f1f4f9 !important; color:#68748c !important; font-weight:600 !important; }
+body .exam-card .card-mode-badge{ font-weight:700 !important; letter-spacing:.01em }
+body #portal-view .exam-card .btn-start,body .exam-card .btn-start{
+  background:#1d3f8f !important; border:1px solid #1d3f8f !important; color:#fff !important;
+  box-shadow:none !important; text-shadow:none !important; border-radius:10px !important;
+  width:100% !important; padding:9px 12px !important; font-size:.95rem !important; font-weight:600 !important;
+  font-family:'Be Vietnam Pro',system-ui,sans-serif !important; }
+body .exam-card .btn-start:active{ transform:none !important; box-shadow:none !important; filter:brightness(.95) }
+body .exam-card .btn-start:hover{ filter:brightness(1.06) }
+body .exam-card:has(.exam-mode) .btn-start{ background:#c42121 !important; border-color:#c42121 !important; }
+body .exam-card .btn-share{ background:#fff !important; border:1px solid #cfd8e8 !important; color:#68748c !important; box-shadow:none !important; border-radius:10px !important; }
+body .exam-card .btn-share:hover{ background:#eef2f9 !important; color:#1d3f8f !important; }
+.exam-grid{ gap:16px !important; }
+/* (v329) điện thoại: cột chủ đề nằm trên, danh sách đề một cột (trước đây bị ép hai cột nên tràn ngang) */
+@media (max-width:900px){
+  #portal-view .portal-layout{ grid-template-columns:1fr !important; }
+  #portal-view .exam-grid{ grid-template-columns:1fr !important; }
+  #portal-view .sidebar{ position:static !important; max-height:none !important; }
+  #mode-chips{ gap:6px !important } #mode-chips .mc{ padding:6px 11px !important; font-size:.86rem !important }
+}
 </style>
 </head>
 <body>
@@ -1942,6 +2032,35 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
             }
         }
 
+        // (v329) Hiện tên đề cho dễ đọc: bỏ chữ trùng với nhãn, tên viết hoa hết thì đổi về chữ thường, giữ nguyên mã đề. Dữ liệu trong Sheet không đổi.
+        var EXAM_CODES = ['THPT','QG','KNTT','GK','CK','HK','KTTX','NDT','PLD','MP','SGK','GTLN','GTNN','BPT','PT','HPT','VDC','VD','NB','TH','TN','TL','AI','PDF','HSG','TX'];
+        function examHasDia(w) { return /[đĐăâêôơưĂÂÊÔƠƯ]/.test(w) || /[̀-ͯ]/.test(w.normalize('NFD')); }
+        function examIsCode(w, grpHasNum) {
+            var L = w.replace(/[^\p{L}\p{N}]/gu, ''); if (!L) return true;
+            if (/\p{N}/u.test(L)) return true;
+            if (/^[IVX]+$/.test(L)) return true;
+            if (EXAM_CODES.indexOf(L.toUpperCase()) >= 0) return true;
+            return !!(grpHasNum && !examHasDia(L) && L.length <= 5);
+        }
+        function prettyExamTitle(t) {
+            try {
+                var raw = String(t == null ? '' : t).trim(), s = raw;
+                s = s.replace(/^(luyện\s*tập|kiểm\s*tra|bài\s*giảng|kahoot|khảo\s*sát|đề\s*thi)\s*[:\-–—]?\s*/i, '');
+                if (!s) s = raw;
+                if (/\p{Ll}/u.test(s)) return s;
+                s = s.split(/(\s+)/).map(function (tok) {
+                    if (!/[\p{L}\p{N}]/u.test(tok)) return tok;
+                    var g = /\p{N}/u.test(tok);
+                    return tok.split(/([\-–—/.]+)/).map(function (p) {
+                        if (!/[\p{L}\p{N}]/u.test(p)) return p;
+                        return examIsCode(p, g) ? p : p.toLowerCase();
+                    }).join('');
+                }).join('');
+                if (/^\p{L}/u.test(s)) s = s.charAt(0).toUpperCase() + s.slice(1);
+                s = s.replace(/([.·–—-]\s+)(\p{Ll})/gu, function (m, a, b) { return a + b.toUpperCase(); });
+                return s;
+            } catch (e) { return t; }
+        }
         function renderExams() {
             const grid = document.getElementById('exam-grid');
             if (!grid) return;
@@ -1984,11 +2103,11 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                 card.innerHTML = `
                     <div class="card-banner ${isKahoot ? 'kahoot-mode' : (isExamMode ? 'exam-mode' : (isLecture ? 'lecture-mode' : ''))}" style="${isLecture ? 'background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);' : (isSurvey ? 'background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);' : '')}">
                         <div class="card-icon"><i class="fa-solid ${isKahoot ? 'fa-bolt' : (isLecture ? 'fa-photo-film' : (isSurvey ? 'fa-square-poll-vertical' : 'fa-book-open'))}"></i></div>
-                        <div class="card-badge">KHỐI ${gradeDisplay}</div>
+                        ${currentGrade === 'all' ? `<div class="card-badge">KHỐI ${gradeDisplay}</div>` : ''}
                         <div class="card-mode-badge" style="color: ${isSurvey ? '#ea580c' : (isKahoot ? '#7c3aed' : (isExamMode ? '#dc2626' : (isLecture ? '#0284c7' : '#16a34a')))};">${isSurvey ? '📊 KHẢO SÁT' : (isKahoot ? '⚡ KAHOOT' : (isExamMode ? '🔴 KIỂM TRA' : (isLecture ? '📘 BÀI GIẢNG' : '🟢 LUYỆN TẬP')))}</div>
                     </div>
                     <div class="card-body">
-                        <div><h3 class="card-title">${ex.title}</h3>
+                        <div><h3 class="card-title" title="${String(ex.title||'').replace(/"/g,'&quot;')}">${prettyExamTitle(ex.title)}</h3>
                             <div class="card-meta">
                                 <span><i class="fa-regular fa-circle-question"></i> ${qCount} câu ${ex.questions && ex.questions[0] && ex.questions[0].isDynamicConfig ? '<span style="color:#ea580c;">[Đề Động]</span>' : ''}</span>
                                 <span><i class="fa-regular fa-clock"></i> ${isLecture ? 'Tự học' : ex.timeLimit + ' phút'}</span>
