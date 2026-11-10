@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v324] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v326] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -341,6 +341,23 @@
         #add-method-paste[data-m="paste"] #ai-draft, #add-method-paste[data-m="paste"] #pdf-box { display: none; }
         #add-method-paste[data-m="ai"] #pdf-box, #add-method-paste[data-m="img"] #ai-draft { display: none; }
         #add-method-paste[data-m="ai"] .m-paste, #add-method-paste[data-m="img"] .m-paste { display: none; }
+        /* (v326) hộp công cụ phụ của cách A: nút viền mảnh, cùng một kiểu */
+        .paste-tools { border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 12px; margin-top: 8px; background: #f8fafc; display: flex; flex-direction: column; gap: 6px; }
+        .paste-tools .pt-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+        .paste-tools .pt-note { font-size: .84rem; color: #64748b; line-height: 1.35; flex: 1 1 260px; }
+        .paste-tools button, .paste-tools summary { font-family: inherit; font-weight: 600; font-size: .88rem; line-height: 1.3; color: #1e3a8a; background: #fff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 6px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .paste-tools summary { list-style: none; width: max-content; }
+        .paste-tools summary::-webkit-details-marker { display: none; }
+        .paste-tools summary::before { content: "▸"; font-size: .8em; }
+        .paste-tools details[open] summary::before { content: "▾"; }
+        .paste-tools details > div { font-size: .86rem; color: #475569; margin-top: 6px; }
+        .paste-tools details .rv-btn { margin-top: 6px; }
+        #add-method-paste .rv-panel { border: 0; background: none; padding: 0; margin-top: 8px; }
+        #add-method-paste .rv-panel > #rv-body { border: 1px solid #c7d2fe; background: #eef2ff; border-radius: 8px; padding: 10px; }
+        #add-method-paste .rv-panel > #rv-toggle-btn { width: max-content !important; max-width: 100%; background: #fff !important; color: #1e3a8a !important; border: 1px solid #c7d2fe !important; font-size: .88rem !important; padding: 6px 12px !important; }
+        #add-method-paste .rv-panel[data-open="1"] > #rv-toggle-btn, #add-method-paste .rv-panel:has(#rv-body[style*="display: block"]) > #rv-toggle-btn { background: #1e3a8a !important; color: #fff !important; }
+        .es-slot-quiet > details { border: 1px solid #e2e8f0 !important; background: #f8fafc !important; border-radius: 10px !important; padding: 8px 12px !important; margin: 10px 0 0 !important; }
+        .es-slot-quiet > details > summary { color: #1e3a8a !important; font-weight: 600 !important; font-size: .92rem !important; }
         #add-method-paste[data-m="ai"] #rv-toggle-btn, #add-method-paste[data-m="img"] #rv-toggle-btn { display: none; }
         .step-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; font-family: var(--ui); position: sticky; top: 0; z-index: 5; background: #fff; padding: 8px 0; border-bottom: 1px solid var(--line); }
         .step-bar button { font-family: var(--ui); font-size: .92rem; font-weight: 600; background: var(--ink-soft); color: var(--ink-deep); border: 1px solid transparent; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
@@ -981,22 +998,24 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
 
                         <!-- 1. TẠO ĐỀ NHANH ALL-IN-ONE THÔNG MINH -->
                         <div id="add-method-paste" data-m="paste">
-                            <p class="m-paste" style="font-size: 0.95rem; color: #1e40af; font-weight: bold; margin-bottom: 10px;">✨ Chế độ Tự Động: Dán hỗn hợp mọi dạng câu hỏi (Trắc nghiệm, Đúng/Sai, Ngắn), hệ thống tự bóc tách chuẩn 100% không cần chọn dạng!</p>
-                            <div class="rich-textarea m-paste" id="direct-raw-text" contenteditable="true" style="height: 55vh; max-height: 55vh;" placeholder="Dán văn bản đề thi..."></div>
-                            <details class="m-paste" style="margin-top:8px;"><summary style="cursor:pointer; font-size:.9rem; font-weight:bold; color:#4338ca;">🖼️ Dán mã hình (đồ thị, hình chóp, bảng biến thiên...) lấy từ AI khác</summary>
-                                <div style="font-size:.88rem; color:#475569; margin-top:4px;">Cô có thể nhờ Gemini, ChatGPT hay Claude ở ngoài cho <b>mã hình</b>, rồi dán mã vào ngay vị trí cần hình trong câu, dạng <code>[[HINH {...}]]</code>. Bấm "Tự Động Phân Tích" thì web đổi mã thành hình ngay trong câu. Các dạng hình: đồ thị hàm số, hình chóp/lăng trụ/hộp/tứ diện, bảng biến thiên, hình phẳng (viết bằng SVG). Cô cũng gửi được <b>ảnh chụp</b> hình hoặc bảng biến thiên cho AI đó, nhờ AI phân tích ảnh rồi tạo mã. Mã LaTeX/TikZ của Overleaf thì web chưa vẽ được.</div>
+                            <p class="m-paste" style="font-size: .92rem; color: #475569; margin-bottom: 8px;">Dán đề từ Word hoặc PDF vào khung dưới rồi bấm <b>Phân tích đề</b>. Trắc nghiệm, đúng/sai, trả lời ngắn để lẫn nhau đều được. Mỗi đáp án một dòng, ví dụ <code>Đáp án: B</code>, <code>Đáp án: ĐSĐS</code>, <code>Đáp án: 2,5</code>.</p>
+                            <div class="rich-textarea m-paste" id="direct-raw-text" contenteditable="true" style="height: auto; min-height: 200px; max-height: 55vh;" placeholder="Dán văn bản đề thi..."></div>
+                            
+                            <button class="btn-start m-paste" id="btn-parse-main" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Phân tích đề</button>
+                            <div class="m-paste paste-tools" id="paste-tools">
+                                <div class="pt-row">
+                                    <button type="button" id="btn-lock-batch" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt phần này, dán phần tiếp</button>
+                                    <span class="pt-note">Đề dài thì dán từng phần: mỗi phần bấm Phân tích đề rồi Chốt, sau đó dán phần kế.</span>
+                                </div>
+                                <details><summary>Dán mã hình (đồ thị, hình chóp, bảng biến thiên...) lấy từ AI khác</summary>
+                                <div style="font-size:.88rem; color:#475569; margin-top:4px;">Cô có thể nhờ Gemini, ChatGPT hay Claude ở ngoài cho <b>mã hình</b>, rồi dán mã vào ngay vị trí cần hình trong câu, dạng <code>[[HINH {...}]]</code>. Bấm "Phân tích đề" thì web đổi mã thành hình ngay trong câu. Các dạng hình: đồ thị hàm số, hình chóp/lăng trụ/hộp/tứ diện, bảng biến thiên, hình phẳng (viết bằng SVG). Cô cũng gửi được <b>ảnh chụp</b> hình hoặc bảng biến thiên cho AI đó, nhờ AI phân tích ảnh rồi tạo mã. Mã LaTeX/TikZ của Overleaf thì web chưa vẽ được.</div>
                                 <button type="button" class="rv-btn" style="margin-top:6px;" onclick="rvCopyFigGuide()">📋 Sao chép hướng dẫn để dán cho AI khác</button> <span id="fig-guide-msg" style="font-size:.85rem;"></span>
                             </details>
-                            <button class="btn-start m-paste" style="width: 100%; background: #2563eb; margin-top: 10px;" onclick="parseDirectExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Tự Động Phân Tích</button>
-                            <div id="es-slot-A" class="m-paste"></div>
-                            <div class="m-paste btn-note"><b>Bước 2 của cách A:</b> dán đề vào khung trên rồi bấm nút này. Máy tách từng câu và đáp án, hiện ở khung "Xem trước" bên dưới để cô kiểm tra.</div>
-                            <button class="btn-start m-paste" id="btn-lock-batch" style="width: 100%; background: #0f766e; margin-top: 8px;" onclick="lockDirectBatch()"><i class="fa-solid fa-lock"></i> Chốt Phần Này Để Dán Phần Tiếp</button>
-                            <div class="m-paste btn-note"><b>Đề dài?</b> Dán từng phần. Xong mỗi phần bấm nút này để giữ lại, rồi dán phần kế tiếp.</div>
+                            </div>
                             <div class="rv-panel">
-                                <button type="button" class="btn-start" id="rv-toggle-btn" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Nhờ AI soạn đề, đọc PDF, rà soát đề (bấm để mở)</button>
-                                <div class="btn-note">Dùng khi cô chưa có đề, muốn AI đọc file PDF, hoặc muốn AI kiểm tra lại đáp án của đề.</div>
+                                <button type="button" class="btn-start" id="rv-toggle-btn" style="width:100%; background:#4338ca;" onclick="rvToggle()"><i class="fa-solid fa-user-check"></i> Nhờ AI: soạn đề, đọc PDF, rà soát đáp án</button>
                                 <div id="rv-body" style="display:none; margin-top:8px;">
-                                    <div style="font-size:.85rem; color:#475569;">Bấm "Tự Động Phân Tích" trước, rồi rà soát. Gemini giải độc lập 2 lượt, máy tính kiểm lại phép tính, rồi một lượt phản biện. Kết quả chỉ để cô xem lại, không tự sửa đề.</div>
+                                    <div style="font-size:.85rem; color:#475569;">Bấm "Phân tích đề" trước, rồi rà soát. Gemini giải độc lập 2 lượt, máy tính kiểm lại phép tính, rồi một lượt phản biện. Kết quả chỉ để cô xem lại, không tự sửa đề.</div>
                                     <label style="font-weight:bold; font-size:.9rem; margin-top:6px; display:block;">Khóa Gemini (tạo tại aistudio.google.com/apikey)</label>
                                     <input type="password" id="rv-key" autocomplete="off" placeholder="Dán khóa vào đây">
                                     <label style="font-size:.85rem; display:block; margin-top:4px;"><input type="checkbox" id="rv-remember"> Nhớ khóa trên máy này <span style="color:#b45309;">(đừng bật nếu là máy dùng chung)</span></label>
@@ -1109,7 +1128,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                                     </div>
                                     <div id="cn-box" style="margin-top:10px; border-top:1px dashed #94a3b8; padding-top:8px;">
                                         <strong style="color:#0f766e;">🧑‍🏫 Hội đồng AI: nhờ 2 đến 3 AI giải đề rồi so sánh</strong>
-                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Dùng khi đề chưa có đáp án hoặc cô muốn kiểm tra đáp án mà không tốn lượt Gemini. Cô làm: (1) bấm "Tự Động Phân Tích" cho đề, (2) bấm nút sao chép lời nhắc, (3) dán vào 2 đến 3 AI khác nhau (ví dụ Gemini Pro, ChatGPT, Claude), (4) dán kết quả mỗi AI vào một ô bên dưới, (5) bấm So sánh. Câu nào các AI cùng ra một đáp án thì đáng tin hơn, câu nào lệch nhau thì cô tự kiểm tra.</div>
+                                        <div style="font-size:.85rem; color:#475569; margin-top:2px;">Dùng khi đề chưa có đáp án hoặc cô muốn kiểm tra đáp án mà không tốn lượt Gemini. Cô làm: (1) bấm "Phân tích đề" cho đề, (2) bấm nút sao chép lời nhắc, (3) dán vào 2 đến 3 AI khác nhau (ví dụ Gemini Pro, ChatGPT, Claude), (4) dán kết quả mỗi AI vào một ô bên dưới, (5) bấm So sánh. Câu nào các AI cùng ra một đáp án thì đáng tin hơn, câu nào lệch nhau thì cô tự kiểm tra.</div>
                                         <div style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                                             <button type="button" class="btn-start" style="background:#0f766e;" onclick="cnCopy()">📋 1. Sao chép lời nhắc giải đề</button>
                                             <button type="button" class="rv-btn" onclick="cnReviewCopy()" title="Nhờ AI khác soát lỗi của đề, kết quả cô đọc trực tiếp">📋 Sao chép lời nhắc rà soát đề (cho AI khác)</button>
@@ -1133,16 +1152,16 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                                 </div>
                             </div>
                             <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                                <strong style="color: #334155;">Xem Trước Gọn Gàng (<span id="direct-parsed-count">0</span> câu)</strong>
+                                <strong style="color: #334155;">Các câu đã tách (<span id="direct-parsed-count">0</span> câu)</strong>
                                 <button class="btn-start" id="btn-save-parsed-bank" style="background: #059669; padding: 4px 10px; font-size: 0.9rem; display: none;" onclick="saveBankBulkToSheets()">Lưu Ngân Hàng</button>
                             </div>
-                            <div id="fa-bar" style="margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            <div id="fa-bar" style="margin-top:6px; display:none; gap:8px; align-items:center; flex-wrap:wrap;">
                                 <span style="font-size:.88rem; color:#475569;">Đề chưa có đáp án?</span>
                                 <button type="button" class="rv-btn" id="fa-go" onclick="faRun()">🤖 AI điền đáp án còn thiếu (Gemini)</button>
                                 <button type="button" class="rv-btn" onclick="faOutside()" title="Không dùng khóa Gemini nên không tốn lượt">📋 Nhờ AI khác (sao chép lời nhắc)</button>
                                 <span id="fa-msg" style="font-size:.88rem; color:#475569;"></span>
                             </div>
-                            <div class="preview-box" id="direct-preview-box" style="height: 35vh; max-height: 35vh; overflow-y: auto;"><em>Chưa bóc tách.</em></div>
+                            <div class="preview-box" id="direct-preview-box" style="height: auto; min-height: 110px; max-height: 45vh; overflow-y: auto;"><em>Chưa có câu nào. Dán đề vào khung trên rồi bấm Phân tích đề.</em></div>
                         </div>
 
                         <!-- 2. CHỌN TỪ NGÂN HÀNG CÂU HỎI -->
@@ -1167,12 +1186,12 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
                             <div id="matrix-topics-container" style="max-height: 380px; overflow-y: auto; margin-bottom: 15px; padding-right: 5px;"></div>
                             <button class="btn-start" style="width: 100%; background: #059669;" onclick="generateMatrixExam()"><i class="fa-solid fa-wand-magic-sparkles"></i> Lưu Ma Trận Động</button>
                         </div>
+                        <div id="es-slot-3" class="es-slot-quiet"></div>
                     </div>
 
                     <div class="creator-card" id="step3-card">
                         <h3 style="color: #b45309; margin-bottom: 6px;"><i class="fa-solid fa-cloud-arrow-up"></i> Bước 3: Xem lại và xuất bản</h3>
                         <div style="font-size:.9rem; color:#475569; margin-bottom:8px;">Các câu cô đã bóc tách hoặc chọn ở bước 2 nằm trong danh sách dưới đây. Cô kiểm tra số câu, xóa câu không cần, rồi chọn cách dùng đề: <b>cho học sinh làm trên web</b> hoặc <b>in đề giấy</b>. Học sinh chỉ thấy đề sau khi cô xuất bản.</div>
-                        <div id="es-slot-3"></div>
                         <div class="selected-list-box" id="bank-selected-box">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                 <strong style="color: #334155;"><i class="fa-solid fa-list-check"></i> Đã Chọn (<span id="selected-q-count" style="color: var(--primary);">0</span> câu)</strong>
@@ -2209,7 +2228,7 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
             const isKahoot = (currentMode === 'KAHOOT');
 
             directParsedQuestions = parseTextToQuestionsAllInOne(rawHtml, currentGradeVal, currentTopicVal);
-            document.getElementById('direct-parsed-count').innerText = directParsedQuestions.length;
+            document.getElementById('direct-parsed-count').innerText = directParsedQuestions.length; { const fb = document.getElementById('fa-bar'); if (fb) fb.style.display = directParsedQuestions.length ? 'flex' : 'none'; }
             
             let previewHtml = directParsedQuestions.map((q, i) => {
                 if (!q.timeLimit) q.timeLimit = 30;
@@ -2274,14 +2293,14 @@ html body #wb-ov .wbgrp:last-child::before{display:none !important}
 
         // Chốt phần vừa bóc tách: các câu vẫn nằm trong đề, xóa ô dán để dán phần tiếp theo
         function lockDirectBatch() {
-            if (directBatch.length === 0) { alert("Chưa có phần nào để chốt! Cô hãy dán văn bản và bấm 'Tự Động Phân Tích' trước."); return; }
+            if (directBatch.length === 0) { alert("Chưa có phần nào để chốt! Cô hãy dán văn bản và bấm 'Phân tích đề' trước."); return; }
             if (!confirm("Chốt " + directBatch.length + " câu vừa bóc tách?\nÔ dán sẽ được xóa để cô dán phần tiếp theo (các câu đã chốt vẫn nằm trong đề).")) return;
             const n = directBatch.length;
             directBatch = [];
             directParsedQuestions = [];
             document.getElementById('direct-raw-text').innerHTML = '';
-            document.getElementById('direct-preview-box').innerHTML = '<em>Đã chốt ' + n + ' câu. Cô dán phần tiếp theo vào ô trên rồi bấm Tự Động Phân Tích.</em>';
-            document.getElementById('direct-parsed-count').innerText = '0';
+            document.getElementById('direct-preview-box').innerHTML = '<em>Đã chốt ' + n + ' câu. Cô dán phần tiếp theo vào ô trên rồi bấm Phân tích đề.</em>';
+            document.getElementById('direct-parsed-count').innerText = '0'; { const fb = document.getElementById('fa-bar'); if (fb) fb.style.display = 'none'; }
             document.getElementById('btn-save-parsed-bank').style.display = 'none';
         }
 
@@ -2752,7 +2771,7 @@ function removeQuestionFromSelected(qId) {
                 alert("ℹ️ Mã đề được tự thêm mã giáo viên: " + examId + "\n(để không trùng với đề của giáo viên khác)");
             }
             if (mode !== 'BAIGIANG' && (!selectedQuestions || selectedQuestions.length === 0)) {
-                alert("⚠️️ Bạn chưa có câu hỏi nào trong đề! Hãy bấm 'Tự Động Phân Tích' hoặc chọn từ Ngân hàng/Ma trận.");
+                alert("⚠️️ Bạn chưa có câu hỏi nào trong đề! Hãy bấm 'Phân tích đề' hoặc chọn từ Ngân hàng/Ma trận.");
                 return;
             }
             if (window.rvPendingCount && rvPendingCount() > 0) {
@@ -3241,8 +3260,8 @@ const idInput = document.getElementById('new-exam-id'); if (idInput && !idInput.
 
         function switchAddMethod(method) {
             const HINTS = {
-                ai: 'Cách B: AI soạn đề theo bảng ma trận. Đề AI soạn xong hiện ở khung "Xem Trước Gọn Gàng" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).',
-                img: 'Cách C: chụp ảnh đề cho AI đọc. Đề đọc xong hiện ở khung "Xem Trước Gọn Gàng" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).'
+                ai: 'Cách B: AI soạn đề theo bảng ma trận. Đề AI soạn xong hiện ở khung "Các câu đã tách" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).',
+                img: 'Cách C: chụp ảnh đề cho AI đọc. Đề đọc xong hiện ở khung "Các câu đã tách" bên dưới. Muốn sửa chữ trực tiếp, cô chọn cách A (nội dung vẫn còn nguyên trong khung dán).'
             };
             ['paste', 'ai', 'img', 'bank', 'matrix', 'gen', 'sample'].forEach(m => {
                 const t = document.getElementById(`tab-add-${m}`); if (t) t.classList.toggle('active', m === method);
@@ -5220,7 +5239,7 @@ window.addEventListener('popstate', function () {
 
         // ================== RÀ SOÁT BẰNG GEMINI (thêm ở v16) ==================
         // Chạy ngay trên trình duyệt của giáo viên. Khóa Gemini do giáo viên tự nhập, KHÔNG nằm trong mã nguồn trang.
-        // Chỉ rà soát các câu vừa "Tự Động Phân Tích" (directParsedQuestions). Không đổi dữ liệu cũ.
+        // Chỉ rà soát các câu vừa "Phân tích đề" (directParsedQuestions). Không đổi dữ liệu cũ.
         (function () {
             'use strict';
             const $ = id => document.getElementById(id);
@@ -5673,7 +5692,7 @@ window.addEventListener('popstate', function () {
             // ---------- Chạy ----------
             async function run() {
                 if (S.running || !S.connected) return;
-                if (typeof directParsedQuestions === 'undefined' || !directParsedQuestions.length) { alert('Cô dán đề vào ô và bấm "Tự Động Phân Tích" trước, rồi mới rà soát.'); return; }
+                if (typeof directParsedQuestions === 'undefined' || !directParsedQuestions.length) { alert('Cô dán đề vào ô và bấm "Phân tích đề" trước, rồi mới rà soát.'); return; }
                 S.model = $('rv-model').value; try { localStorage.setItem('rv_gemini_model', S.model); } catch (e) { }
                 S.running = true; S.ctl = new AbortController(); const signal = S.ctl.signal; S.msg = ''; S.flagOnly = false;
                 $('rv-run').disabled = true; $('rv-stop').style.display = 'inline-block';
@@ -6142,7 +6161,7 @@ window.addEventListener('popstate', function () {
                 }
                 return c.toDataURL('image/png');
             }
-            // Mã hình dán thẳng vào khung dán: [[HINH {...}]] hoặc [[HINH <svg>...</svg>]] (lấy từ AI khác), bấm Tự Động Phân Tích thì đổi thành ảnh
+            // Mã hình dán thẳng vào khung dán: [[HINH {...}]] hoặc [[HINH <svg>...</svg>]] (lấy từ AI khác), bấm Phân tích đề thì đổi thành ảnh
             async function figFromSpec(f) {
                 if (!f || typeof f !== 'object') throw new Error('badspec');
                 if (f.kind === 'graph') return aiFigGraph(f);
@@ -6195,7 +6214,7 @@ window.addEventListener('popstate', function () {
                 return aiRules(allowFig).replace(/"figure":/g, '').replace('bỏ trường "figure"', 'không ghi dòng mã hình').replace('nếu không có figure', 'nếu không có mã hình');
             }
             function outCopy(t, el) {
-                const done = () => { if (el) { el.textContent = 'Đã sao chép. Cô mở AI khác, dán vào rồi gửi. Khi AI trả lời xong, cô sao chép toàn bộ đề, dán vào khung dán rồi bấm Tự Động Phân Tích.'; el.style.color = '#16a34a'; } };
+                const done = () => { if (el) { el.textContent = 'Đã sao chép. Cô mở AI khác, dán vào rồi gửi. Khi AI trả lời xong, cô sao chép toàn bộ đề, dán vào khung dán rồi bấm Phân tích đề.'; el.style.color = '#16a34a'; } };
                 if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => { prompt('Cô sao chép đoạn này:', t); });
                 else prompt('Cô sao chép đoạn này:', t);
             }
@@ -6261,7 +6280,7 @@ window.addEventListener('popstate', function () {
                     aiMsg('Đã soạn xong, đang vẽ hình…'); await aiRenderFigs(out);
                     aiHist = []; aiShow(out); doAuto = true;
                     const lack = []; rows.forEach((r, i) => { const got = out.ordered.filter(q => q.row === i + 1).length; if (got !== r.n) lack.push('mục ' + (i + 1) + ' (' + r.topic + ', ' + r.level + ') cần ' + r.n + ' câu, AI soạn ' + got); });
-                    aiMsg('Đã soạn ' + out.count + '/' + total + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn), đã đưa vào khung dán và bấm Tự Động Phân Tích.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + (out.figN ? ' Có ' + out.figN + ' câu kèm hình' + (out.figFail ? ', ' + out.figFail + ' hình máy chưa vẽ được' : '') + '.' : '') + (lack.length ? ' Lệch so với ma trận: ' + lack.join('; ') + '.' : '') + ' Cô đọc lại rồi mô tả chỗ cần sửa.', lack.length || out.skipped || out.figFail ? '#b45309' : '#16a34a');
+                    aiMsg('Đã soạn ' + out.count + '/' + total + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn), đã đưa vào khung dán và bấm Phân tích đề.' + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '') + (out.figN ? ' Có ' + out.figN + ' câu kèm hình' + (out.figFail ? ', ' + out.figFail + ' hình máy chưa vẽ được' : '') + '.' : '') + (lack.length ? ' Lệch so với ma trận: ' + lack.join('; ') + '.' : '') + ' Cô đọc lại rồi mô tả chỗ cần sửa.', lack.length || out.skipped || out.figFail ? '#b45309' : '#16a34a');
                 } catch (e) { aiMsg(aiErr(e), (e && e.code === 'cancelled') ? '#475569' : '#dc2626'); }
                 finally { aiBusy(false); }
                 aiAuto(doAuto);
@@ -6437,7 +6456,7 @@ window.addEventListener('popstate', function () {
                     if (!out.count) { imgSay('Không đọc được câu nào đúng khuôn. Cô thử ảnh rõ hơn hoặc ít câu hơn.', '#dc2626'); return; }
                     imgSay('Đã đọc xong, đang vẽ hình…'); await aiRenderFigs(out);
                     aiHist = []; aiShow(out); doAuto = true;
-                    imgSay('Đã đọc ' + out.count + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn) vào khung dán và bấm Tự Động Phân Tích.'
+                    imgSay('Đã đọc ' + out.count + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn) vào khung dán và bấm Phân tích đề.'
                         + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '')
                         + (out.guessed && out.guessed.length ? ' Đáp án AI tự giải: câu ' + out.guessed.join(', ') + '.' : '')
                         + (out.needFig && out.needFig.length ? ' Câu cần chèn hình: ' + out.needFig.join(', ') + '.' : '')
@@ -6477,7 +6496,7 @@ window.addEventListener('popstate', function () {
                 }
                 if (mode !== 'imgtxt') text += '\n\nLƯU Ý: hãy trả lời bằng MỘT khối mã duy nhất chứa mảng JSON (để tôi bấm nút sao chép), không giải thích thêm.';
                 aiExtMode = mode;
-                const note = $('ai-ext-note'), after = () => { if (note) note.textContent = 'Đã sao chép lời nhắc ' + label + '. Cô dán vào AI khác' + (mode === 'pdf' ? ', đính kèm file PDF,' : ((mode === 'img' || mode === 'imgtxt') ? ', đính kèm các ảnh đề,' : '')) + ' rồi gửi. Khi AI trả lời, cô sao chép kết quả dán vào ô bên dưới.'; aiExtSay(''); if (mode === 'imgtxt') imgSay('Đã sao chép. Cô dán vào AI khác và đính kèm các ảnh đề. AI trả về khối chữ thì sao chép khối đó, dán thẳng vào khung dán đề rồi bấm Tự Động Phân Tích.', '#16a34a'); else if (mode === 'img') imgSay('Đã sao chép lời nhắc dạng JSON. AI trả về thì sao chép khối kết quả và dán vào khung dán đề rồi bấm Tự Động Phân Tích.', '#16a34a'); };
+                const note = $('ai-ext-note'), after = () => { if (note) note.textContent = 'Đã sao chép lời nhắc ' + label + '. Cô dán vào AI khác' + (mode === 'pdf' ? ', đính kèm file PDF,' : ((mode === 'img' || mode === 'imgtxt') ? ', đính kèm các ảnh đề,' : '')) + ' rồi gửi. Khi AI trả lời, cô sao chép kết quả dán vào ô bên dưới.'; aiExtSay(''); if (mode === 'imgtxt') imgSay('Đã sao chép. Cô dán vào AI khác và đính kèm các ảnh đề. AI trả về khối chữ thì sao chép khối đó, dán thẳng vào khung dán đề rồi bấm Phân tích đề.', '#16a34a'); else if (mode === 'img') imgSay('Đã sao chép lời nhắc dạng JSON. AI trả về thì sao chép khối kết quả và dán vào khung dán đề rồi bấm Phân tích đề.', '#16a34a'); };
                 if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(after, () => { prompt('Cô sao chép đoạn này (Ctrl+C):', text); after(); });
                 else { prompt('Cô sao chép đoạn này (Ctrl+C):', text); after(); }
             }
@@ -6501,7 +6520,7 @@ window.addEventListener('popstate', function () {
                     await aiRenderFigs(out);
                     if (mode === 'revise') aiHist.push(prev); else aiHist = [];
                     aiShow(out);
-                    aiExtSay('Đã nhập ' + out.count + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn) vào khung dán và bấm Tự Động Phân Tích.'
+                    aiExtSay('Đã nhập ' + out.count + ' câu (' + out.mcq + ' trắc nghiệm, ' + out.tf + ' đúng/sai, ' + out.sa + ' trả lời ngắn) vào khung dán và bấm Phân tích đề.'
                         + (out.skipped ? ' Bỏ qua ' + out.skipped + ' câu sai khuôn.' : '')
                         + (out.figN ? ' Có ' + out.figN + ' câu kèm hình' + (out.figFail ? ', ' + out.figFail + ' hình chưa vẽ được' : '') + '.' : '')
                         + (pdf && out.guessed.length ? ' Đáp án AI tự giải: câu ' + out.guessed.join(', ') + '.' : '')
@@ -6553,10 +6572,10 @@ window.addEventListener('popstate', function () {
             }
             function cnCopy() {
                 const items = cnBuild();
-                if (!items) { cnSay('Cô dán đề vào khung và bấm "Tự Động Phân Tích" trước.', '#dc2626'); return; }
+                if (!items) { cnSay('Cô dán đề vào khung và bấm "Phân tích đề" trước.', '#dc2626'); return; }
                 if (!items.length) { cnSay('Không có câu nào đủ 4 phương án hoặc 4 ý để giải.', '#dc2626'); return; }
                 let text = solvePrompt(items, S.imgs).replace(/Chỗ nào có \[HÌNH k\][^\n]*\n/, '').replace('ĐẦU RA: chỉ một mảng JSON', CN_RULES + 'ĐẦU RA: chỉ MỘT khối mã duy nhất chứa một mảng JSON (để tôi bấm nút sao chép), không giải thích thêm');
-                const done = () => cnSay('Đã sao chép lời nhắc giải ' + items.length + ' câu. Cô dán vào AI khác (nên chọn chế độ mạnh nhất), rồi dán kết quả vào các ô bên dưới. Đừng bấm Tự Động Phân Tích lại trong lúc này vì số câu sẽ bị đổi.', '#16a34a');
+                const done = () => cnSay('Đã sao chép lời nhắc giải ' + items.length + ' câu. Cô dán vào AI khác (nên chọn chế độ mạnh nhất), rồi dán kết quả vào các ô bên dưới. Đừng bấm Phân tích đề lại trong lúc này vì số câu sẽ bị đổi.', '#16a34a');
                 if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => { prompt('Cô sao chép đoạn này (Ctrl+C):', text); done(); });
                 else { prompt('Cô sao chép đoạn này (Ctrl+C):', text); done(); }
             }
@@ -6648,7 +6667,7 @@ window.addEventListener('popstate', function () {
                 const card = cardOf(q.id); if (card) { const a = card.querySelector('.parsed-ans'); if (a) a.textContent = 'Đ/A: ' + q.ans; const w = card.querySelector('.parsed-ans + div'); if (w && /đoán|tạm|kiểm tra/i.test(w.textContent)) w.remove(); }
             }
             function cnReviewCopy() {
-                if (typeof directParsedQuestions === 'undefined' || !directParsedQuestions.length) { cnSay('Cô dán đề vào khung và bấm "Tự Động Phân Tích" trước.', '#dc2626'); return; }
+                if (typeof directParsedQuestions === 'undefined' || !directParsedQuestions.length) { cnSay('Cô dán đề vào khung và bấm "Phân tích đề" trước.', '#dc2626'); return; }
                 const views = buildViews(), tn = { MCQ: 'TRẮC NGHIỆM', TF: 'ĐÚNG/SAI', SA: 'TRẢ LỜI NGẮN' };
                 const body = views.map((v, i) => {
                     const op = v.opts.map(o => fixImg(o, S.imgs)), ans = (v.guessed || !v.ans) ? 'chưa có' : (v.type === 'TF' ? v.ans.replace(/D/g, 'Đ') : v.ans);
@@ -6671,7 +6690,7 @@ window.addEventListener('popstate', function () {
             window.cnReviewCopy = cnReviewCopy;
             window.cnCopy = cnCopy; window.cnCompare = cnCompare;
             window.cnApply = function (i) { const r = CN.rows[i]; if (!r || !r.cons) return; cnSet(r); cnRender(Array.from({ length: (r.vals || []).length }, (_, k) => ({ name: ($('cn-n' + (k + 1)).value || '').trim() || ('AI ' + (k + 1)) }))); };
-            window.cnApplyAll = function () { let n = 0; CN.rows.forEach(r => { if (r.state === 'agree' && r.verdict === 'blank') { cnSet(r); n++; } }); cnRender(Array.from({ length: (CN.rows[0] ? CN.rows[0].vals.length : 0) }, (_, k) => ({ name: ($('cn-n' + (k + 1)).value || '').trim() || ('AI ' + (k + 1)) }))); cnSay('Đã áp dụng đáp án cho ' + n + ' câu. Cô đừng bấm Tự Động Phân Tích lại vì đáp án sẽ bị xóa.', '#16a34a'); };
+            window.cnApplyAll = function () { let n = 0; CN.rows.forEach(r => { if (r.state === 'agree' && r.verdict === 'blank') { cnSet(r); n++; } }); cnRender(Array.from({ length: (CN.rows[0] ? CN.rows[0].vals.length : 0) }, (_, k) => ({ name: ($('cn-n' + (k + 1)).value || '').trim() || ('AI ' + (k + 1)) }))); cnSay('Đã áp dụng đáp án cho ' + n + ' câu. Cô đừng bấm Phân tích đề lại vì đáp án sẽ bị xóa.', '#16a34a'); };
             window.aiExtCopy = aiExtCopy; window.aiExtImport = aiExtImport;
             // ---------- (v45) Tạo bảng ma trận + bản đặc tả (Word) từ bảng số câu ----------
             const MX_G = [['nb', 'NB'], ['th', 'TH'], ['vd', 'VD']];
@@ -6839,7 +6858,7 @@ window.addEventListener('popstate', function () {
             }
             async function faRun() {
                 if (aiCtl) return;
-                const need = faTargets(); if (need === null) { faMsg('Cô dán đề vào khung và bấm "Tự Động Phân Tích" trước.', '#dc2626'); return; }
+                const need = faTargets(); if (need === null) { faMsg('Cô dán đề vào khung và bấm "Phân tích đề" trước.', '#dc2626'); return; }
                 if (!need.length) { faMsg('Các câu đều đã có đáp án.', '#16a34a'); return; }
                 if (!S.connected) { faMsg('Cô mở mục "Nhờ AI soạn đề…" ở trên, dán khóa Gemini và bấm Kết nối, hoặc dùng nút "Nhờ AI khác".', '#dc2626'); return; }
                 S.model = ($('rv-model') || {}).value || S.model;
@@ -6864,7 +6883,7 @@ window.addEventListener('popstate', function () {
                 finally { aiBusy(false); }
             }
             function faOutside() {
-                const need = faTargets(); if (need === null) { faMsg('Cô dán đề vào khung và bấm "Tự Động Phân Tích" trước.', '#dc2626'); return; }
+                const need = faTargets(); if (need === null) { faMsg('Cô dán đề vào khung và bấm "Phân tích đề" trước.', '#dc2626'); return; }
                 const b = $('rv-body'); if (b && b.style.display === 'none' && window.rvToggle) window.rvToggle();
                 cnCopy(); const c = $('cn-box'); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'start' });
                 faMsg('Đã sao chép lời nhắc giải đề. Cô dán sang AI khác, rồi dán kết quả vào ô trong mục "Hội đồng AI" (vừa mở ra) và bấm "So sánh kết quả", sau đó "Áp dụng đáp án".', '#16a34a');
@@ -7363,11 +7382,12 @@ window.addEventListener('popstate', function () {
         // thử mã đề nằm ngang hoặc dọc, và mọi thứ tự xếp, lấy cách làm phiếu thấp nhất
         const combos = []; [blkMa(set.code), blkMaV(set.code)].forEach(ma => [blkSbdV()].forEach(sb => combos.push([ma, sb]))); /* v294: số báo danh luôn tô theo cột (mỗi cột một chữ số, 0-9 từ trên xuống) */
         combos.forEach(cb => {
-            const blocks = cb.slice();
-            if (set.mcq.length) blocks.push(blkI(set.mcq.length));
-            if (set.tf.length) blocks.push(blkII(set.tf.length, 80));
-            if (set.sa.length) blocks.push(blkIII(set.sa.length, W));
-            if (set.es.length) blocks.push(blkIV(set.es.length, W, o.peList));
+            const fw = b => { const t = b.els[0] && b.els[0].s; if (t) b.w = Math.max(b.w, String(t).length * 2.1 + 1); return b; }; /* v325: khối không được hẹp hơn tiêu đề của nó, tránh chữ chồng lên nhau */
+            const blocks = cb.map(fw);
+            if (set.mcq.length) blocks.push(fw(blkI(set.mcq.length)));
+            if (set.tf.length) blocks.push(fw(blkII(set.tf.length, 80)));
+            if (set.sa.length) blocks.push(fw(blkIII(set.sa.length, W)));
+            if (set.es.length) blocks.push(fw(blkIV(set.es.length, W, o.peList)));
             const perms = []; (function p(a, r) { if (!a.length) { perms.push(r); return; } a.forEach((x, i) => p(a.slice(0, i).concat(a.slice(i + 1)), r.concat([x]))); })(blocks.slice(), []);
             perms.forEach(pm => {
                 let x = 0, y = 0, sh = 0; const pos = [];
@@ -14161,7 +14181,7 @@ window.aiLayout = function () {
     b1.appendChild(o1); b1.appendChild(mk('<div class="aiOr">hoặc</div>')); b1.appendChild(o2);
     var s2 = step(2, 'Tùy chọn thêm', 'Không chỉnh gì cũng được.'), b2 = s2.querySelector('.aiB');
     b2.appendChild($('ai-fig').parentNode); b2.appendChild($('ai-auto').parentNode); var src = $('ai-source').closest('details'); if (src) b2.appendChild(src);
-    var s3 = step(3, 'Bấm "Soạn đề"', 'Đề hiện ở khung "Xem Trước Gọn Gàng" phía dưới. Cần khóa Gemini ở trên.'), b3 = s3.querySelector('.aiB');
+    var s3 = step(3, 'Bấm "Soạn đề"', 'Đề hiện ở khung "Các câu đã tách" phía dưới. Cần khóa Gemini ở trên.'), b3 = s3.querySelector('.aiB');
     var goRow = $('ai-go').parentNode; b3.appendChild(goRow); var ext = $('ai-ext'); if (ext) b3.appendChild(ext);
     var rev = $('ai-revise-box'); if (rev) b3.appendChild(rev);
     var s4 = step(4, 'Điểm và bảng ma trận Word', 'Không bắt buộc. Dùng khi cần in đề hoặc nộp bảng ma trận.'), b4 = s4.querySelector('.aiB');
@@ -14194,7 +14214,7 @@ window.aiLayout = function () {
         if (!slot || slot.dataset.es) return; slot.dataset.es = 1;
         var S = { parts: [{ t: '', p: '' }, { t: '', p: '' }, { t: '', p: '' }] }; I[pre] = S;
         var g = function (k) { return $(pre + '-' + k); };
-        slot.innerHTML = '<details style="border:1px solid #c4b5fd;border-radius:10px;padding:10px;margin:10px 0;background:#faf5ff"><summary style="cursor:pointer;font-weight:700;color:#6d28d9">✍️ Soạn câu TỰ LUẬN có ý a), b), c) và thang điểm (để in đề giấy)</summary>' +
+        slot.innerHTML = '<details style="border:1px solid #c4b5fd;border-radius:10px;padding:10px;margin:10px 0;background:#faf5ff"><summary style="cursor:pointer;font-weight:700;color:#6d28d9">Thêm câu tự luận có ý a), b), c) và thang điểm (cho đề in giấy)</summary>' +
             '<div style="font-size:.85rem;color:#64748b;margin:6px 0">Gõ công thức trong dấu $...$ (ví dụ $x^2-3x+2=0$). Không cần đáp án. Điểm từng ý tự cộng thành điểm cả câu khi in đề. Soạn xong bấm "Thêm vào đề đang soạn": câu nằm chung danh sách với trắc nghiệm, đúng/sai, trả lời ngắn.</div>' +
             '<textarea id="' + pre + '-stem" class="form-input" rows="3" placeholder="Đề chung của câu (ví dụ: Cho hàm số $y=x^3-3x$.)" style="width:100%;margin-bottom:6px" oninput="esI(\'' + pre + '\').prev()"></textarea><div id="' + pre + '-parts"></div>' +
             '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px"><button type="button" class="btn-start" style="background:#64748b" onclick="esI(\'' + pre + '\').add()">+ Thêm ý</button><b id="' + pre + '-sum" style="color:#6d28d9"></b></div>' +
