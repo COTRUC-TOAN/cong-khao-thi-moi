@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v338] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v340] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -977,14 +977,17 @@ html body #teacher-view > .teacher-nav > .btn-t-tab.active .tn-tx small{ color:#
 :root{ --a-navy:#1b3a7a; --a-navy2:#2f6fd0; --a-cyan:#17a2b8; --a-line:#dde4ef; --a-ink:#101a2e; }
 
 /* viền có nét: thẻ lớn mang một vạch màu mảnh ở mép trên */
+/* vạch màu vẽ bằng ảnh nền, KHÔNG dùng overflow:hidden và không đổi position,
+   vì cột mục lục và bảng đề cần cuộn được (lỗi v337 làm mục lục không cuộn lên được) */
 #teacher-view .creator-card,#teacher-view .rm-main,#teacher-view .rm-side,
 #teacher-view > .teacher-nav,.tel-wrap,#portal-view .sidebar{
-  position:relative; border:1px solid var(--a-line) !important; border-radius:16px !important;
-  box-shadow:0 1px 2px rgba(16,24,40,.06),0 10px 24px rgba(16,24,40,.05) !important; overflow:hidden; }
-#teacher-view .creator-card::before,#teacher-view .rm-main::before,#teacher-view .rm-side::before,
-#teacher-view > .teacher-nav::before,.tel-wrap::before,#portal-view .sidebar::before{
-  content:""; position:absolute; left:0; right:0; top:0; height:3px;
-  background:linear-gradient(90deg,var(--a-navy) 0%,var(--a-navy2) 45%,var(--a-cyan) 100%); }
+  border:1px solid var(--a-line) !important; border-radius:16px !important;
+  box-shadow:0 1px 2px rgba(16,24,40,.06),0 10px 24px rgba(16,24,40,.05) !important;
+  background-color:#fff !important;
+  background-image:linear-gradient(90deg,var(--a-navy) 0%,var(--a-navy2) 45%,var(--a-cyan) 100%) !important;
+  background-repeat:no-repeat !important; background-size:100% 3px !important; background-position:0 0 !important; }
+#portal-view .sidebar{ overflow-y:auto !important; }
+.tel-wrap{ overflow-x:auto !important; }
 
 /* thanh trên: viền dưới đậm hơn */
 body nav.navbar{ border:1px solid var(--a-line) !important; border-bottom:2px solid #c9d6ec !important; border-radius:14px !important; }
@@ -8539,11 +8542,23 @@ window.addEventListener('popstate', function () {
         const ps = window.paperState && window.paperState();
         if (!ps || !ps.sets || !ps.sets.length) return null;
         const exId = (($('new-exam-id') || {}).value || ps.opt.exam || 'de').trim();
-        const stored = JSON.parse(LS.get('paper_sets') || '{}');
+        // (v339) Lấy đáp án THẲNG từ bộ đề vừa tạo và vừa in, không lấy lại từ bộ nhớ trình duyệt.
+        // Trước đây đọc từ bộ nhớ: nếu lần ghi trước đó bị lỗi (bộ nhớ đầy) thì tệp chấm là đáp án của đề CŨ,
+        // nên tờ đề in ra đúng mà chấm bằng điện thoại lại sai.
+        let stored = {}; try { stored = JSON.parse(LS.get('paper_sets') || '{}'); } catch (e) { stored = {}; }
         const s = [];
         ps.sets.forEach(set => {
+            if (set.mcq || set.tf || set.sa) {
+                s.push([set.code,
+                    (set.mcq || []).map(q => (q && q.ans) || '-').join(''),
+                    (set.tf || []).map(q => q.ans),
+                    (set.sa || []).map(q => String(q.ans == null ? '' : q.ans).trim()),
+                    (set.es || []).length,
+                    set.fp || '']);
+                return;
+            }
             const r = stored[exId + '|' + set.code];
-            if (r) s.push([set.code, r.mcq.map(a => a || '-').join(''), r.tf, r.sa, r.es || 0]);
+            if (r) s.push([set.code, r.mcq.map(a => a || '-').join(''), r.tf, r.sa, r.es || 0, '']);
         });
         if (!s.length) return null;
         const o = ps.opt || {};
