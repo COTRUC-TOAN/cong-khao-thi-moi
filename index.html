@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v340] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v341] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -8182,7 +8182,11 @@ window.addEventListener('popstate', function () {
     }
     // opts: {maxW (EMU), imgs (Map src→info), lead (xml runs đặt đầu đoạn đầu), jc}
     function htmlToBlocks(html, opts) {
-        const maths = [], prot = protectMath(html, maths);
+        // (v341) Ô trong bảng được xử lý bằng một lượt htmlToBlocks lồng nhau. Trước đây lượt lồng
+        // tạo kho công thức RỖNG nên các dấu công thức của lượt ngoài trỏ vào chỗ trống -> lỗi
+        // "Cannot read properties of undefined (reading 'trim')" khi câu hỏi có bảng chứa công thức.
+        // Nay lượt lồng dùng chung kho công thức với lượt ngoài.
+        const maths = (opts && opts.maths) || [], prot = protectMath(html, maths);
         const doc = new DOMParser().parseFromString('<body>' + prot + '</body>', 'text/html');
         const out = []; let runs = opts.lead || '', has = !!opts.lead, ind = opts.ind0 || 0;
         const pPr = () => '<w:pPr><w:spacing w:before="0" w:after="60"/>' + (ind ? '<w:ind w:left="' + ind + '"/>' : '') + (opts.jc ? '<w:jc w:val="' + opts.jc + '"/>' : '') + '</w:pPr>';
@@ -8191,7 +8195,7 @@ window.addEventListener('popstate', function () {
             const re = /(\d+)/g; let last = 0, m;
             while ((m = re.exec(t))) {
                 if (m.index > last) { const s = t.slice(last, m.index); runs += wRun(s, st); if (s.trim()) has = true; }
-                if (XMODE === 'tex') { runs += wRun('$' + maths[+m[1]].trim() + '$', st); has = true; last = m.index + m[0].length; continue; }
+                if (XMODE === 'tex') { const tx = maths[+m[1]]; runs += wRun(tx == null ? '' : '$' + String(tx).trim() + '$', st); has = true; last = m.index + m[0].length; continue; }
                 let o = ''; try { o = texToOmml(maths[+m[1]]); } catch (e) { o = mR(maths[+m[1]], 'n'); }
                 runs += '<m:oMath>' + o + '</m:oMath>'; has = true; last = m.index + m[0].length;
             }
@@ -8204,7 +8208,7 @@ window.addEventListener('popstate', function () {
             if (tg === 'script' || tg === 'style') return;
             if (tg === 'br') { runs += '<w:r><w:br/></w:r>'; has = true; return; }
             if (tg === 'img') { const im = opts.imgs && opts.imgs.get(nd.getAttribute('src')); if (im) { runs += wImg(im, opts.maxW); has = true; } else { runs += wRun('[hình]', st); has = true; } return; }
-            if (tg === 'table') { flush(); out.push(tableXml(nd, opts)); return; }
+            if (tg === 'table') { flush(); out.push(tableXml(nd, Object.assign({}, opts, { maths: maths }))); return; }
             const blk = /^(p|div|h[1-6]|li|ul|ol|center|blockquote|pre)$/.test(tg);
             const ns = Object.assign({}, st); const css = (nd.getAttribute('style') || '').toLowerCase();
             if (tg === 'b' || tg === 'strong' || /font-weight:\s*(bold|[6-9]00)/.test(css)) ns.b = true;
