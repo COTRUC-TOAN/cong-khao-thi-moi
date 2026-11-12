@@ -1,6 +1,6 @@
 /* dang.js — CÁC DẠNG CÂU HỎI (web tự đổi số, tự tính đáp án).
    Khi thêm dạng mới, chỉ cần thay file này trên GitHub (cùng thư mục với index.html) rồi bấm Ctrl+F5. */
-window.__DANG_VER = "v311";
+window.__DANG_VER = "v313";
 window.__NE = function (x, y) { return y === 0 ? "\\ \\text{và hệ số tự do }" + x + "\\ne0" : "\\ne\\dfrac{" + x + "}{" + y + "}"; };
 // ===== Các dạng toán =====
 (function (Q) {
@@ -5707,7 +5707,7 @@ window.__NE = function (x, y) { return y === 0 ? "\\ \\text{và hệ số tự d
         add('l12_sa_tk_hieu_dolech', 12, GS, 'Trả lời ngắn: hiệu hai độ lệch chuẩn của hai mẫu (cùng tần số, độ rộng nhóm khác nhau)', 'VD', function () {
             var d, v, tries = 0, sd; do { d = gd(pick([3, 4])); v = gVar(d); sd = Math.sqrt(v.n / v.d); tries++; } while (tries < 3000 && !(Math.abs(sd * 100 - Math.round(sd * 100)) < 1e-9 && sd > 0)); need(tries < 3000);
             var c = pick([2, 3]), d2 = { w: d.w * c, s0: d.s0, k: d.k, fr: d.fr.slice() }; var diff = Math.round((c - 1) * sd * 100) / 100; need(String(diff).length <= 4 && diff > 0);
-            return fnl(diff, 'Mẫu 1 có $s_1=\\sqrt{' + tex(v) + '}=' + dec(sd) + '$. Mẫu 2 có độ rộng mỗi nhóm gấp ' + c + ' lần (tần số giữ nguyên) nên các giá trị đại diện cách nhau gấp ' + c + ' lần, $s_2=' + c + 's_1=' + dec(c * sd) + '$. Hiệu $s_2-s_1=' + dec(diff) + '$.', 'Cho hai mẫu số liệu ghép nhóm có cùng tần số.\nMẫu 1: $' + gT(d, 'Mẫu 1') + '$\nMẫu 2: $' + gT(d2, 'Mẫu 2') + '$\nHiệu độ lệch chuẩn $s_2-s_1$ của hai mẫu là (làm tròn đến hàng phần trăm nếu cần)', [diff + 1, sd, c * sd], 'VD');
+            return fnl(F(Math.round(diff * 100), 100), 'Mẫu 1 có $s_1=\\sqrt{' + tex(v) + '}=' + dec(sd) + '$. Mẫu 2 có độ rộng mỗi nhóm gấp ' + c + ' lần (tần số giữ nguyên) nên các giá trị đại diện cách nhau gấp ' + c + ' lần, $s_2=' + c + 's_1=' + dec(c * sd) + '$. Hiệu $s_2-s_1=' + dec(diff) + '$.', 'Cho hai mẫu số liệu ghép nhóm có cùng tần số.\nMẫu 1: $' + gT(d, 'Mẫu 1') + '$\nMẫu 2: $' + gT(d2, 'Mẫu 2') + '$\nHiệu độ lệch chuẩn $s_2-s_1$ của hai mẫu là (làm tròn đến hàng phần trăm nếu cần)', [F(Math.round(diff * 100) + 100, 100), F(Math.round(sd * 100), 100), F(Math.round(c * sd * 100), 100)], 'VD');
         });
         function fnl(v, ex, q, extra, lv) { return fnum(v, ex, q, extra, lv); }
         addTF('l12_tf_tk_hai_mau', 12, GS, 'Đúng – sai: hai mẫu ghép nhóm (hai lớp): so sánh số trung bình, khoảng biến thiên, khoảng tứ phân vị, độ đồng đều', 'VD', function () {
@@ -10209,6 +10209,12 @@ g.make=function(d){var o,i;for(i=0;i<40;i++){o=mk.call(g,d);if(o&&o.wrongs){var 
                 ['Lô nào có chiều cao đồng đều hơn? Vì sao?', 'Vì $s_' + more + '\\approx' + dd(more === 'A' ? sA : sB, 2) + '>' + dd(more === 'A' ? sB : sA, 2) + '\\approx s_' + less + '$ nên lô $' + less + '$ có độ phân tán nhỏ hơn, tức chiều cao đồng đều hơn.']]) };
         });
 
+        // (v341) Giá trị chẵn (không phải làm tròn) thì viết dấu "=" và bỏ chữ "làm tròn",
+        // viết "≈" chỉ khi thật sự có làm tròn. Dấu lấy theo GIÁ TRỊ ĐÚNG để học sinh không đoán được đáp án.
+        function isEx(v, k) { var e = Math.pow(10, k == null ? 2 : k); return Math.abs(v * e - Math.round(v * e)) < 1e-9; }
+        function rel(trueV, k) { return isEx(trueV, k) ? '=' : '\\approx'; }
+        function rnote(trueV, k) { return isEx(trueV, k) ? '' : ' (làm tròn đến hàng phần trăm)'; }
+        function relW(trueV, k) { return isEx(trueV, k) ? 'là' : 'xấp xỉ'; }
         addTF('l12_tf_tk_dactrung', 12, G12, 'Đúng – sai: mẫu ghép nhóm — a) khoảng biến thiên, giá trị đại diện, đầu mút trái, nhóm chứa tứ phân vị; b) số trung bình, phương sai, độ lệch chuẩn; c) tứ phân vị, trung vị; d) khoảng tứ phân vị', 'VD', function () {
             var d = gd(pick([4, 5])), m = gMean(d), v = gVar(d), sd = Math.sqrt(v), qs = { 1: gQ(d, 1), 2: gQ(d, 2), 3: gQ(d, 3) }, dq = qs[3].v - qs[1].v;
             need(v > 0 && nt(m, v, sd, qs[1].v, qs[2].v, qs[3].v, dq));
@@ -10224,15 +10230,15 @@ g.make=function(d){var o,i;for(i=0;i<40;i++){o=mk.call(g,d);if(o&&o.wrongs){var 
                 },
                 function (ok) {
                     var kind = pick(['tb', 'ps', 'dlc']), tv = kind === 'tb' ? m : kind === 'ps' ? v : sd, x = ok ? tv : bad(tv), nm = kind === 'tb' ? 'Số trung bình $\\bar x$' : kind === 'ps' ? 'Phương sai $s^{2}$' : 'Độ lệch chuẩn $s$';
-                    return { t: nm + ' của mẫu số liệu là $' + dd(x, 2) + '$ (làm tròn đến hàng phần trăm).', why: '$\\bar x\\approx' + dd(m, 2) + '$, $s^{2}\\approx' + dd(v, 2) + '$, $s=\\sqrt{s^{2}}\\approx' + dd(sd, 2) + '$.' };
+                    return { t: nm + ' của mẫu số liệu ' + relW(tv, 2) + ' $' + dd(x, 2) + '$' + rnote(tv, 2) + '.', why: '$\\bar x' + rel(m, 2) + dd(m, 2) + '$, $s^{2}' + rel(v, 2) + dd(v, 2) + '$, $s=\\sqrt{s^{2}}' + rel(sd, 2) + dd(sd, 2) + '$.' };
                 },
                 function (ok) {
                     var p = pick([1, 2, 3]), tv = qs[p].v, x = ok ? tv : bad(tv);
-                    return { t: 'Giá trị của ' + QN[p] + ' là $' + dd(x, 2) + '$ (làm tròn đến hàng phần trăm).', why: qSol(d, p, QN[p]) };
+                    return { t: 'Giá trị của ' + QN[p] + ' ' + relW(tv, 2) + ' $' + dd(x, 2) + '$' + rnote(tv, 2) + '.', why: qSol(d, p, QN[p]) };
                 },
                 function (ok) {
                     var x = ok ? dq : bad(dq);
-                    return { t: 'Khoảng tứ phân vị của mẫu số liệu là $\\Delta_Q\\approx' + dd(x, 2) + '$.', why: '$Q_1\\approx' + dd(qs[1].v, 2) + '$, $Q_3\\approx' + dd(qs[3].v, 2) + '$ nên $\\Delta_Q=Q_3-Q_1\\approx' + dd(dq, 2) + '$.' };
+                    return { t: 'Khoảng tứ phân vị của mẫu số liệu là $\\Delta_Q' + rel(dq, 2) + dd(x, 2) + '$' + rnote(dq, 2) + '.', why: '$Q_1' + rel(qs[1].v, 2) + dd(qs[1].v, 2) + '$, $Q_3' + rel(qs[3].v, 2) + dd(qs[3].v, 2) + '$ nên $\\Delta_Q=Q_3-Q_1' + rel(dq, 2) + dd(dq, 2) + '$.' };
                 }
             ], 'VD');
         });
