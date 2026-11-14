@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v343] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v344] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1239,7 +1239,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
                     <div class="creator-card">
                         <h3 style="margin-bottom: 14px; color: var(--primary);"><i class="fa-solid fa-file-signature"></i> Bước 1: Thông tin đề thi</h3>
                         <div style="font-size:.9rem; color:#475569; margin-bottom:10px;">Điền tên, khối lớp, thời gian và (nếu cần) mật khẩu phòng thi. Xong bước này cô kéo xuống bước 2.</div>
-                        <div class="form-row"><label>Khối Lớp:</label><select class="form-input" id="new-exam-grade" onchange="updateNewExamTopicDropdown(); renderMatrixTable();"><option value="12">Lớp 12</option><option value="11">Lớp 11</option><option value="10">Lớp 10</option></select></div>
+                        <div class="form-row"><label>Khối Lớp:</label><select class="form-input" id="new-exam-grade" onchange="updateNewExamTopicDropdown(); renderMatrixTable();"><option value="12">Lớp 12</option><option value="11">Lớp 11</option><option value="10">Lớp 10</option><option value="thpt">Luyện Thi THPT QG</option></select></div>
                         <div class="form-row"><label>Chuyên Mục Chung:</label><div style="flex:1;min-width:0"><select class="form-input" id="new-exam-topic"></select><button type="button" id="topic-refresh-btn" onclick="refreshTopicsNow(true)" style="margin-top:6px;padding:5px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:.85rem">🔄 Tải lại danh sách chủ đề từ Sheet</button></div></div>
                         <div class="form-row"><label>Mã Đề:</label><input type="text" class="form-input" id="new-exam-id" placeholder="KT12-01"></div>
                         <div class="form-row"><label>Tên Đề:</label><input type="text" class="form-input" id="new-exam-title" placeholder="Kiểm Tra 45 Phút"></div>
@@ -1971,12 +1971,17 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
             });
         }
 
+        // (v344) Sheet chỉ có NganHang_10/11/12. Câu soạn ở khối "Luyện Thi THPT QG" được lưu vào khối 12,
+        // bài (chuyên mục) vẫn giữ nguyên nên tìm lại được bằng ô "Bài / Chương".
+        function fixBankGrade(q) { try { const g = String((q && q.grade) || '').trim(); if (g !== '10' && g !== '11' && g !== '12') q.grade = '12'; } catch (e) { } return q; }
+
         function getTopicsForGrade(grade) {
             let res = [...topicsConfig.general]; 
             if (grade === '12') res = res.concat(topicsConfig.g12);
             else if (grade === '11') res = res.concat(topicsConfig.g11);
             else if (grade === '10') res = res.concat(topicsConfig.g10);
-            else res = res.concat(topicsConfig.g12, topicsConfig.g11, topicsConfig.g10);
+            else if (String(grade).toLowerCase() === 'thpt') res = res.concat((topicsConfig.thpt && topicsConfig.thpt.length) ? topicsConfig.thpt : topicsConfig.g12);
+            else res = res.concat(topicsConfig.g12, topicsConfig.g11, topicsConfig.g10, topicsConfig.thpt || []);
             return res.filter(item => item.type !== 'header');
         }
 
@@ -2035,6 +2040,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
             if (grade === '12') list = list.concat(topicsConfig.g12);
             else if (grade === '11') list = list.concat(topicsConfig.g11);
             else if (grade === '10') list = list.concat(topicsConfig.g10);
+            else if (String(grade).toLowerCase() === 'thpt') list = list.concat((topicsConfig.thpt && topicsConfig.thpt.length) ? topicsConfig.thpt : topicsConfig.g12);
 
             list.forEach(item => {
                 if (item.type === 'header') {
@@ -2594,7 +2600,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
             let okN = 0, badN = 0, lastWhy = '';
             for (const q of directParsedQuestions) {
                 try {
-                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) });
+                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: fixBankGrade(q) }) });
                     const j = await r.json();
                     if (j && j.status === 'success') okN++; else { badN++; lastWhy = (j && (j.message || j.error)) ? String(j.message || j.error).slice(0, 160) : ''; }
                 } catch (e) { badN++; lastWhy = 'không kết nối được máy chủ'; }
@@ -2674,7 +2680,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
                 const oldTopic = q.topic;
                 try {
                     q.topic = newTopic;
-                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) });
+                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: fixBankGrade(q) }) });
                     const j = await r.json();
                     if (j && j.status === 'success') {
                         okN++;
@@ -2923,7 +2929,8 @@ function removeQuestionFromSelected(qId) {
             if (!select) return;
             select.innerHTML = '<option value="all">-- Bài / Chương --</option>';
             // ĐÃ FIX: Bao gồm luôn cả Chuyên mục chung
-            let list = (grade !== 'all') ? getTopicsForGrade(grade) : [...(topicsConfig.general || []), ...(topicsConfig.g12 || []), ...(topicsConfig.g11 || []), ...(topicsConfig.g10 || [])];
+            let list = (grade !== 'all') ? getTopicsForGrade(grade) : [...(topicsConfig.general || []), ...(topicsConfig.g12 || []), ...(topicsConfig.g11 || []), ...(topicsConfig.g10 || []), ...(topicsConfig.thpt || [])];
+            if (grade === '12') list = list.concat(topicsConfig.thpt || []);
             list = [{ id: '__none', name: '⚠ Câu chưa gắn bài (để gắn lại vào đúng bài)', type: 'normal' }].concat(list);
             list.forEach(t => {
                 if (t && t.type !== 'header' && t.id) {
@@ -5513,7 +5520,7 @@ function closeEditQuestionModal() { document.getElementById('edit-question-modal
             try {
                 let ok = true, why = '';
                 if (qBank) {
-                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: qBank }) });
+                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: fixBankGrade(qBank) }) });
                     const j = await r.json();
                     if (!j || j.status !== 'success') { ok = false; why = (j && (j.message || j.error)) ? String(j.message || j.error).slice(0, 200) : 'không rõ nguyên nhân'; }
                 }
@@ -14405,7 +14412,7 @@ var QGEN = (function () {
             for (var tr = 0; tr < 3 && !done; tr++) { /* thử tối đa 3 lần, mỗi lần cách nhau vài giây */
                 try {
                     if (tr) await new Promise(function (rs) { setTimeout(rs, 1500 * tr); });
-                    var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: a[i] }) });
+                    var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: fixBankGrade(a[i]) }) });
                     var txt = await r.text(), j = null; try { j = JSON.parse(txt); } catch (pe) { }
                     if (j && j.status === 'success') { ok++; done = true; }
                     else if (j) { lastWhy = (j.message || j.error || 'máy chủ báo lỗi'); if (/mật khẩu|password|quyền/i.test(lastWhy)) break; }
@@ -14623,7 +14630,7 @@ window.aiLayout = function () {
             var grade = g('grade').value, topic = g('topic').value, safe = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
             var q = { id: 'CH' + grade + '_' + safe + '_' + __uid() + '_ES', grade: grade, topic: topic, level: 'TH', type: 'ES', q: b.html, options: ['', '', '', ''], ans: '', ansOptions: [], explanation: '' };
             if (!toBank) { if (selectedQuestions.length === 1 && selectedQuestions[0].isDynamicConfig) { alert('Đề đang là đề ma trận động.'); return; } selectedQuestions = selectedQuestions.concat([q]); updateSelectedItemsDisplay(); alert('Đã thêm câu tự luận (' + b.tot + ' điểm) vào đề đang soạn. Cô xem ở danh sách "Đã chọn" ở Bước 3.'); S.parts = [{ t: '', p: '' }, { t: '', p: '' }, { t: '', p: '' }]; g('stem').value = ''; S.draw(); return; }
-            try { var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) }); var j = await r.json(); if (j && j.status === 'success') { alert('🎉 Đã lưu vào Ngân hàng.'); loadQuestionBank(); } else alert('Chưa lưu được: ' + ((j && (j.message || j.error)) || '')); } catch (e) { alert('Không kết nối được máy chủ.'); }
+            try { var r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: fixBankGrade(q) }) }); var j = await r.json(); if (j && j.status === 'success') { alert('🎉 Đã lưu vào Ngân hàng.'); loadQuestionBank(); } else alert('Chưa lưu được: ' + ((j && (j.message || j.error)) || '')); } catch (e) { alert('Không kết nối được máy chủ.'); }
         };
         g('grade').onchange = S.fill; slot.querySelector('details').addEventListener('toggle', S.fill); S.fill(); S.draw();
     }
