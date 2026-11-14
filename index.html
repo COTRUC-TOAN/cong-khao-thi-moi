@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v341] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v343] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2374,7 +2374,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
 
                 if (hasTfOptions) {
                     detectedType = 'TF';
-                    let tfAnsMatch = block.match(/(?:Đáp\s*án|Chọn|Đ\/A|Ans)\s*[:\-]?\s*([DSĐSdđ\s,\.\-]+)/i);
+                    let tfAnsMatch = block.match(/(?:Đáp\s*án|Ch[ọo]n\s*đ[áa]p\s*[áa]n|Ch[ọo]n(?=\s*[:\-])|Đ\/A|Ans)\s*[:\-]?\s*([DSĐSdđ\s,\.\-]+)/i);
                     if (tfAnsMatch) {
                         let cleanTF = tfAnsMatch[1].toUpperCase().replace(/Đ/g, 'D').replace(/[^DS]/g, '');
                         if (cleanTF.length >= 4) ans = cleanTF.substring(0, 4);
@@ -2394,14 +2394,14 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
                     options[1] = m_b ? m_b[1].trim() : '';
                     options[2] = m_c ? m_c[1].trim() : '';
                     options[3] = m_d ? m_d[1].trim() : '';
-                    options[3] = options[3].replace(/(?:Đáp\s*án|Chọn|Đ\/A|Ans)\s*[:\-]?\s*.*$/i, '').trim();
+                    options[3] = options[3].replace(/(?:Đáp\s*án|Ch[ọo]n\s*đ[áa]p\s*[áa]n|Ch[ọo]n(?=\s*[:\-])|Đ\/A|Ans)\s*[:\-]?\s*.*$/i, '').trim();
 
                     if (!ans || ans.length !== 4) { ans = 'DDDS'; ansGuessed = true; }
                     ansOptions = ans.split('');
                 } 
                 else if (mcqMarks(block)) {
                     detectedType = 'MCQ';
-                    let ansMatch = block.match(/(?:Đáp\s*án|Chọn|Đ\/A|Ans)\s*[:\-]?\s*([A-D])\b/i);
+                    let ansMatch = block.match(/(?:Đáp\s*án|Ch[ọo]n\s*đ[áa]p\s*[áa]n|Ch[ọo]n(?=\s*[:\-])|Đ\/A|Ans)\s*[:\-]?\s*([A-D])\b/i);
                     if (ansMatch) {
                         ans = ansMatch[1].trim().toUpperCase();
                         block = block.replace(ansMatch[0], '').trim();
@@ -2410,7 +2410,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
                     const mk = mcqMarks(block);
                     qContent = block.slice(0, mk[0]).replace(/^(?:C[âa]u|B[àa]i|C)\s*\d+[\s:.]?\s*/i, '').trim();
                     for (let oi = 0; oi < 4; oi++) options[oi] = block.slice(mk[oi], oi < 3 ? mk[oi + 1] : block.length).replace(/^\s*[A-D][\.\)]\s*/, '').trim();
-                    options[3] = options[3].replace(/(?:Đáp\s*án|Chọn|Đ\/A|Ans)\s*[:\-]?\s*[A-D]?\s*$/i, '').trim();
+                    options[3] = options[3].replace(/(?:Đáp\s*án|Ch[ọo]n\s*đ[áa]p\s*[áa]n|Ch[ọo]n(?=\s*[:\-])|Đ\/A|Ans)\s*[:\-]?\s*[A-D]?\s*$/i, '').trim();
 
                     if (!ans) {
                         if (rawHtml.includes('<u>A') || rawHtml.includes('underline">A')) ans = 'A';
@@ -2428,7 +2428,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
                         block = block.replace(ansGeneral[0], '').trim();
                     }
                     qContent = block.replace(/^(?:C[âa]u|B[àa]i|C)\s*\d+[\s:.]?\s*/i, '').trim();
-                    qContent = qContent.replace(/(?:Đáp\s*án|Chọn|Đ\/A|Ans)\s*[:\-]?\s*.*$/i, '').trim();
+                    qContent = qContent.replace(/(?:Đáp\s*án|Ch[ọo]n\s*đ[áa]p\s*[áa]n|Ch[ọo]n(?=\s*[:\-])|Đ\/A|Ans)\s*[:\-]?\s*.*$/i, '').trim();
                 }
 
                 const safeTopicId = (topic || 'Chung').replace(/[^a-zA-Z0-9-_]/g, '_');
@@ -2457,7 +2457,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
             const L = ['A', 'B', 'C', 'D'], out = []; let from = 0;
             for (const ch of L) { const re = new RegExp('(?:^|\\n)[ \\t]*(' + ch + '[\\.\\)])', 'g'); re.lastIndex = from; const m = re.exec(block); if (!m) { out.length = 0; break; } const at = m.index + m[0].length - m[1].length; out.push(at); from = at + 1; }
             if (out.length === 4) return out;
-            const tb = block.replace(/(?:Đáp\s*án|Chọn|Đ\/A|Ans)\s*[:\-]?[^\n]*$/i, '').replace(/\s+$/, ''), ls = tb.lastIndexOf('\n') + 1, line = tb.slice(ls); out.length = 0; from = 0;
+            const tb = block.replace(/(?:Đáp\s*án|Ch[ọo]n\s*đ[áa]p\s*[áa]n|Ch[ọo]n(?=\s*[:\-])|Đ\/A|Ans)\s*[:\-]?[^\n]*$/i, '').replace(/\s+$/, ''), ls = tb.lastIndexOf('\n') + 1, line = tb.slice(ls); out.length = 0; from = 0;
             for (const ch of L) { const re = new RegExp('(?:^|\\s)(' + ch + '[\\.\\)])(?=\\s)', 'g'); re.lastIndex = from; const m = re.exec(line); if (!m) return null; const at = m.index + m[0].length - m[1].length; out.push(ls + at); from = at + 1; }
             return out;
         }
@@ -2648,9 +2648,49 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
         }
 
         const bankDelSel = new Set();
-        function bankDelTick(cb) { const id = cb.getAttribute('data-id'); if (cb.checked) bankDelSel.add(id); else bankDelSel.delete(id); const n = document.getElementById('bank-del-n'); if (n) n.textContent = bankDelSel.size; }
-        function bankDelAll(on) { (window.__bankFiltered || []).forEach(id => { if (on) bankDelSel.add(String(id)); else bankDelSel.delete(String(id)); }); document.querySelectorAll('.bank-del-cb').forEach(cb => { cb.checked = on; }); const n = document.getElementById('bank-del-n'); if (n) n.textContent = bankDelSel.size; }
+        function bankDelTick(cb) { const id = cb.getAttribute('data-id'); if (cb.checked) bankDelSel.add(id); else bankDelSel.delete(id); bankSelCount(); }
+        function bankSelCount() { ['bank-del-n', 'bank-mv-n'].forEach(i => { const n = document.getElementById(i); if (n) n.textContent = bankDelSel.size; }); }
+        function bankDelAll(on) { (window.__bankFiltered || []).forEach(id => { if (on) bankDelSel.add(String(id)); else bankDelSel.delete(String(id)); }); document.querySelectorAll('.bank-del-cb').forEach(cb => { cb.checked = on; }); bankSelCount(); }
         function bankDeleteOne(id) { bankDelSel.clear(); bankDelSel.add(String(id)); bankDeleteSelected(); }
+        // (v342) Chuyển hàng loạt các câu đã tick sang một bài khác (cùng khối).
+        // Giữ nguyên mã câu: máy chủ nhận cùng mã thì ghi đè dòng cũ, không tạo câu mới.
+        async function bankMoveSelected() {
+            const sel = document.getElementById('bank-move-topic');
+            if (!sel || !sel.value) { alert('Cô chọn bài muốn chuyển tới ở ô bên cạnh nút.'); return; }
+            const ids = Array.from(bankDelSel);
+            if (!ids.length) { alert('Cô chưa tick câu nào để chuyển.'); return; }
+            const newTopic = sel.value, newName = sel.options[sel.selectedIndex].text;
+            const qs = ids.map(id => questionBank.find(q => String(q.id) === String(id))).filter(Boolean);
+            if (!qs.length) { alert('Không tìm thấy câu đã tick trong ngân hàng. Cô tải lại ngân hàng rồi thử lại.'); return; }
+            const grades = Array.from(new Set(qs.map(q => String(q.grade))));
+            if (grades.length > 1) { alert('Các câu đã tick thuộc nhiều khối khác nhau (' + grades.join(', ') + ').\nWeb không chuyển câu sang khối khác được. Cô lọc theo một khối rồi làm lại.'); return; }
+            const same = qs.filter(q => String(q.topic).trim() === String(newTopic).trim()).length;
+            if (!confirm('Chuyển ' + qs.length + ' câu sang bài:\n' + newName + '\n\n• Mã câu giữ nguyên, không tạo câu mới.\n• Đề đã xuất bản không đổi.\n• Đề ma trận động sẽ bốc câu theo bài mới.'
+                + (same ? '\n• ' + same + ' câu vốn đã ở bài này rồi.' : ''))) return;
+            document.body.style.cursor = 'wait';
+            const btn = document.querySelector('button[onclick="bankMoveSelected()"]'); if (btn) btn.disabled = true;
+            let okN = 0, badN = 0, lastWhy = '';
+            for (const q of qs) {
+                const oldTopic = q.topic;
+                try {
+                    q.topic = newTopic;
+                    const r = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add_question', password: teacherPassAuth, question: q }) });
+                    const j = await r.json();
+                    if (j && j.status === 'success') {
+                        okN++;
+                        if (typeof selectedQuestions !== 'undefined' && Array.isArray(selectedQuestions)) {
+                            const sq = selectedQuestions.find(x => x && String(x.id) === String(q.id)); if (sq) sq.topic = newTopic;
+                        }
+                    } else { q.topic = oldTopic; badN++; lastWhy = (j && (j.message || j.error)) ? String(j.message || j.error).slice(0, 160) : ''; }
+                } catch (e) { q.topic = oldTopic; badN++; lastWhy = 'không kết nối được máy chủ'; }
+            }
+            document.body.style.cursor = 'default'; if (btn) btn.disabled = false;
+            if (okN) { ids.forEach(i => bankDelSel.delete(String(i))); }
+            filterQuestionBankList(); try { renderMatrixTable(); } catch (e) { }
+            if (!badN) alert('Đã chuyển ' + okN + ' câu sang bài: ' + newName);
+            else alert((okN ? 'Đã chuyển ' + okN + ' câu. ' : '') + badN + ' câu chưa chuyển được'
+                + (lastWhy ? ' (máy chủ báo: ' + lastWhy + ')' : '') + '.\nHay gặp nhất là sai mật khẩu quản lý hoặc mất mạng. Các câu đó vẫn giữ bài cũ, cô thử lại.');
+        }
         async function bankDeleteSelected() {
             const ids = Array.from(bankDelSel);
             if (!ids.length) { alert('Cô chưa tick câu nào để xóa.'); return; }
@@ -2733,8 +2773,20 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
             const lim = window.__bankLimit || 30, shown = filtered.slice(0, lim);
             const more = filtered.length > shown.length ? `<div style="text-align:center;padding:10px"><div style="color:#64748b;margin-bottom:6px">Đang hiện ${shown.length}/${filtered.length} câu. Cô lọc theo bài để thu hẹp.</div><button type="button" onclick="window.__bankLimit=(window.__bankLimit||30)+30;filterQuestionBankList()" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:8px 14px;border-radius:8px;font-weight:bold;cursor:pointer">Hiện thêm 30 câu</button></div>` : '';
             const nBad = questionBank.filter(q => q.bad).length;
-            const tb = `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px;margin-bottom:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:.92rem">
-                <label style="cursor:pointer"><input type="checkbox" onchange="bankDelAll(this.checked)"> Tick xóa tất cả câu đang hiện (${shown.length})</label>
+            // (v342) thanh công cụ cho các câu đã tick: chuyển sang bài khác, hoặc xóa
+            const mvOpts = (fGrade === 'all') ? '' : getTopicsForGrade(String(fGrade))
+                .filter(t => t && t.type !== 'header' && t.type !== 'folder' && t.id != null && t.id !== '')
+                .map(t => `<option value="${String(t.id).replace(/"/g, '&quot;')}">${String(t.name || t.id).replace(/</g, '&lt;')}</option>`).join('');
+            const mvBar = `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px;margin-bottom:8px;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;font-size:.92rem">
+                <b style="color:#1e3a8a">Chuyển bài cho các câu đã tick:</b>
+                ${fGrade === 'all'
+                    ? '<span style="color:#b45309">Cô chọn một Khối ở ô lọc phía trên thì mới chuyển bài được (không chuyển câu sang khối khác).</span>'
+                    : `<select id="bank-move-topic" style="padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px;max-width:420px">${mvOpts}</select>
+                       <button type="button" onclick="bankMoveSelected()" style="background:#1d4ed8;color:#fff;border:0;border-radius:6px;padding:6px 10px;font-weight:bold;cursor:pointer"><i class="fa-solid fa-right-left"></i> Chuyển (<span id="bank-mv-n">${bankDelSel.size}</span> câu)</button>
+                       <span style="color:#64748b">Mã câu giữ nguyên, không tạo câu mới.</span>`}
+            </div>`;
+            const tb = mvBar + `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px;margin-bottom:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:.92rem">
+                <label style="cursor:pointer"><input type="checkbox" onchange="bankDelAll(this.checked)"> Tick chọn tất cả câu đang hiện (${shown.length})</label>
                 <button type="button" onclick="bankDeleteSelected()" style="background:#dc2626;color:#fff;border:0;border-radius:6px;padding:6px 10px;font-weight:bold;cursor:pointer"><i class="fa-solid fa-trash"></i> Xóa các câu đã tick (<span id="bank-del-n">${bankDelSel.size}</span>)</button>
                 ${nBad ? `<span style="color:#b91c1c;font-weight:bold">⚠️ ${nBad} câu bị lỗi dữ liệu (có nhãn đỏ), cô xóa hoặc sửa lại câu đó.</span>` : ''}</div>`;
             window.__bankFiltered = shown.map(q => q.id);
@@ -2744,7 +2796,7 @@ body .exam-card{ border:1px solid var(--a-line) !important; }
                     <div style="flex-grow: 1;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
     <div><span class="badge-score badge-pass">[${q.level}] [${q.type}]</span> <span style="font-size: 0.95rem; color:#64748b;">Mã: ${q.id}</span>${q.bad ? ' <span style="background:#fee2e2;color:#b91c1c;font-weight:bold;padding:1px 6px;border-radius:6px">câu lỗi dữ liệu</span>' : ''}</div>
-    <label style="font-size:.85rem;color:#b91c1c;cursor:pointer;margin-right:6px"><input type="checkbox" class="bank-del-cb" data-id="${String(q.id).replace(/"/g, '&quot;')}" onchange="bankDelTick(this)" ${bankDelSel.has(String(q.id)) ? 'checked' : ''}> xóa</label>
+    <label style="font-size:.85rem;color:#1d4ed8;cursor:pointer;margin-right:6px" title="Tick để chuyển bài hoặc xóa hàng loạt"><input type="checkbox" class="bank-del-cb" data-id="${String(q.id).replace(/"/g, '&quot;')}" onchange="bankDelTick(this)" ${bankDelSel.has(String(q.id)) ? 'checked' : ''}> chọn</label>
     <button type="button" onclick="bankDeleteOne('${q.id}')" style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:3px 8px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:0.85rem;margin-right:4px"><i class="fa-solid fa-trash"></i> Xóa</button>
     <button type="button" onclick="openEditQuestionModal('${q.id}')" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 3px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.85rem;"><i class="fa-solid fa-pen"></i> Sửa</button>
 </div>
