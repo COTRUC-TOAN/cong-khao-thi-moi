@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v344] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v345] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7473,10 +7473,11 @@ window.addEventListener('popstate', function () {
   <button id="pp-go">① Tạo mã đề &amp; xem trước</button>
   <button class="b" id="pp-pr1" disabled>② In đề (Lưu PDF)</button>
   <button class="g" id="pp-pr2" disabled>③ In đáp án (Lưu PDF)</button>
-  <button class="b" id="pp-word" disabled style="background:#2563eb">⑤ Tải Word cho MathType (.docx)</button>
+  <button class="b" id="pp-word" disabled style="background:#2563eb">⑤ Tải Word (.docx) – công thức Word</button>
   <button class="b" id="pp-tex" disabled style="background:#7c3aed">⑥ Tải LaTeX (.zip)</button>
   <button class="r" id="pp-x">Đóng</button>
  </div>
+ <label class="pp-chk" style="margin:6px 0 0 2px"><input type="checkbox" id="pp-mathtype"> Xuất kiểu cũ $...$ để dùng MathType Convert Equations (chỉ dùng khi bản thường bị lỗi)</label>
  <div id="pp-msg"></div>
  <div class="pp-hint">Khi hộp in hiện ra: chọn <b>Lưu thành PDF</b>, khổ giấy <b>A4</b>, lề <b>Không (None)</b>, tỷ lệ <b>100%</b>, bỏ chọn "Đầu trang và chân trang". PDF đề và PDF đáp án in riêng để đáp án không lẫn vào đề phát cho học sinh.</div>
 </div>
@@ -7991,7 +7992,7 @@ window.addEventListener('popstate', function () {
     // =====================================================================
     const XE = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const GREEK = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ϵ', varepsilon: 'ε', zeta: 'ζ', eta: 'η', theta: 'θ', vartheta: 'ϑ', iota: 'ι', kappa: 'κ', lambda: 'λ', mu: 'μ', nu: 'ν', xi: 'ξ', pi: 'π', varpi: 'ϖ', rho: 'ρ', varrho: 'ϱ', sigma: 'σ', varsigma: 'ς', tau: 'τ', upsilon: 'υ', phi: 'ϕ', varphi: 'φ', chi: 'χ', psi: 'ψ', omega: 'ω' };
-    const SYM = { Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ', Lambda: 'Λ', Xi: 'Ξ', Pi: 'Π', Sigma: 'Σ', Upsilon: 'Υ', Phi: 'Φ', Psi: 'Ψ', Omega: 'Ω', cdot: '⋅', times: '×', div: '÷', pm: '±', mp: '∓', le: '≤', leq: '≤', ge: '≥', geq: '≥', ne: '≠', neq: '≠', approx: '≈', equiv: '≡', infty: '∞', to: '→', rightarrow: '→', Rightarrow: '⇒', Leftrightarrow: '⇔', iff: '⇔', Leftarrow: '⇐', leftarrow: '←', leftrightarrow: '↔', longrightarrow: '⟶', Longrightarrow: '⟹', mapsto: '↦', in: '∈', notin: '∉', ni: '∋', subset: '⊂', subseteq: '⊆', supset: '⊃', supseteq: '⊇', cup: '∪', cap: '∩', emptyset: '∅', varnothing: '∅', forall: '∀', exists: '∃', nexists: '∄', angle: '∠', measuredangle: '∡', triangle: '△', parallel: '∥', perp: '⊥', circ: '∘', degree: '°', cdots: '⋯', ldots: '…', dots: '…', vdots: '⋮', ddots: '⋱', partial: '∂', nabla: '∇', prime: '′', sim: '∼', simeq: '≃', cong: '≅', propto: '∝', because: '∵', therefore: '∴', setminus: '∖', mid: '∣', vee: '∨', lor: '∨', wedge: '∧', land: '∧', neg: '¬', lnot: '¬', lbrace: '{', rbrace: '}', ll: '≪', gg: '≫', star: '⋆', ast: '∗', bullet: '∙', oplus: '⊕', otimes: '⊗', hbar: 'ℏ', ell: 'ℓ', Re: 'ℜ', Im: 'ℑ', aleph: 'ℵ', square: '□', blacksquare: '■', diamond: '◇', top: '⊤', bot: '⊥', vert: '|', Vert: '‖', lvert: '|', rvert: '|', checkmark: '✓', nless: '≮', ngtr: '≯', nleq: '≰', ngeq: '≱', lessgtr: '≶', uparrow: '↑', downarrow: '↓', updownarrow: '↕', Uparrow: '⇑', Downarrow: '⇓', nearrow: '↗', searrow: '↘', hookrightarrow: '↪', rightleftharpoons: '⇌', textdegree: '°' };
+    const SYM = { lt: '<', gt: '>', leqslant: '≤', geqslant: '≥', nleqslant: '≰', ngeqslant: '≱', smallsetminus: '∖', nmid: '∤', Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ', Lambda: 'Λ', Xi: 'Ξ', Pi: 'Π', Sigma: 'Σ', Upsilon: 'Υ', Phi: 'Φ', Psi: 'Ψ', Omega: 'Ω', cdot: '⋅', times: '×', div: '÷', pm: '±', mp: '∓', le: '≤', leq: '≤', ge: '≥', geq: '≥', ne: '≠', neq: '≠', approx: '≈', equiv: '≡', infty: '∞', to: '→', rightarrow: '→', Rightarrow: '⇒', Leftrightarrow: '⇔', iff: '⇔', Leftarrow: '⇐', leftarrow: '←', leftrightarrow: '↔', longrightarrow: '⟶', Longrightarrow: '⟹', mapsto: '↦', in: '∈', notin: '∉', ni: '∋', subset: '⊂', subseteq: '⊆', supset: '⊃', supseteq: '⊇', cup: '∪', cap: '∩', emptyset: '∅', varnothing: '∅', forall: '∀', exists: '∃', nexists: '∄', angle: '∠', measuredangle: '∡', triangle: '△', parallel: '∥', perp: '⊥', circ: '∘', degree: '°', cdots: '⋯', ldots: '…', dots: '…', vdots: '⋮', ddots: '⋱', partial: '∂', nabla: '∇', prime: '′', sim: '∼', simeq: '≃', cong: '≅', propto: '∝', because: '∵', therefore: '∴', setminus: '∖', mid: '∣', vee: '∨', lor: '∨', wedge: '∧', land: '∧', neg: '¬', lnot: '¬', lbrace: '{', rbrace: '}', ll: '≪', gg: '≫', star: '⋆', ast: '∗', bullet: '∙', oplus: '⊕', otimes: '⊗', hbar: 'ℏ', ell: 'ℓ', Re: 'ℜ', Im: 'ℑ', aleph: 'ℵ', square: '□', blacksquare: '■', diamond: '◇', top: '⊤', bot: '⊥', vert: '|', Vert: '‖', lvert: '|', rvert: '|', checkmark: '✓', nless: '≮', ngtr: '≯', nleq: '≰', ngeq: '≱', lessgtr: '≶', uparrow: '↑', downarrow: '↓', updownarrow: '↕', Uparrow: '⇑', Downarrow: '⇓', nearrow: '↗', searrow: '↘', hookrightarrow: '↪', rightleftharpoons: '⇌', textdegree: '°' };
     const FUNCS = ['sin', 'cos', 'tan', 'cot', 'sec', 'csc', 'arcsin', 'arccos', 'arctan', 'arccot', 'sinh', 'cosh', 'tanh', 'coth', 'log', 'ln', 'lg', 'exp', 'det', 'gcd', 'deg', 'dim', 'ker', 'arg', 'Pr', 'hom'];
     const LIMS = ['lim', 'max', 'min', 'sup', 'inf', 'limsup', 'liminf'];
     const NARY = { sum: ['∑', 'u'], prod: ['∏', 'u'], coprod: ['∐', 'u'], int: ['∫', 's'], iint: ['∬', 's'], iiint: ['∭', 's'], oint: ['∮', 's'], bigcup: ['⋃', 'u'], bigcap: ['⋂', 'u'], bigvee: ['⋁', 'u'], bigwedge: ['⋀', 'u'], bigoplus: ['⨁', 'u'] };
@@ -8219,7 +8220,7 @@ window.addEventListener('popstate', function () {
     function texToOmml(tex) { return mSeq(texParse(tex)); }
 
     // ----- HTML → WordprocessingML -----
-    const EMU_PX = 9525; let XMODE = 'tex';
+    const EMU_PX = 9525; let XMODE = 'omml';   // (v345) mặc định: ghi công thức Word thật, không cần MathType
     function decodeEnt(s) { const t = document.createElement('textarea'); t.innerHTML = s; return t.value; }
     function wRun(text, st) {
         if (text === '') return '';
@@ -8227,6 +8228,44 @@ window.addEventListener('popstate', function () {
         if (st.b) rp += '<w:b/>'; if (st.i) rp += '<w:i/>'; if (st.u) rp += '<w:u w:val="single"/>';
         if (st.sup) rp += '<w:vertAlign w:val="superscript"/>'; else if (st.sub) rp += '<w:vertAlign w:val="subscript"/>';
         return '<w:r>' + (rp ? '<w:rPr>' + rp + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + XE(text.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')) + '</w:t></w:r>';
+    }
+    /* (v345) Bảng kiểu \begin{array}{...}...\end{array} (hay gặp ở bảng biến thiên, bảng xét dấu,
+       bảng tần số dán từ đề) không có trong công thức Word. Ta dựng hẳn một BẢNG WORD có kẻ ô,
+       mỗi ô là một công thức Word, nên cô mở ra sửa được từng ô. */
+    function texIsArray(tex) {
+        const t = String(tex == null ? '' : tex);
+        if (!/\\begin\s*\{\s*(array|matrix|tabular)\s*\}/.test(t)) return false;
+        return /\\hline/.test(t) || /\\\\/.test(t);
+    }
+    function texArrayTable(tex, maxWemu, center) {
+        const m = /\\begin\s*\{\s*(array|matrix|tabular)\s*\}\s*(?:\{[^{}]*\})?([\s\S]*?)\\end\s*\{\s*\1\s*\}/.exec(String(tex || ''));
+        if (!m) return null;
+        const rows = m[2].split(/\\\\/)
+            .map(r => r.replace(/\\hline/g, '').replace(/\\(?:noalign|rowcolor)\s*\{[^{}]*\}/g, '').trim())
+            .filter(r => r !== '');
+        if (!rows.length) return null;
+        const cells = rows.map(r => r.split('&').map(c => c.trim()));
+        const ncol = Math.max.apply(null, cells.map(r => r.length));
+        if (ncol < 2 && cells.length < 2) return null;
+        const full = Math.round((maxWemu || 10206 * 635) / 635);
+        const cw = Math.max(300, Math.floor(Math.min(full, 10206) / ncol));
+        const brd = '<w:tblBorders>' + ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']
+            .map(b => '<w:' + b + ' w:val="single" w:sz="6" w:space="0" w:color="000000"/>').join('') + '</w:tblBorders>';
+        let xml = '<w:tbl><w:tblPr><w:tblW w:w="' + (cw * ncol) + '" w:type="dxa"/>' + brd
+            + (center ? '<w:jc w:val="center"/>' : '') + '<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'
+            + Array(ncol).fill('<w:gridCol w:w="' + cw + '"/>').join('') + '</w:tblGrid>';
+        cells.forEach(function (r) {
+            xml += '<w:tr>';
+            for (let i = 0; i < ncol; i++) {
+                const c = r[i] == null ? '' : r[i];
+                let inner = '';
+                if (c !== '') { try { inner = '<m:oMath>' + texToOmml(c) + '</m:oMath>'; } catch (e) { inner = wRun(c, {}); } }
+                xml += '<w:tc><w:tcPr><w:tcW w:w="' + cw + '" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>'
+                    + '<w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="20" w:after="20"/></w:pPr>' + inner + '</w:p></w:tc>';
+            }
+            xml += '</w:tr>';
+        });
+        return xml + '</w:tbl>';
     }
     function protectMath(html, store) {
         return String(html == null ? '' : html).replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^$]+?)\$/g, (m, a, b, c, d) => {
@@ -8255,7 +8294,12 @@ window.addEventListener('popstate', function () {
             while ((m = re.exec(t))) {
                 if (m.index > last) { const s = t.slice(last, m.index); runs += wRun(s, st); if (s.trim()) has = true; }
                 if (XMODE === 'tex') { const tx = maths[+m[1]]; runs += wRun(tx == null ? '' : '$' + String(tx).trim() + '$', st); has = true; last = m.index + m[0].length; continue; }
-                let o = ''; try { o = texToOmml(maths[+m[1]]); } catch (e) { o = mR(maths[+m[1]], 'n'); }
+                const tx0 = maths[+m[1]];
+                if (!opts.inCell && texIsArray(tx0)) {
+                    const tbl = texArrayTable(tx0, opts.maxW, true);
+                    if (tbl) { last = m.index + m[0].length; flush(); out.push(tbl); out.push('<w:p><w:pPr><w:spacing w:before="0" w:after="60"/></w:pPr></w:p>'); continue; }
+                }
+                let o = ''; try { o = texToOmml(tx0); } catch (e) { o = mR(tx0, 'n'); }
                 runs += '<m:oMath>' + o + '</m:oMath>'; has = true; last = m.index + m[0].length;
             }
             if (last < t.length) { const s = t.slice(last); runs += wRun(s, st); if (s.trim()) has = true; }
@@ -8267,7 +8311,7 @@ window.addEventListener('popstate', function () {
             if (tg === 'script' || tg === 'style') return;
             if (tg === 'br') { runs += '<w:r><w:br/></w:r>'; has = true; return; }
             if (tg === 'img') { const im = opts.imgs && opts.imgs.get(nd.getAttribute('src')); if (im) { runs += wImg(im, opts.maxW); has = true; } else { runs += wRun('[hình]', st); has = true; } return; }
-            if (tg === 'table') { flush(); out.push(tableXml(nd, Object.assign({}, opts, { maths: maths }))); return; }
+            if (tg === 'table') { flush(); out.push(tableXml(nd, Object.assign({}, opts, { maths: maths, inCell: true }))); return; }
             const blk = /^(p|div|h[1-6]|li|ul|ol|center|blockquote|pre)$/.test(tg);
             const ns = Object.assign({}, st); const css = (nd.getAttribute('style') || '').toLowerCase();
             if (tg === 'b' || tg === 'strong' || /font-weight:\s*(bold|[6-9]00)/.test(css)) ns.b = true;
@@ -8432,12 +8476,16 @@ window.addEventListener('popstate', function () {
     async function doWord() {
         if (!READY || !SETS.length) { msg('Cô bấm "Tạo mã đề & xem trước" trước, rồi mới tải Word.', '#dc2626'); return; }
         const b = $('pp-word'); b.disabled = true; msg('Đang tạo tệp Word...');
+        const oldWay = !!($('pp-mathtype') && $('pp-mathtype').checked);   // (v345)
+        XMODE = oldWay ? 'tex' : 'omml';
         try {
             const blob = await buildDocx(SETS, OPT || {});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
             a.download = ppBase() + ' - mã ' + SETS.map(s => s.code).join('-') + '.docx'; document.body.appendChild(a); a.click();
             setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 800);
-            msg('<b>Đã tải tệp Word.</b> Công thức đang ở dạng chữ LaTeX giữa hai dấu $. Mở Word, vào thẻ MathType, bấm <b>Convert Equations</b>, chọn TeX, là thành công thức MathType.', '#16a34a');
+            msg(oldWay
+                ? '<b>Đã tải tệp Word (kiểu cũ).</b> Công thức đang ở dạng chữ LaTeX giữa hai dấu $. Mở Word, vào thẻ MathType, bấm <b>Convert Equations</b>, chọn TeX.'
+                : '<b>Đã tải tệp Word.</b> Công thức đã là <b>công thức Word</b>, mở ra là thấy ngay, bấm vào sửa được — <b>không cần MathType</b>. Bảng kiểu \\begin{array} (bảng biến thiên, bảng tần số) ra bảng Word có kẻ ô; hình vẽ ra ảnh.', '#16a34a');
         } catch (e) { console.error(e); msg('Không tạo được Word: ' + esc(e && e.message || e), '#dc2626'); }
         b.disabled = false;
     }
