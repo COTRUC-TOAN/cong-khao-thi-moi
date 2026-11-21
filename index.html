@@ -19,7 +19,7 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[v345] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
+    <title>[v347] Cổng Khảo Thí & Học Tập Toán THPT - LONG THỚI</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7473,11 +7473,11 @@ window.addEventListener('popstate', function () {
   <button id="pp-go">① Tạo mã đề &amp; xem trước</button>
   <button class="b" id="pp-pr1" disabled>② In đề (Lưu PDF)</button>
   <button class="g" id="pp-pr2" disabled>③ In đáp án (Lưu PDF)</button>
-  <button class="b" id="pp-word" disabled style="background:#2563eb">⑤ Tải Word (.docx) – công thức Word</button>
-  <button class="b" id="pp-tex" disabled style="background:#7c3aed">⑥ Tải LaTeX (.zip)</button>
+  <button class="b" id="pp-word" disabled style="background:#2563eb">⑤ Tải Word – công thức Word (không cần MathType)</button>
+  <button class="b" id="pp-word-mt" disabled style="background:#0891b2">⑥ Tải Word cho MathType ($...$)</button>
+  <button class="b" id="pp-tex" disabled style="background:#7c3aed">⑦ Tải LaTeX (.zip)</button>
   <button class="r" id="pp-x">Đóng</button>
  </div>
- <label class="pp-chk" style="margin:6px 0 0 2px"><input type="checkbox" id="pp-mathtype"> Xuất kiểu cũ $...$ để dùng MathType Convert Equations (chỉ dùng khi bản thường bị lỗi)</label>
  <div id="pp-msg"></div>
  <div class="pp-hint">Khi hộp in hiện ra: chọn <b>Lưu thành PDF</b>, khổ giấy <b>A4</b>, lề <b>Không (None)</b>, tỷ lệ <b>100%</b>, bỏ chọn "Đầu trang và chân trang". PDF đề và PDF đáp án in riêng để đáp án không lẫn vào đề phát cho học sinh.</div>
 </div>
@@ -7497,7 +7497,8 @@ window.addEventListener('popstate', function () {
         $('pp-go').onclick = () => generate();
         $('pp-pr1').onclick = () => doPrint('exam');
         $('pp-pr2').onclick = () => doPrint('key');
-        $('pp-word').onclick = () => doWord();
+        $('pp-word').onclick = () => doWord(false);
+        { const e = $('pp-word-mt'); if (e) e.onclick = () => doWord(true); }
         $('pp-tex').onclick = () => doTex();
         $('pp-x').onclick = () => { ov.style.display = 'none'; document.body.style.overflow = ''; };
         try { const c = JSON.parse(LS.get('pp_cfg') || '{}'); Object.keys(c).forEach(k => { const e = $(k); if (e) { if (e.type === 'checkbox') e.checked = !!c[k]; else e.value = c[k]; } }); } catch (e) { }
@@ -7958,7 +7959,7 @@ window.addEventListener('popstate', function () {
                 SETS.forEach(s => { store[exId + '|' + s.code] = { exam: exId, title: o.exam, code: s.code, at: now, pts: { mcq: o.pm, tf: o.pt, sa: o.ps, es: o.pe, esList: o.peList }, mcq: s.mcq.map(q => q.ans), tf: s.tf.map(q => q.ans), sa: s.sa.map(q => q.ans), es: s.es.length, layout: s.sheet ? s.sheet.layout : null }; });
                 LS.set('paper_sets', JSON.stringify(store));
             } catch (e) { }
-            READY = true; ['pp-pr1', 'pp-pr2', 'pp-word', 'pp-tex', 'pp-ph'].forEach(i => { const e = $(i); if (e) e.disabled = false; });
+            READY = true; ['pp-pr1', 'pp-pr2', 'pp-word', 'pp-word-mt', 'pp-tex', 'pp-ph'].forEach(i => { const e = $(i); if (e) e.disabled = false; });
             const s0 = SETS[0];
             let html = '<b>Đã tạo ' + SETS.length + ' mã đề (' + SETS.map(s => s.code).join(', ') + ').</b> Mỗi mã: ' + s0.mcq.length + ' trắc nghiệm, ' + s0.tf.length + ' đúng/sai, ' + s0.sa.length + ' trả lời ngắn' + (s0.es.length ? ', ' + s0.es.length + ' tự luận' : '') + '. Cỡ chữ ' + String(chosen).replace('.', ',') + ' pt, ' + maxPages + ' trang đề.';
             const total = s0.mcq.length * o.pm + s0.tf.length * o.pt + s0.sa.length * o.ps + sumL(o.peList);
@@ -8161,10 +8162,15 @@ window.addEventListener('popstate', function () {
         return res;
     }
     // ----- sinh OMML -----
+    // (v346) MFONT: font chữ trong công thức. Để 'Times New Roman' cho giống MathType;
+    // đặt '' thì dùng Cambria Math mặc định của Word.
+    let MFONT = 'Times New Roman';
+    function mFontPr() { return MFONT ? '<w:rPr><w:rFonts w:ascii="' + MFONT + '" w:hAnsi="' + MFONT + '" w:cs="' + MFONT + '"/></w:rPr>' : ''; }
     function mR(text, kind) { // kind: undefined = nghiêng, 'p' = đứng, 'n' = chữ thường (text)
         if (text === '') return '';
-        const rpr = kind === 'p' ? '<m:rPr><m:sty m:val="p"/></m:rPr>' : (kind === 'n' ? '<m:rPr><m:nor/></m:rPr><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/></w:rPr>' : '');
-        return '<m:r>' + rpr + '<m:t xml:space="preserve">' + XE(text) + '</m:t></m:r>';
+        const mpr = kind === 'p' ? '<m:rPr><m:sty m:val="p"/></m:rPr>' : (kind === 'n' ? '<m:rPr><m:nor/></m:rPr>' : '');
+        const wpr = MFONT ? mFontPr() : (kind === 'n' ? '<w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/></w:rPr>' : '');
+        return '<m:r>' + mpr + wpr + '<m:t xml:space="preserve">' + XE(text) + '</m:t></m:r>';
     }
     function mE(nodes) { const s = mSeq(nodes); return '<m:e>' + (s || mR('​', 'p')) + '</m:e>'; }
     function mSeq(nodes) {
@@ -8473,15 +8479,14 @@ window.addEventListener('popstate', function () {
         used.forEach(v => files.push({ name: 'word/' + v.name, data: v.data }));
         return zipStore(files);
     }
-    async function doWord() {
+    async function doWord(oldWay) {
         if (!READY || !SETS.length) { msg('Cô bấm "Tạo mã đề & xem trước" trước, rồi mới tải Word.', '#dc2626'); return; }
-        const b = $('pp-word'); b.disabled = true; msg('Đang tạo tệp Word...');
-        const oldWay = !!($('pp-mathtype') && $('pp-mathtype').checked);   // (v345)
-        XMODE = oldWay ? 'tex' : 'omml';
+        const b = $(oldWay ? 'pp-word-mt' : 'pp-word'); b.disabled = true; msg('Đang tạo tệp Word...');
+        XMODE = oldWay ? 'tex' : 'omml';   // (v347) hai nút riêng: công thức Word / kiểu $...$ cho MathType
         try {
             const blob = await buildDocx(SETS, OPT || {});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = ppBase() + ' - mã ' + SETS.map(s => s.code).join('-') + '.docx'; document.body.appendChild(a); a.click();
+            a.download = ppBase() + ' - mã ' + SETS.map(s => s.code).join('-') + (oldWay ? ' (MathType)' : '') + '.docx'; document.body.appendChild(a); a.click();
             setTimeout(() => { a.remove(); URL.revokeObjectURL(a.href); }, 800);
             msg(oldWay
                 ? '<b>Đã tải tệp Word (kiểu cũ).</b> Công thức đang ở dạng chữ LaTeX giữa hai dấu $. Mở Word, vào thẻ MathType, bấm <b>Convert Equations</b>, chọn TeX.'
@@ -8580,7 +8585,7 @@ window.addEventListener('popstate', function () {
         } catch (e) { console.error(e); msg('Không tạo được LaTeX: ' + esc(e && e.message || e), '#dc2626'); }
         b.disabled = false;
     }
-    window.__pw = { texToOmml: texToOmml, buildDocx: buildDocx, buildTexZip: buildTexZip, setMode: m => { XMODE = m; } };
+    window.__pw = { texToOmml: texToOmml, buildDocx: buildDocx, buildTexZip: buildTexZip, setMode: m => { XMODE = m; }, setFont: f => { MFONT = f; } };
 
     function doPrint(mode) {
         if (!READY || !SETS.length) { msg('Cô bấm "Tạo mã đề & xem trước" trước, rồi mới in.', '#dc2626'); return; }
